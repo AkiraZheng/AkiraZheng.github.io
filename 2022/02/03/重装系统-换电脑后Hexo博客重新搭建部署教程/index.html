@@ -27,7 +27,7 @@
 <meta property="og:description" content="前言 本文针对已经在别的电脑或系统上搭建过Hexo博客，准备重新在新电脑或系统上搭建回之前的博客，也就是说，之前已经在gthub账号上有建立过博客仓库了。  在重新搭建前保证自己以前的blog文件夹中以下文件有被拷贝备份下来：    文件夹&#x2F;文件 拷贝内容    &#x2F;blog目录下的文件 除landscape外的.yml文件   &#x2F;blog目录下的文件 package.json文件   &#x2F;blog目">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-02-03T05:32:11.000Z">
-<meta property="article:modified_time" content="2022-02-03T07:30:18.450Z">
+<meta property="article:modified_time" content="2022-02-03T09:08:33.186Z">
 <meta property="article:author" content="AkiraZheng">
 <meta property="article:tag" content="计算机">
 <meta name="twitter:card" content="summary">
@@ -333,7 +333,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">1k</span>Reading time: <span class="post-count reading-time">4 min</span></span>
+                        <span>Word count: <span class="post-count word-count">1.4k</span>Reading time: <span class="post-count reading-time">5 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -524,7 +524,7 @@
 <p>  <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Yb411a7ty?spm_id_from=333.1007.top_right_bar_window_custom_collection.content.click">https://www.bilibili.com/video/BV1Yb411a7ty?spm_id_from=333.1007.top_right_bar_window_custom_collection.content.click</a></p>
 </li>
 </ul>
-<h1 id="博客重新搭载操作"><a href="#博客重新搭载操作" class="headerlink" title="博客重新搭载操作"></a>博客重新搭载操作</h1><h2 id="软件下载"><a href="#软件下载" class="headerlink" title="软件下载"></a>软件下载</h2><ol>
+<h1 id="博客重新搭载操作"><a href="#博客重新搭载操作" class="headerlink" title="博客重新搭载操作"></a>博客重新搭载操作</h1><h2 id="一、软件下载"><a href="#一、软件下载" class="headerlink" title="一、软件下载"></a>一、软件下载</h2><ol>
 <li><p>到nodejs官网下载<strong>nodejs</strong>软件并安装</p>
 <p> 官网链接：<a target="_blank" rel="noopener" href="https://nodejs.org/en/">https://nodejs.org/en/</a></p>
 <p> cmd中输入<code>node -v</code>确认版本及确认已安装完毕</p>
@@ -534,7 +534,7 @@
 <p> cmd中输入<code>git</code>确认版本及确认已安装完毕</p>
 </li>
 </ol>
-<h2 id="建立本机与github的联系"><a href="#建立本机与github的联系" class="headerlink" title="建立本机与github的联系"></a>建立本机与github的联系</h2><ol>
+<h2 id="二、建立本机与github的联系"><a href="#二、建立本机与github的联系" class="headerlink" title="二、建立本机与github的联系"></a>二、建立本机与github的联系</h2><ol>
 <li><p>Git下载完后，双击安装Git目录下的<strong>git-bash.exe</strong>，输入<code>ssh-keygen -t rsa -c &quot;github对应的邮箱账号&quot;</code>，然后直接回车3次（无脑回车即可），将会生产本机对应的SSH号存于C盘Users上的<strong>id_rsa</strong>文件中（如果找不到该文件，可以下载Everything软件直接搜索文件名，可以快速找到文件的位置）</p>
 </li>
 <li><p>用记事本打开id_rsa文件，Ctrl+A全选复制文件的全部内容</p>
@@ -568,7 +568,7 @@
 </ul>
 </li>
 </ol>
-<h2 id="部署博客到github上"><a href="#部署博客到github上" class="headerlink" title="部署博客到github上"></a>部署博客到github上</h2><ol>
+<h2 id="三、部署博客到github上"><a href="#三、部署博客到github上" class="headerlink" title="三、部署博客到github上"></a>三、部署博客到github上</h2><ol>
 <li><p>记得操作时用<code>hexo clean</code>清理环境，如果出现问题也可以重新打开cmd</p>
 <ul>
 <li><p>cmd中进入对应的盘(如<code>D:</code>)，进而进入新建的blog文件夹（如<code>cd MyBlog\blog</code>）</p>
@@ -600,7 +600,41 @@
 </ul>
 </li>
 </ul>
-<h2 id="解决本地图片上传问题"><a href="#解决本地图片上传问题" class="headerlink" title="解决本地图片上传问题"></a>解决本地图片上传问题</h2>
+<h2 id="用Sublime-Text3软件实现Markdown文件在浏览器中实时更新显示"><a href="#用Sublime-Text3软件实现Markdown文件在浏览器中实时更新显示" class="headerlink" title="用Sublime Text3软件实现Markdown文件在浏览器中实时更新显示"></a>用Sublime Text3软件实现Markdown文件在浏览器中实时更新显示</h2><p>MarkdownPreview + LiveReload</p>
+<ul>
+<li><p>Sublime中安装插件的办法</p>
+<ul>
+<li><p>组合键<code>Ctrl+Shift+P</code> 调出命令面板</p>
+</li>
+<li><p>输入<code>Package Control: Install Package</code>，回车</p>
+</li>
+<li><p>在搜索框中输入要安装的包名（一个一个，不能同时安多个）</p>
+</li>
+</ul>
+</li>
+<li><p>MarkdownPreview</p>
+<ul>
+<li><p>根据插件安装方法安装MarkdownPreview插件</p>
+</li>
+<li><p>设置浏览器浏览快捷键为<code>alt+m</code>，在Preferences -&gt; Key Bindings打开的文件的右侧栏的中括号中添加一行代码：</p>
+</li>
+</ul>
+<p>  <code>&#123; &quot;keys&quot;: [&quot;alt+m&quot;], &quot;command&quot;: &quot;markdown_preview&quot;, &quot;args&quot;: &#123;&quot;target&quot;: &quot;browser&quot;, &quot;parser&quot;:&quot;markdown&quot;&#125;  &#125;</code></p>
+</li>
+<li><p>LiveReload实现实时更新</p>
+<ul>
+<li><p>根据插件安装方法安装LiveReload插件</p>
+</li>
+<li><p>组合键<code>Ctrl+Shift+P</code> 输入<code>LiveReload: Enable/disable plug-ins</code>, 回车, 选择 <code>Simple Reload with delay (400ms)或者Simple Reload</code>，两者的区别仅仅在于后者没有延迟。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>Sublime实现Markdown实时更新参考文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_20011607/article/details/81370236">https://blog.csdn.net/qq_20011607/article/details/81370236</a></p>
+<h2 id="解决本地图片上传问题"><a href="#解决本地图片上传问题" class="headerlink" title="解决本地图片上传问题"></a>解决本地图片上传问题</h2><ol>
+<li>在_config.yml配置文件中配置项<strong>post_asset_folder</strong>设为true，之后再用<code>hexo new post_name</code>命令都会自动在<strong>source/_post</strong>文件夹中会生成对应的图片文件夹，此时图片文件夹中的图片资源可以用相对路径来引用</li>
+</ol>
+
     </article>
     <!-- license -->
     
@@ -608,7 +642,7 @@
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F-%E6%8D%A2%E7%94%B5%E8%84%91%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%87%8D%E6%96%B0%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">https://akirazheng.github.io/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F-%E6%8D%A2%E7%94%B5%E8%84%91%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%87%8D%E6%96%B0%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F-%E6%8D%A2%E7%94%B5%E8%84%91%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%87%8D%E6%96%B0%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">February 3rd 2022, 1:32:11 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F-%E6%8D%A2%E7%94%B5%E8%84%91%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%87%8D%E6%96%B0%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">February 3rd 2022, 3:30:18 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F-%E6%8D%A2%E7%94%B5%E8%84%91%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%87%8D%E6%96%B0%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">February 3rd 2022, 5:08:33 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -763,7 +797,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%9A%E5%AE%A2%E9%87%8D%E6%96%B0%E6%90%AD%E8%BD%BD%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">博客重新搭载操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6%E4%B8%8B%E8%BD%BD"><span class="toc-number">2.1.</span> <span class="toc-text">软件下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%BA%E7%AB%8B%E6%9C%AC%E6%9C%BA%E4%B8%8Egithub%E7%9A%84%E8%81%94%E7%B3%BB"><span class="toc-number">2.2.</span> <span class="toc-text">建立本机与github的联系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2%E5%8D%9A%E5%AE%A2%E5%88%B0github%E4%B8%8A"><span class="toc-number">2.3.</span> <span class="toc-text">部署博客到github上</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8E%E8%AE%B0-hexo%E5%8D%9A%E5%AE%A2%E7%BC%96%E5%86%99%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98%E5%90%88%E9%9B%86"><span class="toc-number">3.</span> <span class="toc-text">后记-hexo博客编写相关问题合集</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E9%83%A8%E7%BD%B2%E5%88%B0github%E4%BB%93%E5%BA%93%E6%97%B6FATAL%E5%87%BA%E7%8E%B0code-128%E9%94%99%E8%AF%AF"><span class="toc-number">3.1.</span> <span class="toc-text">解决部署到github仓库时FATAL出现code: 128错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%9C%AC%E5%9C%B0%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E9%97%AE%E9%A2%98"><span class="toc-number">3.2.</span> <span class="toc-text">解决本地图片上传问题</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%9A%E5%AE%A2%E9%87%8D%E6%96%B0%E6%90%AD%E8%BD%BD%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">博客重新搭载操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%BD%AF%E4%BB%B6%E4%B8%8B%E8%BD%BD"><span class="toc-number">2.1.</span> <span class="toc-text">一、软件下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%BB%BA%E7%AB%8B%E6%9C%AC%E6%9C%BA%E4%B8%8Egithub%E7%9A%84%E8%81%94%E7%B3%BB"><span class="toc-number">2.2.</span> <span class="toc-text">二、建立本机与github的联系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%83%A8%E7%BD%B2%E5%8D%9A%E5%AE%A2%E5%88%B0github%E4%B8%8A"><span class="toc-number">2.3.</span> <span class="toc-text">三、部署博客到github上</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8E%E8%AE%B0-hexo%E5%8D%9A%E5%AE%A2%E7%BC%96%E5%86%99%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98%E5%90%88%E9%9B%86"><span class="toc-number">3.</span> <span class="toc-text">后记-hexo博客编写相关问题合集</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E9%83%A8%E7%BD%B2%E5%88%B0github%E4%BB%93%E5%BA%93%E6%97%B6FATAL%E5%87%BA%E7%8E%B0code-128%E9%94%99%E8%AF%AF"><span class="toc-number">3.1.</span> <span class="toc-text">解决部署到github仓库时FATAL出现code: 128错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8Sublime-Text3%E8%BD%AF%E4%BB%B6%E5%AE%9E%E7%8E%B0Markdown%E6%96%87%E4%BB%B6%E5%9C%A8%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%AD%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%E6%98%BE%E7%A4%BA"><span class="toc-number">3.2.</span> <span class="toc-text">用Sublime Text3软件实现Markdown文件在浏览器中实时更新显示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%9C%AC%E5%9C%B0%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E9%97%AE%E9%A2%98"><span class="toc-number">3.3.</span> <span class="toc-text">解决本地图片上传问题</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -797,9 +831,12 @@
         
         
         
+        
+        
+        
+        
+        
     
-        
-        
         
         
         
@@ -814,7 +851,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 4
+        Total : 5
         </div>
         <!-- search  -->
         
@@ -824,6 +861,36 @@
     
         
             
+            
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/">DELL系统重装教程</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2021/12/27/%E9%83%91%E9%92%BF%E5%90%8C%E5%AD%A6%E7%9A%84%E7%A2%8E%E7%A2%8E%E5%BF%B5/">郑钿同学的碎碎念</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
             
             <div class="archive-year"> Invalid date </div>
             <ul class="year-list">
@@ -846,28 +913,13 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/03</span>
-            <a class="archive-post-title" href="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/">DELL系统重装教程</a>
+            <a class="archive-post-title" href="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/03</span>
             <a class="archive-post-title" href="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F-%E6%8D%A2%E7%94%B5%E8%84%91%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%87%8D%E6%96%B0%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">重装系统/换电脑后Hexo博客重新搭建部署教程</a>
-        </li>
-    
-        
-            
-            
-                
-                </ul>
-            
-            <div class="archive-year"> 2021 </div>
-            <ul class="year-list">
-            
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/27</span>
-            <a class="archive-post-title" href="/2021/12/27/%E9%83%91%E9%92%BF%E5%90%8C%E5%AD%A6%E7%9A%84%E7%A2%8E%E7%A2%8E%E5%BF%B5/">郑钿同学的碎碎念</a>
         </li>
     
     </div>
@@ -879,6 +931,11 @@
             <span class="sidebar-tag-name" data-tags="计算机">
                 <span class="iconfont-archer">&#xe606;</span>
                 计算机
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="环境配置">
+                <span class="iconfont-archer">&#xe606;</span>
+                环境配置
             </span>
         
     </div>
