@@ -448,27 +448,7 @@
                 <span class="abstract-title-text">动手学深度学习01</span>
             </a>
             <div class="abstract-content">
-                前言
-本章内容为动手学深度学习-预备知识章节
-
-
-本章内容源自d2l代码包中的chapter_preliminaries文件夹
-
-
-课程源自 动手学深度学习在线课程
-
-
-代码运行在Google的Colab平台中
-
-1、1 数据操作1import torch
-
-1234x = torch.arange(15)print(x)print(x.shape)print(x.numel())
-
-12x = x.reshape(3,5)print(x)
-
-1print(torch.ones((2,3,4)))
-
-123456789# 二维数据y = torch.tensor([[2,1,4,3], ...
+                
             </div>
             <!-- read more -->
             
@@ -503,23 +483,7 @@
                 <span class="abstract-title-text">搭建Conda虚拟环境</span>
             </a>
             <div class="abstract-content">
-                前言
-编写这篇博客的目的是在学习李沐老师的《动手学深度学习》课程、或者自学其它python编程内容时，需要用到的python环境各不相同
-
-
-为了方便学习，还是需要创建多个不同的Conda环境进行区分
-
-
-本文的命令内容是基于Windows10系统的，Linux系统的后续有机会继续更新
-
-Conda中的常用指令一般有Conda前缀的指令都是针对所有环境进行操作的，或者说是在主环境中操作的
-如果需要在当前的自定义Conda虚拟环境中执行安装或者查看指令时，不需要加Conda前缀
-Conda前缀的指令
-查看安装包
-  conda list
-
-查看当前存在的Conda虚拟环境
-  conda ...
+                
             </div>
             <!-- read more -->
             
@@ -554,22 +518,7 @@ Conda前缀的指令
                 <span class="abstract-title-text">部署colab利用GPU资源训练深度学习模型</span>
             </a>
             <div class="abstract-content">
-                前言深度学习模型需要GPU加持提高训练速度，但是目前GPU和许多云端租借的GPU价格昂贵，因此本文将用谷歌团队的colab实现免费GPU的使用，满足深度学习的个人学习需求
-以下链接为部署原文参考网站： https://blog.csdn.net/u011119817/article/details/108519389
-目前所用到的代码功能1、查看GPU资源
-
-    
-# 查看GPU资源
-!nvidia-smi
-
-
-
-2、连接谷歌云端硬盘
-
-    
-# 连接谷歌云端硬盘
-from google.colab import drive
-drive.mount(&#39;/content/d...
+                
             </div>
             <!-- read more -->
             
@@ -604,36 +553,13 @@ drive.mount(&#39;/content/d...
                 <span class="abstract-title-text">重装系统后Hexo博客部署教程</span>
             </a>
             <div class="abstract-content">
-                前言本文针对已经在别的电脑或系统上搭建过Hexo博客，准备重新在新电脑或系统上搭建回之前的博客，也就是说，之前已经在gthub账号上有建立过博客仓库了。
-在重新搭建前保证自己以前的blog文件夹中以下文件有被拷贝备份下来：
-
-
-
-文件夹/文件
-拷贝内容
-
-
-
-/blog目录下的文件
-除landscape外的.yml文件
-
-
-/blog目录下的文件
-package.json文件
-
-
-/blog目录下的文件夹
-scaffolds、source、themes三个文件夹
-
-
-零基础建立、搭载博客可以参考b站视频：
-https://www.bilibili.com/video/BV1cW411A7...
+                
             </div>
             <!-- read more -->
             
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2022/04/12">
+                <div class="abstract-date" title="Last updated: 2022/04/18">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/02/03</span>
                 </div>
                 <!-- tags -->
@@ -662,16 +588,7 @@ https://www.bilibili.com/video/BV1cW411A7...
                 <span class="abstract-title-text">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</span>
             </a>
             <div class="abstract-content">
-                Python部分首先安装AnacondaAnaconda包含Python环境，可以建立管理多个不同版本的Python环境，安装它后就默认安装了python、IPython、集成开发环境Spyder和众多的包和模块，让你在管理环境和包时更加方便。
-
-从官网中下载Anaconda的exe文件
-
-安装过程中注意勾选Alls Users和Add Anaconda to the system PATH environment variable，便于以后不用再配置路径
-
-
-安装VScode我这里直接用Anaconda进行VScode下载
-
-运行Anaconda Navigator后，点击VS Cod...
+                
             </div>
             <!-- read more -->
             
@@ -706,13 +623,7 @@ https://www.bilibili.com/video/BV1cW411A7...
                 <span class="abstract-title-text">DELL系统重装教程</span>
             </a>
             <div class="abstract-content">
-                前言重装系统记得把重要文件备份，建议tb买个便宜的号备份到百度网盘，虽然一般重装只有C盘文件会全部被覆盖，不影响DEF盘，但是把重要文件都备份好总是没错的；
-写个txt文件记录需要下载的软件，便于重装系统后下载软件，生产力软件（VScode、hexo博客搭建等）要记录下来，真的对以后重新安装软件的环境配置很有用，能节省很多时间！
-本文主要针对电脑可以使用下，重装系统清理C盘的情况。
-系统重装一、重装前软件下载
-软件下载步骤主要是为了制作系统U盘，因此如果电脑无法正常使用，本步骤可以用其他电脑完成。
-本步骤需要准备一个U盘，注意安装系统到U盘会格式化U盘，因此需要提前备份好U盘。
-完成该步...
+                
             </div>
             <!-- read more -->
             
@@ -747,11 +658,7 @@ https://www.bilibili.com/video/BV1cW411A7...
                 <span class="abstract-title-text">Hello World</span>
             </a>
             <div class="abstract-content">
-                Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick StartCreate a new post1$ hexo new &quot;My New Post&quot;
-
-More info: Writing
-Run server1$ hexo ...
+                
             </div>
             <!-- read more -->
             
@@ -778,23 +685,7 @@ Run server1$ hexo ...
                 <span class="abstract-title-text">郑钿同学的碎碎念</span>
             </a>
             <div class="abstract-content">
-                SAD大四了，不会吧不会吧，不会只有我一个人有考试吧！！！
-太难受了QAQ~
-不如早点考试~
-
-想回家.ing有点子累~
-
-感冒嘤嘤嘤，怎么最近这么脆弱，动不动就生病，上大学第一次tu了
-最近像个娇弱小媳妇，脆弱得很QAQ
-2021.12.27 记
-
-塑料宿友情哭了呀家人们，今天跟小高去吃饭的时候，小高大一的时候说觉得宿舍交不到交心的朋友，觉得宿舍同学貌合神离，哭唧唧
-今晚小戴说大一跟宿舍的同学（只跟我不熟）也都不熟
-总结：只有我大一觉得宿舍的同学都很好
-伤心了
-2021.12.28 记
-
-重装系统的坎坷道路历经整整两天，终于把所有生产力软件都配置完了，体感vscode+java的配置和...
+                
             </div>
             <!-- read more -->
             
@@ -1060,6 +951,10 @@ Run server1$ hexo ...
         
         
         
+        
+        
+        
+        
     
     
     
@@ -1076,21 +971,6 @@ Run server1$ hexo ...
     
         
             
-            
-            <div class="archive-year"> 2022 </div>
-            <ul class="year-list">
-            
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">02/03</span>
-            <a class="archive-post-title" href="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</a>
-        </li>
-    
-        
-            
-            
-                
-                </ul>
             
             <div class="archive-year"> Invalid date </div>
             <ul class="year-list">
@@ -1137,6 +1017,12 @@ Run server1$ hexo ...
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
             <a class="archive-post-title" href="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/">DELL系统重装教程</a>
         </li>
     
@@ -1161,6 +1047,11 @@ Run server1$ hexo ...
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
         
+            <span class="sidebar-tag-name" data-tags="计算机">
+                <span class="iconfont-archer">&#xe606;</span>
+                计算机
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="环境配置">
                 <span class="iconfont-archer">&#xe606;</span>
                 环境配置
@@ -1169,11 +1060,6 @@ Run server1$ hexo ...
             <span class="sidebar-tag-name" data-tags="CV">
                 <span class="iconfont-archer">&#xe606;</span>
                 CV
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="计算机">
-                <span class="iconfont-archer">&#xe606;</span>
-                计算机
             </span>
         
     </div>
@@ -1187,9 +1073,9 @@ Run server1$ hexo ...
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="深度学习">
+        <span class="sidebar-category-name" data-categories="动手学深度学习">
             <span class="iconfont-archer">&#xe60a;</span>
-            深度学习
+            动手学深度学习
         </span>
     
     </div>
