@@ -1393,4 +1393,9 @@ setInterval(ClickConnect, 60000)
     <url>/2023/12/09/test2/</url>
     <content><![CDATA[]]></content>
   </entry>
+  <entry>
+    <title>test3</title>
+    <url>/2023/12/09/test3/</url>
+    <content><![CDATA[]]></content>
+  </entry>
 </search>
