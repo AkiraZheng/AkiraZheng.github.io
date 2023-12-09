@@ -1,0 +1,1391 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>LOVE_打火机与公主裙</title>
+    <url>/2022/11/15/LOVE/</url>
+    <content><![CDATA[
+<!DOCTYPE html>
+<!-- saved from url=(0062)file:///D:/OneDrive/%E6%A1%8C%E9%9D%A2/%E7%88%B1%E5%BF%83.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+	<title></title>
+<style>
+  *{
+    padding: 0;
+    margin: 0;
+  }
+  html, body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  background: #000;
+}
+canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.aa{
+  position: fixed;
+  left: 50%;
+  bottom: 10px;
+  color: #ccc
+}
+</style></head>
+
+<body>
+    <canvas id="pinkboard" width="989" height="805"></canvas>
+ 
+    <script>
+       
+/*
+ * Settings
+ */
+var settings = {
+  particles: {
+    length:   500, // maximum amount of particles
+    duration:   2, // particle duration in sec
+    velocity: 100, // particle velocity in pixels/sec
+    effect: -0.75, // play with this for a nice effect
+    size:      30, // particle size in pixels
+  },
+};
+ 
+/*
+ * RequestAnimationFrame polyfill by Erik M?ller
+ */
+(function(){var b=0;var c=["ms","moz","webkit","o"];for(var a=0;a<c.length&&!window.requestAnimationFrame;++a){window.requestAnimationFrame=window[c[a]+"RequestAnimationFrame"];window.cancelAnimationFrame=window[c[a]+"CancelAnimationFrame"]||window[c[a]+"CancelRequestAnimationFrame"]}if(!window.requestAnimationFrame){window.requestAnimationFrame=function(h,e){var d=new Date().getTime();var f=Math.max(0,16-(d-b));var g=window.setTimeout(function(){h(d+f)},f);b=d+f;return g}}if(!window.cancelAnimationFrame){window.cancelAnimationFrame=function(d){clearTimeout(d)}}}());
+ 
+/*
+ * Point class
+ */
+var Point = (function() {
+  function Point(x, y) {
+    this.x = (typeof x !== 'undefined') ? x : 0;
+    this.y = (typeof y !== 'undefined') ? y : 0;
+  }
+  Point.prototype.clone = function() {
+    return new Point(this.x, this.y);
+  };
+  Point.prototype.length = function(length) {
+    if (typeof length == 'undefined')
+      return Math.sqrt(this.x * this.x + this.y * this.y);
+    this.normalize();
+    this.x *= length;
+    this.y *= length;
+    return this;
+  };
+  Point.prototype.normalize = function() {
+    var length = this.length();
+    this.x /= length;
+    this.y /= length;
+    return this;
+  };
+  return Point;
+})();
+ 
+/*
+ * Particle class
+ */
+var Particle = (function() {
+  function Particle() {
+    this.position = new Point();
+    this.velocity = new Point();
+    this.acceleration = new Point();
+    this.age = 0;
+  }
+  Particle.prototype.initialize = function(x, y, dx, dy) {
+    this.position.x = x;
+    this.position.y = y;
+    this.velocity.x = dx;
+    this.velocity.y = dy;
+    this.acceleration.x = dx * settings.particles.effect;
+    this.acceleration.y = dy * settings.particles.effect;
+    this.age = 0;
+  };
+  Particle.prototype.update = function(deltaTime) {
+    this.position.x += this.velocity.x * deltaTime;
+    this.position.y += this.velocity.y * deltaTime;
+    this.velocity.x += this.acceleration.x * deltaTime;
+    this.velocity.y += this.acceleration.y * deltaTime;
+    this.age += deltaTime;
+  };
+  Particle.prototype.draw = function(context, image) {
+    function ease(t) {
+      return (--t) * t * t + 1;
+    }
+    var size = image.width * ease(this.age / settings.particles.duration);
+    context.globalAlpha = 1 - this.age / settings.particles.duration;
+    context.drawImage(image, this.position.x - size / 2, this.position.y - size / 2, size, size);
+  };
+  return Particle;
+})();
+ 
+/*
+ * ParticlePool class
+ */
+var ParticlePool = (function() {
+  var particles,
+      firstActive = 0,
+      firstFree   = 0,
+      duration    = settings.particles.duration;
+  
+  function ParticlePool(length) {
+    // create and populate particle pool
+    particles = new Array(length);
+    for (var i = 0; i < particles.length; i++)
+      particles[i] = new Particle();
+  }
+  ParticlePool.prototype.add = function(x, y, dx, dy) {
+    particles[firstFree].initialize(x, y, dx, dy);
+    
+    // handle circular queue
+    firstFree++;
+    if (firstFree   == particles.length) firstFree   = 0;
+    if (firstActive == firstFree       ) firstActive++;
+    if (firstActive == particles.length) firstActive = 0;
+  };
+  ParticlePool.prototype.update = function(deltaTime) {
+    var i;
+    
+    // update active particles
+    if (firstActive < firstFree) {
+      for (i = firstActive; i < firstFree; i++)
+        particles[i].update(deltaTime);
+    }
+    if (firstFree < firstActive) {
+      for (i = firstActive; i < particles.length; i++)
+        particles[i].update(deltaTime);
+      for (i = 0; i < firstFree; i++)
+        particles[i].update(deltaTime);
+    }
+    
+    // remove inactive particles
+    while (particles[firstActive].age >= duration && firstActive != firstFree) {
+      firstActive++;
+      if (firstActive == particles.length) firstActive = 0;
+    }
+    
+    
+  };
+  ParticlePool.prototype.draw = function(context, image) {
+    // draw active particles
+    if (firstActive < firstFree) {
+      for (i = firstActive; i < firstFree; i++)
+        particles[i].draw(context, image);
+    }
+    if (firstFree < firstActive) {
+      for (i = firstActive; i < particles.length; i++)
+        particles[i].draw(context, image);
+      for (i = 0; i < firstFree; i++)
+        particles[i].draw(context, image);
+    }
+  };
+  return ParticlePool;
+})();
+ 
+/*
+ * Putting it all together
+ */
+(function(canvas) {
+  var context = canvas.getContext('2d'),
+      particles = new ParticlePool(settings.particles.length),
+      particleRate = settings.particles.length / settings.particles.duration, // particles/sec
+      time;
+  
+  // get point on heart with -PI <= t <= PI
+  function pointOnHeart(t) {
+    return new Point(
+      160 * Math.pow(Math.sin(t), 3),
+      130 * Math.cos(t) - 50 * Math.cos(2 * t) - 20 * Math.cos(3 * t) - 10 * Math.cos(4 * t) + 25
+    );
+  }
+  
+  // creating the particle image using a dummy canvas
+  var image = (function() {
+    var canvas  = document.createElement('canvas'),
+        context = canvas.getContext('2d');
+    canvas.width  = settings.particles.size;
+    canvas.height = settings.particles.size;
+    // helper function to create the path
+    function to(t) {
+      var point = pointOnHeart(t);
+      point.x = settings.particles.size / 2 + point.x * settings.particles.size / 350;
+      point.y = settings.particles.size / 2 - point.y * settings.particles.size / 350;
+      return point;
+    }
+    // create the path
+    context.beginPath();
+    var t = -Math.PI;
+    var point = to(t);
+    context.moveTo(point.x, point.y);
+    while (t < Math.PI) {
+      t += 0.01; // baby steps!
+      point = to(t);
+      context.lineTo(point.x, point.y);
+    }
+    context.closePath();
+    // create the fill
+    context.fillStyle = '#ea80b0';
+    context.fill();
+    // create the image
+    var image = new Image();
+    image.src = canvas.toDataURL();
+    return image;
+  })();
+  
+  // render that thing!
+  function render() {
+    // next animation frame
+    requestAnimationFrame(render);
+    
+    // update time
+    var newTime   = new Date().getTime() / 1000,
+        deltaTime = newTime - (time || newTime);
+    time = newTime;
+    
+    // clear canvas
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // create new particles
+    var amount = particleRate * deltaTime;
+    for (var i = 0; i < amount; i++) {
+      var pos = pointOnHeart(Math.PI - 2 * Math.PI * Math.random());
+      var dir = pos.clone().length(settings.particles.velocity);
+      particles.add(canvas.width / 2 + pos.x, canvas.height / 2 - pos.y, dir.x, -dir.y);
+    }
+    
+    // update and draw particles
+    particles.update(deltaTime);
+    particles.draw(context, image);
+  }
+  
+  // handle (re-)sizing of the canvas
+  function onResize() {
+    canvas.width  = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+  }
+  window.onresize = onResize;
+  
+  // delay rendering bootstrap
+  setTimeout(function() {
+    onResize();
+    render();
+  }, 10);
+})(document.getElementById('pinkboard'));
+ 
+ 
+ 
+ 
+    </script>
+
+
+</body></html>]]></content>
+      <tags>
+        <tag>杂货铺-休闲</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Mine-重装系统后软件相关设置</title>
+    <url>/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/</url>
+    <content><![CDATA[<h1 id="一、Zotero设置"><a href="#一、Zotero设置" class="headerlink" title="一、Zotero设置"></a>一、Zotero设置</h1><h2 id="1-1-恢复文献数据"><a href="#1-1-恢复文献数据" class="headerlink" title="1.1 恢复文献数据"></a>1.1 恢复文献数据</h2><ul>
+<li><p>首先拷贝Zotero中<strong>存放Data的路径</strong>中的所有内容到新电脑中（如果是重装系统可忽略），如本人存放于<code>E:\zotero files</code>，需要将该目录下的所有文件拷贝一份</p>
+  <img src="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/papers_local_zotero.png" width="50%" heigh="50%"></li>
+<li><p>然后打开新下载的zotero软件，依次点击：<code>编辑(E)</code>-&gt;<code>首选项(N)</code>-&gt;<code>高级</code>-&gt;<code>文件和文件夹</code></p>
+</li>
+<li><p>点击<code>数据存储位置</code>的<code>自定义</code>选项，填入第一步Data的路径后点击<code>OK</code>，如本人存放于<code>E:\zotero files</code></p>
+  <img src="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/optional.png" width="50%" heigh="50%"></li>
+<li><p>最后重启zotero软件</p>
+</li>
+</ul>
+<h2 id="1-2-安装插件"><a href="#1-2-安装插件" class="headerlink" title="1.2 安装插件"></a>1.2 安装插件</h2><ul>
+<li><p>插件安装方式</p>
+<ul>
+<li><ol>
+<li>先下载相关插件的<code>.spi</code>文件</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>在zotero软件中点击<code>工具(T)</code>-&gt;<code>插件</code>-&gt;<code>小齿轮</code>-&gt;<code>Install Add-on from file...</code>-&gt;<code>选择对应.spi文件</code>-&gt;<code>Install now</code>-&gt;<code>重启</code></li>
+</ol>
+</li>
+</ul>
+  <img src="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/zotero_extensions1.png" width="50%" heigh="50%">
+  <img src="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/zotero_extensions_installnow.png" width="50%" heigh="50%"></li>
+<li><p><a href="https://zotero-chinese.gitee.io/zotero-plugins/#/">zotero</a>插件镜像网站</p>
+</li>
+<li><p><a href="https://github.com/l0o0/jasminum/releases">jasminum</a>插件用于中文文献条目的自动抓取</p>
+<ul>
+<li>可通过github链接或搜索：<a href="https://github.com/l0o0/jasminum/releases">https://github.com/l0o0/jasminum/releases</a></li>
+</ul>
+</li>
+<li><p><a href="https://github.com/windingwind/zotero-pdf-translate/releases/tag/v0.9.4">pdf-translate</a>插件用于pdf便捷翻译</p>
+<ul>
+<li>可通过github链接或搜索：<a href="https://github.com/windingwind/zotero-pdf-translate/releases/tag/v0.9.4">https://github.com/windingwind/zotero-pdf-translate/releases/tag/v0.9.4</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="二、浏览器设置"><a href="#二、浏览器设置" class="headerlink" title="二、浏览器设置"></a>二、浏览器设置</h1><h2 id="2-1-开启实时字幕翻译功能"><a href="#2-1-开启实时字幕翻译功能" class="headerlink" title="2.1 开启实时字幕翻译功能"></a>2.1 开启实时字幕翻译功能</h2><ul>
+<li>谷歌：<code>设置</code>-&gt;<code>无障碍</code>-&gt;<code>实时字幕</code></li>
+<li>Edge：<code>设置</code>-&gt;<code>辅助功能</code>-&gt;<code>实时字幕</code>（Edge102有该功能，Edge103没有）</li>
+</ul>
+<h2 id="2-2-安装插件"><a href="#2-2-安装插件" class="headerlink" title="2.2 安装插件"></a>2.2 安装插件</h2><h1 id="三、遇到软件无法被搜索到的情况"><a href="#三、遇到软件无法被搜索到的情况" class="headerlink" title="三、遇到软件无法被搜索到的情况"></a>三、遇到软件无法被搜索到的情况</h1><p>如<code>everything</code>软件无法搜索到</p>
+<ul>
+<li><p>先在桌面对软件建立桌面快捷键</p>
+</li>
+<li><p>将快捷方式复制到<code>C:\ProgramData\Microsoft\Windows\Start Menu\Programs</code></p>
+</li>
+</ul>
+<p>参考自：<a href="https://blog.csdn.net/qq_40579464/article/details/105342847">https://blog.csdn.net/qq_40579464/article/details/105342847</a></p>
+<h1 id="四、QT安装"><a href="#四、QT安装" class="headerlink" title="四、QT安装"></a>四、QT安装</h1><h2 id="4-1-配置MSVC（参考“QT编程经验”文章的配置方法）"><a href="#4-1-配置MSVC（参考“QT编程经验”文章的配置方法）" class="headerlink" title="4.1 配置MSVC（参考“QT编程经验”文章的配置方法）"></a>4.1 配置MSVC（参考“QT编程经验”文章的配置方法）</h2><h2 id="4-2-安装QT-Creator5-12-6版本"><a href="#4-2-安装QT-Creator5-12-6版本" class="headerlink" title="4.2 安装QT Creator5.12.6版本"></a>4.2 安装QT Creator5.12.6版本</h2><p>参考：<a href="https://blog.csdn.net/qq_41453285/article/details/89853671">https://blog.csdn.net/qq_41453285/article/details/89853671</a></p>
+<h2 id="4-3-配置MySQL"><a href="#4-3-配置MySQL" class="headerlink" title="4.3 配置MySQL"></a>4.3 配置MySQL</h2><p>参考：<a href="https://subingwen.cn/qt/sql-driver/">https://subingwen.cn/qt/sql-driver/</a> &amp; <a href="https://zhuanlan.zhihu.com/p/188416607">https://zhuanlan.zhihu.com/p/188416607</a></p>
+<pre><code>- LIBS += &quot;D:\Project\Wireless_communication_software\mysql_v8.0.32\MySQL Server 8.0\lib\libmysql.lib&quot;
+- INCLUDEPATH += &quot;D:\Project\Wireless_communication_software\mysql_v8.0.32\MySQL Server 8.0\include&quot;
+- DEPENDPATH += &quot;D:\Project\Wireless_communication_software\mysql_v8.0.32\MySQL Server 8.0\include&quot;
+</code></pre>
+<h2 id="4-4-Nivicate破解版安装"><a href="#4-4-Nivicate破解版安装" class="headerlink" title="4.4 Nivicate破解版安装"></a>4.4 Nivicate破解版安装</h2><pre><code>- [NavicatPremium16破解](https://www.cnblogs.com/kkdaj/p/16260681.html)
+</code></pre>
+<h1 id="五、Vscode相关编译器配置"><a href="#五、Vscode相关编译器配置" class="headerlink" title="五、Vscode相关编译器配置"></a>五、Vscode相关编译器配置</h1><h2 id="5-1-C-C-配置"><a href="#5-1-C-C-配置" class="headerlink" title="5.1 C/C++配置"></a>5.1 C/C++配置</h2><ul>
+<li>参考：<a href="https://zhuanlan.zhihu.com/p/610895870">用vscode优雅配置c/c++环境！</a><ul>
+<li>下载好vscode后从<code>3</code>部分下载MinGW开始进行配置</li>
+<li><a href="https://blog.csdn.net/woxingzou/article/details/113746142%EF%BC%89%EF%BC%9Ahttps://pan.baidu.com/s/1ylj4YG7CBtv4C_RtVEtZ9Q">MinGW下载安装</a> 验证码：ftk5</li>
+</ul>
+</li>
+<li>下载完MinGW后，配置VScode的部分参考<a href="https://zhuanlan.zhihu.com/p/87864677">VSCode配置C/C++环境</a>的第<code>3</code>部分</li>
+<li>C++在vscode中运行是否每次都需要配置环境：<a href="https://www.zhihu.com/question/456362523">https://www.zhihu.com/question/456362523</a></li>
+</ul>
+<h2 id="5-2-Vscode中配置Keil"><a href="#5-2-Vscode中配置Keil" class="headerlink" title="5.2 Vscode中配置Keil"></a>5.2 Vscode中配置Keil</h2><ul>
+<li>参考：(VS Code编写Keil uVison 5工程)[<a href="https://blog.csdn.net/weixin_43576926/article/details/107736692]">https://blog.csdn.net/weixin_43576926/article/details/107736692]</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>环境配置</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>QT编程经验</title>
+    <url>/2023/03/18/QT%E7%BC%96%E7%A8%8B%E7%BB%8F%E9%AA%8C/</url>
+    <content><![CDATA[<h1 id="一、小经验"><a href="#一、小经验" class="headerlink" title="一、小经验"></a>一、小经验</h1><h2 id="1-1-组件复制"><a href="#1-1-组件复制" class="headerlink" title="1.1 组件复制"></a>1.1 组件复制</h2><ul>
+<li>在进行组件复制时，需要先把准备复制到的地方取消布局才能进行复制</li>
+</ul>
+<h2 id="1-2-tableview"><a href="#1-2-tableview" class="headerlink" title="1.2  tableview"></a>1.2  tableview</h2><ul>
+<li>在设计table内容时，为了方便后续修改表格，需要设计表格的model为<code>QStandardItemModel*</code>，后面对表格的修改都在model中进行，而不直接对table进行操作（QComBobox页也同理）</li>
+</ul>
+<h2 id="1-3-stacked的布局以及自适应缩放"><a href="#1-3-stacked的布局以及自适应缩放" class="headerlink" title="1.3 stacked的布局以及自适应缩放"></a>1.3 stacked的布局以及自适应缩放</h2><ul>
+<li>stack中各个界面整体不能单独布局，需要对stack进行统一布局</li>
+<li>要实现自适应缩放需要把控件进行布局，同时如果缩放效果不符合预想可以通过修改Layout里面的layoutstretch的比值就可以实现</li>
+</ul>
+<h2 id="1-4-sql"><a href="#1-4-sql" class="headerlink" title="1.4 sql"></a>1.4 sql</h2><h3 id="1-4-1-QT驱动sql"><a href="#1-4-1-QT驱动sql" class="headerlink" title="1.4.1 QT驱动sql"></a>1.4.1 QT驱动sql</h3><ul>
+<li><p>QT操作的前提：使用者能自己通过SQL语句实现数据库表数据的增删改查</p>
+<ul>
+<li>本地MySql的配置参考文章：<a href="https://subingwen.cn/qt/sql-driver/">https://subingwen.cn/qt/sql-driver/</a> &amp; <a href="https://www.cnblogs.com/ShineLeBlog/p/14908927.html">https://www.cnblogs.com/ShineLeBlog/p/14908927.html</a><ul>
+<li>在根据教程配置时需要注意.pro文件中添加INCLUDE等三个路径时，如果有路径中有空格需要在路径中添加双引号</li>
+<li>还需要注意如果出现文件缺失错误，大概率是配置路径有问题，在添加双引号后先执行qmake然后在构建，参考<a href="https://blog.csdn.net/hhhuang1991/article/details/84060977">https://blog.csdn.net/hhhuang1991/article/details/84060977</a></li>
+<li>LIBS += “D:\Project\Wireless_communication_software\mysql_v8.0.32\MySQL Server 8.0\lib\libmysql.lib”</li>
+<li>INCLUDEPATH += “D:\Project\Wireless_communication_software\mysql_v8.0.32\MySQL Server 8.0\include”</li>
+<li>DEPENDPATH += “D:\Project\Wireless_communication_software\mysql_v8.0.32\MySQL Server 8.0\include”</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>需要先将sql添加到.pro文件中：<code>QT += sql</code></p>
+</li>
+<li><p>qt提供的数据库类：</p>
+<ul>
+<li><ul>
+<li>QSqlDatabase：通过这个类增/删/复制/关闭数据库，配置数据库信息</li>
+</ul>
+</li>
+<li><ul>
+<li>QSqlQuery：提供增删查改功能</li>
+</ul>
+</li>
+<li>QSqlRecord：数据库记录</li>
+<li>QSqlField：数据类型、列名等</li>
+<li>QSqlQueryModel：遍历结果集的高级接口（模型视图结构，一般大型才需要）</li>
+<li><ul>
+<li>QSqlError：数据操作失败可以通过这个类获取错误信息</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-4-2-安装navicat"><a href="#1-4-2-安装navicat" class="headerlink" title="1.4.2 安装navicat"></a>1.4.2 安装navicat</h3><p>参考：(NavicatPremium16破解)[<a href="https://www.cnblogs.com/kkdaj/p/16260681.html]">https://www.cnblogs.com/kkdaj/p/16260681.html]</a></p>
+<h3 id="1-4-3-sql事务操作-数据回滚"><a href="#1-4-3-sql事务操作-数据回滚" class="headerlink" title="1.4.3 sql事务操作-数据回滚"></a>1.4.3 sql事务操作-数据回滚</h3><ul>
+<li>在进行增、删、更新操作时需要添加事务操作来保护数据</li>
+</ul>
+<h3 id="1-4-4-sqlite使用"><a href="#1-4-4-sqlite使用" class="headerlink" title="1.4.4 sqlite使用"></a>1.4.4 sqlite使用</h3><ul>
+<li><a href="https://blog.csdn.net/weixin_42380257/article/details/81360237">SQLite数据库的创建和使用</a>, <a href="https://blog.csdn.net/java_xiaoo/article/details/120868412">Navicat怎么连接Sqlite数据库</a></li>
+</ul>
+<h3 id="1-4-5-QT驱动sql出现问题"><a href="#1-4-5-QT驱动sql出现问题" class="headerlink" title="1.4.5 QT驱动sql出现问题"></a>1.4.5 QT驱动sql出现问题</h3><ul>
+<li>参考<a href="https://www.jianshu.com/p/6efaf46fec75">https://www.jianshu.com/p/6efaf46fec75</a> &amp; <a href="https://subingwen.cn/qt/sql-driver">https://subingwen.cn/qt/sql-driver</a></li>
+<li><code>D:\Project\Wireless_communication_software\QT_v5.12.6\Qt\Qt5.12.6\5.12.6\mingw73_64\plugins\sqldrivers</code>路径中找不到<code>qsqlmysql.dll</code>和<code>qsqlmysql.dll</code>文件，因此需要想办法编译</li>
+<li>在<code>D:\Project\Wireless_communication_software\QT_v5.12.6\Qt\Qt5.12.6\5.12.6\Src\qtbase\src\plugins\sqldrivers\mysql</code>目录下找到<code>mysql.pro</code>双击打开</li>
+</ul>
+<h2 id="1-5-QT实现web界面交互"><a href="#1-5-QT实现web界面交互" class="headerlink" title="1.5 QT实现web界面交互"></a>1.5 QT实现web界面交互</h2><ul>
+<li>参考<a href="https://blog.csdn.net/qq_34578785/article/details/106671018">Qt嵌入百度地图API的详细流程与常见问题</a>, <a href="https://blog.csdn.net/qq_39295354/article/details/124655026">QT加载百度在线地图</a></li>
+<li>待参考<a href="https://blog.csdn.net/qq_41961619/article/details/107104622">qt使用高德地图并与之简单交互</a>, <a href="https://www.cnblogs.com/feiyangqingyun/p/12150216.html">Qt编写百度地图综合应用（在线+离线+区域）</a>, <a href="https://blog.csdn.net/Sakuya__/article/details/106031095">QT QWebEngineView加载百度地图</a>, </li>
+</ul>
+<h2 id="1-6-QT利用sql的用户登录界面"><a href="#1-6-QT利用sql的用户登录界面" class="headerlink" title="1.6 QT利用sql的用户登录界面"></a>1.6 QT利用sql的用户登录界面</h2><ul>
+<li>参考：<a href="https://blog.csdn.net/qq_42179526/article/details/105845303">QT连接SQLite数据库（实现登陆注册）</a>, <a href="https://blog.csdn.net/qq_16488989/article/details/108884580">Qt 手把手教你实现漂亮的登录界面</a>, <a href="https://www.bilibili.com/video/BV1ov4y1P7Vb/">基于QT开发项目管理系统（附源码）-视频</a>, <a href="https://blog.csdn.net/weixin_45739654/article/details/125702849">Qt设计精美的登录注册界面（包含SQLite数据库应用）</a></li>
+</ul>
+<h2 id="1-7-QT利用生成pri文件"><a href="#1-7-QT利用生成pri文件" class="headerlink" title="1.7 QT利用生成pri文件"></a>1.7 QT利用生成pri文件</h2><p>参考：<a href="https://zhuanlan.zhihu.com/p/489685702">https://zhuanlan.zhihu.com/p/489685702</a></p>
+<ul>
+<li><p>先在工程的文件夹中创建一个新的文件夹</p>
+</li>
+<li><p>在新的文件夹中创建一个txt文件，并将名字后缀改成<code>pri</code></p>
+</li>
+<li><p>在工程的<code>.pro</code>文件下添加pri对应的文件夹地址信息</p>
+  <img url="addPri.png" width="%50" height="%50"></li>
+<li><p>在<code>.pri</code>文件中添加需要加入的自定义类文件的地址信息</p>
+  <img url="pri.png" width="%50" height="%50"></li>
+</ul>
+<h1 id="二、QT配置"><a href="#二、QT配置" class="headerlink" title="二、QT配置"></a>二、QT配置</h1><h2 id="2-1-QT中配置MSVC环境"><a href="#2-1-QT中配置MSVC环境" class="headerlink" title="2.1 QT中配置MSVC环境"></a>2.1 QT中配置MSVC环境</h2><ul>
+<li><p>先到<code>MaintenanceTool.exe</code>中添加对应MSVC版本的组件</p>
+</li>
+<li><p>参考：<a href="https://blog.csdn.net/Copperxcx/article/details/122540629">https://blog.csdn.net/Copperxcx/article/details/122540629</a> 和 <a href="https://blog.csdn.net/zujiasheng/article/details/125302904">https://blog.csdn.net/zujiasheng/article/details/125302904</a>     </p>
+<ul>
+<li>QT5.12.6是可以配置MSVC的，但是只有在安装了VS后添加里面才会显示MSVC选项</li>
+<li>大坑：VS中需要同时安装MSVC 2015版本的才能被QT自动识别</li>
+</ul>
+</li>
+<li><p>完成后编译可能还会出错，因此需要将以下环境添加进环境变量中</p>
+<ul>
+<li>C:\Program Files (x86)\Windows Kits\10\bin\x86</li>
+<li>C:\Program Files (x86)\Windows Kits\10\bin\x86</li>
+<li>问题解决：<a href="http://t.csdn.cn/LkidD">http://t.csdn.cn/LkidD</a> <a href="https://bbs.csdn.net/topics/396205896">https://bbs.csdn.net/topics/396205896</a> 和 <a href="https://blog.csdn.net/dsn3S/article/details/121042651">https://blog.csdn.net/dsn3S/article/details/121042651</a> </li>
+<li>出现：无法打开包括文件type_traits错误的话可以尝试在cmd这执行<code>&quot;C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat&quot; x64</code></li>
+<li>出现缺少shell32.dll问题<ul>
+<li>需要加入自己的Windows Kits下lib下的的um文件路径到系统环境变量中:</li>
+<li>比如我的路径:<code>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.18362.0\um\x64</code>，如果没有um文件夹则重新下载windows kits</li>
+</ul>
+</li>
+<li>出现头文件缺失：<a href="https://blog.csdn.net/skye_95/article/details/81076456">https://blog.csdn.net/skye_95/article/details/81076456</a> 和 <a href="https://blog.csdn.net/hhhuang1991/article/details/84060977">https://blog.csdn.net/hhhuang1991/article/details/84060977</a></li>
+</ul>
+</li>
+<li><p>解决MSVC中文出错问题</p>
+<ul>
+<li>在所有头文件<code>.h</code>中添加下面的语句<ul>
+<li><code>//解决MSVC中文乱码 #if _MSC_VER &gt;= 1600    // MSVC2015 &gt; 1899,    MSVC_VER = 14.0 #pragma execution_character_set(&quot;utf-8&quot;) #endif</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-2-QT组件添加"><a href="#2-2-QT组件添加" class="headerlink" title="2.2 QT组件添加"></a>2.2 QT组件添加</h2><ul>
+<li>参考：<a href="https://blog.csdn.net/Arcofcosmos/article/details/122413626">https://blog.csdn.net/Arcofcosmos/article/details/122413626</a></li>
+<li>参考：<a href="https://blog.csdn.net/qq_36170958/article/details/108679509">https://blog.csdn.net/qq_36170958/article/details/108679509</a> 用到<code>MaintenanceTool.exe</code><ul>
+<li>清华镜像：<a href="https://mirrors.tuna.tsinghua.edu.cn/qt/online/qtsdkrepository/windows_x86/root/qt/">https://mirrors.tuna.tsinghua.edu.cn/qt/online/qtsdkrepository/windows_x86/root/qt/</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="三、QT打包EXE可执行文件"><a href="#三、QT打包EXE可执行文件" class="headerlink" title="三、QT打包EXE可执行文件"></a>三、QT打包EXE可执行文件</h1><p>参考：<a href="https://blog.csdn.net/ColinFhz/article/details/107879769">https://blog.csdn.net/ColinFhz/article/details/107879769</a></p>
+<ul>
+<li>1.打开<code>Qt5.12.6（MinGW...）</code>，如我的电脑是在搜索栏中点击<code>Qt5.12.6（MinGW 7.3.0 64-bit）</code></li>
+<li>2.将QT Creator运行得到的<code>.exe</code>文件复制到一个空文件夹中</li>
+<li>3.在<code>Qt5.12.6（MinGW...）</code>打开的cmd控制台中cd到第2步中的文件夹处</li>
+<li>4.输入<code>windeployqt text.exe</code>自动打包，其中<code>text</code>自己改成对应的文件名称就行</li>
+</ul>
+<h1 id="四、QT云服务器中部署websocket通信"><a href="#四、QT云服务器中部署websocket通信" class="headerlink" title="四、QT云服务器中部署websocket通信"></a>四、QT云服务器中部署websocket通信</h1><h2 id="1-云服务器配置-选用阿里云"><a href="#1-云服务器配置-选用阿里云" class="headerlink" title="1. 云服务器配置-选用阿里云"></a>1. 云服务器配置-选用阿里云</h2><ul>
+<li><p>注意：新用户有<a href="https://help.aliyun.com/zh/ecs/3-month-free-trial">三个月免费使用的优惠</a></p>
+</li>
+<li><p>注意：学生用完三个月优惠后可以申请<a href="https://developer.aliyun.com/plan/student?userCode=r3yteowb">一个月学生免费试用优惠</a></p>
+</li>
+<li><p>参考<a href="https://blog.csdn.net/qq21497936/article/details/115409124">阿里云服务器建立公网物联网服务器</a></p>
+<ul>
+<li>其中<code>添加端口</code>步骤是给公网映射一个端口，这样就可以通过公网IP+端口号访问到服务器了，除了安全组里面的端口号外，其它PC是无法通过公网IP访问到服务器的。这里可以测试，在服务器上监听服务器内网的安全组端口号，此时其它PC可以通过<code>公网IP+端口号</code>与服务器通信；若服务器监听的是非安全组的端口号，则其它PC无法通过<code>公网IP+端口号</code>与服务器通信。</li>
+</ul>
+</li>
+<li><p>云服务器上部署服务端，实际上就是在云本机的内网IP上开放端口号，通过地址映射关系将公网IP与内网IP对应起来，这样就可以通过公网IP访问到云服务器了。</p>
+</li>
+</ul>
+<img src="/2023/03/18/QT%E7%BC%96%E7%A8%8B%E7%BB%8F%E9%AA%8C/port_mapping.png" width="%50" height="%50">
+
+<h2 id="2-sqlite加密设置"><a href="#2-sqlite加密设置" class="headerlink" title="2. sqlite加密设置"></a>2. sqlite加密设置</h2><p>将下面四个文件拷贝到QT下载路径下对于编译器的sql驱动文件夹中，比如我的是<code>\QT\Qt5.12.6\5.12.6\mingw73_64\plugins\sqldrivers</code>，然后在QT的.pro文件中添加<code>sqlcipher</code>库。</p>
+<ul>
+<li><code>libsqlcipher.a</code></li>
+<li><code>libsqlcipher.a</code></li>
+<li><code>sqlcipher.dll</code></li>
+<li><code>sqlcipherd.dll</code></li>
+</ul>
+<img url="sqlitecipher.png" width="%50" height="%50">
+
+<h2 id="3-openssl配置"><a href="#3-openssl配置" class="headerlink" title="3. openssl配置"></a>3. openssl配置</h2><p>参考：<a href="https://blog.csdn.net/byzzw/article/details/118390933">https://blog.csdn.net/byzzw/article/details/118390933</a></p>
+]]></content>
+      <tags>
+        <tag>杂货铺-休闲</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>DELL系统重装教程</title>
+    <url>/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>重装系统记得把<strong>重要文件备份</strong>，建议tb买个便宜的号备份到百度网盘，虽然一般重装只有C盘文件会全部被覆盖，不影响DEF盘，但是把重要文件都备份好总是没错的；</p>
+<p>写个txt文件记录<strong>需要下载的软件</strong>，便于重装系统后下载软件，生产力软件（VScode、hexo博客搭建等）要记录下来，真的对以后重新安装软件的环境配置很有用，能节省很多时间！</p>
+<p>本文主要针对电脑可以使用下，重装系统清理C盘的情况。</p>
+<h1 id="系统重装"><a href="#系统重装" class="headerlink" title="系统重装"></a>系统重装</h1><h2 id="一、重装前软件下载"><a href="#一、重装前软件下载" class="headerlink" title="一、重装前软件下载"></a>一、重装前软件下载</h2><ul>
+<li>软件下载步骤主要是为了制作系统U盘，因此如果电脑无法正常使用，本步骤可以用其他电脑完成。</li>
+<li>本步骤需要准备一个U盘，注意安装系统到U盘会格式化U盘，因此需要提前备份好U盘。</li>
+<li>完成该步骤将得到一个系统盘，因此只要不删除U盘内的系统，以后重装系统可以直接跳过一步骤，从二开始。</li>
+</ul>
+<h3 id="1-下载系统到电脑"><a href="#1-下载系统到电脑" class="headerlink" title="1.下载系统到电脑"></a>1.下载系统到电脑</h3><p>用迅雷下载下面的种子到电脑中，得到win10系统的iso镜像文件</p>
+<pre><code>magnet:?xt=urn:btih:5C66F9BE1E46D0D4F7EC418D54C3A3FB03679D6D&amp;dn=zh-cn_windows_10_business_editions_version_21h1_updated_sep_2021_x64_dvd_023d42d3.iso&amp;xl=5709488128
+</code></pre>
+<h3 id="2-下载系统到U盘（会将U盘格式化）"><a href="#2-下载系统到U盘（会将U盘格式化）" class="headerlink" title="2.下载系统到U盘（会将U盘格式化）"></a>2.下载系统到U盘（会将U盘格式化）</h3><ul>
+<li>用下面链接将<a href="http://rufus.ie/zh/">rufus</a>软件下载到电脑中</li>
+</ul>
+<ul>
+<li><p>按win + R，然后输入命令diskmgmt.msc并点击回车键</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/1.png" width="80%" height="80%">
+
+<p>  得到<strong>磁盘管理</strong>的界面，将界面截图下来备用，便于重装时系统的分区</p>
+<p>  在磁盘管理下面的磁盘0处<strong>右键-&gt;卷</strong>截图该页面备用</p>
+<p>  （请确定本机的系统是装在C盘的）</p>
+</li>
+<li><p><strong>插入U盘</strong></p>
+</li>
+<li><p>先把杀毒软件关了，避免误杀，然后打开双击下载好的rufus，在rufus界面中完成剩下的设置选择</p>
+<ul>
+<li><p><strong>设备</strong>：选择你的U盘</p>
+</li>
+<li><p><strong>引导类型选择</strong>：点击选择按钮选择1中得到的iso镜像文件</p>
+</li>
+<li><p><strong>镜像选项</strong>：标准Windows安装</p>
+</li>
+<li><p><strong>分区类型</strong>：GPT</p>
+</li>
+<li><p><strong>目标系统类型</strong>：UEFI（非CSM）</p>
+</li>
+<li><p><strong>卷标</strong>：默认就行</p>
+</li>
+<li><p><strong>文件系统</strong>：NTFS</p>
+</li>
+<li><p><strong>簇大小</strong>：选带默认的那个</p>
+</li>
+<li><p>上述步骤最后在Rufus中表现如下图所示：</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/5.png" width="80%" height="80%"></li>
+</ul>
+</li>
+<li><p>rufus设置完成后点击<strong>开始</strong>，需要等待挺久时间的，等待到100%后系统将变成对应的Win10系统U盘，同时该步骤会把U盘格式化。</p>
+</li>
+</ul>
+<h2 id="二、重装系统"><a href="#二、重装系统" class="headerlink" title="二、重装系统"></a>二、重装系统</h2><ul>
+<li><p><strong>插入U盘</strong></p>
+</li>
+<li><p>桌面搜索打开<strong>Windows更新设置</strong>界面，选<strong>恢复</strong>，点击<strong>立即重新启动</strong>按钮</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/7.png" width="80%" height="80%"></li>
+<li><p>选择<strong>疑难解答</strong>-&gt;<strong>高级选项</strong>-&gt;<strong>UEFI固件设置</strong>-&gt;<strong>重启</strong>，得到下面的界面</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/12.jpg"></li>
+<li><p>在得到的页面中进行下述操作</p>
+<ul>
+<li><p>选Advanced Boot Options，取消勾选Enable Legacy Option ROMs</p>
+</li>
+<li><p>Secure Boot Enable，选择Enabled（Secure Boot Enable在Secure Boot里面）</p>
+</li>
+<li><p>保存后退出重启，重启后在黑色界面时疯狂按f12（不同电脑品牌需要按的快捷键不同，可百度查询需要按得快捷键）</p>
+</li>
+<li><p>得到如下界面</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/13.jpg"></li>
+<li><p>UEFI BOOT选第二项（既选择U盘进入，我这里是uefi：sandisk），然后按enter进入</p>
+</li>
+<li><p>得到如下界面</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/15.jpg" width="100%" height="100%"></li>
+<li><p>点击<strong>下一步</strong>-&gt;<strong>现在安装</strong>-&gt;<strong>专业版</strong>-&gt;<strong>下一步</strong>-&gt;<strong>自定义：仅安装Windows(高级)(C)</strong></p>
+</li>
+</ul>
+</li>
+<li><p>在得到的界面中进行分区操作（确保重要文件已拷贝）</p>
+<ul>
+<li><p>删除下列分区(逐个点击后按下方的<strong>删除</strong>按钮)</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/19.png" width="80%" height="80%">
+
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/20.png" width="80%" height="80%"></li>
+<li><p>点击<strong>驱动器 1 未分配的空间</strong>，下方选择<strong>新建</strong>按钮</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/23.jpg" width="80%" height="80%"></li>
+<li><p>大小调整到最大，然后点击上图的应用，出现个弹窗点确定就行</p>
+</li>
+<li><p>分区那往下滑<strong>选择驱动器 1 分区3</strong>，也就是主分区类型的分区，点击后按下一步，系统开始进行重新安装，等待一会即可</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/25.jpg" width="80%" height="80%"></li>
+</ul>
+</li>
+<li><p>最后安装完后微软还会继续采集信息，这部分按自己的需求设置就行</p>
+</li>
+</ul>
+<h2 id="三、激活系统"><a href="#三、激活系统" class="headerlink" title="三、激活系统"></a>三、激活系统</h2><ul>
+<li><p>装完进入桌面后，用win10的更新功能安装驱动</p>
+  <img src="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/27.png" width="80%" height="80%"></li>
+<li><p>用下面链接下载软件进行Win10的激活</p>
+<p>  <a href="https://mp.weixin.qq.com/s/TkAiq6naVPGBmQZU4PuPFg">激活Win10</a></p>
+<p>  链接：<a href="https://pan.baidu.com/s/1s4yF2aSmuAaaqxrWSRWE9g">https://pan.baidu.com/s/1s4yF2aSmuAaaqxrWSRWE9g</a> 提取码：<code>5l32</code></p>
+</li>
+<li><p>自带的office的软件不太全，你想重装可以从这个网站下</p>
+<p>  <a href="https://msdn.itellyou.cn/">Office重装</a></p>
+<p>  office的激活同理可以用Win10的激活软件进行激活</p>
+</li>
+</ul>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>至此，Win10的安装就全部完成了，正常来说除了C盘外其它盘的文件都还在，可以开始重新安装自己需要的软件了，该重装教程还有不完善的地方，后续会继续补充改正~</p>
+<p>本文涉及的软件资源可以从百度网盘获取</p>
+<ul>
+<li>链接：<a href="https://pan.baidu.com/s/1AfsgEPr0I22hDr6yQZ1wUg">https://pan.baidu.com/s/1AfsgEPr0I22hDr6yQZ1wUg</a> 提取码：<code>i7g5</code></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>计算机</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>STM32学习</title>
+    <url>/2023/11/06/STM32%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</title>
+    <url>/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</url>
+    <content><![CDATA[<h1 id="一、Python部分"><a href="#一、Python部分" class="headerlink" title="一、Python部分"></a>一、Python部分</h1><h2 id="1-1-首先安装Anaconda"><a href="#1-1-首先安装Anaconda" class="headerlink" title="1.1 首先安装Anaconda"></a>1.1 首先安装Anaconda</h2><p>Anaconda包含Python环境，可以建立管理多个不同版本的Python环境，安装它后就默认安装了python、IPython、集成开发环境Spyder和众多的包和模块，让你在管理环境和包时更加方便。</p>
+<ul>
+<li><p>从官网中下载Anaconda的exe文件</p>
+</li>
+<li><p>安装过程中注意勾选<strong>Alls Users</strong>和<strong>Add Anaconda to the system PATH environment variable</strong>，便于以后不用再配置路径</p>
+</li>
+</ul>
+<h2 id="1-2-安装VScode"><a href="#1-2-安装VScode" class="headerlink" title="1.2 安装VScode"></a>1.2 安装VScode</h2><p>我这里直接用Anaconda进行VScode下载</p>
+<ul>
+<li>运行Anaconda Navigator后，点击VS Code位置下方的Install直接进行下载（由于我已经下载过了，因此按钮变成了Launch，没下载过的话按钮显示的是Install）  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/1.png" width="80%" height="80%"></li>
+</ul>
+<h2 id="1-3-VScode中配置Python环境"><a href="#1-3-VScode中配置Python环境" class="headerlink" title="1.3 VScode中配置Python环境"></a>1.3 VScode中配置Python环境</h2><ul>
+<li><p>安装Python插件</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/2.png" width="80%" height="80%"></li>
+<li><p>安装Code Runner插件</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/3.png" width="80%" height="80%"></li>
+<li><p>安装中文插件</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/4.png" width="80%" height="80%"></li>
+<li><p>安装python函数快速注释插件<code>autoDocstring</code></p>
+<ul>
+<li>使用方法：输入<code>&quot;&quot;&quot;</code>后回车</li>
+</ul>
+</li>
+</ul>
+<p>此时运行.py代码可以正常运行了，VScode中Pyhon环境搭建完毕</p>
+<p>VScode中Pyhon环境搭建参考文章：<a href="https://zoyi14.smartapps.cn/pages/note/index?origin=share&slug=ef1ae10ba950&_swebfr=1&_swebFromHost=baiduboxapp">Anaconda + VSCode 最详细教程</a></p>
+<h2 id="1-4-Pycharm中配置Python环境"><a href="#1-4-Pycharm中配置Python环境" class="headerlink" title="1.4 Pycharm中配置Python环境"></a>1.4 Pycharm中配置Python环境</h2><ul>
+<li><p>Pycahrm需要在<strong>settings</strong>中跟conda的解析器关联起来</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/5.png" width="60%" height="60%"></li>
+<li><p>点击<strong>Project Interpreter</strong>，点击右方的锯齿轮后点击<strong>Add</strong>,点击<strong>Conda Environment</strong>和右边的<strong>Existing environment</strong>，一路点OK即可</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/6.png" width="100%" height="100%">
+
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/7.png" width="100%" height="100%"></li>
+</ul>
+<h1 id="二、Java部分"><a href="#二、Java部分" class="headerlink" title="二、Java部分"></a>二、Java部分</h1><h2 id="2-1-安装JDK"><a href="#2-1-安装JDK" class="headerlink" title="2.1 安装JDK"></a>2.1 安装JDK</h2><ul>
+<li><p>若有安装过Java，则首先在控制面板中卸载以前版本的Java</p>
+</li>
+<li><p>到<a href="https://www.oracle.com/java/technologies/downloads/#java11">甲骨文的官网中下载JDK</a>，我这里选择的是JDK11，直接下载exe文件</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/8.png" width="80%" height="80%"></li>
+<li><p>双击下载的exe文件一路无脑安转(只需要更改并记住安装路径)</p>
+</li>
+</ul>
+<h2 id="2-2-配置Java环境"><a href="#2-2-配置Java环境" class="headerlink" title="2.2 配置Java环境"></a>2.2 配置Java环境</h2><ul>
+<li><p>我的电脑处右键点击属性，找到并点击高级系统设置，点击环境变量</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/9.png" width="50%" height="50%">
+  
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/10.png" width="60%" height="60%">
+  
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/11.png" width="60%" height="60%"></li>
+<li><p>在系统变量(S)中点击新建</p>
+<ul>
+<li>设置JAVA_HOME：Name: <code>JAVA_HOME</code>，Value: <code>你java的安装路径,bin文件夹所在的那个文件夹的路径</code></li>
+</ul>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/12.png" width="80%" height="80%">
+
+<ul>
+<li>双击系统变量(S)中的Path，添加两个变量<code>%JAVA_HOME%\bin</code>和<code>%JAVA_HOME%\jre\bin</code></li>
+</ul>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/13.png" width="80%" height="80%">
+
+<ul>
+<li>一路点确定即可</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-3-VScode中配置Java"><a href="#2-3-VScode中配置Java" class="headerlink" title="2.3 VScode中配置Java"></a>2.3 VScode中配置Java</h2><ul>
+<li><p>打开VScode安转Java插件<code>Extension Pack for Java</code></p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/14.png" width="80%" height="80%"></li>
+<li><p>在设置中找到并打开settings.json文件，添加语句<code>&quot;java.home&quot;: &quot;你java的安装路径,bin文件夹所在的那个文件夹的路径&quot;,</code></p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/15.png" width="40%" height="40%">
+
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/16.png" width="50%" height="50%">
+  
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/17.png" width="100%" height="100%"></li>
+</ul>
+<p>此时运行.java代码可以正常运行了，VScode中Java环境搭建完毕</p>
+<p>VScode中Java环境搭建参考视频：<a href="https://www.bilibili.com/video/BV16y4y177b9?from=search&seid=14977310378351523965&spm_id_from=333.337.0.0">保姆级Java环境配置与VSCode配置</a></p>
+]]></content>
+      <tags>
+        <tag>环境配置</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SolveProgramLearningProblem</title>
+    <url>/2022/12/08/SolveProgramLearningProblem/</url>
+    <content><![CDATA[<h1 id="一、Python"><a href="#一、Python" class="headerlink" title="一、Python"></a>一、Python</h1><h2 id="1-1-In-VScode"><a href="#1-1-In-VScode" class="headerlink" title="1.1 In VScode"></a>1.1 In VScode</h2><p>根据python的文件路径问题，其相对路径是从当前文件夹开始的，而不是从.py文件对应的文件夹开始的</p>
+<ul>
+<li>若有文件如下所示</li>
+</ul>
+<img src="/2022/12/08/SolveProgramLearningProblem/python_vscode_setpath1.png" width="%50" height="%50">
+
+<ul>
+<li><p>想在<code>q_learning_agent.py</code>代码中调用<code>rectangle.png</code>文件</p>
+</li>
+<li><p>在<code>q_learning_agent.py</code>代码中相对路径应从最外层的文件夹开始写，也就是写成当前文件夹<code>./</code>而不是上一层文件夹<code>../</code></p>
+<ul>
+<li><p>正确写法：<code>imgpath=&quot;./img/rectangle.png&quot;</code>，该写法的相对路径是从最外层文件夹开始的</p>
+  <img src="/2022/12/08/SolveProgramLearningProblem/python_vscode_setpath3.png" width="%50" height="%50"></li>
+<li><p>错误写法：<code>imgpath=&quot;../img/rectangle.png&quot;</code>，该写法认为相对路径是从<code>Q-learning</code>文件夹开始的</p>
+  <img src="/2022/12/08/SolveProgramLearningProblem/python_vscode_setpath4.png" width="%50" height="%50"></li>
+</ul>
+</li>
+</ul>
+<h1 id="二、Git使用"><a href="#二、Git使用" class="headerlink" title="二、Git使用"></a>二、Git使用</h1><h2 id="1-1-git指令下载开源项目到本地"><a href="#1-1-git指令下载开源项目到本地" class="headerlink" title="1.1 git指令下载开源项目到本地"></a>1.1 git指令下载开源项目到本地</h2><ul>
+<li><p>先下载<code>Git for windows</code>软件</p>
+</li>
+<li><p>在本地盘中右键点击<code>Git Bash Here</code></p>
+</li>
+<li><p>进行基础配置，告诉git你是谁</p>
+<ul>
+<li>git config –global user.name “你的名字或昵称”<ul>
+<li>如：AkiraZheng</li>
+</ul>
+</li>
+<li>git config –global user.email “你的邮箱”<ul>
+<li>如：<a href="mailto:&#49;&#52;&#x32;&#56;&#51;&#56;&#x34;&#56;&#55;&#56;&#64;&#x71;&#x71;&#x2e;&#x63;&#x6f;&#x6d;">&#49;&#52;&#x32;&#56;&#51;&#56;&#x34;&#56;&#55;&#56;&#64;&#x71;&#x71;&#x2e;&#x63;&#x6f;&#x6d;</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>克隆项目</p>
+<ul>
+<li>git clone 项目地址<ul>
+<li>其中项目地址是github项目<code>code</code>中的<code>http</code>链接, 项目地址形式为:<a href="https://gitee.com/xxx/xxx.git%E6%88%96%E8%80%85">https://gitee.com/xxx/xxx.git或者</a> <a href="mailto:&#x67;&#105;&#x74;&#x40;&#x67;&#105;&#116;&#101;&#x65;&#x2e;&#99;&#111;&#x6d;">&#x67;&#105;&#x74;&#x40;&#x67;&#105;&#116;&#101;&#x65;&#x2e;&#99;&#111;&#x6d;</a>:xxx/xxx.git</li>
+</ul>
+</li>
+<li>在弹出的窗口输入你的github账号密码信息<ul>
+<li>如果没弹出窗口则先输入<code>git config --system --unset credential.helper</code>再重新执行<code>git clone</code>指令</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="三、云服务器远程连接"><a href="#三、云服务器远程连接" class="headerlink" title="三、云服务器远程连接"></a>三、云服务器远程连接</h1><h2 id="1-阿里云"><a href="#1-阿里云" class="headerlink" title="1 阿里云"></a>1 阿里云</h2><h2 id="1-1-windows系统"><a href="#1-1-windows系统" class="headerlink" title="1.1 windows系统"></a>1.1 windows系统</h2><ul>
+<li><p>创建用于部署的端口号</p>
+<ul>
+<li>进入<a href="https://ecs.console.aliyun.com/server/">阿里云服务器控制台</a>选择对应的服务器点击进入</li>
+<li>点击上方Tab的<code>安全组</code>-&gt;<code>管理规则</code>-&gt;<code>手动添加</code>  <img src="/2022/12/08/SolveProgramLearningProblem/aliyun_add_port.png" width="%50" height="%50"></li>
+</ul>
+</li>
+<li><p>修改系统登录密码</p>
+<ul>
+<li><p>进入<a href="https://ecs.console.aliyun.com/server/">阿里云服务器控制台</a>选择对应的服务器点击进入</p>
+</li>
+<li><p>点击上方Tab的<code>实例详情</code>-&gt;<code>基本信息</code>-&gt;<code>重置密码</code></p>
+  <img src="/2022/12/08/SolveProgramLearningProblem/aliyun_change_password.png" width="%50" height="%50"></li>
+<li><p>注意：不能修改登录名<code>administrator</code>，只能修改密码，否则会修改失败</p>
+</li>
+</ul>
+</li>
+<li><p>远程登录</p>
+<ul>
+<li><p>在自己的电脑主机中点击<code>开始</code>-&gt;<code>运行</code>-&gt;输入<code>mstsc</code>-&gt;<code>确定</code>-&gt;输入服务器的公网IP地址-&gt;<code>连接</code>-&gt;输入用户名<code>administrator</code>-&gt;输入密码-&gt;<code>确定</code></p>
+</li>
+<li><p>或者在电脑的搜索栏中搜索<code>远程桌面连接</code>，然后输入服务器的公网IP地址-&gt;<code>连接</code>-&gt;输入用户名<code>administrator</code>-&gt;输入密码-&gt;<code>确定</code></p>
+</li>
+</ul>
+</li>
+<li><p>远程文件传输</p>
+<ul>
+<li><a href="https://help.aliyun.com/zh/ecs/use-cases/use-mstsc-exe-to-upload-a-file-to-a-windows-instance">阿里云提供的上传文件功能</a><ul>
+<li>1.在远程桌面连接前点击<code>显示选项</code>-&gt;<code>常规</code>Tab中<code>本地资源</code></li>
+<li>2.直接在本机中通过复制粘贴传递文件</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>杂货铺-休闲</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>动手学深度学习01</title>
+    <url>/2022/04/17/%E5%8A%A8%E6%89%8B%E5%AD%A6%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A001/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+<p>本章内容为<strong>动手学深度学习-预备知识</strong>章节</p>
+</blockquote>
+<blockquote>
+<p>本章内容源自d2l代码包中的<code>chapter_preliminaries</code>文件夹</p>
+</blockquote>
+<blockquote>
+<p>课程源自 <a href="https://course.d2l.ai/zh-v2/">动手学深度学习在线课程</a></p>
+</blockquote>
+<blockquote>
+<p>代码运行在Google的<a href="https://colab.research.google.com/">Colab</a>平台中</p>
+</blockquote>
+<h1 id="数据操作"><a href="#数据操作" class="headerlink" title="数据操作"></a>数据操作</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import torch</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x = torch.arange(15)</span><br><span class="line">print(x)</span><br><span class="line">print(x.shape)</span><br><span class="line">print(x.numel())</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x = x.reshape(3,5)</span><br><span class="line">print(x)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">print(torch.ones((2,3,4)))</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 二维数据</span><br><span class="line">y = torch.tensor([[2,1,4,3], [1,2,3,4], [4,3,2,1]])</span><br><span class="line">print(y)</span><br><span class="line">print(y.size())</span><br><span class="line"></span><br><span class="line"># 三维数据</span><br><span class="line">y = torch.tensor([[[2,1,4,3], [1,2,3,4], [4,3,2,1]]])</span><br><span class="line">print(y)</span><br><span class="line">print(y.size())</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x = torch.arange(12, dtype=torch.float32).reshape((3,4))  # 【3,4】</span><br><span class="line">print(x)</span><br><span class="line"></span><br><span class="line">y = torch.tensor([[2.0,1,4,3], [1,2,3,4], [4,3,2,1]]) # 【3,4】</span><br><span class="line">torch.cat((x, y), dim=0), torch.cat((x, y), dim=1) # dim=0,按行合并两个矩阵; dim=1, 按列合并两个矩阵</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x.sum()</span><br></pre></td></tr></table></figure>
+
+<h2 id="广播机制–同一纬度不同大小矩阵的相加机制"><a href="#广播机制–同一纬度不同大小矩阵的相加机制" class="headerlink" title="广播机制–同一纬度不同大小矩阵的相加机制"></a>广播机制–同一纬度不同大小矩阵的相加机制</h2><p>如对于一个二维的（3,1）大小矩阵跟（1,2）大小矩阵</p>
+<p>会把（3,1）扩展出相同的一列变为（3,2）</p>
+<p>同理（1,2）扩展为（3,2）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x = torch.arange(3).reshape((3,1))</span><br><span class="line">y = torch.arange(2).reshape((1,2))</span><br><span class="line"></span><br><span class="line">print(x)</span><br><span class="line">print(y)</span><br><span class="line">print(x+y)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Python矩阵拆分"><a href="#Python矩阵拆分" class="headerlink" title="Python矩阵拆分"></a>Python矩阵拆分</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x = torch.arange(12).reshape((3,4))</span><br><span class="line">print(x)</span><br><span class="line">print(x[-1]) # 取出倒数第一行数据</span><br><span class="line">print(x[:,-1]) # 取出倒数第一列数据</span><br><span class="line">print(x[0:2]) # 选取前两行</span><br><span class="line">print(x[2,3])</span><br></pre></td></tr></table></figure>
+
+<h2 id="内存分配问题"><a href="#内存分配问题" class="headerlink" title="内存分配问题"></a>内存分配问题</h2><p>id()相当于c语言的指针</p>
+<p>元素赋值不改变地址，整个数组赋值会改变地址</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x = torch.arange(12).reshape((3,4))</span><br><span class="line">y = torch.arange(12).reshape((3,4))</span><br><span class="line"></span><br><span class="line">before = id(y)</span><br><span class="line">y[:] = y+x</span><br><span class="line">print(id(y)==before)</span><br><span class="line">y = y-x          # 对y进行操作会改变地址内容，产生了一个新的y</span><br><span class="line">print(id(y)==before)</span><br><span class="line"></span><br><span class="line">z = torch.zeros_like(y)</span><br><span class="line">print(&#x27;id(z):&#x27;, id(z))</span><br><span class="line">z[:]= x + y       # 对z进行操作不会改变地址内容，是对元素进行赋值</span><br><span class="line">print(&#x27;id(z):&#x27;, id(z))</span><br></pre></td></tr></table></figure>
+
+<h2 id="更换张量"><a href="#更换张量" class="headerlink" title="更换张量"></a>更换张量</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">A = x.numpy()     # 转换为Numpy的张量</span><br><span class="line">B = torch.tensor(A)  # 转换为torch的张量</span><br><span class="line">print(type(A), type(B))</span><br><span class="line"></span><br><span class="line">a = torch.tensor([3.5])</span><br><span class="line">print(a, a.item(), float(a), int(a)) # 转换为item标量</span><br></pre></td></tr></table></figure>
+
+<h1 id="数据预处理"><a href="#数据预处理" class="headerlink" title="数据预处理"></a>数据预处理</h1><h2 id="创建、写入CSV文件-–-os"><a href="#创建、写入CSV文件-–-os" class="headerlink" title="创建、写入CSV文件 – os"></a>创建、写入CSV文件 – os</h2><ul>
+<li><p>创建文件夹：<code>os.makedirs()</code></p>
+</li>
+<li><p>创建csv文件：<code>os.path.join()</code></p>
+</li>
+<li><p>写入内容：</p>
+<p><code>with open() as f:</code></p>
+<p>  <code>f.write()</code></p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import os</span><br><span class="line"></span><br><span class="line">os.makedirs(os.path.join(&#x27;..&#x27;, &#x27;data&#x27;), exist_ok=True)</span><br><span class="line">data_file = os.path.join(&#x27;..&#x27;, &#x27;data&#x27;, &#x27;house_tiny.csv&#x27;)</span><br><span class="line">with open(data_file, &#x27;w&#x27;) as f:</span><br><span class="line">  f.write(&#x27;NumRooma,Alley,Price\n&#x27;) # 列名</span><br><span class="line">  f.write(&#x27;NA,Pave,127500\n&#x27;)</span><br><span class="line">  f.write(&#x27;2,NA,106000\n&#x27;)</span><br><span class="line">  f.write(&#x27;4,NA,178100\n&#x27;)</span><br><span class="line">  f.write(&#x27;NA,NA,140000\n&#x27;)</span><br><span class="line"></span><br><span class="line">print(data_file)</span><br></pre></td></tr></table></figure>
+
+<h2 id="加载csv原数据集-–-pandas"><a href="#加载csv原数据集-–-pandas" class="headerlink" title="加载csv原数据集 – pandas"></a>加载csv原数据集 – pandas</h2><ul>
+<li><p>read读入文件：</p>
+<p><code>pd.read_csv()</code></p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import pandas as pd</span><br><span class="line">data = pd.read_csv(data_file)</span><br><span class="line">data</span><br></pre></td></tr></table></figure>
+
+<h2 id="处理缺失数据-–-fillna（插值）"><a href="#处理缺失数据-–-fillna（插值）" class="headerlink" title="处理缺失数据 – .fillna（插值）"></a>处理缺失数据 – .fillna（插值）</h2><p>常用插值或删除处理缺失数据</p>
+<ul>
+<li><p>取csv表格的某一行或列：</p>
+<p><code>.iloc[ ]</code></p>
+</li>
+<li><p>字符串缺失</p>
+<p>字符串缺失的可以将字符串分为多个类别，用1-0表示</p>
+<p><code>.get_dummies()</code></p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">input, output = data.iloc[:, 0:2], data.iloc[:, 2]</span><br><span class="line">input = input.fillna(input.mean()) # 用均值插值</span><br><span class="line">input</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">input = pd.get_dummies(input, dummy_na=True)</span><br><span class="line">input</span><br></pre></td></tr></table></figure>
+
+<h2 id="将csv数值型表格转换成tensor格式"><a href="#将csv数值型表格转换成tensor格式" class="headerlink" title="将csv数值型表格转换成tensor格式"></a>将csv数值型表格转换成tensor格式</h2><ul>
+<li>需要在csv表格nan数据都被处理成数值后才可以转换<code>torch.tensor()</code></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x, y = torch.tensor(input.values), torch.tensor(output.values)</span><br><span class="line">print(x, y)</span><br><span class="line">print(x.dim()) # 查看tensor的维度</span><br></pre></td></tr></table></figure>
+
+<h1 id="线性代数"><a href="#线性代数" class="headerlink" title="线性代数"></a>线性代数</h1><h2 id="矩阵转置"><a href="#矩阵转置" class="headerlink" title="矩阵转置"></a>矩阵转置</h2><ul>
+<li><p>对称矩阵的转置等于本身</p>
+<p><code>.T</code></p>
+</li>
+<li><p>克隆张量 – 重新分配内存</p>
+<p>B=A是建立view,改变B时A也会变</p>
+<p><code>B=A.clone()</code>是重新分配内存，改变B时A不会改变</p>
+</li>
+<li><p>axis</p>
+<p>axis=0是按行（第一维度）处理，axis=1是按列（第二维度）处理</p>
+</li>
+</ul>
+<h2 id="范数计算"><a href="#范数计算" class="headerlink" title="范数计算"></a>范数计算</h2><ul>
+<li><p>向量的$L_2$范式 – 求元素的平方和的平方根</p>
+<p><code>torch.norm()</code></p>
+</li>
+<li><p>向量的$L_1$范式 – 求元素的绝对值之和</p>
+<p><code>torch.abs(u).sum()</code></p>
+</li>
+<li><p>矩阵的$F$范数 – 矩阵元素的平方和的平方根</p>
+<p><code>torch.norm(u)</code></p>
+</li>
+</ul>
+<h2 id="计算和、均值"><a href="#计算和、均值" class="headerlink" title="计算和、均值"></a>计算和、均值</h2><ul>
+<li><p>求和</p>
+<p><code>.sum(axis=)</code></p>
+</li>
+<li><p>求均值</p>
+<p><code>.mean(axis=)</code></p>
+</li>
+</ul>
+<h2 id="矩阵乘法"><a href="#矩阵乘法" class="headerlink" title="矩阵乘法"></a>矩阵乘法</h2><ul>
+<li><p>矩阵×向量</p>
+<p><code>torch.mv()</code></p>
+</li>
+<li><p>矩阵×矩阵</p>
+<p><code>torch.mm()</code></p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x = torch.arange(12).reshape(3,4)</span><br><span class="line">print(x)</span><br><span class="line">print(x.T)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">y = x.clone()</span><br><span class="line">y</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">u = torch.tensor([3.0,4.0])</span><br><span class="line">torch.norm(u), torch.abs(u).sum()</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">A = torch.arange(20*2).reshape(2,5,4)</span><br><span class="line">A, A.sum(axis=0), A.sum(axis=1), A.sum(axis=2), A.sum(axis=[0, 1])</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">A = torch.arange(20).reshape(5, 4) # 5*4的矩阵</span><br><span class="line">B = torch.arange(4) </span><br><span class="line"></span><br><span class="line">print(A)</span><br><span class="line">print(B)</span><br><span class="line">print(torch.mv(A, B))</span><br><span class="line"></span><br><span class="line">B = torch.arange(12).reshape(4,3)</span><br><span class="line">print(B)</span><br><span class="line">print(torch.mm(A, B))</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">A = torch.arange(20).reshape(5, 4) # 5*4的矩阵</span><br><span class="line">B = torch.arange(4) </span><br><span class="line">len(A), len(B), A.numel(), B.numel()</span><br></pre></td></tr></table></figure>
+
+<h1 id="微积分"><a href="#微积分" class="headerlink" title="微积分"></a>微积分</h1><p>标量对列向量求导：求解结果转置为行向量</p>
+<p>列向量对标量求导：求解结果为列向量</p>
+<p>由于loss通常是标量，因此深度学习中一般对标量进行求导，而不对矩阵或向量求导</p>
+<h2 id="自动微分"><a href="#自动微分" class="headerlink" title="自动微分"></a>自动微分</h2><ul>
+<li><p>存储梯度</p>
+<p><code>requires_grad_(True)</code></p>
+</li>
+<li><p>反向传播函数计算y关于x的每个分量的梯度</p>
+<p><code>.backward()</code></p>
+</li>
+<li><p>清除x累积的梯度，将梯度清为0</p>
+<p><code>.grad.zero_()</code></p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x = torch.arange(4.0, requires_grad=True)</span><br><span class="line"># x.requires_grad_(True)</span><br><span class="line">x.grad</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">y = 2 * torch.dot(x, x) # y=x^2</span><br><span class="line">print(y)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">y.backward()</span><br><span class="line">x.grad == 4 * x</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x.grad.zero_()  # 清除累积的梯度记录</span><br><span class="line">y = x.sum()</span><br><span class="line">y.backward()</span><br><span class="line">x.grad == 1</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x.grad.zero_()</span><br><span class="line">y = x * x</span><br><span class="line">y.sum().backward()</span><br><span class="line">x.grad == 2 * x</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">x.grad.zero_()</span><br><span class="line">y = x * x</span><br><span class="line">u = y.detach() # 此时u的值=y，但是不与x建立传递关系，仅表示为普通常数</span><br><span class="line">z = u * x</span><br><span class="line">z.sum().backward()</span><br><span class="line">x.grad == u</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">def f(a):</span><br><span class="line">  b = 2 * a</span><br><span class="line">  while b.norm()&lt;1000:</span><br><span class="line">    b = b * 2</span><br><span class="line">  if b.sum()&gt;0:</span><br><span class="line">    c = b</span><br><span class="line">  else:</span><br><span class="line">    c = 100 * b</span><br><span class="line">  return c</span><br><span class="line"></span><br><span class="line">a = torch.rand(size=(), requires_grad=True)</span><br><span class="line">d = f(a)</span><br><span class="line">d.backward()</span><br><span class="line">a.grad == d/a</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>动手学深度学习</category>
+      </categories>
+      <tags>
+        <tag>深度学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>部署colab利用GPU资源训练深度学习模型</title>
+    <url>/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>深度学习模型需要GPU加持提高训练速度，但是目前GPU和许多云端租借的GPU价格昂贵，因此本文将用谷歌团队的colab实现免费GPU的使用，满足深度学习的个人学习需求</p>
+<h1 id="以下链接为部署原文"><a href="#以下链接为部署原文" class="headerlink" title="以下链接为部署原文"></a>以下链接为部署原文</h1><p>参考网站： <a href="https://blog.csdn.net/u011119817/article/details/108519389">Colab基本使用方法及配置</a></p>
+<h1 id="目前所用到的代码功能"><a href="#目前所用到的代码功能" class="headerlink" title="目前所用到的代码功能"></a>目前所用到的代码功能</h1><p>1、查看GPU资源</p>
+<font color="white">
+    
+<pre><code># 查看GPU资源
+!nvidia-smi
+</code></pre>
+</font>
+
+<p>2、连接谷歌云端硬盘</p>
+<font color="white">
+    
+<pre><code># 连接谷歌云端硬盘
+from google.colab import drive
+drive.mount(&#39;/content/drive&#39;)
+</code></pre>
+</font>
+
+<p>3、查看库版本</p>
+<font color="white">
+    
+<pre><code># 查看版本
+import scipy
+scipy.__version__
+</code></pre>
+</font>
+
+<p>4、 pip安装库</p>
+<font color="white">
+    
+<pre><code># pip安装库
+!pip install scipy==1.2.1
+</code></pre>
+</font>
+
+<p>5、运行代码-训练模型</p>
+<font color="white">
+    
+<pre><code># 运行代码
+import os
+path = &quot;/content/drive/MyDrive/srcnn-tensorflow-image-master&quot; 
+os.chdir(path)
+os.listdir(path)
+!python main.py
+</code></pre>
+</font>
+
+<h1 id="解决Colab每12h断连的问题"><a href="#解决Colab每12h断连的问题" class="headerlink" title="解决Colab每12h断连的问题"></a>解决Colab每12h断连的问题</h1><p>每60分钟自动运行代码刷新，解除90分钟断开限制.</p>
+<p>使用方法：colab页面按下 <strong>F12</strong>或者 Ctrl+Shift+I (mac按 Option+Command+I) 在<strong>console（控制台）</strong>输入以下代码并回车.</p>
+<p><strong>复制以下代码粘贴在浏览器console！！不要关闭浏览器以免失效</strong></p>
+<pre><code>function ClickConnect()&#123;
+  colab.config
+  console.log(&quot;Connnect Clicked - Start&quot;); 
+  document.querySelector(&quot;#top-toolbar &gt; colab-connect-button&quot;).shadowRoot.querySelector(&quot;#connect&quot;).click();
+  console.log(&quot;Connnect Clicked - End&quot;);
+&#125;;
+setInterval(ClickConnect, 60000)
+</code></pre>
+]]></content>
+      <tags>
+        <tag>环境配置</tag>
+        <tag>深度学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>搭建Conda虚拟环境</title>
+    <url>/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+<p>编写这篇博客的目的是在学习李沐老师的《动手学深度学习》课程、或者自学其它python编程内容时，需要用到的python环境各不相同</p>
+</blockquote>
+<blockquote>
+<p>为了方便学习，还是需要创建多个不同的Conda环境进行区分</p>
+</blockquote>
+<blockquote>
+<p>本文的命令内容是基于Windows10系统的，Linux系统的后续有机会继续更新</p>
+</blockquote>
+<h1 id="Conda中的常用指令"><a href="#Conda中的常用指令" class="headerlink" title="Conda中的常用指令"></a>Conda中的常用指令</h1><p>一般有<strong>Conda前缀</strong>的指令都是针对<strong>所有环境</strong>进行操作的，或者说是在主环境中操作的</p>
+<p>如果需要在当前的<strong>自定义Conda虚拟环境</strong>中执行安装或者查看指令时，<strong>不需要加Conda前缀</strong></p>
+<h2 id="Conda前缀的指令"><a href="#Conda前缀的指令" class="headerlink" title="Conda前缀的指令"></a>Conda前缀的指令</h2><ul>
+<li><p>查看安装包</p>
+<p>  <code>conda list</code></p>
+</li>
+<li><p>查看当前存在的Conda虚拟环境</p>
+<p>  <code>conda env list </code></p>
+<p>  <code>conda info -e</code></p>
+</li>
+<li><p>更新当前Conda</p>
+<p>  <code>conda update conda</code></p>
+</li>
+<li><p>创建Python虚拟环境</p>
+<p>  <code>conda create -n your_env_name python=x.x</code></p>
+<p>  其中<strong>your_env_name</strong>为所起的环境名，<strong>x.x</strong>为python版本号，创建的环境可以在Anaconda安装目录的envs文件中找到。</p>
+<p>  如在创建Pytorch深度学习环境时可以输入：</p>
+<p>  <code>conda create -n d2l_Pytorch python=3.8</code></p>
+</li>
+<li><p>激活、关闭、删除虚拟环境</p>
+<p>  激活或者切换虚拟环境：</p>
+<p>  <code>activate your_env_name</code></p>
+<p>  关闭虚拟环境切回Root环境:</p>
+<p>  <code>activate root</code></p>
+<p>  删除虚拟环境：</p>
+<p>  <code>conda remove -n your_env_name --all</code></p>
+</li>
+</ul>
+<h2 id="自定义虚拟环境内的指令"><a href="#自定义虚拟环境内的指令" class="headerlink" title="自定义虚拟环境内的指令"></a>自定义虚拟环境内的指令</h2><p><strong>以下指令均在已经切换到对应环境的情况下</strong>进行输入，如下所示表示已经切换到<strong>d2l_Pytorch</strong>环境：</p>
+<img src="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/Conda-envs.png">
+
+<ul>
+<li><p>检查Python版本（CMD中输入）</p>
+<p>  <code>python --version</code></p>
+</li>
+<li><p>查看环境中已有的安装包</p>
+<p>  <code>pip list</code></p>
+</li>
+<li><p>安装虚拟环境中对于版本的包</p>
+<p>  <code>pip install package_name==x.x</code>    </p>
+<p>  其中<strong>x.x</strong>代表包对应的版本号，如下所示：</p>
+</li>
+</ul>
+<img src="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/pip-install-package.png">
+
+<ul>
+<li><p>删除环境中的某个包</p>
+<p>  <code>pip uninstall  package_name</code></p>
+</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>环境配置</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>快捷键方式整理</title>
+    <url>/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/</url>
+    <content><![CDATA[<h1 id="一、Office快捷键"><a href="#一、Office快捷键" class="headerlink" title="一、Office快捷键"></a>一、Office快捷键</h1><h2 id="1-1-word"><a href="#1-1-word" class="headerlink" title="1.1 word"></a>1.1 word</h2><ul>
+<li><p>公式等号对齐</p>
+<p>  在想对齐的等号左边按<code>Shift+Enter</code>实现换行</p>
+  <img src="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/shift enter.png" width="50%" heigh="50%">
+
+<p>  在上下两个等式左边均右键选择<code>在此字符处对齐</code></p>
+  <img src="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/align according to equal mark.png" width="50%" heigh="50%">
+
+<p>  完成，注意对齐方式选择<code>两端对齐</code></p>
+  <img src="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/align.png" width="50%" heigh="50%"></li>
+</ul>
+<h2 id="1-2-vscode"><a href="#1-2-vscode" class="headerlink" title="1.2 vscode"></a>1.2 vscode</h2><ul>
+<li><p>python函数快速注释</p>
+<p>  输入<code>&quot;&quot;&quot;</code>后回车</p>
+</li>
+<li><p>选中区域整体左移</p>
+<p>  <code>ctrl+[</code></p>
+</li>
+<li><p>公式编号</p>
+<ul>
+<li>在公式内末尾加上<code>#(编号)</code>再按回车即可</li>
+</ul>
+</li>
+</ul>
+<h1 id="二、Windows快捷键"><a href="#二、Windows快捷键" class="headerlink" title="二、Windows快捷键"></a>二、Windows快捷键</h1><ul>
+<li>多窗口管理<ul>
+<li>参考：<a href="https://blog.csdn.net/lsllll44/article/details/110782643">拼接多个窗口，虚拟桌面等</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/269223525">虚拟桌面可以显示拼接窗口</a></li>
+</ul>
+</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>杂货铺-休闲</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>重装系统后Hexo博客部署教程</title>
+    <url>/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文针对已经在别的电脑或系统上搭建过Hexo博客，准备重新在新电脑或系统上搭建回之前的博客，也就是说，之前已经在gthub账号上有建立过博客仓库了。</p>
+<p>在重新搭建前保证自己以前的blog文件夹中以下文件有被拷贝备份下来：</p>
+<table>
+<thead>
+<tr>
+<th align="left">文件夹/文件</th>
+<th align="left">拷贝内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">/blog目录下的文件</td>
+<td align="left">除landscape外的.yml文件</td>
+</tr>
+<tr>
+<td align="left">/blog目录下的文件</td>
+<td align="left">package.json文件</td>
+</tr>
+<tr>
+<td align="left">/blog目录下的文件夹</td>
+<td align="left">scaffolds、source、themes三个文件夹</td>
+</tr>
+</tbody></table>
+<p>零基础建立、搭载博客可以参考b站视频：</p>
+<p><a href="https://www.bilibili.com/video/BV1cW411A7Jx?spm_id_from=333.1007.top_right_bar_window_custom_collection.content.click">手把手教你搭建属于自己的hexo+github博客</a></p>
+<p><a href="https://www.bilibili.com/video/BV1Yb411a7ty?spm_id_from=333.1007.top_right_bar_window_custom_collection.content.click">手把手教你从0开始搭建自己的个人博客 |无坑版视频教程| hexo</a></p>
+<p><a href="https://blog.csdn.net/muzihuaner/article/details/113880520">Hexo博客搭建与部署</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/606083588">hexo&amp;github 搭建博客（保姆级）</a></p>
+<blockquote>
+<p>注意：若是在<strong>Git Bash here</strong>中输入hexo执行指令，则不需要输入**-<strong>，如输入</strong>hexo -s<strong>时直接输入</strong>hexo s**即可 </p>
+</blockquote>
+<h1 id="博客重新搭载操作"><a href="#博客重新搭载操作" class="headerlink" title="博客重新搭载操作"></a>博客重新搭载操作</h1><h2 id="一、软件下载"><a href="#一、软件下载" class="headerlink" title="一、软件下载"></a>一、软件下载</h2><ul>
+<li><p>到<a href="https://nodejs.org/en/">nodejs官网</a>下载<strong>nodejs</strong>软件并安装</p>
+<p>  cmd中输入<code>node -v</code>确认版本及确认已安装完毕</p>
+</li>
+<li><p>下载<a href="https://gitforwindows.org/"><strong>Git</strong></a>软件并安装</p>
+<p>  cmd中输入<code>git</code>确认版本及确认已安装完毕</p>
+</li>
+</ul>
+<h2 id="二、建立本机与github的联系"><a href="#二、建立本机与github的联系" class="headerlink" title="二、建立本机与github的联系"></a>二、建立本机与github的联系</h2><ul>
+<li><p> Git下载完后，双击安装Git目录下的<strong>git-bash.exe</strong>，输入<code>ssh-keygen -t rsa -C &quot;github对应的邮箱账号&quot;</code>，然后直接回车3次（无脑回车即可），将会生产本机对应的SSH号存于C盘Users上的<strong>id_rsa.pub</strong>文件中（如果找不到该文件，可以下载Everything软件直接搜索文件名，可以快速找到文件的位置）</p>
+</li>
+<li><p> 用记事本打开id_rsa文件，Ctrl+A全选复制文件的全部内容</p>
+</li>
+<li><p>重新建立github与本机的联系</p>
+<ul>
+<li><p>打开github的<strong>settings</strong>，点击<strong>SSH and GPG keys</strong>，点击<strong>New SSH key</strong>创建github与新系统的联系</p>
+</li>
+<li><p>其中<strong>title</strong>填写github的用户名即可，<strong>key</strong>填写在id_rsa.pub中复制的文件内容，也就是SSH号，完成后点击<strong>Add SSH key</strong>即可</p>
+</li>
+</ul>
+</li>
+<li><p> 打开cmd输入<code>npm install hexo-cli -g</code>安装hexo</p>
+</li>
+<li><p>新建blog文件夹，之后的博客搭载将全部在该文件夹中进行，如果出现什么错误不要慌，把这个文件夹干掉重新建立再次进行下面的步骤即可</p>
+<ul>
+<li><p>cmd中进入对应的盘(如<code>D:</code>)，进而进入新建的blog文件夹（如<code>cd MyBlog\blog</code>）</p>
+</li>
+<li><p>输入<code>hexo init</code>(若是将以前可正常运行的完整blog路径拷贝下来，里面已有环境在，则不需要进行此步骤)</p>
+</li>
+<li><p>输入<code>npm install</code></p>
+</li>
+<li><p>最后输入<code>hexo s</code>，复制链接（我这里cmd给的链接是<code>http://localhost:4000</code>），到浏览器浏览该链接可以看到最简单的hexo博客界面</p>
+</li>
+<li><p>将<strong>前言</strong>中备份的旧博客文件及文件夹全部复制到新的<strong>blog文件夹</strong>中，替换新blog文件夹的内容</p>
+</li>
+<li><p>继续在blog路径的cmd下输入<code>npm install hexo-deployer-git --save</code>安装环境</p>
+</li>
+<li><p>之后便可以继续用<code>hexo s</code>查看hexo博客，此时的博客已经恢复成旧博客的内容了</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="三、部署博客到github上"><a href="#三、部署博客到github上" class="headerlink" title="三、部署博客到github上"></a>三、部署博客到github上</h2><ul>
+<li><p>记得操作时用<code>hexo clean</code>清理环境，如果出现问题也可以重新打开cmd</p>
+<ul>
+<li><p>cmd中进入对应的盘(如<code>D:</code>)，进而进入新建的blog文件夹（如<code>cd MyBlog\blog</code>）</p>
+</li>
+<li><p>输入<code>hexo g</code>生成博客</p>
+</li>
+<li><p>输入<code>hexo d</code>提交博客部署到github中</p>
+<ul>
+<li><p><code>hexo d</code>这个过程可能会出现各种错误，如果git config类型的提示则在博客路径的cmd中输入<code>git config --global user.email &quot;github对应的邮箱账号&quot;</code>、回车后继续输入<code>git config --global user.name &quot;github用户名&quot;</code>，之后再次<code>hexo d</code>部署博客，在弹窗中输入github账号密码搭建联系即可（注意，密码不能填入github的密码，而是填入Token，否则会报错）</p>
+<ul>
+<li><p>Token的位置：<code>Setting</code>-&gt;<code>Devloper Settting</code>-&gt;<code>Personal access tokens</code></p>
+</li>
+<li><p>创建Token的方式：</p>
+  <img url="creat_token.png" width="%50" height="%50">
+
+  <img url="creat_token2.png" width="%50" height="%50"></li>
+</ul>
+</li>
+<li><p><code>hexo d</code>这个过程可能会出现各种错误，FATAL中如果出现code: 128错误，很可能是网络问题无法打开github仓库，这是可以关闭cmd挂个梯子后再进行部署</p>
+</li>
+</ul>
+</li>
+<li><p>提交后若出现”Please tell me who you are”，则根据提示输入<code>git config --global user.email &quot;you@example.com&quot;</code>和<code>git config --global user.name &quot;Your Name&quot;</code>(如”<a href="mailto:&#49;&#x34;&#50;&#56;&#51;&#x38;&#52;&#x38;&#x37;&#x38;&#64;&#113;&#x71;&#46;&#x63;&#111;&#109;">&#49;&#x34;&#50;&#56;&#51;&#x38;&#52;&#x38;&#x37;&#x38;&#64;&#113;&#x71;&#46;&#x63;&#111;&#109;</a>“和”AkiraZheng”)</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li> 至此，hexo博客的重新建立联系已经完成了，此时可以浏览自己的博客网站，新的博客网站将与新系统相关联</li>
+</ul>
+<h2 id="四、关于Archer主题的相关配置"><a href="#四、关于Archer主题的相关配置" class="headerlink" title="四、关于Archer主题的相关配置"></a>四、关于Archer主题的相关配置</h2><p><a href="https://github.com/fi3ework/hexo-theme-archer/wiki/">Archer主题配置</a>指南在github网站中</p>
+<p>修改主题时修改<code>./blog</code>文件夹中的<code>_config.archer.yml</code>而不是thems中的</p>
+<ul>
+<li><p>启用字数统计及阅读时间</p>
+<p>  hexo目录下执行</p>
+<p>  <code>npm i --save hexo-wordcount</code></p>
+</li>
+<li><p>启用全局搜索功能-Algolia 搜索（在Archer官方文档中有）</p>
+<ul>
+<li><p>hexo目录下安装<code>hexo-generator-searchdb</code>插件</p>
+<p>  <code>npm install hexo-generator-searchdb --save</code></p>
+</li>
+</ul>
+</li>
+<li><p>关闭目录自动编号</p>
+<ul>
+<li><p>打开Archer主题文件夹中的<code>/layout/layout.ejs</code></p>
+</li>
+<li><p>将</p>
+<p>  <code>&lt;%- toc(page.content, &#123;class: &#39;toc&#39;, list_number: true&#125;) %&gt;</code></p>
+</li>
+<li><p>替换成</p>
+<p>  <code>&lt;%- toc(page.content, &#123;class: &#39;toc&#39;, list_number: false&#125;) %&gt;</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="后记-hexo博客编写相关问题合集"><a href="#后记-hexo博客编写相关问题合集" class="headerlink" title="后记-hexo博客编写相关问题合集"></a>后记-hexo博客编写相关问题合集</h1><h2 id="1-解决部署到github仓库时出现连接仓库超时问题"><a href="#1-解决部署到github仓库时出现连接仓库超时问题" class="headerlink" title="1. 解决部署到github仓库时出现连接仓库超时问题"></a>1. 解决部署到github仓库时出现连接仓库超时问题</h2><p>所有hexo指令操作都在hexo博客目录下右键点击Git bush下进行指令操作成功率会高很多！！</p>
+<p>还有记得部署到github前进行<code>hexo clean</code>操作，降低出现bug的几率</p>
+<ul>
+<li><p>解决方法</p>
+<ul>
+<li><p>在执行<code>hexo d</code>前先在默认浏览器中打开github网站</p>
+</li>
+<li><p>在Git bush中输入<code>git config --global https.proxy</code>设置代理</p>
+</li>
+<li><p>在Git bush中输入<code>git config --global --unset https.proxy</code>取消代理</p>
+</li>
+<li><p>在Git bush中正常输入<code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code>提交代码即可</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-解决部署到github仓库时FATAL出现code-128错误"><a href="#2-解决部署到github仓库时FATAL出现code-128错误" class="headerlink" title="2. 解决部署到github仓库时FATAL出现code: 128错误"></a>2. 解决部署到github仓库时FATAL出现code: 128错误</h2><p>所有hexo指令操作都在hexo博客目录下右键点击Git bush下进行指令操作成功率会高很多！！</p>
+<p>还有记得部署到github前进行<code>hexo clean</code>操作，降低出现bug的几率</p>
+<ul>
+<li><p>解决方法一</p>
+<ul>
+<li><p>删掉blog中的.deploy_git文件夹，<code>rm -rf .deploy_git/</code></p>
+</li>
+<li><p>cmd中输入<code>git config --global core.autocrlf false</code></p>
+</li>
+<li><p>cmd中输入<code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code></p>
+</li>
+</ul>
+</li>
+<li><p>解决方法二</p>
+<ul>
+<li><p>删掉blog中的.deploy_git文件夹，<code>rm -rf .deploy_git/</code></p>
+</li>
+<li><p>cmd中输入<code>npm install hexo-deployer-git</code></p>
+</li>
+<li><p>cmd中输入<code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code></p>
+</li>
+</ul>
+</li>
+<li><p>解决办法三</p>
+<ul>
+<li>太久没使用hexo可能会导致hexo与本地电脑的连接失效，此时转到<a href="#%E4%BA%8C%E3%80%81%E5%BB%BA%E7%AB%8B%E6%9C%AC%E6%9C%BA%E4%B8%8Egithub%E7%9A%84%E8%81%94%E7%B3%BB">二、建立本机与github的联系</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="3-用Sublime-Text3软件实现Markdown文件在浏览器中实时更新显示"><a href="#3-用Sublime-Text3软件实现Markdown文件在浏览器中实时更新显示" class="headerlink" title="3. 用Sublime Text3软件实现Markdown文件在浏览器中实时更新显示"></a>3. 用Sublime Text3软件实现Markdown文件在浏览器中实时更新显示</h2><p>MarkdownPreview + LiveReload</p>
+<ul>
+<li><p>Sublime中安装插件的办法</p>
+<ul>
+<li><p>组合键<code>Ctrl+Shift+P</code> 调出命令面板</p>
+</li>
+<li><p>输入<code>Package Control: Install Package</code>，回车</p>
+</li>
+<li><p>在搜索框中输入要安装的包名（一个一个，不能同时安多个）</p>
+</li>
+</ul>
+</li>
+<li><p>MarkdownPreview</p>
+<ul>
+<li><p>根据插件安装方法安装MarkdownPreview插件</p>
+</li>
+<li><p>设置浏览器浏览快捷键为<code>alt+m</code>，在Preferences -&gt; Key Bindings打开的文件的右侧栏的中括号中添加一行代码：</p>
+</li>
+</ul>
+<p>  <code>&#123; &quot;keys&quot;: [&quot;alt+m&quot;], &quot;command&quot;: &quot;markdown_preview&quot;, &quot;args&quot;: &#123;&quot;target&quot;: &quot;browser&quot;, &quot;parser&quot;:&quot;markdown&quot;&#125;  &#125;</code></p>
+</li>
+<li><p>LiveReload实现实时更新</p>
+<ul>
+<li><p>根据插件安装方法安装LiveReload插件</p>
+</li>
+<li><p>组合键<code>Ctrl+Shift+P</code> 输入<code>LiveReload: Enable/disable plug-ins</code>, 回车, 选择 <code>Simple Reload with delay (400ms)或者Simple Reload</code>，两者的区别仅仅在于后者没有延迟。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>Sublime实现Markdown实时更新参考文章：<a href="https://blog.csdn.net/qq_20011607/article/details/81370236">Sublime Text3 的 Markdown 实时预览全面总结</a></p>
+<h2 id="4-解决本地图片上传问题"><a href="#4-解决本地图片上传问题" class="headerlink" title="4. 解决本地图片上传问题"></a>4. 解决本地图片上传问题</h2><ul>
+<li><p>在_config.yml配置文件中配置项<strong>post_asset_folder</strong>设为true</p>
+<p>  之后再用<code>hexo new post_name</code>命令都会自动在<strong>source/_post</strong>文件夹中会生成对应的图片文件夹，此时图片文件夹中的图片资源可以用相对路径来引用</p>
+</li>
+<li><p>在hexo文件夹打开Git bush输入</p>
+<p>  <code>npm install https://github.com/7ym0n/hexo-asset-image --save</code></p>
+</li>
+<li><p>保证图片都保存在同名的文件夹中</p>
+</li>
+<li><p>文章的.md文件可以采用两种方式引用、插入图片</p>
+<ul>
+<li><p>第一种为<code>![图片描述](图片的文件名)</code>，比如<code>![test](1.png)</code></p>
+</li>
+<li><p>第二种为<code>&lt;img src=&quot;图片的文件名&quot;&gt;</code>，比如<code>&lt;img src=&quot;1.png&quot; width=&quot;80%&quot; height=&quot;80%&quot;&gt;</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>解决hexo本地图片插入问题参考文章：<a href="https://blog.csdn.net/qq_36408085/article/details/104117319">Hexo+Github博客：网站内图片不能正常显示，但本地文件可以显示</a></p>
+<h2 id="5-Hexo新建文章"><a href="#5-Hexo新建文章" class="headerlink" title="5. Hexo新建文章"></a>5. Hexo新建文章</h2><p><code>hexo n text1</code>，注：text1可以改为文章名称</p>
+<h2 id="6-是否开代理问题"><a href="#6-是否开代理问题" class="headerlink" title="6. 是否开代理问题"></a>6. 是否开代理问题</h2><ul>
+<li>参考文章<a href="https://zhuanlan.zhihu.com/p/636418854">解决 Github port 443 : Timed out</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>环境配置</tag>
+      </tags>
+  </entry>
+</search>
