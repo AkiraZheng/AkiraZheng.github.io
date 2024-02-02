@@ -1425,7 +1425,7 @@ setInterval(ClickConnect, 60000)
     <title>设计模式1：单例模式</title>
     <url>/2024/01/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F1%EF%BC%9A%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p><a href="https://github.com/AkiraZheng/designPattern.git">本文中所有设计模式Github代码</a><br>其中本文<strong>单例模式</strong>相关代码在<code>SingletonPattern.h</code>文件夹中</p>
+<p><a href="https://github.com/AkiraZheng/designPattern.git">本文中所有设计模式Github代码</a><br>其中本文<strong>单例模式</strong>相关代码在<code>SingletonPattern.h</code>文件中</p>
 </blockquote>
 <h2 id="一、单例模式的实现原理"><a href="#一、单例模式的实现原理" class="headerlink" title="一、单例模式的实现原理"></a>一、单例模式的实现原理</h2><h3 id="1-什么是单例模式"><a href="#1-什么是单例模式" class="headerlink" title="1. 什么是单例模式"></a>1. 什么是单例模式</h3><p>单例模式是指某一个类在整个程序运行期间（系统生命周期），<strong>只有一个实例</strong>存在，因此要求构造函数是私有的(private)，同时在多线程场景下需要保证线程安全，即多个线程中不会创建多个实例对象。</p>
 <h3 id="2-使用单例模式的优点"><a href="#2-使用单例模式的优点" class="headerlink" title="2. 使用单例模式的优点"></a>2. 使用单例模式的优点</h3><p><strong>节省资源：</strong>在内存中只有一个实例，<strong>减少了内存开销</strong>，可以<strong>避免对资源的多重占用</strong></p>
@@ -1480,7 +1480,7 @@ setInterval(ClickConnect, 60000)
     <title>设计模式2：工厂方法模式</title>
     <url>/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p><a href="https://github.com/AkiraZheng/designPattern.git">本文中所有设计模式Github代码</a><br>其中本文<strong>工厂方法模式-简单工厂</strong>相关代码在<code>FactoryMethod_SimpleFactory.h</code>文件夹中<br>本文<strong>工厂方法模式-工厂方法</strong>相关代码在<code>FactoryMethod.h</code>文件夹中</p>
+<p><a href="https://github.com/AkiraZheng/designPattern.git">本文中所有设计模式Github代码</a><br>其中本文<strong>工厂方法模式-简单工厂</strong>相关代码在<code>FactoryMethod_SimpleFactory.h</code>文件中<br>本文<strong>工厂方法模式-工厂方法</strong>相关代码在<code>FactoryMethod.h</code>文件中</p>
 </blockquote>
 <blockquote>
 <p>工厂方法中，一般一个应用中每一个工厂系列只需要一个ConcreteFactory类的实例，因此设计工厂类时，通常将其设计为单例模式</p>
@@ -1525,6 +1525,21 @@ setInterval(ClickConnect, 60000)
 <h2 id="四、Reference"><a href="#四、Reference" class="headerlink" title="四、Reference"></a>四、Reference</h2><ol>
 <li><a href="https://blog.csdn.net/m0_46308273/article/details/117126962">C++工厂模式（简单工厂、工厂方法、抽象工厂）</a></li>
 <li><a href="https://github.com/youngyangyang04/kama-DesignPattern/blob/main/DesignPattern/2-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F.md">工厂方法模式</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>设计模式3：抽象工厂模式</title>
+    <url>/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F3%EF%BC%9A%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p><a href="https://github.com/AkiraZheng/designPattern.git">本文中所有设计模式Github代码</a><br>其中本文<strong>抽象工厂模式</strong>相关代码在<code>.h</code>文件中</p>
+</blockquote>
+<h2 id="三、Reference"><a href="#三、Reference" class="headerlink" title="三、Reference"></a>三、Reference</h2><ol>
+<li><a href></a></li>
+<li><a href></a></li>
 </ol>
 ]]></content>
       <categories>
