@@ -1422,10 +1422,10 @@ setInterval(ClickConnect, 60000)
       </tags>
   </entry>
   <entry>
-    <title>”设计模式1：单例模式“</title>
+    <title>设计模式1：单例模式</title>
     <url>/2024/01/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F1%EF%BC%9A%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p>单例模式的主要目的是确保某一个类在整个程序运行期间，<strong>只有一个实例</strong>存在</p>
+<p>单例模式的主要目的是确保某一个类在整个程序运行期间，<strong>只有一个实例</strong>存在，单例模式又名<strong>单件模式</strong>或<strong>单态模式</strong></p>
 </blockquote>
 <blockquote>
 <p>单例模式的应用场景：windows的任务管理器，回收站，浏览器的进程管理器，网站的计数器，应用程序的日志应用，数据库的连接池，多线程的线程池，操作系统的文件系统，显卡的驱动程序对象，打印机的后台处理服务，应用程序的配置对象，应用程序中的对话框，系统的缓存等</p>
