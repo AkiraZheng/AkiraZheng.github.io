@@ -1535,7 +1535,7 @@ setInterval(ClickConnect, 60000)
     <title>设计模式3：抽象工厂模式(C++)</title>
     <url>/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F3%EF%BC%9A%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p><a href="https://github.com/AkiraZheng/designPattern.git">本文中所有设计模式Github代码</a><br>其中本文<strong>抽象工厂模式</strong>相关代码在<code>AbstractFactory.h</code>文件中</p>
+<p><a href="https://github.com/AkiraZheng/designPattern/tree/master/designPattern">本文中所有设计模式Github代码</a><br>其中本文<strong>抽象工厂模式</strong>相关代码在<code>AbstractFactory.h</code>文件中</p>
 </blockquote>
 <h2 id="一、抽象工厂模式"><a href="#一、抽象工厂模式" class="headerlink" title="一、抽象工厂模式"></a>一、抽象工厂模式</h2><h3 id="1-什么是抽象工厂模式"><a href="#1-什么是抽象工厂模式" class="headerlink" title="1. 什么是抽象工厂模式"></a>1. 什么是抽象工厂模式</h3><p>抽象工厂模式是指<strong>提供一个创建一系列相关或相互依赖对象的接口</strong>，而无需指定它们具体的类。</p>
 <p>抽象工厂模式是工厂方法模式的升级版：工厂方法中，一个工厂只能生产<strong>一种</strong>产品，当需要生产多种相关的产品时，如手机生产厂商<strong>既生产手机又生产手机壳</strong>，这时就需要使用抽象工厂模式，将手机和手机壳的生产分别交给两个工厂，再将工厂细分为具体的产品。</p>
