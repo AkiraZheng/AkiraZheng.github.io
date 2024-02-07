@@ -1589,4 +1589,49 @@ setInterval(ClickConnect, 60000)
         <category>设计模式</category>
       </categories>
   </entry>
+  <entry>
+    <title>线程池(C++)</title>
+    <url>/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/</url>
+    <content><![CDATA[<h2 id="一、线程池概述"><a href="#一、线程池概述" class="headerlink" title="一、线程池概述"></a>一、线程池概述</h2><h3 id="1-线程池的设计初衷"><a href="#1-线程池的设计初衷" class="headerlink" title="1. 线程池的设计初衷"></a>1. 线程池的设计初衷</h3><p>线程池是一种<strong>池式结构</strong>(内存池、消息队列也属于池式结构)，主要解决<strong>缓存问题</strong>，起缓冲作用</p>
+<p>C++在进行多线程的创建和销毁时，会有比较大的开销，特别是在进行比快的线程操作时，会把很大的时间消耗在线程的创建和销毁上</p>
+<p>为了减少在程序中反复创建和销毁线程，就引入了线程池的概念</p>
+<p>线程池是在程序启动时，就创建一定数量的线程，放入一个<strong>线程队列</strong>中，当需要使用线程时，就从线程队列中取出一个线程，使用完毕后，再放回线程队列中</p>
+<h3 id="2-线程池的主要作用"><a href="#2-线程池的主要作用" class="headerlink" title="2. 线程池的主要作用"></a>2. 线程池的主要作用</h3><p>线程池可以实现<strong>异步解耦</strong>，将任务分解为多个子任务，然后将子任务分配给线程池中的线程执行，从而提高程序的执行效率</p>
+<p>线程池的使用举例：</p>
+<p><strong>a. 服务器端处理客户端请求</strong></p>
+<p>当有客户端请求时，服务器端就会创建一个线程来处理客户端的请求，但是如果客户端的请求量很大，服务器端就会创建很多线程，这样会导致服务器端的性能下降</p>
+<p>因此可以使用线程池来解决这个问题，将客户端的请求放入线程池中，线程池中的线程来处理客户端的请求。具体实现如下：</p>
+<ol>
+<li>创建一个线程池，设置线程池的大小为n</li>
+<li>当有客户端请求时，就将客户端的请求放入线程池中</li>
+<li>线程池中的线程来处理客户端的请求</li>
+<li>处理完客户端的请求后，将线程归还给线程池</li>
+</ol>
+<p><strong>b. 保存日志文件</strong></p>
+<p>在日志保存时，需要进行文件的读写操作，性能会压在磁盘上，可以采用线程池实现异步解耦来解决这个问题</p>
+<h2 id="二、线程池的实现源码及解析-C"><a href="#二、线程池的实现源码及解析-C" class="headerlink" title="二、线程池的实现源码及解析(C++)"></a>二、线程池的实现源码及解析(C++)</h2><h3 id="1-明确目标：剖析线程池需要实现的模块-框架"><a href="#1-明确目标：剖析线程池需要实现的模块-框架" class="headerlink" title="1. 明确目标：剖析线程池需要实现的模块(框架)"></a>1. 明确目标：剖析线程池需要实现的模块(框架)</h3><ul>
+<li>工作队列</li>
+<li>任务队列</li>
+<li>线程池</li>
+<li>pthread_create的回调函数</li>
+</ul>
+<img src="/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/structure_threadPooling.png" width="80%" height="80%">
+
+<h2 id="三、Reference"><a href="#三、Reference" class="headerlink" title="三、Reference"></a>三、Reference</h2><ul>
+<li><a href="https://zhuanlan.zhihu.com/p/367309864">基于C++11实现线程池</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/444375447">当我谈线程池时我谈些什么——线程池学习笔记</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>C++八股</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>设计模式4：代理模式(C++)</title>
+    <url>/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F4%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+  </entry>
 </search>
