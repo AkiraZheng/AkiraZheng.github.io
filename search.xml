@@ -1634,6 +1634,7 @@ setInterval(ClickConnect, 60000)
 <img src="/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/structure_threadPooling.png" width="80%" height="80%">
 
 <h2 id="未完待续…"><a href="#未完待续…" class="headerlink" title="未完待续…"></a><strong>未完待续…</strong></h2><h2 id="三、Reference"><a href="#三、Reference" class="headerlink" title="三、Reference"></a>三、Reference</h2><ul>
+<li><a href="https://blog.csdn.net/ACMer_L/article/details/107578636">C/C++手撕线程池（线程池的封装和实现）</a></li>
 <li><a href="https://zhuanlan.zhihu.com/p/367309864">基于C++11实现线程池</a></li>
 <li><a href="https://zhuanlan.zhihu.com/p/444375447">当我谈线程池时我谈些什么——线程池学习笔记</a></li>
 </ul>
@@ -1645,7 +1646,10 @@ setInterval(ClickConnect, 60000)
   <entry>
     <title>设计模式4：代理模式(C++)</title>
     <url>/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F4%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/</url>
-    <content><![CDATA[<h2 id="一、代理模式基础"><a href="#一、代理模式基础" class="headerlink" title="一、代理模式基础"></a>一、代理模式基础</h2><h3 id="1-代理模式的使用场景"><a href="#1-代理模式的使用场景" class="headerlink" title="1. 代理模式的使用场景"></a>1. 代理模式的使用场景</h3><blockquote>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p><a href="https://github.com/AkiraZheng/designPattern/tree/master/designPattern">本文中所有设计模式Github代码</a><br>其中本文<strong>代理模式</strong>相关代码在<code>ProxyPattern.h</code>文件中</p>
+</blockquote>
+<h2 id="一、代理模式基础"><a href="#一、代理模式基础" class="headerlink" title="一、代理模式基础"></a>一、代理模式基础</h2><h3 id="1-代理模式的使用场景"><a href="#1-代理模式的使用场景" class="headerlink" title="1. 代理模式的使用场景"></a>1. 代理模式的使用场景</h3><blockquote>
 <p>当某些对象由于某些原因，<strong>不能直接访问另一个对象</strong>，需要<strong>通过一个代理对象来间接访问</strong>时，可以使用代理模式。</p>
 </blockquote>
 <blockquote>
