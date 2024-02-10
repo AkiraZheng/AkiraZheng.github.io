@@ -1886,7 +1886,12 @@ setInterval(ClickConnect, 60000)
 
 <p>这样我们就可以通过工厂模式将<code>new CNTax()</code>这里抽象出来，这样可以更好的解耦，当然<code>TaxStrategyFactory</code>的实现还可以进一步设计成抽象接口，将其改造为工厂方法模式，这里就不再赘述</p>
 <h2 id="二、总结"><a href="#二、总结" class="headerlink" title="二、总结"></a>二、总结</h2><ul>
-<li>策略模式使得<strong>算法可以独立于客户程序</strong>（稳定，如SalesOrder）而变化（不稳定、扩展，如CNTax、USTax、JPTax）</li>
+<li><p>策略模式使得<strong>算法可以独立于客户程序</strong>（稳定，如SalesOrder）而变化（不稳定、扩展，如CNTax、USTax、JPTax）</p>
+</li>
+<li><p>策略模式提供一系列可变的算法，客户程序在运行时只需要<strong>关心接口</strong>，不需要关心算法的内部实现细节</p>
+</li>
+<li><p>在代码中当出现<strong>if-else</strong>语句 or <strong>switch-case</strong>语句时，一般就是<strong>需要使用策略模式</strong>的时候了（使用策略模式抽象化代替if-else语句 or switch-case语句）(只有在if-else是绝对不变的情况下可以不用将其优化为策略模式，比如一周只有7天，这种确定情况下就不需要优化为策略模式)</p>
+</li>
 </ul>
 ]]></content>
       <categories>
