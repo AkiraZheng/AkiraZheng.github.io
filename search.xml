@@ -1863,4 +1863,29 @@ setInterval(ClickConnect, 60000)
         <category>设计模式</category>
       </categories>
   </entry>
+  <entry>
+    <title>设计模式6：策略模式</title>
+    <url>/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F6%EF%BC%9A%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p><a href="https://github.com/AkiraZheng/designPattern/tree/master/designPattern">本文中所有设计模式Github代码</a><br>其中本文<strong>策略模式</strong>相关代码在<code>StrategyPattern.h</code>文件中</p>
+</blockquote>
+<h2 id="一、策略模式基础"><a href="#一、策略模式基础" class="headerlink" title="一、策略模式基础"></a>一、策略模式基础</h2><h3 id="1-策略模式的提出"><a href="#1-策略模式的提出" class="headerlink" title="1. 策略模式的提出"></a>1. 策略模式的提出</h3><blockquote>
+<p>在代码构建过程中，某些<strong>对象的算法可能有多种实现</strong>（例如不同的排序算法、查找算法等），我们可以根据环境或者条件的不同选择不同的算法来完成任务。<br>如果<strong>将这些算法都封装到对象中</strong>，将会使对象变得很复杂，有时候支持不需要的算法也是一种<strong>负担</strong>。<br>那么如何<strong>在运行时根据环境或者条件的不同选择不同的算法</strong>来完成任务？</p>
+</blockquote>
+<h3 id="2-策略模式的设计思想-amp-amp-代码实现（C-）"><a href="#2-策略模式的设计思想-amp-amp-代码实现（C-）" class="headerlink" title="2. 策略模式的设计思想&amp;&amp;代码实现（C++）"></a>2. 策略模式的设计思想&amp;&amp;代码实现（C++）</h3><ul>
+<li><p>策略模式使用场景示例</p>
+<p>  假设我们需要实现一个<strong>不同国家的税率计算算法</strong>，我们需要面对不同国家具有不同税率的问题</p>
+</li>
+<li><p>未使用策略模式的代码实现思路</p>
+<p>  当我们没有采用策略模式时，我们会在<strong>一个类</strong>中提供<strong>不同国家的税率计算算法</strong>，然后在main程序中实现<strong>不同国家的税率计算算法</strong>的调用来实现具体功能</p>
+<p>  在这种情况下，我们可能会想到通过枚举方法来代表不同的国家，然后在类中通过if-else语句来判断不同国家的税率计算算法</p>
+  <figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 未使用策略模式</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">TexType</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    CN_TAX,</span><br><span class="line">    US_TAX,</span><br><span class="line">    JP_TAX</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SalesOrder</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    TexType type;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">CalculateTax</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (type == CN_TAX)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0.1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (type == US_TAX)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0.2</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (type == JP_TAX)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0.3</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>  但是很多情况下，业务需求变化是很快的，我们可能随时需要增加对新国家的税率计算算法，这样的话，我们就需要修改<code>SalesOrder</code>类，也要改变枚举值，这样的话，我们就违反了<strong>开闭原则</strong>，所以我们需要使用策略模式来解决这个问题</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+  </entry>
 </search>
