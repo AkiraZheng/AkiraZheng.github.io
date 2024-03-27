@@ -3547,7 +3547,7 @@ setInterval(ClickConnect, 60000)
 <li>⾸先在主进程中 fork 出多个⼦进程，每个<strong>子进程</strong>在用户要求的时间内对目标网站(Web)<strong>循环发出实际访问请求</strong></li>
 <li>子进程通过<strong>管道(pipe)写端</strong>向父进程传递请求访问完毕后记录到的总信息，⽗进程做最终的统计结果</li>
 <li>待时间到后所有子进程结束，<strong>父进程统计</strong>并给用户显示<strong>最后的测试结果</strong>，然后退出</li>
-<li>webbench 最多可以模拟3万个并发连<br>接去测试⽹站的负载能⼒。</li>
+<li>webbench 最多可以模拟<strong>3万</strong>个并发连接去测试⽹站的负载能⼒。</li>
 </ul>
 <h2 id="二、WebBench使用"><a href="#二、WebBench使用" class="headerlink" title="二、WebBench使用"></a>二、WebBench使用</h2><p>WebBench的标准测试可以向我们展示服务器的两项内容：<strong>每秒钟的请求数</strong>和<strong>每秒钟的传输速度</strong>。</p>
 <h3 id="1-WebBench下载安装"><a href="#1-WebBench下载安装" class="headerlink" title="1. WebBench下载安装"></a>1. WebBench下载安装</h3><p><a href="http://home.tiscali.cz/~cz210552/webbench">WebBench的官方主页</a></p>
@@ -3566,10 +3566,10 @@ setInterval(ClickConnect, 60000)
 
 <img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_help.png">
 
-<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_version.png.png">
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_version.png">
 
 <p>使用WebBench进行压力测试，例如对本项目中，WebServer服务器的IP地址为<code>http://127.0.0.1:9006/</code>进行压力测试，测试时间为<code>5</code>秒，模拟<code>4000</code>个客户端并发访问。</p>
-<p>注意：根据webBench的源码，输入的URL地址必须以<code>http://</code>开头，且要以<code>/</code>结尾，否则会报错。</p>
+<p><strong>注意：</strong>根据webBench的源码，输入的URL地址必须以<code>http://</code>开头，且要以<code>/</code>结尾，否则会报错。</p>
 <blockquote>
 <p>-t 5：表示测试时间为5秒<br>-c 4000：表示模拟4000个客户端并发访问</p>
 </blockquote>
@@ -3578,7 +3578,7 @@ setInterval(ClickConnect, 60000)
 <img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_test4000.png">
 
 
-<p>结果分析：</p>
+<p><strong>结果分析：</strong></p>
 <p>从结果上来看，每秒钟响应请求数：24525 pages/min，每秒钟传输数据量20794612 bytes/sec.</p>
 <blockquote>
 <p>并发连接总数：4000<br>服务器压测访问时间：5s<br>响应请求：24525 pages/min<br>传输速度：20794612 bytes/sec<br>共发送82965个请求，所有访问请求都成功了，说明未超负荷<br>测试结果QPS计算：QPS=N/T=82965/5=16593（请求数量/压测时间），QPS大概为<strong>1.66万</strong></p>
