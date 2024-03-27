@@ -3531,15 +3531,74 @@ setInterval(ClickConnect, 60000)
 <h2 id="六、总结"><a href="#六、总结" class="headerlink" title="六、总结"></a>六、总结</h2><p>至此我们已经完成了一个通用的日志系统的设计和实现，包含了<strong>同步日志</strong>和<strong>异步日志</strong>两种方式。相当于造了个轮子，以后可以直接拿来使用。</p>
 <p>本文关键的知识点为<strong>线程安全</strong>、<strong>生产者-消费者模型</strong>、<strong>单例模式</strong>、<strong>阻塞队列</strong>、<strong>日志格式化解析和封装</strong>等。</p>
 <p>到目前为止，WebServer的功能基本实现了，通过<code>Makefile</code>文件执行<code>make</code>命令编译生成可执行文件<code>server</code>，通过<code>./server</code>命令运行服务器，即可在浏览器中访问<code>http://localhost:9006</code>查看效果。</p>
-<p>在WebServer项目的实现中，我们最后还需要通过Web性能压测工具<code>WebBench</code>对服务器进行压力测试，以验证服务器的性能和稳定性。具体压测的内容和结果可以参考本人的另一篇博客：<a href>WebServer项目实战9：WebBench压力测试</a>。</p>
+<p>在WebServer项目的实现中，我们最后还需要通过Web性能压测工具<code>WebBench</code>对服务器进行压力测试，以验证服务器的性能和稳定性。具体压测的内容和结果可以参考本人的另一篇博客：<a href="https://akirazheng.github.io/2024/03/27/WebServer%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%989%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">WebServer项目实战9：WebBench压力测试</a>。</p>
 ]]></content>
       <categories>
         <category>WebServer项目（C++）</category>
       </categories>
   </entry>
   <entry>
-    <title>WebServer项目实战9：WebBench压力测试</title>
-    <url>/2024/03/27/WebServer%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%989%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/</url>
-    <content><![CDATA[]]></content>
+    <title>WebServer学习9：WebBench压力测试</title>
+    <url>/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/</url>
+    <content><![CDATA[<h2 id="一、WebBench简介"><a href="#一、WebBench简介" class="headerlink" title="一、WebBench简介"></a>一、WebBench简介</h2><p>WebBench是一个在Linux下使用的网站压力测试工具，它使用<code>fork()</code>实现多进程并发，每个进程都是一个客户端，可以模拟多个客户端访问Web服务器，可以用来测试Web服务器的性能，测试Web服务器能够支持多少用户同时访问。</p>
+<p>WebBench是由<a href="https://www.lionbridge.com/">Lionbridge</a>开发的开源网站压测工具，除了能测试静态页面外，还可以测试动态页面，如PHP、JSP、ASP等。同时还支持SSL安全网站的测试。</p>
+<p><strong>webbench压测原理</strong></p>
+<ul>
+<li>⾸先在主进程中 fork 出多个⼦进程，每个<strong>子进程</strong>在用户要求的时间内对目标网站(Web)<strong>循环发出实际访问请求</strong></li>
+<li>子进程通过<strong>管道(pipe)写端</strong>向父进程传递请求访问完毕后记录到的总信息，⽗进程做最终的统计结果</li>
+<li>待时间到后所有子进程结束，<strong>父进程统计</strong>并给用户显示<strong>最后的测试结果</strong>，然后退出</li>
+<li>webbench 最多可以模拟3万个并发连<br>接去测试⽹站的负载能⼒。</li>
+</ul>
+<h2 id="二、WebBench使用"><a href="#二、WebBench使用" class="headerlink" title="二、WebBench使用"></a>二、WebBench使用</h2><p>WebBench的标准测试可以向我们展示服务器的两项内容：<strong>每秒钟的请求数</strong>和<strong>每秒钟的传输速度</strong>。</p>
+<h3 id="1-WebBench下载安装"><a href="#1-WebBench下载安装" class="headerlink" title="1. WebBench下载安装"></a>1. WebBench下载安装</h3><p><a href="http://home.tiscali.cz/~cz210552/webbench">WebBench的官方主页</a></p>
+<p><a href="http://www.ha97.com/webbench-1.5.tar.gz">WebBench工具的下载地址</a></p>
+<p>Linux下的下载安装步骤</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget http://www.ha97.com/webbench-1.5.tar.gz</span><br><span class="line">tar -zxvf webbench-1.5.tar.gz</span><br><span class="line">cd webbench-1.5</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<p>在本人的WebServer项目中已经将WebBench的源码放在了<code>/MyWebServer/WebBench_test/webbench-1.5</code>目录下，已经编译过了，可以直接使用，不需要重新在官网下载安装。</p>
+<h3 id="2-WebBench使用"><a href="#2-WebBench使用" class="headerlink" title="2. WebBench使用"></a>2. WebBench使用</h3><h4 id="2-1-启动WebServer服务器"><a href="#2-1-启动WebServer服务器" class="headerlink" title="2.1 启动WebServer服务器"></a>2.1 启动WebServer服务器</h4><p>首先确保webserver项目已经通过<code>make</code>编译成可执行文件了，然后在<code>/MyWebServer</code>项目的根目录下以关闭日志的形式启动WebServer服务器</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./server -c 0</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_runserver.png">
+
+<h4 id="2-2-使用WebBench进行压力测试"><a href="#2-2-使用WebBench进行压力测试" class="headerlink" title="2.2 使用WebBench进行压力测试"></a>2.2 使用WebBench进行压力测试</h4><p>启动了服务器后，在<code>/MyWebServer/WebBench_test/webbench-1.5</code>的目录下查看<code>webbench</code>的使用方式和版本</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./webbench -h</span><br><span class="line">./webbench -V</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_help.png">
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_version.png.png">
+
+<p>使用WebBench进行压力测试，例如对本项目中，WebServer服务器的IP地址为<code>http://127.0.0.1:9006/</code>进行压力测试，测试时间为<code>5</code>秒，模拟<code>4000</code>个客户端并发访问。</p>
+<p>注意：根据webBench的源码，输入的URL地址必须以<code>http://</code>开头，且要以<code>/</code>结尾，否则会报错。</p>
+<blockquote>
+<p>-t 5：表示测试时间为5秒<br>-c 4000：表示模拟4000个客户端并发访问</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./webbench -c 4000 -t 5 http://127.0.0.1:9006/</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_test4000.png">
+
+
+<p>结果分析：</p>
+<p>从结果上来看，每秒钟响应请求数：24525 pages/min，每秒钟传输数据量20794612 bytes/sec.</p>
+<blockquote>
+<p>并发连接总数：4000<br>服务器压测访问时间：5s<br>响应请求：24525 pages/min<br>传输速度：20794612 bytes/sec<br>共发送82965个请求，所有访问请求都成功了，说明未超负荷<br>测试结果QPS计算：QPS=N/T=82965/5=16593（请求数量/压测时间），QPS大概为<strong>1.66万</strong></p>
+</blockquote>
+<p>由于服务器配置只有<code>4核4G</code>，所以在<code>4000</code>个并发连接下，服务器的QPS大概为<strong>1.66万</strong>，破了<strong>万级QPS</strong>，如果服务器配置更高，那么QPS会更高。</p>
+<h4 id="2-3-WebBench受限原因分析"><a href="#2-3-WebBench受限原因分析" class="headerlink" title="2.3 WebBench受限原因分析"></a>2.3 WebBench受限原因分析</h4><p>然而，当我尝试将并发连接数增加到10000时，webBench会报错，提示<code>problems forking worker no.4552</code>，所以我尝试将并发连接数减少到<code>4552</code>是可以正常测试的，但是并发连接数超过<code>4552</code>就会报错。说明肯定有某个地方收到了数量限制。那么我们继续来看一下到底是什么原因导致的。</p>
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_test10000.png">
+
+<p>根据报错提醒可以初步断定是<code>fork()</code>函数的问题，也就是进程数量受Linux系统资源限制，因此测试不到上万的并发连接，最多只能测试到<code>4552</code>个并发连接。</p>
+<p><code>fork()</code>函数的限制是由<code>ulimit -a</code>命令查看的，其中<code>max user processes</code>表示用户最大进程数，<code>open files</code>表示用户最大打开文件数。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ulimit -a</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_testlimit1.png">
+
+<p>可以看到<code>max user processes</code>的值是<code>15183</code>，<code>open files</code>的值是<code>1024</code>，既然<code>max user processes</code>可以达到<code>15183</code>，那么为什么会失败呢？</p>
+<p>使用<code>ps -ef | grep server</code>命令查看当前进程数，发现<code>server</code>进程数已经达到了<code>15183</code>，也就是说<code>server</code>进程数已经达到了系统的最大进程数限制，所以无法再创建新的进程了。</p>
+<p>使用<code>ulimit -u 2048</code>和<code>ulimit -n 2048</code>修改系统配置后依然无法解决问题，暂时先不深究了，后续有时间再研究。</p>
+]]></content>
+      <categories>
+        <category>WebServer项目（C++）</category>
+      </categories>
   </entry>
 </search>

@@ -19,20 +19,29 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta property="og:type" content="article">
-<meta property="og:title" content="WebServer项目实战9：WebBench压力测试">
-<meta property="og:url" content="https://akirazheng.github.io/2024/03/27/WebServer%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%989%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/index.html">
+    <meta name="description" content="一、WebBench简介WebBench是一个在Linux下使用的网站压力测试工具，它使用fork()实现多进程并发，每个进程都是一个客户端，可以模拟多个客户端访问Web服务器，可以用来测试Web服务器的性能，测试Web服务器能够支持多少用户同时访问。 WebBench是由Lionbridge开发的开源网站压测工具，除了能测试静态页面外，还可以测试动态页面，如PHP、JSP、ASP等。同时还支持S">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WebServer学习9：WebBench压力测试">
+<meta property="og:url" content="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="一、WebBench简介WebBench是一个在Linux下使用的网站压力测试工具，它使用fork()实现多进程并发，每个进程都是一个客户端，可以模拟多个客户端访问Web服务器，可以用来测试Web服务器的性能，测试Web服务器能够支持多少用户同时访问。 WebBench是由Lionbridge开发的开源网站压测工具，除了能测试静态页面外，还可以测试动态页面，如PHP、JSP、ASP等。同时还支持S">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_runserver.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_help.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_version.png.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_test4000.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_test10000.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_testlimit1.png">
 <meta property="article:published_time" content="2024-03-27T10:03:26.000Z">
-<meta property="article:modified_time" content="2024-03-27T10:03:26.631Z">
+<meta property="article:modified_time" content="2024-03-27T13:51:34.240Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_runserver.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>WebServer项目实战9：WebBench压力测试 · AkiraZheng&#39;s Time</title>
+    <title>WebServer学习9：WebBench压力测试 · AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -257,7 +266,7 @@
                 <a href="/">AkiraZheng&#39;s Time.</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">WebServer项目实战9：WebBench压力测试</a>
+                <a href="#" class="post-name">WebServer学习9：WebBench压力测试</a>
             </div>
         </div>
     
@@ -303,7 +312,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                WebServer项目实战9：WebBench压力测试
+                WebServer学习9：WebBench压力测试
             <!-- 404 -->
             
         </h1>
@@ -322,7 +331,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">0</span>Reading time: <span class="post-count reading-time">1 min</span></span>
+                        <span>Word count: <span class="post-count word-count">1.1k</span>Reading time: <span class="post-count reading-time">4 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -483,15 +492,71 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        
+        <h2 id="一、WebBench简介"><a href="#一、WebBench简介" class="headerlink" title="一、WebBench简介"></a>一、WebBench简介</h2><p>WebBench是一个在Linux下使用的网站压力测试工具，它使用<code>fork()</code>实现多进程并发，每个进程都是一个客户端，可以模拟多个客户端访问Web服务器，可以用来测试Web服务器的性能，测试Web服务器能够支持多少用户同时访问。</p>
+<p>WebBench是由<a target="_blank" rel="noopener" href="https://www.lionbridge.com/">Lionbridge</a>开发的开源网站压测工具，除了能测试静态页面外，还可以测试动态页面，如PHP、JSP、ASP等。同时还支持SSL安全网站的测试。</p>
+<p><strong>webbench压测原理</strong></p>
+<ul>
+<li>⾸先在主进程中 fork 出多个⼦进程，每个<strong>子进程</strong>在用户要求的时间内对目标网站(Web)<strong>循环发出实际访问请求</strong></li>
+<li>子进程通过<strong>管道(pipe)写端</strong>向父进程传递请求访问完毕后记录到的总信息，⽗进程做最终的统计结果</li>
+<li>待时间到后所有子进程结束，<strong>父进程统计</strong>并给用户显示<strong>最后的测试结果</strong>，然后退出</li>
+<li>webbench 最多可以模拟3万个并发连<br>接去测试⽹站的负载能⼒。</li>
+</ul>
+<h2 id="二、WebBench使用"><a href="#二、WebBench使用" class="headerlink" title="二、WebBench使用"></a>二、WebBench使用</h2><p>WebBench的标准测试可以向我们展示服务器的两项内容：<strong>每秒钟的请求数</strong>和<strong>每秒钟的传输速度</strong>。</p>
+<h3 id="1-WebBench下载安装"><a href="#1-WebBench下载安装" class="headerlink" title="1. WebBench下载安装"></a>1. WebBench下载安装</h3><p><a target="_blank" rel="noopener" href="http://home.tiscali.cz/~cz210552/webbench">WebBench的官方主页</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.ha97.com/webbench-1.5.tar.gz">WebBench工具的下载地址</a></p>
+<p>Linux下的下载安装步骤</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget http://www.ha97.com/webbench-1.5.tar.gz</span><br><span class="line">tar -zxvf webbench-1.5.tar.gz</span><br><span class="line">cd webbench-1.5</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<p>在本人的WebServer项目中已经将WebBench的源码放在了<code>/MyWebServer/WebBench_test/webbench-1.5</code>目录下，已经编译过了，可以直接使用，不需要重新在官网下载安装。</p>
+<h3 id="2-WebBench使用"><a href="#2-WebBench使用" class="headerlink" title="2. WebBench使用"></a>2. WebBench使用</h3><h4 id="2-1-启动WebServer服务器"><a href="#2-1-启动WebServer服务器" class="headerlink" title="2.1 启动WebServer服务器"></a>2.1 启动WebServer服务器</h4><p>首先确保webserver项目已经通过<code>make</code>编译成可执行文件了，然后在<code>/MyWebServer</code>项目的根目录下以关闭日志的形式启动WebServer服务器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./server -c 0</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_runserver.png">
+
+<h4 id="2-2-使用WebBench进行压力测试"><a href="#2-2-使用WebBench进行压力测试" class="headerlink" title="2.2 使用WebBench进行压力测试"></a>2.2 使用WebBench进行压力测试</h4><p>启动了服务器后，在<code>/MyWebServer/WebBench_test/webbench-1.5</code>的目录下查看<code>webbench</code>的使用方式和版本</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./webbench -h</span><br><span class="line">./webbench -V</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_help.png">
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_version.png.png">
+
+<p>使用WebBench进行压力测试，例如对本项目中，WebServer服务器的IP地址为<code>http://127.0.0.1:9006/</code>进行压力测试，测试时间为<code>5</code>秒，模拟<code>4000</code>个客户端并发访问。</p>
+<p>注意：根据webBench的源码，输入的URL地址必须以<code>http://</code>开头，且要以<code>/</code>结尾，否则会报错。</p>
+<blockquote>
+<p>-t 5：表示测试时间为5秒<br>-c 4000：表示模拟4000个客户端并发访问</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./webbench -c 4000 -t 5 http://127.0.0.1:9006/</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_test4000.png">
+
+
+<p>结果分析：</p>
+<p>从结果上来看，每秒钟响应请求数：24525 pages/min，每秒钟传输数据量20794612 bytes/sec.</p>
+<blockquote>
+<p>并发连接总数：4000<br>服务器压测访问时间：5s<br>响应请求：24525 pages/min<br>传输速度：20794612 bytes/sec<br>共发送82965个请求，所有访问请求都成功了，说明未超负荷<br>测试结果QPS计算：QPS=N/T=82965/5=16593（请求数量/压测时间），QPS大概为<strong>1.66万</strong></p>
+</blockquote>
+<p>由于服务器配置只有<code>4核4G</code>，所以在<code>4000</code>个并发连接下，服务器的QPS大概为<strong>1.66万</strong>，破了<strong>万级QPS</strong>，如果服务器配置更高，那么QPS会更高。</p>
+<h4 id="2-3-WebBench受限原因分析"><a href="#2-3-WebBench受限原因分析" class="headerlink" title="2.3 WebBench受限原因分析"></a>2.3 WebBench受限原因分析</h4><p>然而，当我尝试将并发连接数增加到10000时，webBench会报错，提示<code>problems forking worker no.4552</code>，所以我尝试将并发连接数减少到<code>4552</code>是可以正常测试的，但是并发连接数超过<code>4552</code>就会报错。说明肯定有某个地方收到了数量限制。那么我们继续来看一下到底是什么原因导致的。</p>
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_test10000.png">
+
+<p>根据报错提醒可以初步断定是<code>fork()</code>函数的问题，也就是进程数量受Linux系统资源限制，因此测试不到上万的并发连接，最多只能测试到<code>4552</code>个并发连接。</p>
+<p><code>fork()</code>函数的限制是由<code>ulimit -a</code>命令查看的，其中<code>max user processes</code>表示用户最大进程数，<code>open files</code>表示用户最大打开文件数。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ulimit -a</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/webBench_testlimit1.png">
+
+<p>可以看到<code>max user processes</code>的值是<code>15183</code>，<code>open files</code>的值是<code>1024</code>，既然<code>max user processes</code>可以达到<code>15183</code>，那么为什么会失败呢？</p>
+<p>使用<code>ps -ef | grep server</code>命令查看当前进程数，发现<code>server</code>进程数已经达到了<code>15183</code>，也就是说<code>server</code>进程数已经达到了系统的最大进程数限制，所以无法再创建新的进程了。</p>
+<p>使用<code>ulimit -u 2048</code>和<code>ulimit -n 2048</code>修改系统配置后依然无法解决问题，暂时先不深究了，后续有时间再研究。</p>
+
     </article>
     <!-- license -->
     
         <div class="license-wrapper">
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
-            <p>Link：<a href="https://akirazheng.github.io/2024/03/27/WebServer%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%989%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">https://akirazheng.github.io/2024/03/27/WebServer%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%989%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/</a>
-            <p>Publish date：<a href="https://akirazheng.github.io/2024/03/27/WebServer%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%989%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">March 27th 2024, 6:03:26 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2024/03/27/WebServer%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%989%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">March 27th 2024, 6:03:26 pm</a>
+            <p>Link：<a href="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">March 27th 2024, 6:03:26 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">March 27th 2024, 9:51:34 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -652,7 +717,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81WebBench%E7%AE%80%E4%BB%8B"><span class="toc-text">一、WebBench简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81WebBench%E4%BD%BF%E7%94%A8"><span class="toc-text">二、WebBench使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-WebBench%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85"><span class="toc-text">1. WebBench下载安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-WebBench%E4%BD%BF%E7%94%A8"><span class="toc-text">2. WebBench使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-%E5%90%AF%E5%8A%A8WebServer%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">2.1 启动WebServer服务器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-%E4%BD%BF%E7%94%A8WebBench%E8%BF%9B%E8%A1%8C%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95"><span class="toc-text">2.2 使用WebBench进行压力测试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-WebBench%E5%8F%97%E9%99%90%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90"><span class="toc-text">2.3 WebBench受限原因分析</span></a></li></ol></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1064,7 +1129,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">03/27</span>
-            <a class="archive-post-title" href="/2024/03/27/WebServer%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%989%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">WebServer项目实战9：WebBench压力测试</a>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">WebServer学习9：WebBench压力测试</a>
         </li>
     
         
