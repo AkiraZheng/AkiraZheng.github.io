@@ -62,6 +62,7 @@ categories:
 -  打开cmd输入`npm install hexo-cli -g`安装hexo
 	- mac先通过sudo su进入root用户，再全局安装hexo
 	- mac用sudo指令，否则会有权限问题`sudo npm install -g hexo-cli`安装hexo
+	- [npm安装hexo时更换镜像源](https://blog.csdn.net/laosao_66/article/details/135880270)
 
 -  新建blog文件夹，之后的博客搭载将全部在该文件夹中进行，如果出现什么错误不要慌，把这个文件夹干掉重新建立再次进行下面的步骤即可
 

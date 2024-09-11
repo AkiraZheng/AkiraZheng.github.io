@@ -91,3 +91,8 @@ categories:
 ## 5.2 Vscode中配置Keil
 
 - 参考：(VS Code编写Keil uVison 5工程)[https://blog.csdn.net/weixin_43576926/article/details/107736692]
+
+# 六、JetBrains全家桶
+## 6.1 CLion配置C++
+
+> [MacOS 配置Clion的C/C++环境的详细步骤及mac终端报错问题解决](https://blog.csdn.net/weixin_45571585/article/details/126977413)
