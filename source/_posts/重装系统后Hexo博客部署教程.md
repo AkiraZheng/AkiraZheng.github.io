@@ -256,4 +256,8 @@ Sublime实现Markdown实时更新参考文章：[Sublime Text3 的 Markdown 实�
 
 - 参考文章[解决 Github port 443 : Timed out](https://zhuanlan.zhihu.com/p/636418854)
 
+## 7. themes是clone的导致push时文件夹出现箭头（丢失）
+
+- 参考文章[Git 解决github文件夹有向右的白色箭头并且不能打开](https://www.jianshu.com/p/28e61a24d847)
+
 
