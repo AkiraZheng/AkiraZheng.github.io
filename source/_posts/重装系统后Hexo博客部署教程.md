@@ -99,9 +99,9 @@ categories:
 		- `hexo d`这个过程可能会出现各种错误，FATAL中如果出现code: 128错误，很可能是网络问题无法打开github仓库，这是可以关闭cmd挂个梯子后再进行部署
 	- 提交后若出现"Please tell me who you are"，则根据提示输入`git config --global user.email "you@example.com"`和`git config --global user.name "Your Name"`(如"1428384878@qq.com"和"AkiraZheng")
 
-
-
 -  至此，hexo博客的重新建立联系已经完成了，此时可以浏览自己的博客网站，新的博客网站将与新系统相关联
+
+- [hexo多端同步管理](https://zomfice.github.io/2018/02/25/Hexo%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA-%E4%B8%89-%E5%A4%9A%E8%AE%BE%E5%A4%87%E5%90%8C%E6%AD%A5/)
 
 ## 四、实现在vscode的Terminal中使用hexo指令
 
