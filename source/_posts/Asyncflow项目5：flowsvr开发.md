@@ -57,7 +57,7 @@ type commonConfig struct {
 
 # 2. 项目资源
 
-## 2.1. mysql数据库资源
+## 2.1. mysql数据库资源框架：gorm
 
 - 数据库连接池：选择gorm库
 
@@ -152,7 +152,7 @@ type TaskPos struct {
     }
     ```
   
-## 2.3 redis缓存资源
+## 2.3 redis缓存资源：goredis
 
 使用`goredis`库中的**redis连接池**，用在**创建任务时**增加缓存任务信息、以及使用`redission`库实现**分布式锁**
 
@@ -171,7 +171,7 @@ redis缓存主要用于客户端轮询查询**任务信息表**中某个`TaskId`
 因此使用`redission`库实现分布式锁，通过**看门狗机制**实现锁的自动续期
 
 
-## 2.4 pprof性能分析
+## 2.4 性能分析：pprof
 
 项目中使用`pprof`进行性能分析，可以通过`localhost:26688/debug/pprof/`查看性能分析结果
 
@@ -207,7 +207,7 @@ redis缓存主要用于客户端轮询查询**任务信息表**中某个`TaskId`
   }
   ```
   
-## 2.5. 日志框架：seelog框架
+## 2.5. 日志框架：seelog
 
 用XML格式统一化日志输出的格式，方便后续日志的查看和分析，存储路径为`"../log/web.log"`：
 
