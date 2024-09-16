@@ -76,9 +76,6 @@ type TaskPos struct {
 }
 ```
 
-> 参考
-> 1. [GORM 指南:中文官方文档-数据库操作](https://gorm.io/zh_CN/docs/index.html)
-
 ## 2.3 高性能Web框架：gin
 
 ### 2.3.1. gin框架的初始化
@@ -209,15 +206,39 @@ redis缓存主要用于客户端轮询查询**任务信息表**中某个`TaskId`
       http.HandleFunc(prefix+"/debug/pprof/trace", Trace)
   }
   ```
+  
+## 2.5. 日志框架：seelog框架
+
+用XML格式统一化日志输出的格式，方便后续日志的查看和分析，存储路径为`"../log/web.log"`：
+
+```xml
+<seelog minlevel="trace">
+  <outputs formatid="fmt_info">
+    <filter levels="trace,debug,info,warn,error,critical">
+      <rollingfile formatid="fmt_info" type="size" filename="../log/web.log"  maxsize="104857600" maxrolls="10"/>
+    </filter>
+    <filter levels="error,critical">
+      <rollingfile formatid="fmt_err" type="size" filename="../log/error/web_error.log"  ` +
+      `maxsize="10485760" maxrolls="100"/>
+    </filter>
+  </outputs>
+  <formats>
+    <format id="fmt_info" format="%Date(2006-01-02 15:04:05.999):::%Msg%n" />
+    <format id="fmt_err" format="%Date(2006-01-02 15:04:05.999):::%Msg%n" />
+  </formats>
+</seelog>
+```
 
 > 参考
-> 1. [gorm库](https://gorm.io/zh_CN/docs/index.html)
+> 1. [GORM 指南:中文官方文档-数据库操](https://gorm.io/zh_CN/docs/index.html)
 > 2. [gin框架](https://gin-gonic.com/zh-cn/docs/)
 > 3. [golang框架-web框架之gin](https://juejin.cn/post/6844903938093744142)
 > 4. [一文搞懂gin框架httprouter路由实现原理](https://juejin.cn/post/7121614553649004575)
 > 5. [超全的Go Http路由框架性能比较](https://colobu.com/2016/03/23/Go-HTTP-request-router-and-web-framework-benchmark/)
 > 6. [Github go-redis](https://github.com/redis/go-redis)
 > 7. [Go Redis 快速入门](https://redis.uptrace.dev/zh/guide/go-redis.html)
+> 8. [Go 日志框架：seelog github](https://github.com/cihub/seelog)
+> 9. [seelog使用](https://blog.csdn.net/qq_36051316/article/details/118696592)
 
 # 3. 路由对应的任务调度方法：task
 
