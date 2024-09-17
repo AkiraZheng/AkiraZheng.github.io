@@ -310,6 +310,17 @@ type TaskPos struct {
 - 填充`p.Resp`的回包信息（含唯一的`TaskId`）
 - 增加该条任务完整信息的**redis缓存**：string类型，设置过期时间24小时
 
+其中`createTask`需要通过`uuid`生成唯一索引`TaskId`，并拼接上**表名**方便滚表方式下随时查询
+
+`uuid`使用`"github.com/google/uuid"`库，通过`uuid.New()`生成唯一索引
+
+```go
+// GenTaskId 生成对应taskId
+func (p *Task) GenTaskId(taskType, pos string) string {
+taskType = strings.Replace(taskType, "_", "-", -1)
+return fmt.Sprintf("%+v_%s_%s", uuid.New(), taskType, pos)
+}
+```
 
 ## 3.2. 注册任务`register_task`
 
