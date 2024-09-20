@@ -31,9 +31,11 @@ RedisLockPassword string `toml:"redis_lock_password"` // redis分布式锁的密
 }
 ```
 
-# 2. redission分布式锁：go-redis框架
+# 2. 分布式锁：go-redis框架
 
 本项目中使用`go-redis`库来实现分布式锁，通过`SetNX`命令结合**看门狗机制**手动实现一个**分布式锁**的，`SetNX`命令是一个原子性的操作，只有在key不存在时才会设置key的值。
+
+其中使用的key为`taskType`，value为用uuid生成的`token`，过期时间为`expireTimeSecond`。
 
 > 参考
 > 1. [Github go-redis](https://github.com/redis/go-redis)
