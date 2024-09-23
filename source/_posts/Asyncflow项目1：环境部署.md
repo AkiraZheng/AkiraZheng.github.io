@@ -124,6 +124,45 @@ step4：启动worker
 | 硬件 | 阿里云服务器（2核4G） |
 | 压测 | 3000QPS |
 
+## 4. 使用wrk进行接口压测
+
+mac环节下通过`docker`安装`wrk`：
+
+```bash
+docker pull williamyeh/wrk
+```
+
+注：如果docker镜像拉取失败可能是配置的镜像源有问题，可以选择更换镜像源或者通过[本地镜像源（使用x86）](https://github.com/AkiraZheng/DockerPull/actions)获取并下载本地镜像，然后通过`docker load -i xxx.tar`将镜像导入到docker中
+
+运行Asyncflow server端，并测试`/get_task`接口（测试某个task_id就行）：
+
+**1）QPS-接口耗时测试**
+
+```bash
+docker run -it --rm williamyeh/wrk -t12 -c400 -d15s "http://172.18.18.26:41555/v1/get_task?task_id=ca4e59ab-f661-462b-842a-bc6e27936754_lark_1"
+```
+
+<img src="wrk.png">
+
+<img src="wrk_stroage.png">
+
+**2）Asyncflow server端CPU、内存监控**
+
+先查看对应端口的进程PID和进程名，可以通过进程名在活动监视器中查看CPU、内存占用情况：
+
+```bash
+lsof -i:41555
+```
+
+然后在启动`wrk`后，动态查看对应进程的CPU、内存占用情况：
+
+```bash
+top -pid PID
+```
+
+<img src="top-pid.png">
+
+
 ## 附录
 ### 运行代码
 1. 从akira用户进入后切换到root用户：`sudo su`

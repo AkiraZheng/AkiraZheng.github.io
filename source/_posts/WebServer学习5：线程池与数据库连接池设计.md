@@ -58,7 +58,7 @@ bool threadpool<T>::append(T *request, int state){
 
     m_queuelocker.unlock();
 
-    //信号量+1，唤醒一个线程
+    //信号量+1，唤醒一个线程，对应PV操作中的P操作
     m_queuestat.post();
 
     return true;

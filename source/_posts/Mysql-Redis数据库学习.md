@@ -1,5 +1,5 @@
 ---
-title: Mysql-Redis数据库学习
+title: Mysql数据库学习
 date: 2024-04-12 21:48:23
 tags:
 categories:
@@ -182,6 +182,23 @@ SELECT * FROM player ORDER BY level DESC;
 SELECT COUNT(*) FROM player;
 SELECT AVG(level) FROM player;
 ```
+
+**count (*)、count(1)、count(字段名)的区别**：
+
+在索引下count都不用回表
+
+- `count(*)`：
+  - count的值：相当于`count(0)`，会统计所有行数，包括`null`值
+  - 性能：性能跟`count(1)`一样，都会优先len最短的二级索引，Ali要求尽量用`count(*)`
+- `count(1)`：
+  - count的值：会统计所有行数，包括`null`值
+  - 性能：性能跟`count(*)`一样，都会优先len最短的二级索引，Ali要求尽量用`count(*)`
+- `count(字段名)`：count的是该字段下非NULL的行数
+  - `count (主键)`：由于主键都是非NULL的，所以`count(主键)`不用额外判断，性能比`count(其他字段)`好
+  - `count(字段名)`：需要进行非NULL判断，性能最差
+
+
+性能比较：**count(*) = count(1) > count(主键) > count(字段名)**
 
 #### 2.3.6 分组查询
 
