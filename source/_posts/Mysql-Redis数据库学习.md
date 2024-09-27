@@ -424,7 +424,8 @@ SELECT * FROM player ORDER BY level LIMIT 10;
 隔离性四个级别：**读未提交**、**读已提交**、**可重复读（InnoDB默认的）**、**串行化**
 - **脏读**：一个事务读取到另一个事务未提交的数据
   - 解决：通过**读已提交**级别来解决，保证一个事务内读到的数据起码是已经提交的数据
-  <img src="dirty-read.png" width="50%">
+  <img src="dirty_read.png" width="50%">
+  
 - **不可重复读**：一个事务多次读取同一数据，得到两次读取的数据不一致（其他事务更改了该数据）
   
   <img src="non-repeating0.png" width="50%">  

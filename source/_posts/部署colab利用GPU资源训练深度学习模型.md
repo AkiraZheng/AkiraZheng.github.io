@@ -67,6 +67,10 @@ tags:
 
 </font>
 
+6、部署github项目到colab
+
+> [参考链接](https://blog.csdn.net/weixin_47306605/article/details/123921943?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-0-123921943-blog-121534768.235^v43^control&spm=1001.2101.3001.4242.1&utm_relevant_index=3)
+
 # 解决Colab每12h断连的问题
 
 每60分钟自动运行代码刷新，解除90分钟断开限制.
