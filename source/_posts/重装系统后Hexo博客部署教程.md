@@ -63,6 +63,7 @@ categories:
 	- mac先通过sudo su进入root用户，再全局安装hexo
 	- mac用sudo指令，否则会有权限问题`sudo npm install -g hexo-cli`安装hexo
 	- [npm安装hexo时更换镜像源](https://blog.csdn.net/laosao_66/article/details/135880270)
+      - `npm config set registry http://registry.npm.taobao.org`
 
 -  新建blog文件夹，之后的博客搭载将全部在该文件夹中进行，如果出现什么错误不要慌，把这个文件夹干掉重新建立再次进行下面的步骤即可
 
@@ -103,7 +104,18 @@ categories:
 
 -  至此，hexo博客的重新建立联系已经完成了，此时可以浏览自己的博客网站，新的博客网站将与新系统相关联
 
-- [hexo多端同步管理](https://zomfice.github.io/2018/02/25/Hexo%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA-%E4%B8%89-%E5%A4%9A%E8%AE%BE%E5%A4%87%E5%90%8C%E6%AD%A5/)
+- 注意：如果多端从git上拉项目的话，需要先建立空文件夹完成`hexo init`等操作建立好环境，然后再根据下面链接中的`二：(推荐)在搭建完成博客之后将多端同步加入`拉取git上的项目
+
+  - [hexo多端同步管理](https://zomfice.github.io/2018/02/25/Hexo%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA-%E4%B8%89-%E5%A4%9A%E8%AE%BE%E5%A4%87%E5%90%8C%E6%AD%A5/)
+	```shell
+	// git初始化
+	git init
+	// 添加仓库地址
+	git remote add origin https://github.com/用户名/仓库名.git
+	// 新建分支并切换到新建的分支
+	git checkout -b 分支名
+	```
+    - 执行完命令后，在sourceTree中拉取本地这个文件夹，就能更方便地进行更换分支等操作了
 
 ## 四、实现在vscode的Terminal中使用hexo指令
 
