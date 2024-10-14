@@ -40,7 +40,7 @@ categories:
 
 - [pdf-translate](https://github.com/windingwind/zotero-pdf-translate/releases/tag/v0.9.4)插件用于pdf便捷翻译
 
-	- 可通过github链接或搜索：https://github.com/windingwind/zotero-pdf-translate/releases/tag/v0.9.4
+	- 可通过github链接或搜索：https://github.com/windingwind/zotero-pdf-translate/releases/tag/v2.0.3
 
 # 二、浏览器设置
 
