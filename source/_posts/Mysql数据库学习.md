@@ -1117,3 +1117,13 @@ MySQL的高可用性体现在：
 > 3. [为什么 MySQL 采用 B+ 树作为索引？](https://xiaolincoding.com/mysql/index/why_index_chose_bpuls_tree.html#%E6%80%8E%E6%A0%B7%E7%9A%84%E7%B4%A2%E5%BC%95%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%98%AF%E5%A5%BD%E7%9A%84)
 > 4. [MySQL 日志：undo log、redo log、binlog 有什么用？](https://xiaolincoding.com/mysql/log/how_update.html#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-undo-log)
 > 5. [分布式唯一 ID 生成方案浅谈](https://zhuanlan.zhihu.com/p/534893180)
+
+
+## 四、SQL安全问题
+
+SQL会存在**SQL注入**问题，攻击者在**HTTP包中注入一些SQL操作**从而破坏数据库
+
+预防办法：
+- 使用**orm**框架：摒弃手动拼接SQL语句，而是通过**orm框架传参**实现SQL操作
+- 增强**用户验证**
+- 完善**数据库操作最小权限**
