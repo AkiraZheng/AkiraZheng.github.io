@@ -138,7 +138,9 @@ int main()
 - 引入死锁检查模块
 - 通过定时释放资源解决不可剥夺问题（设置**过期时间**）
 - 通过死锁检查工具检查：
-  - CPP用`gdb`或`pstack`等工具
+  - CPP用`gdb`+`pstack`等工具
+    - 用`pstack 进程pid`查看进程的堆栈信息，发现threadA和threadB一直在lock_wait
+    - 用`gdb -p 进程pid`进入进程，然后用`info thread`查看有多少个线程，最后用`thread 线程id`切换线程并查看发生死锁的线程的堆栈信息
   - Go用`pprof`工具
 
 **3）死锁中循环等待问题的例子**
