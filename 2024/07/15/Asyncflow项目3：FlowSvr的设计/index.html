@@ -1,0 +1,2362 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="AkiraZheng">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="AkiraZheng">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta name="description" content="一、flowSvr对外接口设计flowSvr对外接口主要有对user的暴露接口和对worker暴露的接口，content-type均为application&#x2F;json（通过序列化反序列化解析），有GET和POST两种请求方式：  GET请求：只能通过url传递参数，参数在url中可见，不安全，常用于向服务器请求数据（适合数据过滤检索的场景） POST请求：参数在请求体content中，不会在url">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Asyncflow项目3：FlowSvr的设计">
+<meta property="og:url" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="一、flowSvr对外接口设计flowSvr对外接口主要有对user的暴露接口和对worker暴露的接口，content-type均为application&#x2F;json（通过序列化反序列化解析），有GET和POST两种请求方式：  GET请求：只能通过url传递参数，参数在url中可见，不安全，常用于向服务器请求数据（适合数据过滤检索的场景） POST请求：参数在请求体content中，不会在url">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/create_task.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/hold_tasks.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/mycat_master_slave.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/table_pos.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/table_pos_flow.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/task_governance.png">
+<meta property="article:published_time" content="2024-07-15T12:55:39.000Z">
+<meta property="article:modified_time" content="2024-10-03T17:59:59.578Z">
+<meta property="article:author" content="AkiraZheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/create_task.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/yueyue.jpg">
+    
+    <title>Asyncflow项目3：FlowSvr的设计 · AkiraZheng&#39;s Time</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.1"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>AkiraZheng's Time.</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">AkiraZheng&#39;s Time.</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">Asyncflow项目3：FlowSvr的设计</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                Asyncflow项目3：FlowSvr的设计
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.8k</span>Reading time: <span class="post-count reading-time">17 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/07/15</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="一、flowSvr对外接口设计"><a href="#一、flowSvr对外接口设计" class="headerlink" title="一、flowSvr对外接口设计"></a>一、flowSvr对外接口设计</h1><p>flowSvr对外接口主要有对<strong>user</strong>的暴露接口和对<strong>worker</strong>暴露的接口，<code>content-type</code>均为<code>application/json</code>（通过序列化反序列化解析），有GET和POST两种请求方式：</p>
+<ul>
+<li><strong>GET</strong>请求：<strong>只能通过url传递参数</strong>，参数在url中可见，不安全，常用于<strong>向服务器请求数据（适合数据过滤检索的场景）</strong></li>
+<li><strong>POST</strong>请求：<strong>参数在请求体content中</strong>，不会在url中显示，安全，常用于<strong>向服务器提交数据（表单提交、创建任务）</strong></li>
+</ul>
+<h2 id="1-5种POST接口说明（3user，2worker）"><a href="#1-5种POST接口说明（3user，2worker）" class="headerlink" title="1. 5种POST接口说明（3user，2worker）"></a>1. 5种POST接口说明（3user，2worker）</h2><h3 id="1-1-user创建任务接口"><a href="#1-1-user创建任务接口" class="headerlink" title="1.1 user创建任务接口"></a>1.1 user创建任务接口</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/create_task</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/create_task</code></li>
+<li>说明：user向flowSvr提交任务，flowSvr将任务存入数据库，返回任务id</li>
+</ul>
+<p><strong>2）请求体中json字段说明</strong></p>
+<ul>
+<li>JSON请求字段为<code>task_data</code>，结构体中包含以下多个字段：<ul>
+<li><code>task_id</code>：创建时不填，可用于接口幂等保证</li>
+<li><code>task_type</code>：任务类型</li>
+<li><code>task_content</code>：任务内容</li>
+<li><code>task_priority</code>：任务优先级，默认为<code>0</code></li>
+<li><code>user_id</code>：用户id</li>
+</ul>
+</li>
+</ul>
+<p><strong>3）响应体字段</strong></p>
+<ul>
+<li><code>code</code>：返回码，<strong>0表示成功</strong>，非0表示失败</li>
+<li><code>msg</code>：返回信息，成功或失败的提示信息<ul>
+<li>成功：<code>SUCCESS</code></li>
+<li>失败情况说明：<code>FAIL_REASON::ERROR_MSG</code></li>
+</ul>
+</li>
+<li><code>task_id</code>：任务id（成功时返回，用于后续查询任务状态）</li>
+</ul>
+<h3 id="1-2-user创建任务接口"><a href="#1-2-user创建任务接口" class="headerlink" title="1.2 user创建任务接口"></a>1.2 user创建任务接口</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/register_task</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/register_task</code></li>
+<li>说明：user向flowSvr注册任务类型，flowSvr将<strong>任务配置信息</strong>插入<strong>任务配置表</strong>，并插入<strong>任务位置表</strong></li>
+</ul>
+<p><strong>2）请求体中json字段说明</strong></p>
+<ul>
+<li>JSON请求字段为<code>task_config_data</code>，结构体中包含以下多个字段：<ul>
+<li><code>task_type</code>：任务类型</li>
+<li><code>schedule_limit</code>：单次调度拉取数</li>
+</ul>
+</li>
+</ul>
+<p><strong>3）响应体字段</strong></p>
+<ul>
+<li><code>code</code>：返回码，<strong>0表示成功</strong>，非0表示失败</li>
+<li><code>msg</code>：返回信息，成功或失败的提示信息</li>
+</ul>
+<h3 id="1-3-user创建新任务类型接口"><a href="#1-3-user创建新任务类型接口" class="headerlink" title="1.3 user创建新任务类型接口"></a>1.3 user创建新任务类型接口</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/register_task_type</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/register_task_type</code></li>
+<li>说明：user向flowSvr注册新的任务类型，flowSvr将<strong>任务配置信息</strong>插入<strong>任务配置表</strong>，并插入<strong>任务位置表</strong>，新建<strong>任务信息表1</strong></li>
+</ul>
+<p><strong>2）请求体中json字段说明</strong></p>
+<ul>
+<li>JSON请求字段为<code>task_type_data</code>，结构体中包含以下多个字段：<ul>
+<li><code>task_type</code>：任务类型</li>
+<li><code>schedule_limit</code>：单次调度拉取数（可选）</li>
+<li><code>schedule_interval</code>：每次拉取任务间隔（可选）</li>
+<li><code>max_retry_num</code>：最大重试次数（可选）</li>
+<li><code>max_retry_interval</code>：最大重试时间间隔（可选）</li>
+</ul>
+</li>
+</ul>
+<p><strong>3）响应体字段</strong></p>
+<ul>
+<li><code>code</code>：返回码，<strong>0表示成功</strong>，非0表示失败</li>
+<li><code>msg</code>：返回信息，成功或失败的提示信息</li>
+</ul>
+<h3 id="1-4-worker拉取占据一批任务的接口"><a href="#1-4-worker拉取占据一批任务的接口" class="headerlink" title="1.4 worker拉取占据一批任务的接口"></a>1.4 worker拉取占据一批任务的接口</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/hold_tasks</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/hold_tasks</code></li>
+<li>说明：worker向flowSvr拉取一批任务，flowSvr将<strong>这批任务的status</strong>置为<strong>2执行中</strong>，并<strong>返回任务列表给worker</strong></li>
+</ul>
+<p><strong>2）请求体中json字段说明</strong></p>
+<ul>
+<li><code>task_type</code>：任务类型</li>
+</ul>
+<p><strong>3）响应体字段</strong></p>
+<ul>
+<li><code>code</code>：返回码，<strong>0表示成功</strong>，非0表示失败</li>
+<li><code>msg</code>：返回信息，成功或失败的提示信息</li>
+<li><code>task_list</code>：任务列表（成功时返回）<ul>
+<li><code>user_id</code>：用户id</li>
+<li><code>task_id</code>：任务id</li>
+<li><code>task_type</code>：任务类型</li>
+<li>……（任务信息表其它所有字段）</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-5-worker提交任务执行结果（更新任务）"><a href="#1-5-worker提交任务执行结果（更新任务）" class="headerlink" title="1.5 worker提交任务执行结果（更新任务）"></a>1.5 worker提交任务执行结果（更新任务）</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/set_task</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/set_task</code></li>
+<li>说明：worker向flowSvr提交任务执行结果，主要为<strong>更新status、schedule_log、crt_retry_num、stage、task_content</strong>字段</li>
+</ul>
+<p><strong>2）请求体中json字段说明</strong></p>
+<ul>
+<li>JSON请求字段为<code>task_data</code>，结构体中包含以下多个字段：<ul>
+<li><code>task_id</code>：任务id</li>
+<li><code>task_type</code>：任务类型</li>
+<li><code>status</code>：任务状态</li>
+<li><code>schedule_log</code>：任务调度日志</li>
+<li><code>crt_retry_num</code>：当前已经重试次数</li>
+<li><code>task_stage</code>：任务阶段</li>
+<li><code>task_content</code>：任务内容</li>
+</ul>
+</li>
+</ul>
+<p><strong>3）响应体字段</strong></p>
+<ul>
+<li><code>code</code>：返回码，<strong>0表示成功</strong>，非0表示失败</li>
+<li><code>msg</code>：返回信息，成功或失败的提示信息</li>
+</ul>
+<h2 id="2-5种GET接口说明"><a href="#2-5种GET接口说明" class="headerlink" title="2. 5种GET接口说明"></a>2. 5种GET接口说明</h2><h3 id="2-1-PING接口"><a href="#2-1-PING接口" class="headerlink" title="2.1 PING接口"></a>2.1 PING接口</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/ping</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/ping</code></li>
+<li>说明：用于测试flowSvr是否正常</li>
+<li>无请求参数</li>
+</ul>
+<h3 id="2-2-user通过task-id查询任务状态"><a href="#2-2-user通过task-id查询任务状态" class="headerlink" title="2.2 user通过task_id查询任务状态"></a>2.2 user通过task_id查询任务状态</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/get_task</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/get_task?task_id=xxx</code></li>
+<li>说明：user通过task_id查询任务状态</li>
+</ul>
+<p><strong>2）请求参数</strong></p>
+<ul>
+<li><code>task_id</code>：生成<strong>task_id</strong>的时候会<strong>自带任务对应的表pos（如<code>...9ea_video_1</code>）</strong>，所以只需要传task_id即可</li>
+</ul>
+<p><strong>3）响应体字段</strong></p>
+<ul>
+<li><code>code</code>：返回码，<strong>0表示成功</strong>，非0表示失败</li>
+<li><code>msg</code>：返回信息，成功或失败的提示信息</li>
+<li><code>task_data</code>：任务信息（成功时返回）<ul>
+<li><code>user_id</code>：用户id</li>
+<li><code>task_id</code>：任务id</li>
+<li><code>status</code>：任务状态</li>
+<li><code>stage</code>：任务阶段</li>
+<li><code>schedule_log</code>：任务调度日志</li>
+<li><code>task_content</code>：任务内容</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-3-管理：查询所有任务配置信息"><a href="#2-3-管理：查询所有任务配置信息" class="headerlink" title="2.3 管理：查询所有任务配置信息"></a>2.3 管理：查询所有任务配置信息</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/get_task_schedule_cfg_list</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/get_task_schedule_cfg_list</code></li>
+<li>说明：查询所有任务配置信息</li>
+</ul>
+<p><strong>2）响应体字段</strong></p>
+<ul>
+<li><code>code</code>：返回码，<strong>0表示成功</strong>，非0表示失败</li>
+<li><code>msg</code>：返回信息，成功或失败的提示信息</li>
+<li><code>task_schedule_cfg_list</code>：结构体，含任务配置信息列表所有字段</li>
+</ul>
+<h3 id="2-4-后台管理：过滤筛选某个条件下n条任务信息"><a href="#2-4-后台管理：过滤筛选某个条件下n条任务信息" class="headerlink" title="2.4 后台管理：过滤筛选某个条件下n条任务信息"></a>2.4 后台管理：过滤筛选某个条件下n条任务信息</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/get_task_list</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/get_task_list?task_type=xxx&amp;status=xxx&amp;limit=xxx</code></li>
+<li>说明：过滤筛选某个条件下n条任务信息</li>
+</ul>
+<p><strong>2）请求参数</strong></p>
+<p>以下可选的筛选条件：</p>
+<ul>
+<li><code>task_type</code>：任务类型</li>
+<li><code>status</code>：任务状态</li>
+<li><code>limit</code>：限制返回的任务数</li>
+<li><code>stage</code>：任务阶段</li>
+</ul>
+<p><strong>3）响应体字段</strong></p>
+<ul>
+<li><code>code</code>：返回码，<strong>0表示成功</strong>，非0表示失败</li>
+<li><code>msg</code>：返回信息，成功或失败的提示信息</li>
+<li><code>task_list</code>：符合条件的任务信息表所有字段</li>
+</ul>
+<h3 id="2-5-后台管理：获取某个任务count数"><a href="#2-5-后台管理：获取某个任务count数" class="headerlink" title="2.5 后台管理：获取某个任务count数"></a>2.5 后台管理：获取某个任务count数</h3><p><strong>1）接口说明</strong></p>
+<ul>
+<li>接口：<code>/get_task_counts_by_type</code></li>
+<li>请求地址：<code>http://&lt;flowSvr_ip&gt;:&lt;port&gt;/v1/get_task_counts_by_type?task_type=xxx</code></li>
+<li>说明：获取某个任务有多少条任务</li>
+</ul>
+<p><strong>2）响应体字段</strong></p>
+<ul>
+<li><code>code</code>：返回码，<strong>0表示成功</strong>，非0表示失败</li>
+<li><code>msg</code>：返回信息，成功或失败的提示信息</li>
+<li><code>task_count</code>：任务数</li>
+</ul>
+<h1 id="二、flowSvr任务流程设计"><a href="#二、flowSvr任务流程设计" class="headerlink" title="二、flowSvr任务流程设计"></a>二、flowSvr任务流程设计</h1><h2 id="1-创建任务流程"><a href="#1-创建任务流程" class="headerlink" title="1. 创建任务流程"></a>1. 创建任务流程</h2><ul>
+<li>step1：user发起请求</li>
+<li>step2：nginx负载均衡到flowSvr</li>
+<li>step3：flowSvr接收请求，路由到<code>创建任务函数</code><ul>
+<li>3.1：<code>HandlerIput</code>检查入参是否合法及完整，不合法则返回错误</li>
+<li>3.2：<code>HandleProcess</code>处理插入任务逻辑<ul>
+<li><strong>任务位置表</strong>找到插入的表号</li>
+<li><strong>任务配置表</strong>获取该任务的一些<strong>默认配置信息</strong></li>
+<li>根据<strong>入参和配置信息</strong>插入任务表</li>
+</ul>
+</li>
+<li>3.3：<code>HandlerOutput</code>回包</li>
+</ul>
+</li>
+</ul>
+<img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/create_task.png" width="50%">
+
+<h2 id="2-worker拉取占据任务流程"><a href="#2-worker拉取占据任务流程" class="headerlink" title="2. worker拉取占据任务流程"></a>2. worker拉取占据任务流程</h2><ul>
+<li>step1：worker发起请求</li>
+<li>step2：nginx负载均衡到flowSvr</li>
+<li>step3：flowSvr接收请求，路由到<code>占据任务函数</code><ul>
+<li>3.1：<code>HandlerIput</code>检查入参是否合法及完整，不合法则返回错误</li>
+<li>3.2：<code>HandleProcess</code>处理拉取任务逻辑<ul>
+<li><strong>任务位置表</strong>拿到当下要调度的表号</li>
+<li><strong>任务配置表</strong>拿到该任务的<strong>单次拉取数</strong></li>
+<li>在调度的表中根据<code>order_time</code>排序拉取一批任务</li>
+<li>将这批任务的<strong>status</strong>置为<strong>2执行中</strong></li>
+</ul>
+</li>
+<li>3.3：<code>HandlerOutput</code>回包</li>
+</ul>
+</li>
+</ul>
+<img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/hold_tasks.png" width="50%">
+
+
+<h1 id="三、具体设计细节"><a href="#三、具体设计细节" class="headerlink" title="三、具体设计细节"></a>三、具体设计细节</h1><h2 id="1-最大重试时间设计"><a href="#1-最大重试时间设计" class="headerlink" title="1. 最大重试时间设计"></a>1. 最大重试时间设计</h2><p>框架允许选用两种重试策略：<strong>均匀重试</strong>和<strong>渐进重试</strong>，由<strong>任务配置表</strong>中的<code>max_retry_interval</code>字段控制</p>
+<ul>
+<li>当<code>max_retry_interval</code>为<strong>负数</strong>时，表示采用<strong>均匀重试</strong>策略</li>
+<li>当<code>max_retry_interval</code>为<strong>正数</strong>时，表示采用<strong>渐进重试</strong>策略</li>
+</ul>
+<p>重试次数策略</p>
+<ul>
+<li><code>max_retry_num</code>：最大重试次数</li>
+<li><code>crt_retry_num</code>：当前已经重试次数</li>
+<li><code>max_retry_interval</code>：最大重试时间间隔</li>
+</ul>
+<p>渐进重试公式：<code>order_time += min(1&lt;&lt;crt_retry_num, max_retry_interval)</code></p>
+<p>举例：<code>max_retry_interval=10</code>，重试时会从1开始，翻倍递增，直到10后一直不变，直到达到最大重试次数。[1, 2, 4, 8, 10, 10, 10, 10, 10, 10]</p>
+<h2 id="2-拉取任务的优先级"><a href="#2-拉取任务的优先级" class="headerlink" title="2. 拉取任务的优先级"></a>2. 拉取任务的优先级</h2><p>排序的目的：用于<strong>拉取任务时优先选择拉取哪些任务</strong></p>
+<p>拉取任务的先后排序跟以下三个因素相关：</p>
+<ul>
+<li><strong>任务创建时间modify_time</strong></li>
+<li><strong>任务优先级priority</strong></li>
+<li><strong>任务重试时间retry_interval</strong></li>
+</ul>
+<h3 id="2-1-任务创建时间"><a href="#2-1-任务创建时间" class="headerlink" title="2.1 任务创建时间"></a>2.1 任务创建时间</h3><p>任务创建时间是任务的<strong>基础排序</strong>，即<strong>先创建的任务先执行</strong>，但是由于该调度算法存在多阶段任务，所以如果按照<strong>创建时间</strong>排序，会导致某些后来的处于低阶段的任务被饿死</p>
+<p>解决：摈弃<strong>创建时间</strong>，改成用<strong>修改时间modify_time</strong>做为排序的依据</p>
+<h3 id="2-2-任务优先级"><a href="#2-2-任务优先级" class="headerlink" title="2.2 任务优先级"></a>2.2 任务优先级</h3><p>任务优先级是任务的<strong>第二排序</strong>，即<strong>优先级高的任务先执行</strong>，优先级高的任务会被提前调度</p>
+<p>一般的任务，都是采用<strong>绝对优先级</strong>，但是在该调度框架中要考虑<strong>重试</strong>的情况，所以不能单一考虑<strong>绝对优先级</strong></p>
+<p>因此框架中将<strong>优先级</strong>抽象成<strong>提前priority时间</strong></p>
+<h3 id="2-3-任务重试时间"><a href="#2-3-任务重试时间" class="headerlink" title="2.3 任务重试时间"></a>2.3 任务重试时间</h3><p>任务重试阶段要保证任务在<strong>重试时间间隔retry_interval内</strong>不会被调度</p>
+<h3 id="2-4-order-time排序"><a href="#2-4-order-time排序" class="headerlink" title="2.4 order_time排序"></a>2.4 order_time排序</h3><p><strong>1）order_time的设计原理</strong></p>
+<p>在上述三种影响因素下，如果我们拉取任务时需要同时将<strong>priority</strong>和<strong>modify_time</strong>都加上联合索引，且大多数时候priority是一样的，增加一个索引很浪费资源，而且priority作为最高优先级其实不合理，比如一个高优先级任务失败后又马上被选中执行了</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t_lark_task_1 <span class="keyword">WHERE</span> (status <span class="operator">=</span> <span class="number">1</span>) <span class="keyword">ORDER</span> <span class="keyword">BY</span> priority <span class="keyword">desc</span>, modify_time LIMIT <span class="number">100</span>;</span><br></pre></td></tr></table></figure>
+
+<p>解决方法：</p>
+<ul>
+<li>抽象出一个中间字段<code>order_time</code>耦合上面的三个排序相关字段</li>
+</ul>
+<p>排序原理：</p>
+<ul>
+<li>order_time的相对时间戳越小，越早被拉取</li>
+</ul>
+<p>优点：</p>
+<ul>
+<li><strong>解耦</strong>，只需要给<code>order_time</code>与<code>status</code>加上<strong>联合索引</strong>，不用给几个相关字段都加入联合索引</li>
+<li>让低优先级任务也有可能有更早被调用的可能</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t_lark_task_1 <span class="keyword">WHERE</span> (status <span class="operator">=</span> <span class="number">1</span>) <span class="keyword">ORDER</span> <span class="keyword">BY</span> order_time LIMIT <span class="number">100</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>2）order_time的更新</strong></p>
+<p>在设计更新规则时需要同时考虑三个因素的规则：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+<th>更新规则约束</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>modify_time</td>
+<td>先进先出</td>
+<td>保证多阶段下，新阶段扔回去时排到队尾</td>
+</tr>
+<tr>
+<td>priority</td>
+<td>考虑任务优先级</td>
+<td>解耦，将priority由级别抽象成优先priority秒，级别更高的提前的秒数更多</td>
+</tr>
+<tr>
+<td>retry_interval</td>
+<td>防止被异常任务阻塞住</td>
+<td>添加重试时间，异常失败的任务需要的重试时间肯定长，也就是排得后面点</td>
+</tr>
+</tbody></table>
+<p>根据以上约束，<code>order_time</code>在三个阶段需要更新：</p>
+<ul>
+<li><strong>任务创建</strong>：<code>order_time = create_time - priority</code><ul>
+<li>说明：根据优先级<strong>提前任务调度时间</strong></li>
+</ul>
+</li>
+<li><strong>任务执行成功</strong>：<code>order_time = modify_time - priority</code><ul>
+<li>说明：根据优先级<strong>提前任务调度时间</strong></li>
+</ul>
+</li>
+<li><strong>任务执行失败&amp;&amp;治理模块发现超时任务</strong>：<code>order_time = modify_time + retry_interval</code><ul>
+<li>说明：根据<strong>重试时间</strong>延迟任务被调度时间</li>
+<li>这里不能加上priority，否则无法保证<strong>重试时间间隔retry_interval内</strong>不会被调度</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-分表设计"><a href="#3-分表设计" class="headerlink" title="3. 分表设计"></a>3. 分表设计</h2><h3 id="3-1-分表策略"><a href="#3-1-分表策略" class="headerlink" title="3.1 分表策略"></a>3.1 分表策略</h3><p>这里对多种分表策略进行对比：</p>
+<ul>
+<li><strong>不分表</strong>：不分表<strong>全表扫描性能会很差</strong>，同时<strong>影响查询和任务拉取接口</strong>的效率</li>
+<li><strong>hash切分user_id</strong>：如果按user分表是更<strong>有利于数据过滤查询</strong>这种<strong>后台管理业务</strong>的实现，比如购物车心愿单添加这种场景</li>
+<li><strong>按大小阈值滚表</strong>：通常调度框架的目的是做任务调度，按照user的话表内会存在很多冷数据，影响拉取任务时的检索速度</li>
+<li><strong>分库+分表</strong>：只有分表的话会存在<strong>任务提交单超过MySQL处理能力时的性能瓶颈问题</strong>，单MySQL实例库的话无法进行水平扩展（由于受单MySQL库的性能瓶颈影响，水平扩展多个flowSvr或worker后也难以提升性能）</li>
+</ul>
+<p>策略选择：</p>
+<ul>
+<li><strong>hash还是滚表</strong>：如mycat等中间件实现分表的策略一般是<strong>hash切分user_id</strong>，而在该调度框架中，由于任务是不断推进的，冷表属于过去式，对任务拉取性能会有影响，我们更关注的是热表数据，因此在次特点上采用<strong>range</strong>按大小阈值滚表策略保证<strong>pos区间外的冷数据在拉取任务时不会加入检索中</strong>（pos区间内的冷数据还是无法避免，但已经一定程度上提高性能了）</li>
+<li><strong>分表还是分库+分表</strong>：本项目场景下，<strong>异步执行任务最大的瓶颈</strong>出现在<strong>worker执行的具体耗时任务</strong>上，也就是worker调用的下游接口的性能，所以就算flowSvr性能提升允许接收更多任务，下游接口也处理不了（如北斗解算场景），同时引入分库会增加开发及维护成本，所以本项目采用<strong>分表</strong>策略</li>
+</ul>
+<p>前瞻设计-<strong>分库+分表</strong>：</p>
+<p>如果实在是要<strong>提高flowsvr的接收能力</strong>的话，也是可以通过引入中间件通过hash切片将用户分到不同数据库实例中隔离开来执行（tdsql天然支持切片，或者使用中间件mycat）</p>
+<ul>
+<li> 分库依据：根据user_id字段进行将数据分布到不同的数据库中</li>
+<li> 主从同步：配置 MySQL 的主从复制功能，使得主库（写）的数据变化可以实时同步到从库（读、负载均衡）。采用异步复制或半同步复制的方式，确保数据一致性和读写分离。</li>
+<li>配置文件<ul>
+<li><strong>mycat</strong>中间件中配置<strong>读写分离配置</strong></li>
+<li>结合<strong>数据库本身</strong>的<strong>主从复制</strong>功能能实现主从数据库</li>
+</ul>
+</li>
+</ul>
+<img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/mycat_master_slave.png" width="50%">
+
+<blockquote>
+<p>参考：<br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/joylee/p/7513038.html">学会使用Mycat实现分库分表</a><br><a target="_blank" rel="noopener" href="https://juejin.cn/post/7082719286518612005">MySQL主从复制</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/05df9ed24c97">Redis主从复制</a></p>
+</blockquote>
+<h3 id="3-2-分表设计"><a href="#3-2-分表设计" class="headerlink" title="3.2 分表设计"></a>3.2 分表设计</h3><p>由于是范围滚表，所以在<strong>任务位置表</strong>中需要有<strong>开始位置begin_pos</strong>和<strong>结束位置end_pos</strong>两个字段，用于标记<strong>worker下次调度在哪个表拉取任务</strong>和<strong>user下次在哪个表插入任务</strong></p>
+<p><strong>1）位置更新</strong></p>
+<p>对<code>end_pos</code>的更新途径：</p>
+<ul>
+<li><strong>任务治理模块</strong>：定时全表扫描，当前表<code>status</code>都为终态<code>3执行成功</code>或<code>4执行失败</code>时，更新<strong>end_pos++</strong></li>
+</ul>
+<p><code>begin_pos</code>的更新也意味着将进行分表，对<code>begin_pos</code>的更新途径：</p>
+<ul>
+<li><strong>任务治理模块</strong>：count&gt;500w时，更新<strong>begin_pos++<strong>，分表中对阈值的判断是&gt;=500w，允许</strong>分表的延时</strong>（也就是有可能是大于500w再分表的）</li>
+</ul>
+<p>分表模块划分：</p>
+<img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/table_pos.png" width="50%">
+
+<p>分表流程：</p>
+<img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/table_pos_flow.png" width="40%">
+
+<h3 id="3-3-分表参数"><a href="#3-3-分表参数" class="headerlink" title="3.3 分表参数"></a>3.3 分表参数</h3><ul>
+<li><strong>滚表阈值</strong>选择：<strong>500w</strong>，属于经验值&amp;&amp;阿里巴巴推荐值</li>
+</ul>
+<h2 id="4-数据库设计"><a href="#4-数据库设计" class="headerlink" title="4. 数据库设计"></a>4. 数据库设计</h2><h3 id="4-1-数据库选择"><a href="#4-1-数据库选择" class="headerlink" title="4.1 数据库选择"></a>4.1 数据库选择</h3><p><strong>1）持久化数据库选择</strong></p>
+<p>这里考虑选择<strong>MongoDB</strong>或<strong>MySQL</strong>两种数据库，MongoDB也是比较接近关系型数据库的非关系数据库了，刚开始是考虑<strong>MongoDB不支持事务也不支持join联表查询</strong>，其次是之前我一直接触的是MySQL，所以也存在一定的学习成本，最终选择了<strong>MySQL</strong></p>
+<p>当然也会想到Redis的处理能力更强，也具备持久能力，但是Redis基于内存，成本高且存储能力有限，也有一定概率会丢失数据，因此不考虑用Redis</p>
+<ul>
+<li>redis用RDB持久化：快照有延迟，只适合做备份，宕机容易导致数据丢失</li>
+<li>redis用AOF持久化：<strong>每次写操作都会记录日志</strong>，性能较差，且数据量大时会导致磁盘IO压力过大，主从同步也可能导致数据丢失</li>
+</ul>
+<p>前瞻设计-<strong>MongoDB</strong>：</p>
+<ul>
+<li>当然其实还有考虑一种场景就是<strong>上下文存的是大数据</strong>，也就是文件类型的话，后续可能就会引入MongoDB，但是目前还不需要</li>
+</ul>
+<p><strong>2）缓存数据库选择</strong></p>
+<h3 id="4-2-数据库连接池设计"><a href="#4-2-数据库连接池设计" class="headerlink" title="4.2 数据库连接池设计"></a>4.2 数据库连接池设计</h3><h4 id="4-2-1-连接池的作用"><a href="#4-2-1-连接池的作用" class="headerlink" title="4.2.1 连接池的作用"></a>4.2.1 连接池的作用</h4><p>设计数据库连接池的作用：</p>
+<ul>
+<li> 维护池中的长连接，<strong>减少</strong>接收请求时的频繁连接造成的<strong>创建成本</strong></li>
+<li> 避免高峰期大量连接进来导致的地址不够分配的问题，实现<strong>资源复用</strong></li>
+</ul>
+<h4 id="4-2-2-连接池参数"><a href="#4-2-2-连接池参数" class="headerlink" title="4.2.2 连接池参数"></a>4.2.2 连接池参数</h4><p>GO语言开发下，选用<strong>GORM库</strong>实现数据库连接池，简化 Go 应用与数据库的交互</p>
+<p><strong>GORM库</strong>连接池的特点：除了最大池内连接数（长连接）限制外，还做了<strong>最大连接数（长连接+短连接）兜底</strong>，也就是允许峰值时期的短连接，</p>
+<p><strong>GORM库</strong>的连接池参数主要有以下几个：</p>
+<p>| 参数 | 说明 | 默认值 | 选用值 |<br>| — | — | — |<br>| maxIdleConn | 连接池中最大长连接个数，是影响连接池性能的最关键因素，<strong>调优空间大</strong> | 10 | 1000 |<br>| maxLifetime | 最大空闲时间，在空闲连接检查中，<strong>超过该值的连接空闲会被释放连接资源</strong> | 0 | 10s |<br>| maxOpenConn | 连接池最大连接数，<strong>兜底用的</strong>，由<strong>长连接</strong>maxIdleConn和<strong>短连接</strong>决定 | 0 | 5000 |<br>| timeBetweenEvictionRunsMillis | 配置一定时间<strong>检查要关闭的空闲连接</strong> | 0 | 10s |</p>
+<h2 id="5-任务治理模块"><a href="#5-任务治理模块" class="headerlink" title="5. 任务治理模块"></a>5. 任务治理模块</h2><p>在分表场景下，刚开始使用每次创建任务时都会<strong>全表扫描</strong>，但是随着任务量的增加，全表扫描的性能会越来越差，导致<strong>create_task</strong>接口的性能下降，因此引入<strong>任务治理模块</strong>，定时执行一些任务，在分表时也允许<strong>分表的延时</strong>，所以问题不大</p>
+<p>任务治理模块主要执行以下两个任务：</p>
+<img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/task_governance.png" width="50%">
+
+<p>分表的sql逻辑：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> t_lark_task_1;</span><br></pre></td></tr></table></figure>
+
+<p>超时任务判断逻辑：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> A <span class="keyword">where</span> status<span class="operator">=</span><span class="number">2</span> <span class="keyword">and</span> now()<span class="operator">&gt;</span>modify_time<span class="operator">+</span>max_processing_time;</span><br></pre></td></tr></table></figure>
+
+<h1 id="四、flowSvr性能"><a href="#四、flowSvr性能" class="headerlink" title="四、flowSvr性能"></a>四、flowSvr性能</h1><p>异步调度框架中最大的性能瓶颈是worker<strong>耗时任务</strong>，而flowSvr的瓶颈一般都是在<strong>数据库读写</strong>上，也就是MySQL</p>
+<h2 id="4-1-数据库性能优化两个关键点"><a href="#4-1-数据库性能优化两个关键点" class="headerlink" title="4.1 数据库性能优化两个关键点"></a>4.1 数据库性能优化两个关键点</h2><ul>
+<li><strong>sql语句优化</strong><ul>
+<li><strong>添加task_id索引</strong>和<strong>status-order_time联合索引</strong>，提高任务查询和拉取效率</li>
+<li><strong>分表</strong>通过任务治理模块定时处理，减少全表扫描</li>
+<li>在处理竞争时放弃<code>for update</code>的方式，转成使用分布式锁</li>
+</ul>
+</li>
+<li><strong>数据库连接池优化</strong><ul>
+<li>主要是对<strong>GORM库</strong>的连接池参数<code>maxIdleConn</code>和<code>maxOpenConn</code>进行调优，提高连接池性能</li>
+</ul>
+</li>
+</ul>
+<h2 id="4-2-数据库连接池调优"><a href="#4-2-数据库连接池调优" class="headerlink" title="4.2 数据库连接池调优"></a>4.2 数据库连接池调优</h2><p>调优原因：一开始压测时查看<strong>netstat发现出现了很多TIME_WAIT</strong>，应该是端口被耗尽了，根据常识定位到消耗端口最大的可能性就是连接池的问题，因此将连接池的参数调大</p>
+<p>测试工具：wrk这个轻量级工具进行压测，只需要进行一些配置就行</p>
+<p>几个接口在2核4g下调优结果</p>
+<table>
+<thead>
+<tr>
+<th>接口</th>
+<th>maxIdleConn初始值：QPS</th>
+<th>maxIdleConn调优值：QPS</th>
+<th>分析</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>create_task</td>
+<td>10：350</td>
+<td>1000：3000</td>
+<td>正常</td>
+</tr>
+<tr>
+<td>get_task</td>
+<td>10：400</td>
+<td>1000：3300</td>
+<td>查询有redis缓存，QPS会高点也正常</td>
+</tr>
+<tr>
+<td>hold_tasks</td>
+<td>10：180</td>
+<td>1000：2000</td>
+<td>由于拉取任务既有业务逻辑又有数据库读写操作，较为复杂，QPS低点但是也有提升</td>
+</tr>
+</tbody></table>
+
+    </article>
+    <!-- license -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
+            <p>Link：<a href="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">July 15th 2024, 8:55:39 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">October 4th 2024, 1:59:59 am</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/" title="分布式Kafka学习">
+                    <div class="nextTitle">分布式Kafka学习</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/" title="Asyncflow项目2：整体设计思路">
+                    <div class="prevTitle">Asyncflow项目2：整体设计思路</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC81NjEyMS8zMjU4NA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活 JavaScript</noscript>
+    </div>
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:tianzheng_edu@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="https://github.com/akirazheng" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81flowSvr%E5%AF%B9%E5%A4%96%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1"><span class="toc-text">一、flowSvr对外接口设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-5%E7%A7%8DPOST%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E%EF%BC%883user%EF%BC%8C2worker%EF%BC%89"><span class="toc-text">1. 5种POST接口说明（3user，2worker）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-user%E5%88%9B%E5%BB%BA%E4%BB%BB%E5%8A%A1%E6%8E%A5%E5%8F%A3"><span class="toc-text">1.1 user创建任务接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-user%E5%88%9B%E5%BB%BA%E4%BB%BB%E5%8A%A1%E6%8E%A5%E5%8F%A3"><span class="toc-text">1.2 user创建任务接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-user%E5%88%9B%E5%BB%BA%E6%96%B0%E4%BB%BB%E5%8A%A1%E7%B1%BB%E5%9E%8B%E6%8E%A5%E5%8F%A3"><span class="toc-text">1.3 user创建新任务类型接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-worker%E6%8B%89%E5%8F%96%E5%8D%A0%E6%8D%AE%E4%B8%80%E6%89%B9%E4%BB%BB%E5%8A%A1%E7%9A%84%E6%8E%A5%E5%8F%A3"><span class="toc-text">1.4 worker拉取占据一批任务的接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-worker%E6%8F%90%E4%BA%A4%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C%E7%BB%93%E6%9E%9C%EF%BC%88%E6%9B%B4%E6%96%B0%E4%BB%BB%E5%8A%A1%EF%BC%89"><span class="toc-text">1.5 worker提交任务执行结果（更新任务）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5%E7%A7%8DGET%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E"><span class="toc-text">2. 5种GET接口说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-PING%E6%8E%A5%E5%8F%A3"><span class="toc-text">2.1 PING接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-user%E9%80%9A%E8%BF%87task-id%E6%9F%A5%E8%AF%A2%E4%BB%BB%E5%8A%A1%E7%8A%B6%E6%80%81"><span class="toc-text">2.2 user通过task_id查询任务状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%AE%A1%E7%90%86%EF%BC%9A%E6%9F%A5%E8%AF%A2%E6%89%80%E6%9C%89%E4%BB%BB%E5%8A%A1%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF"><span class="toc-text">2.3 管理：查询所有任务配置信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%EF%BC%9A%E8%BF%87%E6%BB%A4%E7%AD%9B%E9%80%89%E6%9F%90%E4%B8%AA%E6%9D%A1%E4%BB%B6%E4%B8%8Bn%E6%9D%A1%E4%BB%BB%E5%8A%A1%E4%BF%A1%E6%81%AF"><span class="toc-text">2.4 后台管理：过滤筛选某个条件下n条任务信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%EF%BC%9A%E8%8E%B7%E5%8F%96%E6%9F%90%E4%B8%AA%E4%BB%BB%E5%8A%A1count%E6%95%B0"><span class="toc-text">2.5 后台管理：获取某个任务count数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81flowSvr%E4%BB%BB%E5%8A%A1%E6%B5%81%E7%A8%8B%E8%AE%BE%E8%AE%A1"><span class="toc-text">二、flowSvr任务流程设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%88%9B%E5%BB%BA%E4%BB%BB%E5%8A%A1%E6%B5%81%E7%A8%8B"><span class="toc-text">1. 创建任务流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-worker%E6%8B%89%E5%8F%96%E5%8D%A0%E6%8D%AE%E4%BB%BB%E5%8A%A1%E6%B5%81%E7%A8%8B"><span class="toc-text">2. worker拉取占据任务流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%85%B7%E4%BD%93%E8%AE%BE%E8%AE%A1%E7%BB%86%E8%8A%82"><span class="toc-text">三、具体设计细节</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%9C%80%E5%A4%A7%E9%87%8D%E8%AF%95%E6%97%B6%E9%97%B4%E8%AE%BE%E8%AE%A1"><span class="toc-text">1. 最大重试时间设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%8B%89%E5%8F%96%E4%BB%BB%E5%8A%A1%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-text">2. 拉取任务的优先级</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E6%97%B6%E9%97%B4"><span class="toc-text">2.1 任务创建时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%BB%BB%E5%8A%A1%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-text">2.2 任务优先级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%BB%BB%E5%8A%A1%E9%87%8D%E8%AF%95%E6%97%B6%E9%97%B4"><span class="toc-text">2.3 任务重试时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-order-time%E6%8E%92%E5%BA%8F"><span class="toc-text">2.4 order_time排序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%88%86%E8%A1%A8%E8%AE%BE%E8%AE%A1"><span class="toc-text">3. 分表设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%88%86%E8%A1%A8%E7%AD%96%E7%95%A5"><span class="toc-text">3.1 分表策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%88%86%E8%A1%A8%E8%AE%BE%E8%AE%A1"><span class="toc-text">3.2 分表设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%88%86%E8%A1%A8%E5%8F%82%E6%95%B0"><span class="toc-text">3.3 分表参数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1"><span class="toc-text">4. 数据库设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%89%E6%8B%A9"><span class="toc-text">4.1 数据库选择</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%AE%BE%E8%AE%A1"><span class="toc-text">4.2 数据库连接池设计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-1-%E8%BF%9E%E6%8E%A5%E6%B1%A0%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">4.2.1 连接池的作用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-2-%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%8F%82%E6%95%B0"><span class="toc-text">4.2.2 连接池参数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E4%BB%BB%E5%8A%A1%E6%B2%BB%E7%90%86%E6%A8%A1%E5%9D%97"><span class="toc-text">5. 任务治理模块</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81flowSvr%E6%80%A7%E8%83%BD"><span class="toc-text">四、flowSvr性能</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%B8%A4%E4%B8%AA%E5%85%B3%E9%94%AE%E7%82%B9"><span class="toc-text">4.1 数据库性能优化两个关键点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%B0%83%E4%BC%98"><span class="toc-text">4.2 数据库连接池调优</span></a></li></ol></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 53
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span>
+            <a class="archive-post-title" href="/2024/12/18/%E7%88%AC%E8%99%AB%E5%AE%9E%E7%8E%B0QQ%E7%BE%A4%E4%BD%9C%E4%B8%9A%E7%9A%84%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD/">爬虫实现QQ群作业的批量下载</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">手写操作系统1：项目环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/23</span>
+            <a class="archive-post-title" href="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/">计算机网络层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span>
+            <a class="archive-post-title" href="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">计算机网络传输层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span>
+            <a class="archive-post-title" href="/2024/09/21/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Redis数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/Asyncflow%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">Asyncflow项目6：worker开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2024/09/14/Asyncflow%E9%A1%B9%E7%9B%AE5%EF%BC%9Aflowsvr%E5%BC%80%E5%8F%91/">Asyncflow项目5：flowsvr开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/18</span>
+            <a class="archive-post-title" href="/2024/08/18/Asyncflow%E9%A1%B9%E7%9B%AE4%EF%BC%9AWorker%E7%9A%84%E8%AE%BE%E8%AE%A1/">Asyncflow项目4：Worker的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/">分布式Kafka学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">Asyncflow项目2：整体设计思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">Asyncflow项目3：FlowSvr的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span>
+            <a class="archive-post-title" href="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">Asyncflow项目1：环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3%E7%9A%84Linux%E6%93%8D%E4%BD%9C/">操作系统相关的Linux操作</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">文件描述符</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span>
+            <a class="archive-post-title" href="/2024/05/17/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">操作系统内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/15</span>
+            <a class="archive-post-title" href="/2024/05/15/%E5%A4%A7%E9%A1%B6%E5%A0%86-%E5%B0%8F%E9%A1%B6%E5%A0%86%EF%BC%88CPP%EF%BC%89/">大顶堆/小顶堆（CPP）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/01</span>
+            <a class="archive-post-title" href="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">高并发系统设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span>
+            <a class="archive-post-title" href="/2024/04/29/KMP%E7%AE%97%E6%B3%95/">KMP算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span>
+            <a class="archive-post-title" href="/2024/04/26/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/">动态规划-背包问题</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/25</span>
+            <a class="archive-post-title" href="/2024/04/25/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">操作系统结构及进程管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span>
+            <a class="archive-post-title" href="/2024/04/20/C-%E5%BA%95%E5%B1%82%E5%AD%A6%E4%B9%A0/">C++底层学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Mysql数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span>
+            <a class="archive-post-title" href="/2024/04/03/%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0/">排序实现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">WebServer学习9：WebBench压力测试</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A08%EF%BC%9A%E9%80%9A%E7%94%A8%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1/">WebServer学习8：通用日志系统的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span>
+            <a class="archive-post-title" href="/2024/03/26/WebServer%E5%AD%A6%E4%B9%A07%EF%BC%9A%E5%AE%9A%E6%97%B6%E5%99%A8%E6%8E%A7%E5%88%B6%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4/">WebServer学习7：定时器控制客户端存活时间</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2024/03/11/WebServer%E5%AD%A6%E4%B9%A06%EF%BC%9AHTTP%E8%BF%9E%E6%8E%A5%E5%A4%84%E7%90%86%E5%8F%8A%E6%8A%A5%E6%96%87%E6%9C%BA%E5%88%B6/">WebServer学习6：HTTP连接处理及报文机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/">HTTP协议的迭代（HTTP：应用层）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%AD%A6%E4%B9%A0/">C++基础知识学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/WebServer%E5%AD%A6%E4%B9%A05%EF%BC%9A%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%AE%BE%E8%AE%A1/">WebServer学习5：线程池与数据库连接池设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/05</span>
+            <a class="archive-post-title" href="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/">WebServer学习4：并发事件驱动模式Reactor和Proactor</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span>
+            <a class="archive-post-title" href="/2024/03/04/WebServer%E5%AD%A6%E4%B9%A03%EF%BC%9Asocket%E7%BC%96%E7%A8%8B%E4%B8%8Eepoll%E5%AE%9E%E7%8E%B0I-O%E5%A4%8D%E7%94%A8/">WebServer学习3：socket编程与epoll实现I/O复用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/03</span>
+            <a class="archive-post-title" href="/2024/03/03/WebServer%E5%AD%A6%E4%B9%A02%EF%BC%9A%E4%BB%8EConfig%E6%96%87%E4%BB%B6%E4%BA%86%E8%A7%A3Makefile%E7%BC%96%E8%AF%91/">WebServer学习2：从Config文件了解Makefile编译</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span>
+            <a class="archive-post-title" href="/2024/02/28/WebServer%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C/">WebServer学习1：部署运行</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F6%EF%BC%9A%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/">设计模式6：策略模式</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F5%EF%BC%9A%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95/">设计模式5：模板方法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/08</span>
+            <a class="archive-post-title" href="/2024/02/08/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F0%EF%BC%9A%E9%9D%A2%E5%AF%B9%E5%AF%B9%E8%B1%A1%E7%9A%848%E5%A4%A7%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86/">设计模式0：面对对象的8大设计原理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/07</span>
+            <a class="archive-post-title" href="/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/">从0开始实现线程池(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F4%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">设计模式4：代理模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F3%EF%BC%9A%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/">设计模式3：抽象工厂模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">设计模式2：工厂方法模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span>
+            <a class="archive-post-title" href="/2024/01/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F1%EF%BC%9A%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">设计模式1：单例模式(C++)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span>
+            <a class="archive-post-title" href="/2023/03/18/QT%E7%BC%96%E7%A8%8B%E7%BB%8F%E9%AA%8C/">QT编程经验</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span>
+            <a class="archive-post-title" href="/2022/12/08/SolveProgramLearningProblem/">SolveProgramLearningProblem</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/04</span>
+            <a class="archive-post-title" href="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/">Mine-重装系统后软件相关设置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/24</span>
+            <a class="archive-post-title" href="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/">快捷键方式整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/15</span>
+            <a class="archive-post-title" href="/2022/11/15/LOVE/">LOVE_打火机与公主裙</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2022/04/17/%E5%8A%A8%E6%89%8B%E5%AD%A6%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A001/">动手学深度学习01</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/">搭建Conda虚拟环境</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/13</span>
+            <a class="archive-post-title" href="/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">部署colab利用GPU资源训练深度学习模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">重装系统后Hexo博客部署教程</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/">DELL系统重装教程</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="计算机">
+                <span class="iconfont-archer">&#xe606;</span>
+                计算机
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="环境配置">
+                <span class="iconfont-archer">&#xe606;</span>
+                环境配置
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="杂货铺-休闲">
+                <span class="iconfont-archer">&#xe606;</span>
+                杂货铺-休闲
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="深度学习">
+                <span class="iconfont-archer">&#xe606;</span>
+                深度学习
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Asyncflow">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Asyncflow
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络">
+            <span class="iconfont-archer">&#xe60a;</span>
+            计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据结构与算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据库">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据库
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="WebServer项目（C++）">
+            <span class="iconfont-archer">&#xe60a;</span>
+            WebServer项目（C++）
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="系统设计">
+            <span class="iconfont-archer">&#xe60a;</span>
+            系统设计
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="动手学深度学习">
+            <span class="iconfont-archer">&#xe60a;</span>
+            动手学深度学习
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统">
+            <span class="iconfont-archer">&#xe60a;</span>
+            操作系统
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="设计模式">
+            <span class="iconfont-archer">&#xe60a;</span>
+            设计模式
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://AkiraZheng.github.io",
+        root: siteMetaRoot,
+        author: "AkiraZheng"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
