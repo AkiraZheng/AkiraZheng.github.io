@@ -1919,6 +1919,192 @@
       </tags>
   </entry>
   <entry>
+    <title>HTTP协议的迭代（HTTP：应用层）</title>
+    <url>/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/</url>
+    <content><![CDATA[<h2 id="一、从浏览器输入URL到页面显示的过程"><a href="#一、从浏览器输入URL到页面显示的过程" class="headerlink" title="一、从浏览器输入URL到页面显示的过程"></a>一、从浏览器输入URL到页面显示的过程</h2><h3 id="1-1-URL到显示的全过程"><a href="#1-1-URL到显示的全过程" class="headerlink" title="1.1 URL到显示的全过程"></a>1.1 URL到显示的全过程</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/URL_to_display.png">
+
+<ul>
+<li><strong>URL解析</strong>：浏览器解析URL，得到服务器的域名（<a href="http://www.baidu.com)和端口号,以及请求资源的路径/">www.baidu.com）和端口号，以及请求资源的路径</a><ul>
+<li>在<strong>缓存</strong>中<strong>找得到</strong>该域名对应的IP地址：直接访问服务器发送请求</li>
+<li>在<strong>缓存</strong>中<strong>找不得到</strong>该域名：发起<strong>DNS迭代查询</strong>，得到服务器的IP地址</li>
+</ul>
+</li>
+<li><strong>DNS域名解析</strong>：<strong>客户端</strong>发起<strong>迭代查询</strong>；<strong>DNS服务器</strong>之间通过<strong>递归查询</strong>得到域名对应的IP地址<ul>
+<li>浏览器 —&gt; 本地DNS</li>
+<li>本地DNS —&gt; 根DNS —&gt; 向本地DNS<strong>返回顶级DNS</strong>的IP地址</li>
+<li>本地DNS —&gt; 顶级DNS —&gt; 向本地DNS<strong>返回权威DNS</strong>的IP地址</li>
+<li>本地DNS —&gt; 权威DNS —&gt; 向本地DNS<strong>返回域名对应的IP地址</strong></li>
+</ul>
+</li>
+<li><strong>客户端发起TCP连接</strong>：三次握手</li>
+<li><strong>客户端发送HTTP请求</strong>：请求报文</li>
+<li><strong>服务器发送HTTP响应</strong>：响应<strong>报文</strong>与<strong>状态码</strong></li>
+<li><strong>浏览器解析渲染页面</strong>：解析HTML、CSS、JS等文件</li>
+<li><strong>客户端发起断开TCP连接</strong>：四次挥手</li>
+</ul>
+<h3 id="1-2-DNS域名解析"><a href="#1-2-DNS域名解析" class="headerlink" title="1.2 DNS域名解析"></a>1.2 DNS域名解析</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/DNS.png">
+
+<ul>
+<li><strong>DNS域名解析</strong>：<strong>客户端</strong>发起<strong>迭代查询</strong>；<strong>DNS服务器</strong>之间通过<strong>递归查询</strong>得到域名对应的IP地址<ul>
+<li>浏览器 —&gt; 本地DNS</li>
+<li>本地DNS —&gt; 根DNS —&gt; 向本地DNS<strong>返回顶级DNS</strong>的IP地址</li>
+<li>本地DNS —&gt; 顶级DNS —&gt; 向本地DNS<strong>返回权威DNS</strong>的IP地址</li>
+<li>本地DNS —&gt; 权威DNS —&gt; 向本地DNS<strong>返回域名对应的IP地址</strong></li>
+</ul>
+</li>
+</ul>
+<p>DNS域名解析过程如下：</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/DNS2.png">
+
+<p><strong>DNS可能出现的一些网络攻击问题：</strong></p>
+<ul>
+<li><strong>DNS劫持</strong>：黑客劫持DNS服务器并<strong>篡改解析结果</strong>，使用户访问的网站<strong>跳转到恶意网站</strong><ul>
+<li>解决：换个<strong>DNS服务器</strong>，躲过被劫持的<strong>DNS服务器</strong></li>
+</ul>
+</li>
+<li><strong>DNS污染</strong>：黑客监听某些DNS查询，并伪装成目标服务器返回虚假结果（禁用google就是通过DNS污染实现的）<ul>
+<li>解决：直接在本机绑定hosts绕过DNS，或者更换成没被污染的DNS服务器</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-3-正向代理和反向代理"><a href="#1-3-正向代理和反向代理" class="headerlink" title="1.3 正向代理和反向代理"></a>1.3 正向代理和反向代理</h3><ul>
+<li><strong>正向代理</strong>：代理客户端，<strong>向服务端隐藏客户端</strong>的真实IP地址<ul>
+<li>如平时通过VPN访问外网使用的技术就是正向代理</li>
+</ul>
+</li>
+<li><strong>反向代理</strong>：代理服务器，<strong>向客户端隐藏服务器</strong>的真实IP地址<ul>
+<li>如Nginx就是一个反向代理服务器</li>
+</ul>
+</li>
+</ul>
+<h2 id="二、HTTP协议的特点"><a href="#二、HTTP协议的特点" class="headerlink" title="二、HTTP协议的特点"></a>二、HTTP协议的特点</h2><h3 id="2-1-Web构建的技术"><a href="#2-1-Web构建的技术" class="headerlink" title="2.1 Web构建的技术"></a>2.1 Web构建的技术</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/Web_build.png">
+
+<h3 id="2-2-HTTP1：HTTP1-0与HTTP1-1"><a href="#2-2-HTTP1：HTTP1-0与HTTP1-1" class="headerlink" title="2.2 HTTP1：HTTP1.0与HTTP1.1"></a>2.2 HTTP1：HTTP1.0与HTTP1.1</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP1.png">
+
+<h3 id="2-3-HTTP2"><a href="#2-3-HTTP2" class="headerlink" title="2.3 HTTP2"></a>2.3 HTTP2</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP2.png">
+
+<p>HTTP2的很大特点是采用了<strong>stream</strong>技术，可以<strong>同时发送多个请求</strong>，并且<strong>不需要按照顺序来发送</strong>，这样可以<strong>提高传输效率</strong>，并且<strong>减少延迟</strong>。</p>
+<p>stream中一个TCP连接可以有多个stream，每个stream都有一个唯一的标识符;一个stream中可以有多个message；每个message可以有多个frame。frame是HTTP2的最小单位。</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP2_stream.png">
+
+<h3 id="2-4-HTTP3"><a href="#2-4-HTTP3" class="headerlink" title="2.4 HTTP3"></a>2.4 HTTP3</h3><p>HTTP3是基于UDP的，使用了<strong>QUIC</strong>协议，可以<strong>减少延迟</strong>，并且<strong>提高传输效率</strong>。</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP3.png">
+
+<h3 id="2-5-HTTP1-HTTP3的应用层到链路层的区别"><a href="#2-5-HTTP1-HTTP3的应用层到链路层的区别" class="headerlink" title="2.5 HTTP1~HTTP3的应用层到链路层的区别"></a>2.5 HTTP1~HTTP3的应用层到链路层的区别</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP1~HTTP3.jpg">
+
+<h2 id="三、HTTP缓存"><a href="#三、HTTP缓存" class="headerlink" title="三、HTTP缓存"></a>三、HTTP缓存</h2><p>客户端中存储缓存副本，<strong>有效的缓存副本</strong>在下一次可以<strong>直接使用</strong>而<strong>不需要再次请求服务器</strong></p>
+<p>HTTP实现缓存的方式有：强制缓存和协商缓存</p>
+<ul>
+<li>强缓存：通过<strong>Cache-Control</strong>和<strong>Expires</strong>字段设置<strong>缓存时间</strong>，当缓存时间<strong>未过期</strong>时，直接使用缓存，<strong>不需要与服务器通信</strong></li>
+<li>协商缓存：通过<strong>Last-Modified</strong>和<strong>Etag</strong>字段，向服务器<strong>发送请求</strong>，服务器<strong>判断资源是否能直接使用缓存</strong></li>
+</ul>
+<p>HTTP实现缓存的方式如下：</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP_cache.png">
+
+<p>其中HTTP协商缓存的流程图如下：</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP_cache_2.jpg">
+
+<h2 id="四、HTTPS"><a href="#四、HTTPS" class="headerlink" title="四、HTTPS"></a>四、HTTPS</h2><p>HTTPS是在HTTP的基础上加入了<strong>SSL/TLS</strong>协议，可以<strong>保证数据传输的安全性</strong>。具有数据加密、校验、身份认证等特点。</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTPS.png">
+
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/SSL.png">
+
+<h3 id="4-1-对称加密"><a href="#4-1-对称加密" class="headerlink" title="4.1 对称加密"></a>4.1 对称加密</h3><p>对称加密是指<strong>加密</strong>和<strong>解密</strong>使用的是<strong>同一个密钥</strong>，加密和解密的速度非常快，但是密钥的安全是一个问题。</p>
+<p>密钥安全问题是指：<strong>密钥的传输</strong>和<strong>存储</strong>是一个问题，如果<strong>密钥被泄露</strong>，那么加密的数据也就不安全了。</p>
+<p>所以如果要安全使用对称加密，我们需要有一个保证密钥被安全传输到双方的措施，这个措施我们后面会讲，就是通过<strong>非对称加密</strong>对密钥进行加密，然后将加密后的密钥传输给对方，这样才能保证后续通信过程中的<strong>密钥安全</strong>。</p>
+<h3 id="4-2-非对称加密RSA"><a href="#4-2-非对称加密RSA" class="headerlink" title="4.2 非对称加密RSA"></a>4.2 非对称加密RSA</h3><p>非对称加密是指加密和解密使用的是<strong>不同的密钥</strong>，加密使用的是<strong>公钥</strong>，解密使用的是<strong>私钥</strong>。</p>
+<h4 id="RSA加密过程（公钥对密文进行加密）如下："><a href="#RSA加密过程（公钥对密文进行加密）如下：" class="headerlink" title="RSA加密过程（公钥对密文进行加密）如下："></a>RSA加密过程（公钥对密文进行加密）如下：</h4><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_public.png">
+
+<p>也就是说RSA加密是对明文进行<code>E</code>次方后求对<code>N</code>的余数，得到密文。</p>
+<p>从公式可以知道，<code>E</code>和<code>N</code>是公钥，所有人都可以获得，并通过公钥对信息进行加密，所以我们用<code>(E,N)</code>来表示公钥。</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_public_key.png">
+
+<p>神奇的点在于，只有拥有对应<strong>私钥</strong>的才能对密文进行解密，得到明文。（一般私钥都在服务端处保存）</p>
+<h4 id="RSA解密过程（私钥对密文进行解密）如下："><a href="#RSA解密过程（私钥对密文进行解密）如下：" class="headerlink" title="RSA解密过程（私钥对密文进行解密）如下："></a>RSA解密过程（私钥对密文进行解密）如下：</h4><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_private.png">
+
+<p>也就是说RSA解密是对密文进行<code>D</code>次方后求对<code>N</code>的余数，得到明文，所以我们用<code>(D,N)</code>来表示私钥。</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_private_key.png">
+
+<h4 id="生成密钥对的过程"><a href="#生成密钥对的过程" class="headerlink" title="生成密钥对的过程"></a>生成密钥对的过程</h4><p>生成密钥对需要求<code>N</code>、<code>L</code>、<code>E</code>、<code>D</code>的值</p>
+<ul>
+<li>求<code>N</code>的值：<code>N</code>是两个大质数<code>p</code>和<code>1</code>的乘积，当<code>p</code>和<code>q</code>都是大质数时，<code>N</code>的值很难被分解，也就是基本不可能从公钥<code>N</code>的值反推出<code>p</code>和<code>q</code>的值（所以不能反推出私钥的值）<ul>
+<li><code>N = p * q</code></li>
+</ul>
+</li>
+<li>求<code>L</code>的值：<code>L</code>是<code>p-1</code>和<code>q-1</code>的最小公倍数<ul>
+<li><code>L = LCM(p-1, q-1)</code></li>
+</ul>
+</li>
+<li>求<code>E</code>的值：<code>E</code>是一个小于<code>L</code>的数，且<code>E</code>和<code>L</code>的最大公约数为1</li>
+<li>求<code>D</code>的值：<code>D</code>是<code>E</code>的逆元，即<code>E * D % L = 1</code></li>
+</ul>
+<p>求完之后，我们就得到了公钥<code>(E,N)</code>和私钥<code>(D,N)</code>。</p>
+<p><strong>我们只需要记得私钥<code>D</code>的值是几乎不可能被通过公钥反推回来的就行，且通过公钥加密的密文只有对应的私钥才能解密。</strong></p>
+<p>RSA神奇的点就在于，<strong>私钥</strong>可以<strong>解密公钥</strong>加密的密文，而<strong>公钥</strong>可以解密<strong>私钥</strong>加密的密文。但是由于公钥是公开的，所以我们一般不用私钥进行加密（不然所有拥有公钥的都能解密数据了），只有在<strong>数字签名</strong>的时候才会用到私钥进行加密。</p>
+<h4 id="采用RSA除了加密外，还可以用于数字签名"><a href="#采用RSA除了加密外，还可以用于数字签名" class="headerlink" title="采用RSA除了加密外，还可以用于数字签名"></a>采用RSA除了加密外，还可以用于数字签名</h4><p>数字签名其实是加密的反过程，是为了<strong>验证服务端的身份</strong>（也就是说数据是不是从服务端发送过来的）</p>
+<p>最主要的过程是：<strong>服务端</strong>用<strong>私钥</strong>对数据进行<strong>加密</strong>（这里说加密其实不准确，我们可以称为<strong>签名</strong>），然后<strong>客户端</strong>用<strong>公钥</strong>对数据进行<strong>解密</strong>（这里说法也不准确，应该称为<strong>验证签名</strong>），如果解密后的数据和原数据一样（通过同步送过来的<strong>哈希值</strong>来判断是否一样），那么就说明数据是从服务端发送过来的。</p>
+<p>数字签名的过程如下：</p>
+<ul>
+<li>服务端用私钥对<strong>原始消息的哈希值</strong>进行签名</li>
+<li>发送给客户端：<strong>原始消息</strong>和<strong>签名</strong></li>
+<li>客户端用公钥对<strong>签名</strong>进行解密，并计算同步发送过来的<strong>原始消息的哈希值</strong>，如果<strong>解密后的哈希值</strong>和<strong>同步发送过来的哈希值</strong>一样，那么就说明数据是从服务端发送过来的</li>
+</ul>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_sign.jpg">
+
+<h3 id="4-3-HTTPS采用的混合加密模式"><a href="#4-3-HTTPS采用的混合加密模式" class="headerlink" title="4.3 HTTPS采用的混合加密模式"></a>4.3 HTTPS采用的混合加密模式</h3><p>HTTPS采用的是<strong>混合加密模式</strong>，即<strong>对称加密</strong>和<strong>非对称加密</strong>结合使用。</p>
+<ul>
+<li><strong>非对称加密</strong>：用于<strong>传输对称加密的密钥</strong><ul>
+<li>服务端发送自己的<strong>数字证书</strong>给客户端，请求<strong>身份认证</strong></li>
+<li>客户端用CA认证过的服务端的<strong>公钥</strong>对服务端的<strong>数字证书</strong>进行验证（防止中间人发送伪造的证书来伪造服务端）</li>
+<li>客户端验证通过后用<strong>公钥</strong>对自己随机生成的<strong>对称加密的密钥</strong>进行加密，然后发送给服务端</li>
+<li>由于只有服务端有<strong>私钥</strong>，所以只有服务端能解密得到<strong>对称加密的密钥</strong>，所以此时只有服务端能解开并得到<strong>对称加密的密钥</strong></li>
+</ul>
+</li>
+<li><strong>对称加密</strong>：客户端和服务端验证完并获取安全的<strong>对称加密的密钥</strong>后，就用于后续的<strong>传输数据</strong></li>
+</ul>
+<p>为什么要采用混合加密模式呢？</p>
+<p>因为<strong>对称加密</strong>的速度很快，但是<strong>密钥安全</strong>是个问题，所以我们首次建立TLS连接的时候，采用<strong>非对称加密</strong>用于<strong>传输对称加密的密钥</strong>，可以确保<strong>密钥的安全</strong>。然后后面正常通信的时候使用这个<strong>安全的密钥</strong>，就可以保证在安全情况下进行快速通信。</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_mix.jpg">
+
+<h3 id="4-4-HTTPS的数字证书"><a href="#4-4-HTTPS的数字证书" class="headerlink" title="4.4 HTTPS的数字证书"></a>4.4 HTTPS的数字证书</h3><p>数字证书是由权威的CA机构颁发的，用于<strong>证明服务端身份</strong>的一种证书。</p>
+<p>如果没有权威公开的CA机构颁发的数字证书，那么就会出现<strong>中间人攻击</strong>，即中间人有自己的公钥和私钥，然后伪造了一个数字证书，客户端用伪造的公钥验证通过后，就会误认为是服务端发送的数据，这样就会出现中间人攻击<strong>安全问题</strong>。</p>
+<p>而如果通过<strong>CA的私钥对服务器的公钥</strong>进行数字签名，那么这个证书就是只能由权威的CA公钥进行解密验证，所以客户端可以用CA的公钥验证服务端发来的数字证书，验证通过后才会从发来的数据中获取服务端的<strong>公钥</strong>。SSL/TLS建立安全连接的过程如下：</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_certificate.jpg">
+
+<p>CA能确保数据安全的图解：</p>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_certificate_2.png">
+
+<h1 id="五、RPC"><a href="#五、RPC" class="headerlink" title="五、RPC"></a>五、RPC</h1><h2 id="5-1-RPC的通信流程"><a href="#5-1-RPC的通信流程" class="headerlink" title="5.1 RPC的通信流程"></a>5.1 RPC的通信流程</h2><p>RPC是一种<strong>远程调用</strong>框架，目的是使得<strong>调用远程服务</strong>和<strong>调用本地</strong>一样简单，而开发者更专注于业务开发，不需要考虑<strong>网络编程</strong>等细节。</p>
+<p>RPC实现的主要流程为：</p>
+<p>前提：服务提供端向<strong>注册中心</strong>注册接口服务</p>
+<ul>
+<li><strong>注册中心</strong>根据<strong>服务名</strong>找到<strong>服务提供端</strong>的<strong>IP地址</strong>和<strong>端口号</strong></li>
+<li><strong>Netty客户端</strong>将数据<strong>序列化</strong>成<strong>二进制格式</strong>然后请求网络调用</li>
+<li><strong>服务端</strong>在TCP通道中接收数据，将<strong>二进制数据</strong>反序列后分割成<strong>接口地址和参数对象</strong>，然后通过<strong>反射</strong>找到接口然后执行调用</li>
+<li><strong>服务端</strong>处理完接口后将结果<strong>序列化</strong>成<strong>二进制数据</strong>返回给<strong>Netty客户端</strong></li>
+<li><strong>Netty客户端</strong>接收到<strong>二进制数据</strong>后将数据<strong>反序列化</strong>成<strong>结果对象</strong></li>
+</ul>
+<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RPCStructure.png" width="70%">
+
+<h2 id="5-2-RPC与HTTP的区别"><a href="#5-2-RPC与HTTP的区别" class="headerlink" title="5.2 RPC与HTTP的区别"></a>5.2 RPC与HTTP的区别</h2><ul>
+<li><p>1）RPC和HTTP都是基于TCP封装的协议</p>
+</li>
+<li><p>2）<strong>RPC适用于C/S模式</strong>，比如PC上用的<strong>电脑管家等软件、公司内部微服务通信</strong>只需要跟自家的服务器通信；而<strong>HTTP适用于B/S模式</strong>，比如<strong>浏览器</strong>需要和<strong>其他公司的服务器</strong>通信，这时候就需要一个统一的协议也就是HTTP了。</p>
+</li>
+<li><p>3）<strong>RPC域名获取</strong>时一般都是有<strong>专门的中间服务</strong>去获取，而<strong>HTTP</strong>更统一于使用<strong>DNS</strong>去获取域名</p>
+</li>
+<li><p>4）<strong>RPC</strong>跟<strong>HTTP1.1</strong>一样保持的长连接，此外，<strong>RPC</strong>实现<strong>连接池</strong>来复用连接（不少编程语言在HTTP中也会用连接池复用）</p>
+</li>
+<li><p>5）<strong>RPC</strong>一般通过Protobuf实现序列化，而<strong>HTTP</strong>一般通过JSON实现序列化，Protobuf序列化后的数据量更小，传输效率更高</p>
+</li>
+</ul>
+<p>因此不难看出，RPC定制化程度比HTTP更高</p>
+]]></content>
+      <categories>
+        <category>计算机网络</category>
+      </categories>
+  </entry>
+  <entry>
     <title>C++基础知识学习</title>
     <url>/2024/03/09/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%AD%A6%E4%B9%A0/</url>
     <content><![CDATA[<h2 id="一、指针"><a href="#一、指针" class="headerlink" title="一、指针"></a>一、指针</h2><h3 id="1-1-C-的双指针"><a href="#1-1-C-的双指针" class="headerlink" title="1.1 C++的双指针"></a>1.1 C++的双指针</h3><p>C++的双指针是指一个指针<strong>指向另一个指针的指针</strong>，如<code>int **p</code>，其指向的是一个指针的地址，也就是说，<code>p=某个指针的地址</code>，<code>*p=这个指针指向的地址</code>，而<code>p</code>本身也是一个int类型的数据</p>
@@ -2519,192 +2705,6 @@
 ]]></content>
       <categories>
         <category>C++知识点</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>HTTP协议的迭代（HTTP：应用层）</title>
-    <url>/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/</url>
-    <content><![CDATA[<h2 id="一、从浏览器输入URL到页面显示的过程"><a href="#一、从浏览器输入URL到页面显示的过程" class="headerlink" title="一、从浏览器输入URL到页面显示的过程"></a>一、从浏览器输入URL到页面显示的过程</h2><h3 id="1-1-URL到显示的全过程"><a href="#1-1-URL到显示的全过程" class="headerlink" title="1.1 URL到显示的全过程"></a>1.1 URL到显示的全过程</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/URL_to_display.png">
-
-<ul>
-<li><strong>URL解析</strong>：浏览器解析URL，得到服务器的域名（<a href="http://www.baidu.com)和端口号,以及请求资源的路径/">www.baidu.com）和端口号，以及请求资源的路径</a><ul>
-<li>在<strong>缓存</strong>中<strong>找得到</strong>该域名对应的IP地址：直接访问服务器发送请求</li>
-<li>在<strong>缓存</strong>中<strong>找不得到</strong>该域名：发起<strong>DNS迭代查询</strong>，得到服务器的IP地址</li>
-</ul>
-</li>
-<li><strong>DNS域名解析</strong>：<strong>客户端</strong>发起<strong>迭代查询</strong>；<strong>DNS服务器</strong>之间通过<strong>递归查询</strong>得到域名对应的IP地址<ul>
-<li>浏览器 —&gt; 本地DNS</li>
-<li>本地DNS —&gt; 根DNS —&gt; 向本地DNS<strong>返回顶级DNS</strong>的IP地址</li>
-<li>本地DNS —&gt; 顶级DNS —&gt; 向本地DNS<strong>返回权威DNS</strong>的IP地址</li>
-<li>本地DNS —&gt; 权威DNS —&gt; 向本地DNS<strong>返回域名对应的IP地址</strong></li>
-</ul>
-</li>
-<li><strong>客户端发起TCP连接</strong>：三次握手</li>
-<li><strong>客户端发送HTTP请求</strong>：请求报文</li>
-<li><strong>服务器发送HTTP响应</strong>：响应<strong>报文</strong>与<strong>状态码</strong></li>
-<li><strong>浏览器解析渲染页面</strong>：解析HTML、CSS、JS等文件</li>
-<li><strong>客户端发起断开TCP连接</strong>：四次挥手</li>
-</ul>
-<h3 id="1-2-DNS域名解析"><a href="#1-2-DNS域名解析" class="headerlink" title="1.2 DNS域名解析"></a>1.2 DNS域名解析</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/DNS.png">
-
-<ul>
-<li><strong>DNS域名解析</strong>：<strong>客户端</strong>发起<strong>迭代查询</strong>；<strong>DNS服务器</strong>之间通过<strong>递归查询</strong>得到域名对应的IP地址<ul>
-<li>浏览器 —&gt; 本地DNS</li>
-<li>本地DNS —&gt; 根DNS —&gt; 向本地DNS<strong>返回顶级DNS</strong>的IP地址</li>
-<li>本地DNS —&gt; 顶级DNS —&gt; 向本地DNS<strong>返回权威DNS</strong>的IP地址</li>
-<li>本地DNS —&gt; 权威DNS —&gt; 向本地DNS<strong>返回域名对应的IP地址</strong></li>
-</ul>
-</li>
-</ul>
-<p>DNS域名解析过程如下：</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/DNS2.png">
-
-<p><strong>DNS可能出现的一些网络攻击问题：</strong></p>
-<ul>
-<li><strong>DNS劫持</strong>：黑客劫持DNS服务器并<strong>篡改解析结果</strong>，使用户访问的网站<strong>跳转到恶意网站</strong><ul>
-<li>解决：换个<strong>DNS服务器</strong>，躲过被劫持的<strong>DNS服务器</strong></li>
-</ul>
-</li>
-<li><strong>DNS污染</strong>：黑客监听某些DNS查询，并伪装成目标服务器返回虚假结果（禁用google就是通过DNS污染实现的）<ul>
-<li>解决：直接在本机绑定hosts绕过DNS，或者更换成没被污染的DNS服务器</li>
-</ul>
-</li>
-</ul>
-<h3 id="1-3-正向代理和反向代理"><a href="#1-3-正向代理和反向代理" class="headerlink" title="1.3 正向代理和反向代理"></a>1.3 正向代理和反向代理</h3><ul>
-<li><strong>正向代理</strong>：代理客户端，<strong>向服务端隐藏客户端</strong>的真实IP地址<ul>
-<li>如平时通过VPN访问外网使用的技术就是正向代理</li>
-</ul>
-</li>
-<li><strong>反向代理</strong>：代理服务器，<strong>向客户端隐藏服务器</strong>的真实IP地址<ul>
-<li>如Nginx就是一个反向代理服务器</li>
-</ul>
-</li>
-</ul>
-<h2 id="二、HTTP协议的特点"><a href="#二、HTTP协议的特点" class="headerlink" title="二、HTTP协议的特点"></a>二、HTTP协议的特点</h2><h3 id="2-1-Web构建的技术"><a href="#2-1-Web构建的技术" class="headerlink" title="2.1 Web构建的技术"></a>2.1 Web构建的技术</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/Web_build.png">
-
-<h3 id="2-2-HTTP1：HTTP1-0与HTTP1-1"><a href="#2-2-HTTP1：HTTP1-0与HTTP1-1" class="headerlink" title="2.2 HTTP1：HTTP1.0与HTTP1.1"></a>2.2 HTTP1：HTTP1.0与HTTP1.1</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP1.png">
-
-<h3 id="2-3-HTTP2"><a href="#2-3-HTTP2" class="headerlink" title="2.3 HTTP2"></a>2.3 HTTP2</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP2.png">
-
-<p>HTTP2的很大特点是采用了<strong>stream</strong>技术，可以<strong>同时发送多个请求</strong>，并且<strong>不需要按照顺序来发送</strong>，这样可以<strong>提高传输效率</strong>，并且<strong>减少延迟</strong>。</p>
-<p>stream中一个TCP连接可以有多个stream，每个stream都有一个唯一的标识符;一个stream中可以有多个message；每个message可以有多个frame。frame是HTTP2的最小单位。</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP2_stream.png">
-
-<h3 id="2-4-HTTP3"><a href="#2-4-HTTP3" class="headerlink" title="2.4 HTTP3"></a>2.4 HTTP3</h3><p>HTTP3是基于UDP的，使用了<strong>QUIC</strong>协议，可以<strong>减少延迟</strong>，并且<strong>提高传输效率</strong>。</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP3.png">
-
-<h3 id="2-5-HTTP1-HTTP3的应用层到链路层的区别"><a href="#2-5-HTTP1-HTTP3的应用层到链路层的区别" class="headerlink" title="2.5 HTTP1~HTTP3的应用层到链路层的区别"></a>2.5 HTTP1~HTTP3的应用层到链路层的区别</h3><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP1~HTTP3.jpg">
-
-<h2 id="三、HTTP缓存"><a href="#三、HTTP缓存" class="headerlink" title="三、HTTP缓存"></a>三、HTTP缓存</h2><p>客户端中存储缓存副本，<strong>有效的缓存副本</strong>在下一次可以<strong>直接使用</strong>而<strong>不需要再次请求服务器</strong></p>
-<p>HTTP实现缓存的方式有：强制缓存和协商缓存</p>
-<ul>
-<li>强缓存：通过<strong>Cache-Control</strong>和<strong>Expires</strong>字段设置<strong>缓存时间</strong>，当缓存时间<strong>未过期</strong>时，直接使用缓存，<strong>不需要与服务器通信</strong></li>
-<li>协商缓存：通过<strong>Last-Modified</strong>和<strong>Etag</strong>字段，向服务器<strong>发送请求</strong>，服务器<strong>判断资源是否能直接使用缓存</strong></li>
-</ul>
-<p>HTTP实现缓存的方式如下：</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP_cache.png">
-
-<p>其中HTTP协商缓存的流程图如下：</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTP_cache_2.jpg">
-
-<h2 id="四、HTTPS"><a href="#四、HTTPS" class="headerlink" title="四、HTTPS"></a>四、HTTPS</h2><p>HTTPS是在HTTP的基础上加入了<strong>SSL/TLS</strong>协议，可以<strong>保证数据传输的安全性</strong>。具有数据加密、校验、身份认证等特点。</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/HTTPS.png">
-
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/SSL.png">
-
-<h3 id="4-1-对称加密"><a href="#4-1-对称加密" class="headerlink" title="4.1 对称加密"></a>4.1 对称加密</h3><p>对称加密是指<strong>加密</strong>和<strong>解密</strong>使用的是<strong>同一个密钥</strong>，加密和解密的速度非常快，但是密钥的安全是一个问题。</p>
-<p>密钥安全问题是指：<strong>密钥的传输</strong>和<strong>存储</strong>是一个问题，如果<strong>密钥被泄露</strong>，那么加密的数据也就不安全了。</p>
-<p>所以如果要安全使用对称加密，我们需要有一个保证密钥被安全传输到双方的措施，这个措施我们后面会讲，就是通过<strong>非对称加密</strong>对密钥进行加密，然后将加密后的密钥传输给对方，这样才能保证后续通信过程中的<strong>密钥安全</strong>。</p>
-<h3 id="4-2-非对称加密RSA"><a href="#4-2-非对称加密RSA" class="headerlink" title="4.2 非对称加密RSA"></a>4.2 非对称加密RSA</h3><p>非对称加密是指加密和解密使用的是<strong>不同的密钥</strong>，加密使用的是<strong>公钥</strong>，解密使用的是<strong>私钥</strong>。</p>
-<h4 id="RSA加密过程（公钥对密文进行加密）如下："><a href="#RSA加密过程（公钥对密文进行加密）如下：" class="headerlink" title="RSA加密过程（公钥对密文进行加密）如下："></a>RSA加密过程（公钥对密文进行加密）如下：</h4><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_public.png">
-
-<p>也就是说RSA加密是对明文进行<code>E</code>次方后求对<code>N</code>的余数，得到密文。</p>
-<p>从公式可以知道，<code>E</code>和<code>N</code>是公钥，所有人都可以获得，并通过公钥对信息进行加密，所以我们用<code>(E,N)</code>来表示公钥。</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_public_key.png">
-
-<p>神奇的点在于，只有拥有对应<strong>私钥</strong>的才能对密文进行解密，得到明文。（一般私钥都在服务端处保存）</p>
-<h4 id="RSA解密过程（私钥对密文进行解密）如下："><a href="#RSA解密过程（私钥对密文进行解密）如下：" class="headerlink" title="RSA解密过程（私钥对密文进行解密）如下："></a>RSA解密过程（私钥对密文进行解密）如下：</h4><img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_private.png">
-
-<p>也就是说RSA解密是对密文进行<code>D</code>次方后求对<code>N</code>的余数，得到明文，所以我们用<code>(D,N)</code>来表示私钥。</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_private_key.png">
-
-<h4 id="生成密钥对的过程"><a href="#生成密钥对的过程" class="headerlink" title="生成密钥对的过程"></a>生成密钥对的过程</h4><p>生成密钥对需要求<code>N</code>、<code>L</code>、<code>E</code>、<code>D</code>的值</p>
-<ul>
-<li>求<code>N</code>的值：<code>N</code>是两个大质数<code>p</code>和<code>1</code>的乘积，当<code>p</code>和<code>q</code>都是大质数时，<code>N</code>的值很难被分解，也就是基本不可能从公钥<code>N</code>的值反推出<code>p</code>和<code>q</code>的值（所以不能反推出私钥的值）<ul>
-<li><code>N = p * q</code></li>
-</ul>
-</li>
-<li>求<code>L</code>的值：<code>L</code>是<code>p-1</code>和<code>q-1</code>的最小公倍数<ul>
-<li><code>L = LCM(p-1, q-1)</code></li>
-</ul>
-</li>
-<li>求<code>E</code>的值：<code>E</code>是一个小于<code>L</code>的数，且<code>E</code>和<code>L</code>的最大公约数为1</li>
-<li>求<code>D</code>的值：<code>D</code>是<code>E</code>的逆元，即<code>E * D % L = 1</code></li>
-</ul>
-<p>求完之后，我们就得到了公钥<code>(E,N)</code>和私钥<code>(D,N)</code>。</p>
-<p><strong>我们只需要记得私钥<code>D</code>的值是几乎不可能被通过公钥反推回来的就行，且通过公钥加密的密文只有对应的私钥才能解密。</strong></p>
-<p>RSA神奇的点就在于，<strong>私钥</strong>可以<strong>解密公钥</strong>加密的密文，而<strong>公钥</strong>可以解密<strong>私钥</strong>加密的密文。但是由于公钥是公开的，所以我们一般不用私钥进行加密（不然所有拥有公钥的都能解密数据了），只有在<strong>数字签名</strong>的时候才会用到私钥进行加密。</p>
-<h4 id="采用RSA除了加密外，还可以用于数字签名"><a href="#采用RSA除了加密外，还可以用于数字签名" class="headerlink" title="采用RSA除了加密外，还可以用于数字签名"></a>采用RSA除了加密外，还可以用于数字签名</h4><p>数字签名其实是加密的反过程，是为了<strong>验证服务端的身份</strong>（也就是说数据是不是从服务端发送过来的）</p>
-<p>最主要的过程是：<strong>服务端</strong>用<strong>私钥</strong>对数据进行<strong>加密</strong>（这里说加密其实不准确，我们可以称为<strong>签名</strong>），然后<strong>客户端</strong>用<strong>公钥</strong>对数据进行<strong>解密</strong>（这里说法也不准确，应该称为<strong>验证签名</strong>），如果解密后的数据和原数据一样（通过同步送过来的<strong>哈希值</strong>来判断是否一样），那么就说明数据是从服务端发送过来的。</p>
-<p>数字签名的过程如下：</p>
-<ul>
-<li>服务端用私钥对<strong>原始消息的哈希值</strong>进行签名</li>
-<li>发送给客户端：<strong>原始消息</strong>和<strong>签名</strong></li>
-<li>客户端用公钥对<strong>签名</strong>进行解密，并计算同步发送过来的<strong>原始消息的哈希值</strong>，如果<strong>解密后的哈希值</strong>和<strong>同步发送过来的哈希值</strong>一样，那么就说明数据是从服务端发送过来的</li>
-</ul>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_sign.jpg">
-
-<h3 id="4-3-HTTPS采用的混合加密模式"><a href="#4-3-HTTPS采用的混合加密模式" class="headerlink" title="4.3 HTTPS采用的混合加密模式"></a>4.3 HTTPS采用的混合加密模式</h3><p>HTTPS采用的是<strong>混合加密模式</strong>，即<strong>对称加密</strong>和<strong>非对称加密</strong>结合使用。</p>
-<ul>
-<li><strong>非对称加密</strong>：用于<strong>传输对称加密的密钥</strong><ul>
-<li>服务端发送自己的<strong>数字证书</strong>给客户端，请求<strong>身份认证</strong></li>
-<li>客户端用CA认证过的服务端的<strong>公钥</strong>对服务端的<strong>数字证书</strong>进行验证（防止中间人发送伪造的证书来伪造服务端）</li>
-<li>客户端验证通过后用<strong>公钥</strong>对自己随机生成的<strong>对称加密的密钥</strong>进行加密，然后发送给服务端</li>
-<li>由于只有服务端有<strong>私钥</strong>，所以只有服务端能解密得到<strong>对称加密的密钥</strong>，所以此时只有服务端能解开并得到<strong>对称加密的密钥</strong></li>
-</ul>
-</li>
-<li><strong>对称加密</strong>：客户端和服务端验证完并获取安全的<strong>对称加密的密钥</strong>后，就用于后续的<strong>传输数据</strong></li>
-</ul>
-<p>为什么要采用混合加密模式呢？</p>
-<p>因为<strong>对称加密</strong>的速度很快，但是<strong>密钥安全</strong>是个问题，所以我们首次建立TLS连接的时候，采用<strong>非对称加密</strong>用于<strong>传输对称加密的密钥</strong>，可以确保<strong>密钥的安全</strong>。然后后面正常通信的时候使用这个<strong>安全的密钥</strong>，就可以保证在安全情况下进行快速通信。</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_mix.jpg">
-
-<h3 id="4-4-HTTPS的数字证书"><a href="#4-4-HTTPS的数字证书" class="headerlink" title="4.4 HTTPS的数字证书"></a>4.4 HTTPS的数字证书</h3><p>数字证书是由权威的CA机构颁发的，用于<strong>证明服务端身份</strong>的一种证书。</p>
-<p>如果没有权威公开的CA机构颁发的数字证书，那么就会出现<strong>中间人攻击</strong>，即中间人有自己的公钥和私钥，然后伪造了一个数字证书，客户端用伪造的公钥验证通过后，就会误认为是服务端发送的数据，这样就会出现中间人攻击<strong>安全问题</strong>。</p>
-<p>而如果通过<strong>CA的私钥对服务器的公钥</strong>进行数字签名，那么这个证书就是只能由权威的CA公钥进行解密验证，所以客户端可以用CA的公钥验证服务端发来的数字证书，验证通过后才会从发来的数据中获取服务端的<strong>公钥</strong>。SSL/TLS建立安全连接的过程如下：</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_certificate.jpg">
-
-<p>CA能确保数据安全的图解：</p>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RSA_certificate_2.png">
-
-<h1 id="五、RPC"><a href="#五、RPC" class="headerlink" title="五、RPC"></a>五、RPC</h1><h2 id="5-1-RPC的通信流程"><a href="#5-1-RPC的通信流程" class="headerlink" title="5.1 RPC的通信流程"></a>5.1 RPC的通信流程</h2><p>RPC是一种<strong>远程调用</strong>框架，目的是使得<strong>调用远程服务</strong>和<strong>调用本地</strong>一样简单，而开发者更专注于业务开发，不需要考虑<strong>网络编程</strong>等细节。</p>
-<p>RPC实现的主要流程为：</p>
-<p>前提：服务提供端向<strong>注册中心</strong>注册接口服务</p>
-<ul>
-<li><strong>注册中心</strong>根据<strong>服务名</strong>找到<strong>服务提供端</strong>的<strong>IP地址</strong>和<strong>端口号</strong></li>
-<li><strong>Netty客户端</strong>将数据<strong>序列化</strong>成<strong>二进制格式</strong>然后请求网络调用</li>
-<li><strong>服务端</strong>在TCP通道中接收数据，将<strong>二进制数据</strong>反序列后分割成<strong>接口地址和参数对象</strong>，然后通过<strong>反射</strong>找到接口然后执行调用</li>
-<li><strong>服务端</strong>处理完接口后将结果<strong>序列化</strong>成<strong>二进制数据</strong>返回给<strong>Netty客户端</strong></li>
-<li><strong>Netty客户端</strong>接收到<strong>二进制数据</strong>后将数据<strong>反序列化</strong>成<strong>结果对象</strong></li>
-</ul>
-<img src="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/RPCStructure.png" width="70%">
-
-<h2 id="5-2-RPC与HTTP的区别"><a href="#5-2-RPC与HTTP的区别" class="headerlink" title="5.2 RPC与HTTP的区别"></a>5.2 RPC与HTTP的区别</h2><ul>
-<li><p>1）RPC和HTTP都是基于TCP封装的协议</p>
-</li>
-<li><p>2）<strong>RPC适用于C/S模式</strong>，比如PC上用的<strong>电脑管家等软件、公司内部微服务通信</strong>只需要跟自家的服务器通信；而<strong>HTTP适用于B/S模式</strong>，比如<strong>浏览器</strong>需要和<strong>其他公司的服务器</strong>通信，这时候就需要一个统一的协议也就是HTTP了。</p>
-</li>
-<li><p>3）<strong>RPC域名获取</strong>时一般都是有<strong>专门的中间服务</strong>去获取，而<strong>HTTP</strong>更统一于使用<strong>DNS</strong>去获取域名</p>
-</li>
-<li><p>4）<strong>RPC</strong>跟<strong>HTTP1.1</strong>一样保持的长连接，此外，<strong>RPC</strong>实现<strong>连接池</strong>来复用连接（不少编程语言在HTTP中也会用连接池复用）</p>
-</li>
-<li><p>5）<strong>RPC</strong>一般通过Protobuf实现序列化，而<strong>HTTP</strong>一般通过JSON实现序列化，Protobuf序列化后的数据量更小，传输效率更高</p>
-</li>
-</ul>
-<p>因此不难看出，RPC定制化程度比HTTP更高</p>
-]]></content>
-      <categories>
-        <category>计算机网络</category>
       </categories>
   </entry>
   <entry>
@@ -3550,7 +3550,7 @@ var ParticlePool = (function() {
 </ul>
 </li>
 <li>git config –global user.email “你的邮箱”<ul>
-<li>如：<a href="mailto:&#49;&#52;&#50;&#56;&#x33;&#x38;&#x34;&#x38;&#x37;&#56;&#x40;&#x71;&#x71;&#x2e;&#x63;&#111;&#109;">&#49;&#52;&#50;&#56;&#x33;&#x38;&#x34;&#x38;&#x37;&#56;&#x40;&#x71;&#x71;&#x2e;&#x63;&#111;&#109;</a></li>
+<li>如：<a href="mailto:&#x31;&#x34;&#x32;&#x38;&#51;&#56;&#52;&#x38;&#55;&#x38;&#64;&#113;&#113;&#46;&#x63;&#x6f;&#109;">&#x31;&#x34;&#x32;&#x38;&#51;&#56;&#52;&#x38;&#55;&#x38;&#64;&#113;&#113;&#46;&#x63;&#x6f;&#109;</a></li>
 </ul>
 </li>
 </ul>
@@ -3558,7 +3558,7 @@ var ParticlePool = (function() {
 <li><p>克隆项目</p>
 <ul>
 <li>git clone 项目地址<ul>
-<li>其中项目地址是github项目<code>code</code>中的<code>http</code>链接, 项目地址形式为:<a href="https://gitee.com/xxx/xxx.git%E6%88%96%E8%80%85">https://gitee.com/xxx/xxx.git或者</a> <a href="mailto:&#103;&#105;&#x74;&#64;&#103;&#105;&#116;&#x65;&#x65;&#46;&#99;&#x6f;&#x6d;">&#103;&#105;&#x74;&#64;&#103;&#105;&#116;&#x65;&#x65;&#46;&#99;&#x6f;&#x6d;</a>:xxx/xxx.git</li>
+<li>其中项目地址是github项目<code>code</code>中的<code>http</code>链接, 项目地址形式为:<a href="https://gitee.com/xxx/xxx.git%E6%88%96%E8%80%85">https://gitee.com/xxx/xxx.git或者</a> <a href="mailto:&#x67;&#x69;&#116;&#x40;&#103;&#105;&#116;&#x65;&#101;&#46;&#x63;&#111;&#x6d;">&#x67;&#x69;&#116;&#x40;&#103;&#105;&#116;&#x65;&#101;&#46;&#x63;&#111;&#x6d;</a>:xxx/xxx.git</li>
 </ul>
 </li>
 <li>在弹出的窗口输入你的github账号密码信息<ul>
@@ -3695,94 +3695,6 @@ var ParticlePool = (function() {
 ]]></content>
       <tags>
         <tag>杂货铺-休闲</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</title>
-    <url>/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</url>
-    <content><![CDATA[<h1 id="一、Python部分"><a href="#一、Python部分" class="headerlink" title="一、Python部分"></a>一、Python部分</h1><h2 id="1-1-首先安装Anaconda"><a href="#1-1-首先安装Anaconda" class="headerlink" title="1.1 首先安装Anaconda"></a>1.1 首先安装Anaconda</h2><p>Anaconda包含Python环境，可以建立管理多个不同版本的Python环境，安装它后就默认安装了python、IPython、集成开发环境Spyder和众多的包和模块，让你在管理环境和包时更加方便。</p>
-<ul>
-<li><p>从官网中下载Anaconda的exe文件</p>
-</li>
-<li><p>安装过程中注意勾选<strong>Alls Users</strong>和<strong>Add Anaconda to the system PATH environment variable</strong>，便于以后不用再配置路径</p>
-</li>
-</ul>
-<h2 id="1-2-安装VScode"><a href="#1-2-安装VScode" class="headerlink" title="1.2 安装VScode"></a>1.2 安装VScode</h2><p>我这里直接用Anaconda进行VScode下载</p>
-<ul>
-<li>运行Anaconda Navigator后，点击VS Code位置下方的Install直接进行下载（由于我已经下载过了，因此按钮变成了Launch，没下载过的话按钮显示的是Install）  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/1.png" width="80%" height="80%"></li>
-</ul>
-<h2 id="1-3-VScode中配置Python环境"><a href="#1-3-VScode中配置Python环境" class="headerlink" title="1.3 VScode中配置Python环境"></a>1.3 VScode中配置Python环境</h2><ul>
-<li><p>安装Python插件</p>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/2.png" width="80%" height="80%"></li>
-<li><p>安装Code Runner插件</p>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/3.png" width="80%" height="80%"></li>
-<li><p>安装中文插件</p>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/4.png" width="80%" height="80%"></li>
-<li><p>安装python函数快速注释插件<code>autoDocstring</code></p>
-<ul>
-<li>使用方法：输入<code>&quot;&quot;&quot;</code>后回车</li>
-</ul>
-</li>
-</ul>
-<p>此时运行.py代码可以正常运行了，VScode中Pyhon环境搭建完毕</p>
-<p>VScode中Pyhon环境搭建参考文章：<a href="https://zoyi14.smartapps.cn/pages/note/index?origin=share&slug=ef1ae10ba950&_swebfr=1&_swebFromHost=baiduboxapp">Anaconda + VSCode 最详细教程</a></p>
-<h2 id="1-4-Pycharm中配置Python环境"><a href="#1-4-Pycharm中配置Python环境" class="headerlink" title="1.4 Pycharm中配置Python环境"></a>1.4 Pycharm中配置Python环境</h2><ul>
-<li><p>Pycahrm需要在<strong>settings</strong>中跟conda的解析器关联起来</p>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/5.png" width="60%" height="60%"></li>
-<li><p>点击<strong>Project Interpreter</strong>，点击右方的锯齿轮后点击<strong>Add</strong>,点击<strong>Conda Environment</strong>和右边的<strong>Existing environment</strong>，一路点OK即可</p>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/6.png" width="100%" height="100%">
-
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/7.png" width="100%" height="100%"></li>
-</ul>
-<h1 id="二、Java部分"><a href="#二、Java部分" class="headerlink" title="二、Java部分"></a>二、Java部分</h1><h2 id="2-1-安装JDK"><a href="#2-1-安装JDK" class="headerlink" title="2.1 安装JDK"></a>2.1 安装JDK</h2><ul>
-<li><p>若有安装过Java，则首先在控制面板中卸载以前版本的Java</p>
-</li>
-<li><p>到<a href="https://www.oracle.com/java/technologies/downloads/#java11">甲骨文的官网中下载JDK</a>，我这里选择的是JDK11，直接下载exe文件</p>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/8.png" width="80%" height="80%"></li>
-<li><p>双击下载的exe文件一路无脑安转(只需要更改并记住安装路径)</p>
-</li>
-</ul>
-<h2 id="2-2-配置Java环境"><a href="#2-2-配置Java环境" class="headerlink" title="2.2 配置Java环境"></a>2.2 配置Java环境</h2><ul>
-<li><p>我的电脑处右键点击属性，找到并点击高级系统设置，点击环境变量</p>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/9.png" width="50%" height="50%">
-  
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/10.png" width="60%" height="60%">
-  
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/11.png" width="60%" height="60%"></li>
-<li><p>在系统变量(S)中点击新建</p>
-<ul>
-<li>设置JAVA_HOME：Name: <code>JAVA_HOME</code>，Value: <code>你java的安装路径,bin文件夹所在的那个文件夹的路径</code></li>
-</ul>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/12.png" width="80%" height="80%">
-
-<ul>
-<li>双击系统变量(S)中的Path，添加两个变量<code>%JAVA_HOME%\bin</code>和<code>%JAVA_HOME%\jre\bin</code></li>
-</ul>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/13.png" width="80%" height="80%">
-
-<ul>
-<li>一路点确定即可</li>
-</ul>
-</li>
-</ul>
-<h2 id="2-3-VScode中配置Java"><a href="#2-3-VScode中配置Java" class="headerlink" title="2.3 VScode中配置Java"></a>2.3 VScode中配置Java</h2><ul>
-<li><p>打开VScode安转Java插件<code>Extension Pack for Java</code></p>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/14.png" width="80%" height="80%"></li>
-<li><p>在设置中找到并打开settings.json文件，添加语句<code>&quot;java.home&quot;: &quot;你java的安装路径,bin文件夹所在的那个文件夹的路径&quot;,</code></p>
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/15.png" width="40%" height="40%">
-
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/16.png" width="50%" height="50%">
-  
-  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/17.png" width="100%" height="100%"></li>
-</ul>
-<p>此时运行.java代码可以正常运行了，VScode中Java环境搭建完毕</p>
-<p>VScode中Java环境搭建参考视频：<a href="https://www.bilibili.com/video/BV16y4y177b9?from=search&seid=14977310378351523965&spm_id_from=333.337.0.0">保姆级Java环境配置与VSCode配置</a></p>
-]]></content>
-      <categories>
-        <category>重装-环境配置-计算机</category>
-      </categories>
-      <tags>
-        <tag>环境配置</tag>
       </tags>
   </entry>
   <entry>
@@ -4623,6 +4535,94 @@ var ParticlePool = (function() {
       <categories>
         <category>数据库</category>
       </categories>
+  </entry>
+  <entry>
+    <title>VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</title>
+    <url>/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</url>
+    <content><![CDATA[<h1 id="一、Python部分"><a href="#一、Python部分" class="headerlink" title="一、Python部分"></a>一、Python部分</h1><h2 id="1-1-首先安装Anaconda"><a href="#1-1-首先安装Anaconda" class="headerlink" title="1.1 首先安装Anaconda"></a>1.1 首先安装Anaconda</h2><p>Anaconda包含Python环境，可以建立管理多个不同版本的Python环境，安装它后就默认安装了python、IPython、集成开发环境Spyder和众多的包和模块，让你在管理环境和包时更加方便。</p>
+<ul>
+<li><p>从官网中下载Anaconda的exe文件</p>
+</li>
+<li><p>安装过程中注意勾选<strong>Alls Users</strong>和<strong>Add Anaconda to the system PATH environment variable</strong>，便于以后不用再配置路径</p>
+</li>
+</ul>
+<h2 id="1-2-安装VScode"><a href="#1-2-安装VScode" class="headerlink" title="1.2 安装VScode"></a>1.2 安装VScode</h2><p>我这里直接用Anaconda进行VScode下载</p>
+<ul>
+<li>运行Anaconda Navigator后，点击VS Code位置下方的Install直接进行下载（由于我已经下载过了，因此按钮变成了Launch，没下载过的话按钮显示的是Install）  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/1.png" width="80%" height="80%"></li>
+</ul>
+<h2 id="1-3-VScode中配置Python环境"><a href="#1-3-VScode中配置Python环境" class="headerlink" title="1.3 VScode中配置Python环境"></a>1.3 VScode中配置Python环境</h2><ul>
+<li><p>安装Python插件</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/2.png" width="80%" height="80%"></li>
+<li><p>安装Code Runner插件</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/3.png" width="80%" height="80%"></li>
+<li><p>安装中文插件</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/4.png" width="80%" height="80%"></li>
+<li><p>安装python函数快速注释插件<code>autoDocstring</code></p>
+<ul>
+<li>使用方法：输入<code>&quot;&quot;&quot;</code>后回车</li>
+</ul>
+</li>
+</ul>
+<p>此时运行.py代码可以正常运行了，VScode中Pyhon环境搭建完毕</p>
+<p>VScode中Pyhon环境搭建参考文章：<a href="https://zoyi14.smartapps.cn/pages/note/index?origin=share&slug=ef1ae10ba950&_swebfr=1&_swebFromHost=baiduboxapp">Anaconda + VSCode 最详细教程</a></p>
+<h2 id="1-4-Pycharm中配置Python环境"><a href="#1-4-Pycharm中配置Python环境" class="headerlink" title="1.4 Pycharm中配置Python环境"></a>1.4 Pycharm中配置Python环境</h2><ul>
+<li><p>Pycahrm需要在<strong>settings</strong>中跟conda的解析器关联起来</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/5.png" width="60%" height="60%"></li>
+<li><p>点击<strong>Project Interpreter</strong>，点击右方的锯齿轮后点击<strong>Add</strong>,点击<strong>Conda Environment</strong>和右边的<strong>Existing environment</strong>，一路点OK即可</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/6.png" width="100%" height="100%">
+
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/7.png" width="100%" height="100%"></li>
+</ul>
+<h1 id="二、Java部分"><a href="#二、Java部分" class="headerlink" title="二、Java部分"></a>二、Java部分</h1><h2 id="2-1-安装JDK"><a href="#2-1-安装JDK" class="headerlink" title="2.1 安装JDK"></a>2.1 安装JDK</h2><ul>
+<li><p>若有安装过Java，则首先在控制面板中卸载以前版本的Java</p>
+</li>
+<li><p>到<a href="https://www.oracle.com/java/technologies/downloads/#java11">甲骨文的官网中下载JDK</a>，我这里选择的是JDK11，直接下载exe文件</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/8.png" width="80%" height="80%"></li>
+<li><p>双击下载的exe文件一路无脑安转(只需要更改并记住安装路径)</p>
+</li>
+</ul>
+<h2 id="2-2-配置Java环境"><a href="#2-2-配置Java环境" class="headerlink" title="2.2 配置Java环境"></a>2.2 配置Java环境</h2><ul>
+<li><p>我的电脑处右键点击属性，找到并点击高级系统设置，点击环境变量</p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/9.png" width="50%" height="50%">
+  
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/10.png" width="60%" height="60%">
+  
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/11.png" width="60%" height="60%"></li>
+<li><p>在系统变量(S)中点击新建</p>
+<ul>
+<li>设置JAVA_HOME：Name: <code>JAVA_HOME</code>，Value: <code>你java的安装路径,bin文件夹所在的那个文件夹的路径</code></li>
+</ul>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/12.png" width="80%" height="80%">
+
+<ul>
+<li>双击系统变量(S)中的Path，添加两个变量<code>%JAVA_HOME%\bin</code>和<code>%JAVA_HOME%\jre\bin</code></li>
+</ul>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/13.png" width="80%" height="80%">
+
+<ul>
+<li>一路点确定即可</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-3-VScode中配置Java"><a href="#2-3-VScode中配置Java" class="headerlink" title="2.3 VScode中配置Java"></a>2.3 VScode中配置Java</h2><ul>
+<li><p>打开VScode安转Java插件<code>Extension Pack for Java</code></p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/14.png" width="80%" height="80%"></li>
+<li><p>在设置中找到并打开settings.json文件，添加语句<code>&quot;java.home&quot;: &quot;你java的安装路径,bin文件夹所在的那个文件夹的路径&quot;,</code></p>
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/15.png" width="40%" height="40%">
+
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/16.png" width="50%" height="50%">
+  
+  <img src="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/17.png" width="100%" height="100%"></li>
+</ul>
+<p>此时运行.java代码可以正常运行了，VScode中Java环境搭建完毕</p>
+<p>VScode中Java环境搭建参考视频：<a href="https://www.bilibili.com/video/BV16y4y177b9?from=search&seid=14977310378351523965&spm_id_from=333.337.0.0">保姆级Java环境配置与VSCode配置</a></p>
+]]></content>
+      <categories>
+        <category>重装-环境配置-计算机</category>
+      </categories>
+      <tags>
+        <tag>环境配置</tag>
+      </tags>
   </entry>
   <entry>
     <title>WebServer学习1：部署运行</title>
@@ -5547,6 +5547,313 @@ var ParticlePool = (function() {
       </categories>
   </entry>
   <entry>
+    <title>分布式Kafka学习</title>
+    <url>/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<h1 id="一、消息队列"><a href="#一、消息队列" class="headerlink" title="一、消息队列"></a>一、消息队列</h1><p>消息队列是<strong>传递消息的容器（队列）</strong>，自然遵循<strong>先进先出</strong>的原则。</p>
+<p>消息队列的<strong>三大主要作用</strong>是</p>
+<ul>
+<li><strong>解耦</strong>：<strong>无依赖</strong>的业务间解耦（不需要给上一个任务返回结果），因此可以处理统一条消息的多个任务  <img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/MQ_decouple.png" width="40%"></li>
+<li><strong>异步</strong>：耗时任务提交给消息队列后，立即返回，不阻塞，允许水平扩展多个机器，轮询处理结果（还是需要返回结果的）</li>
+<li><strong>削峰填谷</strong>：流量控制，特别是在<strong>秒杀场景</strong>避免瞬间大量请求导致系统崩溃</li>
+</ul>
+<p>下面将介绍一下保证消息队列性能的一些设计</p>
+<h2 id="1-消息可靠性：保证消息不丢失"><a href="#1-消息可靠性：保证消息不丢失" class="headerlink" title="1. 消息可靠性：保证消息不丢失"></a>1. 消息可靠性：保证消息不丢失</h2><p><strong>1）三种消息丢失场景</strong></p>
+<p>在以下三个环节有可能发生消息丢失：</p>
+<ul>
+<li><strong>生产阶段</strong>：生产者发送消息时，<strong>网络中断</strong>等原因导致消息丢失</li>
+<li><strong>存储阶段（到达中间件broken）</strong>：消息队列中间件接收到消息后，<strong>存储阶段</strong>可能导致消息丢失</li>
+<li><strong>消费阶段</strong>：消费者消费消息进行处理后，未成功<strong>提交偏移量</strong>就会导致消息丢失</li>
+</ul>
+<p><strong>2）保证消息不丢失的方法</strong></p>
+<p>针对以上三种场景，可以采取以下措施：</p>
+<ul>
+<li><strong>生产阶段</strong>：需要考虑网络中断问题<ul>
+<li>可以采用<strong>客户端重试机制</strong></li>
+<li><strong>ACK消息确认机制</strong>（即<strong>生产者发送消息后</strong>，<strong>消息队列返回确认消息</strong>，生产者<strong>再发送下一条消息</strong>）来保证消息<strong>at least once</strong>发送<ul>
+<li>Kafka生产侧有<strong>3种</strong>返回acks的配置方式：<strong>0</strong>（不返回）、<strong>1（也是默认的）</strong>（只需要leader确认持久化后的ACK，不等待所有副本的同步）、<strong>all或-1</strong>（需要leader及所有ISR副本都同步后返回ACK）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>存储阶段</strong>：<ul>
+<li>消息队列中间件可以采用<strong>MySQL数据库持久化</strong>的方式，将消息<strong>持久化到磁盘</strong></li>
+<li>同时配合生产阶段，当确认持久化完成后，再返回ACK确认消息</li>
+</ul>
+</li>
+<li><strong>消费阶段</strong>：<ul>
+<li>消费者消费<strong>消息后</strong>，<strong>需要提交偏移量</strong>，以保证消息<strong>至少被处理一次</strong><ul>
+<li>说明：这样就算消费者宕机，重启后也可以再拉取消息消费</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>三种阶段的消息丢失场景示意图：</p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/messageLost.png" width="60%">
+
+<h2 id="2-消息顺序性：保证消息有序"><a href="#2-消息顺序性：保证消息有序" class="headerlink" title="2. 消息顺序性：保证消息有序"></a>2. 消息顺序性：保证消息有序</h2><p>有序指的是<strong>消息的消费顺序</strong>和<strong>发送的顺序</strong>一致，即<strong>先发送的消息先被消费</strong></p>
+<p>Kafka的<strong>一个topic主题</strong>由<strong>很多不同的partition</strong>存储，<strong>在一个Partition里是有序的</strong>，所以可以在<strong>Partition的路由</strong>上实现有序</p>
+<p>在实际中，我们可以根据<strong>不同场景有序性的需求</strong>，来进行路由设计</p>
+<ul>
+<li><strong>业务分区</strong>：不同用户的操作必须有序<ul>
+<li><strong>每个细化的子业务</strong>有一个单独的key分到<strong>某个Partition</strong></li>
+<li>扩展性低，当某个业务增长快的话，会加重那个Partition的压力</li>
+</ul>
+</li>
+<li><strong>客户分区</strong>：<strong>同一个用户</strong>的操作必须有序<ul>
+<li><strong>user_id%n</strong>作为路由规则，分到<strong>某个Partition</strong><ul>
+<li>缺点：<strong>扩展新Partition分区后需要全部迁移数据</strong></li>
+</ul>
+</li>
+<li>用<strong>hash(id)%哈希槽</strong>（每个Partition分配几个负责的节点），通过循环哈希环减少迁移压力（通过分配一些槽给新Partition，这样只需要将这些槽进行迁移）</li>
+</ul>
+</li>
+</ul>
+<p>比如在交易场景下，某个用户账户余额为0，我们要保证用户先充值1000元再转账2000元的可实现性，这个时候就要求必须按顺序执行这个用户的多条消息，否则在充值1000元还没处理完的情况下，转账2000元就会出现余额不足</p>
+<ul>
+<li>解决方法：要保证同一个用户的多条消息必须有序，通过<strong>user_id路由同一个用户永远打到一个Partition中</strong></li>
+</ul>
+<p>路由方式示意图：</p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/orderPartition.png" width="60%">
+
+<h2 id="3-消息幂等性：保证消息不重复"><a href="#3-消息幂等性：保证消息不重复" class="headerlink" title="3. 消息幂等性：保证消息不重复"></a>3. 消息幂等性：保证消息不重复</h2><p>消息幂等的方式一般就是保证<strong>对外接口的幂等性</strong>，即<strong>多次调用接口返回的结果是一样的</strong>，在数学上表示为<strong>f(f(x))=f(x)，比如绝对值函数abs(abs(x))=abs(x)</strong></p>
+<p><strong>1）幂等性的场景</strong></p>
+<p>首先要让消息不重复同样需要控制三个阶段：</p>
+<ul>
+<li><strong>生产阶段</strong>：<strong>由于网络抖动和Web的重试机制导致重复发送</strong>，一个相同的请求总有概率重放到Kafka中，所以需要引入幂等式</li>
+<li><strong>存储阶段</strong>：天然不重复存储</li>
+<li><strong>消费阶段</strong>：<strong>消费者消费后，未及时提交偏移量</strong>，重启后再次拉取消费</li>
+</ul>
+<p><strong>2）CRUD接口的幂等性</strong></p>
+<p>后端操作中的接口一般就是CRUD操作，而这4种接口的幂等性如下：</p>
+<table>
+<thead>
+<tr>
+<th align="center">接口类型</th>
+<th>幂等性描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>新增插入</strong></td>
+<td><strong>必须保证幂等性</strong>，因为<strong>重复插入</strong>会导致<strong>数据重复</strong></td>
+</tr>
+<tr>
+<td align="center"><strong>删除</strong></td>
+<td><strong>不需要保证幂等性</strong>，因为<strong>重复删除</strong>的最终结果都是删掉这条数据</td>
+</tr>
+<tr>
+<td align="center"><strong>更新</strong></td>
+<td>将字段确定性的更新，<strong>不需要保证幂等性</strong>，因为<strong>重复更新</strong>的最终结果都是一样的；但是如果是<strong>非确定性更新（如自增）</strong>，则<strong>需要保证幂等性</strong></td>
+</tr>
+<tr>
+<td align="center"><strong>查询</strong></td>
+<td><strong>不需要保证幂等性</strong>，因为<strong>事务性操作重复查询</strong>的结果都是一样的</td>
+</tr>
+</tbody></table>
+<p>综上所述，<strong>增（数据库唯一ID）</strong>、<strong>自增性的改操作（乐观锁version）</strong>都要保证幂等</p>
+<p><strong>3）幂等性的实现</strong></p>
+<p>在解决消息重复的问题上，一般有以下几种方式：</p>
+<ul>
+<li><strong>唯一ID（最常用，适用于新增插入）</strong>：<strong>服务端</strong>采用分布式ID（UUID/雪花算法）生成唯一ID返回给客户端，字段中ID字段为有唯一性约束<ul>
+<li>为什么要用分布式ID？UUID/雪花算法分库下<strong>保证全局唯一</strong>，而自增不能保证</li>
+<li>为什么是服务端生成？因为<strong>客户端生成</strong>的话，不同客户端生成的ID可能会重复</li>
+<li>服务的生成的唯一ID什么时候能起幂等作用？<ul>
+<li>数据网络抖动的多次发送主要是由前端去控制的，全局唯一ID的后端接口幂等其实是为了保证当用户觉得该条消息被消费很久没得到返回，<strong>会重新根据前面拿过的全局唯一ID再次请求</strong>，此时如果服务端发现该ID已经存在则不会再插入</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>防重表（适用于新增插入）</strong>：<strong>允许ID重复</strong>，但是加了一个<strong>唯一索引字段unique_key用于隐性保证唯一性</strong></li>
+<li><strong>乐观锁（适用于更新）</strong>：<strong>version字段</strong>作为<strong>乐观锁</strong>，每次更新时<strong>version+1</strong>，这样即使重复更新也不会影响数据<ul>
+<li>step1：客户端查询version</li>
+<li>step2：客户端发起更新请求，带上version</li>
+<li>step3：服务端校验version，如果一致则更新，否则返回错误</li>
+</ul>
+</li>
+<li><strong>Token（同时适用于增删更）</strong>：<strong>Token</strong>是<strong>一次性的</strong>，<strong>删除后</strong>就<strong>不能再次删除</strong>，因此<strong>重复删除</strong>不会有影响  <img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/token.png" width="60%"></li>
+</ul>
+<p><strong>4）redis和数据库的幂等性</strong></p>
+<ul>
+<li><strong>redis</strong><ul>
+<li><strong>唯一ID</strong>：每个消息分配一个唯一ID</li>
+<li>Redis Set：将已消费的消息ID存入Redis Set中，每次消费前先判断是否在Set中</li>
+<li><strong>原子操作</strong>：SISMEMBER和SADD是原子操作，保证了幂等性</li>
+</ul>
+</li>
+<li><strong>数据库</strong><ul>
+<li><strong>唯一ID约束</strong>：ID字段设置唯一约束</li>
+<li><strong>INSERT IGNORE</strong>：插入时使用INSERT IGNORE，如果ID重复则不插入</li>
+<li><strong>事务</strong>：使用事务保证原子性</li>
+</ul>
+</li>
+<li><strong>Redis和MySQL结合实现幂等</strong>：在MySQL唯一ID前面加一层Redis Set先过滤重复的UID</li>
+</ul>
+<h2 id="4-消息的积压处理"><a href="#4-消息的积压处理" class="headerlink" title="4. 消息的积压处理"></a>4. 消息的积压处理</h2><p><strong>1）消息积压的原因</strong></p>
+<ul>
+<li><strong>消费者处理能力不足</strong>：消费者处理消息的速度不够快，导致消息积压</li>
+<li><strong>消费者线程阻塞</strong></li>
+<li><strong>消费者宕机</strong></li>
+</ul>
+<p><strong>2）消息积压的解决方案</strong></p>
+<ul>
+<li><strong>扩容提高消费速率</strong>：增加消费者进行水平扩容<ul>
+<li>由于要保持<strong>消息有序性</strong>，因此一个<strong>Partition只能有一个消费者</strong>，所以水平扩容也是有要求的，当消费者与Partition持平时，还要扩容Partition</li>
+</ul>
+</li>
+<li><strong>服务主动降级</strong>：紧急情况下可以先<strong>取消一些非核心业务或流程</strong>，如阿里通过orange开关取消某个非核心业务链路</li>
+</ul>
+<h1 id="二、Kafka"><a href="#二、Kafka" class="headerlink" title="二、Kafka"></a>二、Kafka</h1><h2 id="1-Kafka简介"><a href="#1-Kafka简介" class="headerlink" title="1. Kafka简介"></a>1. Kafka简介</h2><p>Kafka是<strong>分布式消息队列</strong>，是<strong>高吞吐量</strong>的分布式<strong>发布订阅</strong>消息系统，具有<strong>持久性（zookeeper提供的主从管理）</strong>、<strong>高性能（10w/s级别）</strong>、<strong>高可用性（健壮的副本Partition）</strong>、<strong>最终一致性（主从一致）</strong>等特点。</p>
+<p>单机吞吐支持<strong>10W/s级别</strong>，与RocketMQ相比，其<strong>不具备消息回溯能力</strong>且支持主题数在<strong>百级</strong>（RocketMQ支持<strong>千级</strong>）。</p>
+<h2 id="2-Kafka架构"><a href="#2-Kafka架构" class="headerlink" title="2. Kafka架构"></a>2. Kafka架构</h2><p>Kafka的架构主要包括<strong>生产者</strong>、<strong>消费者</strong>、<strong>broker（单机）</strong>、<strong>topic（消息发布订阅模式）</strong>、<strong>partition（一个topic的Partition可以分布在多台机器上-主从一致）</strong>、<strong>replica</strong>、<strong>leader</strong>、<strong>follower</strong>等概念。</p>
+<p>除此以外，还有<strong>zookeeper</strong>用于<strong>管理集群broker</strong>，它相当于管家，可以<strong>选举leader、follow保存副本</strong>，保证数据可用性（可以用于broken的注册、发现与选举）</p>
+<p>总的架构如下：</p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/Kafka_structure.png" width="80%">
+
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/Kafka_structure2.png" width="80%">
+
+<p>Kafka的设计理念可分解为以下主要部分：</p>
+<p><strong>1）MQ数据堆积</strong></p>
+<p>MQ中数据堆积本质是消费者消费能力差，可以通过<strong>增加消费者线程</strong>，也就是多消费者模式，同理也可以添加多生产者提高吞吐量</p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiConsumers.jpg" width="60%">
+
+<p><strong>2）多生产者和多消费者竞争MQ</strong></p>
+<p><strong>分Topic</strong></p>
+<p>将消息队列根据<strong>不同主题Topic</strong>分为<strong>多个MQ</strong>减少冲突等待</p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiTopic.jpg" width="60%">
+
+<p><strong>Topic的Partition分区</strong></p>
+<p>单个Topic中还可以再细分成<strong>多个Partition分区</strong>，每个消费者对应一个Partition分区，从而<strong>降低多线程竞争</strong></p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiPartition.jpg" width="60%">
+
+<p><strong>3）高性能</strong></p>
+<p>将多个Partition分布在不同机器上，每个机器称为<strong>broker</strong></p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiBroker.jpg" width="60%">
+
+<p><strong>4）高可用</strong></p>
+<p>单个broker如果宕机了，该部分的功能将无法继续进行，因此可以设计<strong>leader-follower</strong>的集群方式</p>
+<p><strong>leader</strong>负责读写数据，<strong>follower</strong>负责复制数据，当<strong>leader</strong>宕机时可以从<strong>follower</strong>中选举出新的<strong>leader</strong></p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/leader-follower.jpg" width="60%">
+
+<p><strong>5）持久化</strong></p>
+<p>数据放在内存中有宕机丢失的风险，因此数据还应该具备<strong>持久化到磁盘</strong>的能力</p>
+<p>同时为了防止磁盘溢出，还应该设置<strong>过期时间</strong></p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/savetodisk.jpg" width="60%">
+
+<h2 id="3-Kafka的优缺点"><a href="#3-Kafka的优缺点" class="headerlink" title="3. Kafka的优缺点"></a>3. Kafka的优缺点</h2><h3 id="3-1-优点"><a href="#3-1-优点" class="headerlink" title="3.1 优点"></a>3.1 优点</h3><ul>
+<li><strong>高吞吐量</strong>：支持<strong>10W/s级别</strong>的消息堆积吞吐量（RocketMQ一样）</li>
+<li><strong>高可用性</strong>：通过<strong>leader-follower</strong>机制保证数据的可用性</li>
+<li><strong>持久化</strong>：支持数据持久化到磁盘</li>
+<li><strong>分布式</strong>：支持<strong>多broker</strong>、<strong>多partition</strong>、<strong>多topic</strong>的分布式架构</li>
+<li><strong>水平扩展</strong>：支持<strong>水平扩展</strong>，可以通过增加broker、partition等方式提高吞吐量</li>
+<li><strong>支持批量处理</strong>（RocketMQ不支持）</li>
+<li><strong>支持消息顺序</strong>：在<strong>一个队列中</strong>可靠的<strong>先进先出</strong>（FIFO）和严格的顺序传递；支持拉（pull）和推（push）两种消息模式；</li>
+</ul>
+<h3 id="3-2-缺点"><a href="#3-2-缺点" class="headerlink" title="3.2 缺点"></a>3.2 缺点</h3><ul>
+<li><strong>不支持消息回溯</strong>：Kafka不支持消息回溯，即<strong>消费者消费过的消息无法再次消费，也就不支持重试</strong></li>
+<li>使用短轮询，实时性取决于轮询频率</li>
+</ul>
+<h2 id="4-Kafka高性能的原因"><a href="#4-Kafka高性能的原因" class="headerlink" title="4. Kafka高性能的原因"></a>4. Kafka高性能的原因</h2><p>Kafka高性能的原因有：<strong>零拷贝</strong>、<strong>批量操作</strong>、<strong>顺序写</strong>、数据压缩、多层次、页缓存</p>
+<h3 id="4-1-零拷贝"><a href="#4-1-零拷贝" class="headerlink" title="4.1 零拷贝*"></a>4.1 零拷贝*</h3><p>零拷贝：优化<strong>网络数据</strong>从本地到网卡发送的拷贝次数</p>
+<p>操作：<strong>将数据直接从内核空间的磁盘文件直接拷贝到网卡中，不经过用户态</strong></p>
+<p>优点：<strong>系统调用从2次变成1次、拷贝由4次变成2次</strong></p>
+<p>原来的网卡数据发送流程：</p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/copy.png" width="60%">
+
+<p>零拷贝的数据发送流程：</p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/zeroCopy.png" width="60%">
+
+<h3 id="4-2-批量操作"><a href="#4-2-批量操作" class="headerlink" title="4.2 批量操作*"></a>4.2 批量操作*</h3><p>批量操作：一次性拉取多条消息进行消费</p>
+<p>方法包括：累积到<strong>一定时间ms</strong>就操作、累积到<strong>一定batchSize数据量</strong>就操作、累积到<strong>一定缓存大小</strong>就操作</p>
+<p>优点：节省宽带</p>
+<p>缺点：造成延时</p>
+<h3 id="4-3-顺序写"><a href="#4-3-顺序写" class="headerlink" title="4.3 顺序写*"></a>4.3 顺序写*</h3><p>顺序写：指磁盘的顺序写，<strong>使磁盘写性能更接近内存性能</strong></p>
+<p>操作：Kafka写入数据其实就是添加到每个Partition的末端（也就是磁盘文件）</p>
+<p>原因：非顺序写磁盘需要转动寻址、对齐扇区，速度慢</p>
+<h3 id="4-4-数据压缩"><a href="#4-4-数据压缩" class="headerlink" title="4.4 数据压缩"></a>4.4 数据压缩</h3><p>数据压缩：<strong>生产者/broken压缩-消费者解压数据</strong></p>
+<p>优点：降低网络需求和存储压力</p>
+<h3 id="4-5-多层次"><a href="#4-5-多层次" class="headerlink" title="4.5 多层次"></a>4.5 多层次</h3><p>多层次：Kafka利用<strong>分治Partition主从思想</strong>，将顺序IO存储压力进行<strong>切分</strong></p>
+<p><code>Topic=n*Partition=m*broken</code>，Kafka返回路由信息，使其按规则访问对应的Partition，每个Partition分为3个文件作为索引文件实现快速查找</p>
+<p>分治思想：一个业务写入一个topic <strong>—&gt;</strong> 一个topic具有多个切片Partition <strong>—&gt;</strong> 一个Partition有多个Broken用作数据主从存储</p>
+<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiLevel.png" width="60%">
+
+<h3 id="4-6-页缓存"><a href="#4-6-页缓存" class="headerlink" title="4.6 页缓存"></a>4.6 页缓存</h3><p>页缓存：消息进入Kafka后线写入<strong>内存缓存PageCache</strong>，<strong>后面再由操作系统刷入磁盘</strong>（肯定需要刷入磁盘防止电脑断电、重启导致数据丢失）</p>
+<p>优点：当查询的数据打中PageCache时可以直接从PageCache中获取数据，提升效率（未完待续：需要了解什么情况下会去命中PageCache）</p>
+<p><strong>从PageCache到磁盘同步固化机制：</strong></p>
+<ul>
+<li>1）内存空间&lt;=阈值后，PageCache输入磁盘并被释放</li>
+<li>2）脏页在内存驻留一定时间后<ul>
+<li>脏页：当消息被写入PageCache后，由于不是及时更新到磁盘的，所以此时页缓存数据跟磁盘不一致，被称为脏页</li>
+<li>主动调用刷脏方法：<strong>sync或fsync方法</strong>（系统调用）</li>
+</ul>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>系统设计</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>动态规划-背包问题</title>
+    <url>/2024/04/26/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/</url>
+    <content><![CDATA[<h1 id="一、0-1背包问题"><a href="#一、0-1背包问题" class="headerlink" title="一、0-1背包问题"></a>一、0-1背包问题</h1><h2 id="1-1-适用场景"><a href="#1-1-适用场景" class="headerlink" title="1.1 适用场景"></a>1.1 适用场景</h2><p>0-1背包问题属于背包问题中的一种，其特点是：<strong>每个物品只能被选择一次</strong>，两种状态即<strong>要么装入背包，要么不装入背包</strong>。</p>
+<h2 id="1-2-问题描述"><a href="#1-2-问题描述" class="headerlink" title="1.2 问题描述"></a>1.2 问题描述</h2><p>有一个<strong>背包</strong>，其容量为<code>m</code></p>
+<p>现有<code>n</code>个<strong>物品</strong>，每个物品的重量为<code>w[i]</code>，价值为<code>v[i]</code></p>
+<p>现在需要选择一些物品装入背包，使得背包中物品的总价值最大。</p>
+<h2 id="1-3-通用代码思路"><a href="#1-3-通用代码思路" class="headerlink" title="1.3 通用代码思路"></a>1.3 通用代码思路</h2><h3 id="1-3-1-二维数组方式"><a href="#1-3-1-二维数组方式" class="headerlink" title="1.3.1 二维数组方式"></a>1.3.1 二维数组方式</h3><h4 id="数组含义"><a href="#数组含义" class="headerlink" title="数组含义"></a>数组含义</h4><p><code>dp[i][j]</code>表示<strong>前i个物品</strong>在<strong>背包容量为j</strong>时的最大价值</p>
+<h4 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h4><ul>
+<li>当<code>j&lt;w[i]</code>时，即当前物品的重量大于背包容量，此时无法装入背包，因此<code>dp[i][j]=dp[i-1][j]</code></li>
+<li>当<code>j&gt;=w[i]</code>时，即当前物品的重量小于等于背包容量，此时可以选择<strong>装入或者不装入</strong>背包，因此<code>dp[i][j]=max(dp[i-1][j],dp[i-1][j-w[i]]+v[i])</code></li>
+</ul>
+<h4 id="通用代码"><a href="#通用代码" class="headerlink" title="通用代码"></a>通用代码</h4><p><strong>1. 初始化</strong></p>
+<p>通常初始化第一排</p>
+<p><strong>2. 遍历顺序</strong></p>
+<p>可以采用先<strong>物品</strong>后<strong>背包</strong></p>
+<p>也可以采用先<strong>背包</strong>后<strong>物品</strong></p>
+<p><strong>3. 背包的遍历顺序</strong></p>
+<p><strong>正序</strong>就行</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">        <span class="keyword">if</span>(j &lt; w[i]) dp[i][j] = dp[i<span class="number">-1</span>][j];</span><br><span class="line">        <span class="keyword">else</span> dp[i][j] = <span class="built_in">max</span>(dp[i<span class="number">-1</span>][j],dp[i<span class="number">-1</span>][j-w[i]]+v[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-2-一维数组方式"><a href="#1-3-2-一维数组方式" class="headerlink" title="1.3.2 一维数组方式"></a>1.3.2 一维数组方式</h3><h4 id="数组含义-1"><a href="#数组含义-1" class="headerlink" title="数组含义"></a>数组含义</h4><p><code>dp[j]</code>表示<strong>背包容量为j</strong>时的最大价值</p>
+<h4 id="状态转移方程-1"><a href="#状态转移方程-1" class="headerlink" title="状态转移方程"></a>状态转移方程</h4><ul>
+<li>当<code>j&gt;=w[i]</code>时，即当前物品的重量小于等于背包容量，此时可以选择<strong>装入或者不装入</strong>背包，因此<code>dp[j]=max(dp[j],dp[j-w[i]]+v[i])</code></li>
+</ul>
+<h4 id="通用代码-1"><a href="#通用代码-1" class="headerlink" title="通用代码"></a>通用代码</h4><p><strong>1. 初始化</strong></p>
+<p>可以不用初始化（全初始化为0）</p>
+<p><strong>2. 遍历顺序</strong></p>
+<p><strong>必须</strong>采用先<strong>物品</strong>后<strong>背包</strong>的遍历顺序</p>
+<p><strong>3. 背包的遍历顺序</strong></p>
+<p>由于要求每个物品只能被选择一次，且状态转移方程是由前面的状态推导出来的</p>
+<p>因此背包的遍历顺序<strong>必须</strong>是<strong>逆序</strong>的，即从大到小遍历，否则会出现<strong>重复选择</strong>的情况</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = m; j &gt;= w[i]; --j)&#123;<span class="comment">//背包</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="二、完全背包问题"><a href="#二、完全背包问题" class="headerlink" title="二、完全背包问题"></a>二、完全背包问题</h1><h2 id="2-1-适用场景"><a href="#2-1-适用场景" class="headerlink" title="2.1 适用场景"></a>2.1 适用场景</h2><p>完全背包问题的特点是：<strong>每个物品可以被选择多次</strong>，两种状态即<strong>装入背包或者不装入背包</strong> </p>
+<h2 id="2-2-问题描述"><a href="#2-2-问题描述" class="headerlink" title="2.2 问题描述"></a>2.2 问题描述</h2><p>有一个<strong>背包</strong>，其容量为<code>m</code></p>
+<p>现有<code>n</code>个<strong>物品</strong>，每个物品的重量为<code>w[i]</code>，价值为<code>v[i]</code></p>
+<p>现在需要选择<strong>一些可重复的物品</strong>装入背包，使得背包中物品的总价值最大。</p>
+<h2 id="2-3-通用代码思路-一维数组方式"><a href="#2-3-通用代码思路-一维数组方式" class="headerlink" title="2.3 通用代码思路-一维数组方式"></a>2.3 通用代码思路-一维数组方式</h2><h3 id="2-3-1-数组含义"><a href="#2-3-1-数组含义" class="headerlink" title="2.3.1 数组含义"></a>2.3.1 数组含义</h3><p><code>dp[j]</code>表示<strong>背包容量为j</strong>时的最大价值</p>
+<h3 id="2-3-2-状态转移方程"><a href="#2-3-2-状态转移方程" class="headerlink" title="2.3.2 状态转移方程"></a>2.3.2 状态转移方程</h3><ul>
+<li>当<code>j&gt;=w[i]</code>时，即当前物品的重量小于等于背包容量，此时可以选择<strong>装入或者不装入</strong>背包，因此<code>dp[j]=max(dp[j],dp[j-w[i]]+v[i])</code></li>
+</ul>
+<h3 id="2-3-3-通用代码"><a href="#2-3-3-通用代码" class="headerlink" title="2.3.3 通用代码"></a>2.3.3 通用代码</h3><p><strong>1. 初始化</strong></p>
+<p>可以不用初始化（全初始化为0）</p>
+<p><strong>2. 遍历顺序</strong></p>
+<p>可以采用先<strong>物品</strong>后<strong>背包</strong></p>
+<p>也可以采用先<strong>背包</strong>后<strong>物品</strong></p>
+<p><strong>3. 背包的遍历顺序</strong></p>
+<p>由于要求每个物品可以被选择多次，所以允许前面的状态中也包含该物品</p>
+<p>因此背包的遍历顺序<strong>必须</strong>是<strong>正序</strong>的，即从小到大遍历</p>
+<ul>
+<li><p>先遍历<strong>物品</strong>，再遍历<strong>背包</strong></p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = w[i]; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>先遍历<strong>背包</strong>，再遍历<strong>物品</strong></p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> j = w[i]; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+]]></content>
+      <categories>
+        <category>数据结构与算法</category>
+      </categories>
+  </entry>
+  <entry>
     <title>WebServer学习6：HTTP连接处理及报文机制</title>
     <url>/2024/03/11/WebServer%E5%AD%A6%E4%B9%A06%EF%BC%9AHTTP%E8%BF%9E%E6%8E%A5%E5%A4%84%E7%90%86%E5%8F%8A%E6%8A%A5%E6%96%87%E6%9C%BA%E5%88%B6/</url>
     <content><![CDATA[<h2 id="一、从HTTP用户类在主线程epoll监听中的初始化说起"><a href="#一、从HTTP用户类在主线程epoll监听中的初始化说起" class="headerlink" title="一、从HTTP用户类在主线程epoll监听中的初始化说起"></a>一、从HTTP用户类在主线程epoll监听中的初始化说起</h2><h3 id="1-1-WebServer-cpp文件中的HTTP用户初始化"><a href="#1-1-WebServer-cpp文件中的HTTP用户初始化" class="headerlink" title="1.1 WebServer.cpp文件中的HTTP用户初始化"></a>1.1 <code>WebServer.cpp</code>文件中的HTTP用户初始化</h3><p>回到<code>WebServer.cpp</code>类中的<code>eventLoop</code>函数，我们可以看到在<code>epoll</code>监听的主线程中，当处理<strong>新的客户端连接事件</strong>时，会在处理新连接的<code>dealclientdata</code>函数中，通过<code>timer</code>函数同时<strong>初始化一个http user</strong>和一个定时器。</p>
@@ -5901,313 +6208,6 @@ var ParticlePool = (function() {
 ]]></content>
       <categories>
         <category>WebServer项目（C++）</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>分布式Kafka学习</title>
-    <url>/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[<h1 id="一、消息队列"><a href="#一、消息队列" class="headerlink" title="一、消息队列"></a>一、消息队列</h1><p>消息队列是<strong>传递消息的容器（队列）</strong>，自然遵循<strong>先进先出</strong>的原则。</p>
-<p>消息队列的<strong>三大主要作用</strong>是</p>
-<ul>
-<li><strong>解耦</strong>：<strong>无依赖</strong>的业务间解耦（不需要给上一个任务返回结果），因此可以处理统一条消息的多个任务  <img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/MQ_decouple.png" width="40%"></li>
-<li><strong>异步</strong>：耗时任务提交给消息队列后，立即返回，不阻塞，允许水平扩展多个机器，轮询处理结果（还是需要返回结果的）</li>
-<li><strong>削峰填谷</strong>：流量控制，特别是在<strong>秒杀场景</strong>避免瞬间大量请求导致系统崩溃</li>
-</ul>
-<p>下面将介绍一下保证消息队列性能的一些设计</p>
-<h2 id="1-消息可靠性：保证消息不丢失"><a href="#1-消息可靠性：保证消息不丢失" class="headerlink" title="1. 消息可靠性：保证消息不丢失"></a>1. 消息可靠性：保证消息不丢失</h2><p><strong>1）三种消息丢失场景</strong></p>
-<p>在以下三个环节有可能发生消息丢失：</p>
-<ul>
-<li><strong>生产阶段</strong>：生产者发送消息时，<strong>网络中断</strong>等原因导致消息丢失</li>
-<li><strong>存储阶段（到达中间件broken）</strong>：消息队列中间件接收到消息后，<strong>存储阶段</strong>可能导致消息丢失</li>
-<li><strong>消费阶段</strong>：消费者消费消息进行处理后，未成功<strong>提交偏移量</strong>就会导致消息丢失</li>
-</ul>
-<p><strong>2）保证消息不丢失的方法</strong></p>
-<p>针对以上三种场景，可以采取以下措施：</p>
-<ul>
-<li><strong>生产阶段</strong>：需要考虑网络中断问题<ul>
-<li>可以采用<strong>客户端重试机制</strong></li>
-<li><strong>ACK消息确认机制</strong>（即<strong>生产者发送消息后</strong>，<strong>消息队列返回确认消息</strong>，生产者<strong>再发送下一条消息</strong>）来保证消息<strong>at least once</strong>发送<ul>
-<li>Kafka生产侧有<strong>3种</strong>返回acks的配置方式：<strong>0</strong>（不返回）、<strong>1（也是默认的）</strong>（只需要leader确认持久化后的ACK，不等待所有副本的同步）、<strong>all或-1</strong>（需要leader及所有ISR副本都同步后返回ACK）</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><strong>存储阶段</strong>：<ul>
-<li>消息队列中间件可以采用<strong>MySQL数据库持久化</strong>的方式，将消息<strong>持久化到磁盘</strong></li>
-<li>同时配合生产阶段，当确认持久化完成后，再返回ACK确认消息</li>
-</ul>
-</li>
-<li><strong>消费阶段</strong>：<ul>
-<li>消费者消费<strong>消息后</strong>，<strong>需要提交偏移量</strong>，以保证消息<strong>至少被处理一次</strong><ul>
-<li>说明：这样就算消费者宕机，重启后也可以再拉取消息消费</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p>三种阶段的消息丢失场景示意图：</p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/messageLost.png" width="60%">
-
-<h2 id="2-消息顺序性：保证消息有序"><a href="#2-消息顺序性：保证消息有序" class="headerlink" title="2. 消息顺序性：保证消息有序"></a>2. 消息顺序性：保证消息有序</h2><p>有序指的是<strong>消息的消费顺序</strong>和<strong>发送的顺序</strong>一致，即<strong>先发送的消息先被消费</strong></p>
-<p>Kafka的<strong>一个topic主题</strong>由<strong>很多不同的partition</strong>存储，<strong>在一个Partition里是有序的</strong>，所以可以在<strong>Partition的路由</strong>上实现有序</p>
-<p>在实际中，我们可以根据<strong>不同场景有序性的需求</strong>，来进行路由设计</p>
-<ul>
-<li><strong>业务分区</strong>：不同用户的操作必须有序<ul>
-<li><strong>每个细化的子业务</strong>有一个单独的key分到<strong>某个Partition</strong></li>
-<li>扩展性低，当某个业务增长快的话，会加重那个Partition的压力</li>
-</ul>
-</li>
-<li><strong>客户分区</strong>：<strong>同一个用户</strong>的操作必须有序<ul>
-<li><strong>user_id%n</strong>作为路由规则，分到<strong>某个Partition</strong><ul>
-<li>缺点：<strong>扩展新Partition分区后需要全部迁移数据</strong></li>
-</ul>
-</li>
-<li>用<strong>hash(id)%哈希槽</strong>（每个Partition分配几个负责的节点），通过循环哈希环减少迁移压力（通过分配一些槽给新Partition，这样只需要将这些槽进行迁移）</li>
-</ul>
-</li>
-</ul>
-<p>比如在交易场景下，某个用户账户余额为0，我们要保证用户先充值1000元再转账2000元的可实现性，这个时候就要求必须按顺序执行这个用户的多条消息，否则在充值1000元还没处理完的情况下，转账2000元就会出现余额不足</p>
-<ul>
-<li>解决方法：要保证同一个用户的多条消息必须有序，通过<strong>user_id路由同一个用户永远打到一个Partition中</strong></li>
-</ul>
-<p>路由方式示意图：</p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/orderPartition.png" width="60%">
-
-<h2 id="3-消息幂等性：保证消息不重复"><a href="#3-消息幂等性：保证消息不重复" class="headerlink" title="3. 消息幂等性：保证消息不重复"></a>3. 消息幂等性：保证消息不重复</h2><p>消息幂等的方式一般就是保证<strong>对外接口的幂等性</strong>，即<strong>多次调用接口返回的结果是一样的</strong>，在数学上表示为<strong>f(f(x))=f(x)，比如绝对值函数abs(abs(x))=abs(x)</strong></p>
-<p><strong>1）幂等性的场景</strong></p>
-<p>首先要让消息不重复同样需要控制三个阶段：</p>
-<ul>
-<li><strong>生产阶段</strong>：<strong>由于网络抖动和Web的重试机制导致重复发送</strong>，一个相同的请求总有概率重放到Kafka中，所以需要引入幂等式</li>
-<li><strong>存储阶段</strong>：天然不重复存储</li>
-<li><strong>消费阶段</strong>：<strong>消费者消费后，未及时提交偏移量</strong>，重启后再次拉取消费</li>
-</ul>
-<p><strong>2）CRUD接口的幂等性</strong></p>
-<p>后端操作中的接口一般就是CRUD操作，而这4种接口的幂等性如下：</p>
-<table>
-<thead>
-<tr>
-<th align="center">接口类型</th>
-<th>幂等性描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center"><strong>新增插入</strong></td>
-<td><strong>必须保证幂等性</strong>，因为<strong>重复插入</strong>会导致<strong>数据重复</strong></td>
-</tr>
-<tr>
-<td align="center"><strong>删除</strong></td>
-<td><strong>不需要保证幂等性</strong>，因为<strong>重复删除</strong>的最终结果都是删掉这条数据</td>
-</tr>
-<tr>
-<td align="center"><strong>更新</strong></td>
-<td>将字段确定性的更新，<strong>不需要保证幂等性</strong>，因为<strong>重复更新</strong>的最终结果都是一样的；但是如果是<strong>非确定性更新（如自增）</strong>，则<strong>需要保证幂等性</strong></td>
-</tr>
-<tr>
-<td align="center"><strong>查询</strong></td>
-<td><strong>不需要保证幂等性</strong>，因为<strong>事务性操作重复查询</strong>的结果都是一样的</td>
-</tr>
-</tbody></table>
-<p>综上所述，<strong>增（数据库唯一ID）</strong>、<strong>自增性的改操作（乐观锁version）</strong>都要保证幂等</p>
-<p><strong>3）幂等性的实现</strong></p>
-<p>在解决消息重复的问题上，一般有以下几种方式：</p>
-<ul>
-<li><strong>唯一ID（最常用，适用于新增插入）</strong>：<strong>服务端</strong>采用分布式ID（UUID/雪花算法）生成唯一ID返回给客户端，字段中ID字段为有唯一性约束<ul>
-<li>为什么要用分布式ID？UUID/雪花算法分库下<strong>保证全局唯一</strong>，而自增不能保证</li>
-<li>为什么是服务端生成？因为<strong>客户端生成</strong>的话，不同客户端生成的ID可能会重复</li>
-<li>服务的生成的唯一ID什么时候能起幂等作用？<ul>
-<li>数据网络抖动的多次发送主要是由前端去控制的，全局唯一ID的后端接口幂等其实是为了保证当用户觉得该条消息被消费很久没得到返回，<strong>会重新根据前面拿过的全局唯一ID再次请求</strong>，此时如果服务端发现该ID已经存在则不会再插入</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><strong>防重表（适用于新增插入）</strong>：<strong>允许ID重复</strong>，但是加了一个<strong>唯一索引字段unique_key用于隐性保证唯一性</strong></li>
-<li><strong>乐观锁（适用于更新）</strong>：<strong>version字段</strong>作为<strong>乐观锁</strong>，每次更新时<strong>version+1</strong>，这样即使重复更新也不会影响数据<ul>
-<li>step1：客户端查询version</li>
-<li>step2：客户端发起更新请求，带上version</li>
-<li>step3：服务端校验version，如果一致则更新，否则返回错误</li>
-</ul>
-</li>
-<li><strong>Token（同时适用于增删更）</strong>：<strong>Token</strong>是<strong>一次性的</strong>，<strong>删除后</strong>就<strong>不能再次删除</strong>，因此<strong>重复删除</strong>不会有影响  <img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/token.png" width="60%"></li>
-</ul>
-<p><strong>4）redis和数据库的幂等性</strong></p>
-<ul>
-<li><strong>redis</strong><ul>
-<li><strong>唯一ID</strong>：每个消息分配一个唯一ID</li>
-<li>Redis Set：将已消费的消息ID存入Redis Set中，每次消费前先判断是否在Set中</li>
-<li><strong>原子操作</strong>：SISMEMBER和SADD是原子操作，保证了幂等性</li>
-</ul>
-</li>
-<li><strong>数据库</strong><ul>
-<li><strong>唯一ID约束</strong>：ID字段设置唯一约束</li>
-<li><strong>INSERT IGNORE</strong>：插入时使用INSERT IGNORE，如果ID重复则不插入</li>
-<li><strong>事务</strong>：使用事务保证原子性</li>
-</ul>
-</li>
-<li><strong>Redis和MySQL结合实现幂等</strong>：在MySQL唯一ID前面加一层Redis Set先过滤重复的UID</li>
-</ul>
-<h2 id="4-消息的积压处理"><a href="#4-消息的积压处理" class="headerlink" title="4. 消息的积压处理"></a>4. 消息的积压处理</h2><p><strong>1）消息积压的原因</strong></p>
-<ul>
-<li><strong>消费者处理能力不足</strong>：消费者处理消息的速度不够快，导致消息积压</li>
-<li><strong>消费者线程阻塞</strong></li>
-<li><strong>消费者宕机</strong></li>
-</ul>
-<p><strong>2）消息积压的解决方案</strong></p>
-<ul>
-<li><strong>扩容提高消费速率</strong>：增加消费者进行水平扩容<ul>
-<li>由于要保持<strong>消息有序性</strong>，因此一个<strong>Partition只能有一个消费者</strong>，所以水平扩容也是有要求的，当消费者与Partition持平时，还要扩容Partition</li>
-</ul>
-</li>
-<li><strong>服务主动降级</strong>：紧急情况下可以先<strong>取消一些非核心业务或流程</strong>，如阿里通过orange开关取消某个非核心业务链路</li>
-</ul>
-<h1 id="二、Kafka"><a href="#二、Kafka" class="headerlink" title="二、Kafka"></a>二、Kafka</h1><h2 id="1-Kafka简介"><a href="#1-Kafka简介" class="headerlink" title="1. Kafka简介"></a>1. Kafka简介</h2><p>Kafka是<strong>分布式消息队列</strong>，是<strong>高吞吐量</strong>的分布式<strong>发布订阅</strong>消息系统，具有<strong>持久性（zookeeper提供的主从管理）</strong>、<strong>高性能（10w/s级别）</strong>、<strong>高可用性（健壮的副本Partition）</strong>、<strong>最终一致性（主从一致）</strong>等特点。</p>
-<p>单机吞吐支持<strong>10W/s级别</strong>，与RocketMQ相比，其<strong>不具备消息回溯能力</strong>且支持主题数在<strong>百级</strong>（RocketMQ支持<strong>千级</strong>）。</p>
-<h2 id="2-Kafka架构"><a href="#2-Kafka架构" class="headerlink" title="2. Kafka架构"></a>2. Kafka架构</h2><p>Kafka的架构主要包括<strong>生产者</strong>、<strong>消费者</strong>、<strong>broker（单机）</strong>、<strong>topic（消息发布订阅模式）</strong>、<strong>partition（一个topic的Partition可以分布在多台机器上-主从一致）</strong>、<strong>replica</strong>、<strong>leader</strong>、<strong>follower</strong>等概念。</p>
-<p>除此以外，还有<strong>zookeeper</strong>用于<strong>管理集群broker</strong>，它相当于管家，可以<strong>选举leader、follow保存副本</strong>，保证数据可用性（可以用于broken的注册、发现与选举）</p>
-<p>总的架构如下：</p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/Kafka_structure.png" width="80%">
-
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/Kafka_structure2.png" width="80%">
-
-<p>Kafka的设计理念可分解为以下主要部分：</p>
-<p><strong>1）MQ数据堆积</strong></p>
-<p>MQ中数据堆积本质是消费者消费能力差，可以通过<strong>增加消费者线程</strong>，也就是多消费者模式，同理也可以添加多生产者提高吞吐量</p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiConsumers.jpg" width="60%">
-
-<p><strong>2）多生产者和多消费者竞争MQ</strong></p>
-<p><strong>分Topic</strong></p>
-<p>将消息队列根据<strong>不同主题Topic</strong>分为<strong>多个MQ</strong>减少冲突等待</p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiTopic.jpg" width="60%">
-
-<p><strong>Topic的Partition分区</strong></p>
-<p>单个Topic中还可以再细分成<strong>多个Partition分区</strong>，每个消费者对应一个Partition分区，从而<strong>降低多线程竞争</strong></p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiPartition.jpg" width="60%">
-
-<p><strong>3）高性能</strong></p>
-<p>将多个Partition分布在不同机器上，每个机器称为<strong>broker</strong></p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiBroker.jpg" width="60%">
-
-<p><strong>4）高可用</strong></p>
-<p>单个broker如果宕机了，该部分的功能将无法继续进行，因此可以设计<strong>leader-follower</strong>的集群方式</p>
-<p><strong>leader</strong>负责读写数据，<strong>follower</strong>负责复制数据，当<strong>leader</strong>宕机时可以从<strong>follower</strong>中选举出新的<strong>leader</strong></p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/leader-follower.jpg" width="60%">
-
-<p><strong>5）持久化</strong></p>
-<p>数据放在内存中有宕机丢失的风险，因此数据还应该具备<strong>持久化到磁盘</strong>的能力</p>
-<p>同时为了防止磁盘溢出，还应该设置<strong>过期时间</strong></p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/savetodisk.jpg" width="60%">
-
-<h2 id="3-Kafka的优缺点"><a href="#3-Kafka的优缺点" class="headerlink" title="3. Kafka的优缺点"></a>3. Kafka的优缺点</h2><h3 id="3-1-优点"><a href="#3-1-优点" class="headerlink" title="3.1 优点"></a>3.1 优点</h3><ul>
-<li><strong>高吞吐量</strong>：支持<strong>10W/s级别</strong>的消息堆积吞吐量（RocketMQ一样）</li>
-<li><strong>高可用性</strong>：通过<strong>leader-follower</strong>机制保证数据的可用性</li>
-<li><strong>持久化</strong>：支持数据持久化到磁盘</li>
-<li><strong>分布式</strong>：支持<strong>多broker</strong>、<strong>多partition</strong>、<strong>多topic</strong>的分布式架构</li>
-<li><strong>水平扩展</strong>：支持<strong>水平扩展</strong>，可以通过增加broker、partition等方式提高吞吐量</li>
-<li><strong>支持批量处理</strong>（RocketMQ不支持）</li>
-<li><strong>支持消息顺序</strong>：在<strong>一个队列中</strong>可靠的<strong>先进先出</strong>（FIFO）和严格的顺序传递；支持拉（pull）和推（push）两种消息模式；</li>
-</ul>
-<h3 id="3-2-缺点"><a href="#3-2-缺点" class="headerlink" title="3.2 缺点"></a>3.2 缺点</h3><ul>
-<li><strong>不支持消息回溯</strong>：Kafka不支持消息回溯，即<strong>消费者消费过的消息无法再次消费，也就不支持重试</strong></li>
-<li>使用短轮询，实时性取决于轮询频率</li>
-</ul>
-<h2 id="4-Kafka高性能的原因"><a href="#4-Kafka高性能的原因" class="headerlink" title="4. Kafka高性能的原因"></a>4. Kafka高性能的原因</h2><p>Kafka高性能的原因有：<strong>零拷贝</strong>、<strong>批量操作</strong>、<strong>顺序写</strong>、数据压缩、多层次、页缓存</p>
-<h3 id="4-1-零拷贝"><a href="#4-1-零拷贝" class="headerlink" title="4.1 零拷贝*"></a>4.1 零拷贝*</h3><p>零拷贝：优化<strong>网络数据</strong>从本地到网卡发送的拷贝次数</p>
-<p>操作：<strong>将数据直接从内核空间的磁盘文件直接拷贝到网卡中，不经过用户态</strong></p>
-<p>优点：<strong>系统调用从2次变成1次、拷贝由4次变成2次</strong></p>
-<p>原来的网卡数据发送流程：</p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/copy.png" width="60%">
-
-<p>零拷贝的数据发送流程：</p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/zeroCopy.png" width="60%">
-
-<h3 id="4-2-批量操作"><a href="#4-2-批量操作" class="headerlink" title="4.2 批量操作*"></a>4.2 批量操作*</h3><p>批量操作：一次性拉取多条消息进行消费</p>
-<p>方法包括：累积到<strong>一定时间ms</strong>就操作、累积到<strong>一定batchSize数据量</strong>就操作、累积到<strong>一定缓存大小</strong>就操作</p>
-<p>优点：节省宽带</p>
-<p>缺点：造成延时</p>
-<h3 id="4-3-顺序写"><a href="#4-3-顺序写" class="headerlink" title="4.3 顺序写*"></a>4.3 顺序写*</h3><p>顺序写：指磁盘的顺序写，<strong>使磁盘写性能更接近内存性能</strong></p>
-<p>操作：Kafka写入数据其实就是添加到每个Partition的末端（也就是磁盘文件）</p>
-<p>原因：非顺序写磁盘需要转动寻址、对齐扇区，速度慢</p>
-<h3 id="4-4-数据压缩"><a href="#4-4-数据压缩" class="headerlink" title="4.4 数据压缩"></a>4.4 数据压缩</h3><p>数据压缩：<strong>生产者/broken压缩-消费者解压数据</strong></p>
-<p>优点：降低网络需求和存储压力</p>
-<h3 id="4-5-多层次"><a href="#4-5-多层次" class="headerlink" title="4.5 多层次"></a>4.5 多层次</h3><p>多层次：Kafka利用<strong>分治Partition主从思想</strong>，将顺序IO存储压力进行<strong>切分</strong></p>
-<p><code>Topic=n*Partition=m*broken</code>，Kafka返回路由信息，使其按规则访问对应的Partition，每个Partition分为3个文件作为索引文件实现快速查找</p>
-<p>分治思想：一个业务写入一个topic <strong>—&gt;</strong> 一个topic具有多个切片Partition <strong>—&gt;</strong> 一个Partition有多个Broken用作数据主从存储</p>
-<img src="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/multiLevel.png" width="60%">
-
-<h3 id="4-6-页缓存"><a href="#4-6-页缓存" class="headerlink" title="4.6 页缓存"></a>4.6 页缓存</h3><p>页缓存：消息进入Kafka后线写入<strong>内存缓存PageCache</strong>，<strong>后面再由操作系统刷入磁盘</strong>（肯定需要刷入磁盘防止电脑断电、重启导致数据丢失）</p>
-<p>优点：当查询的数据打中PageCache时可以直接从PageCache中获取数据，提升效率（未完待续：需要了解什么情况下会去命中PageCache）</p>
-<p><strong>从PageCache到磁盘同步固化机制：</strong></p>
-<ul>
-<li>1）内存空间&lt;=阈值后，PageCache输入磁盘并被释放</li>
-<li>2）脏页在内存驻留一定时间后<ul>
-<li>脏页：当消息被写入PageCache后，由于不是及时更新到磁盘的，所以此时页缓存数据跟磁盘不一致，被称为脏页</li>
-<li>主动调用刷脏方法：<strong>sync或fsync方法</strong>（系统调用）</li>
-</ul>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>系统设计</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>动态规划-背包问题</title>
-    <url>/2024/04/26/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/</url>
-    <content><![CDATA[<h1 id="一、0-1背包问题"><a href="#一、0-1背包问题" class="headerlink" title="一、0-1背包问题"></a>一、0-1背包问题</h1><h2 id="1-1-适用场景"><a href="#1-1-适用场景" class="headerlink" title="1.1 适用场景"></a>1.1 适用场景</h2><p>0-1背包问题属于背包问题中的一种，其特点是：<strong>每个物品只能被选择一次</strong>，两种状态即<strong>要么装入背包，要么不装入背包</strong>。</p>
-<h2 id="1-2-问题描述"><a href="#1-2-问题描述" class="headerlink" title="1.2 问题描述"></a>1.2 问题描述</h2><p>有一个<strong>背包</strong>，其容量为<code>m</code></p>
-<p>现有<code>n</code>个<strong>物品</strong>，每个物品的重量为<code>w[i]</code>，价值为<code>v[i]</code></p>
-<p>现在需要选择一些物品装入背包，使得背包中物品的总价值最大。</p>
-<h2 id="1-3-通用代码思路"><a href="#1-3-通用代码思路" class="headerlink" title="1.3 通用代码思路"></a>1.3 通用代码思路</h2><h3 id="1-3-1-二维数组方式"><a href="#1-3-1-二维数组方式" class="headerlink" title="1.3.1 二维数组方式"></a>1.3.1 二维数组方式</h3><h4 id="数组含义"><a href="#数组含义" class="headerlink" title="数组含义"></a>数组含义</h4><p><code>dp[i][j]</code>表示<strong>前i个物品</strong>在<strong>背包容量为j</strong>时的最大价值</p>
-<h4 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h4><ul>
-<li>当<code>j&lt;w[i]</code>时，即当前物品的重量大于背包容量，此时无法装入背包，因此<code>dp[i][j]=dp[i-1][j]</code></li>
-<li>当<code>j&gt;=w[i]</code>时，即当前物品的重量小于等于背包容量，此时可以选择<strong>装入或者不装入</strong>背包，因此<code>dp[i][j]=max(dp[i-1][j],dp[i-1][j-w[i]]+v[i])</code></li>
-</ul>
-<h4 id="通用代码"><a href="#通用代码" class="headerlink" title="通用代码"></a>通用代码</h4><p><strong>1. 初始化</strong></p>
-<p>通常初始化第一排</p>
-<p><strong>2. 遍历顺序</strong></p>
-<p>可以采用先<strong>物品</strong>后<strong>背包</strong></p>
-<p>也可以采用先<strong>背包</strong>后<strong>物品</strong></p>
-<p><strong>3. 背包的遍历顺序</strong></p>
-<p><strong>正序</strong>就行</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">        <span class="keyword">if</span>(j &lt; w[i]) dp[i][j] = dp[i<span class="number">-1</span>][j];</span><br><span class="line">        <span class="keyword">else</span> dp[i][j] = <span class="built_in">max</span>(dp[i<span class="number">-1</span>][j],dp[i<span class="number">-1</span>][j-w[i]]+v[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="1-3-2-一维数组方式"><a href="#1-3-2-一维数组方式" class="headerlink" title="1.3.2 一维数组方式"></a>1.3.2 一维数组方式</h3><h4 id="数组含义-1"><a href="#数组含义-1" class="headerlink" title="数组含义"></a>数组含义</h4><p><code>dp[j]</code>表示<strong>背包容量为j</strong>时的最大价值</p>
-<h4 id="状态转移方程-1"><a href="#状态转移方程-1" class="headerlink" title="状态转移方程"></a>状态转移方程</h4><ul>
-<li>当<code>j&gt;=w[i]</code>时，即当前物品的重量小于等于背包容量，此时可以选择<strong>装入或者不装入</strong>背包，因此<code>dp[j]=max(dp[j],dp[j-w[i]]+v[i])</code></li>
-</ul>
-<h4 id="通用代码-1"><a href="#通用代码-1" class="headerlink" title="通用代码"></a>通用代码</h4><p><strong>1. 初始化</strong></p>
-<p>可以不用初始化（全初始化为0）</p>
-<p><strong>2. 遍历顺序</strong></p>
-<p><strong>必须</strong>采用先<strong>物品</strong>后<strong>背包</strong>的遍历顺序</p>
-<p><strong>3. 背包的遍历顺序</strong></p>
-<p>由于要求每个物品只能被选择一次，且状态转移方程是由前面的状态推导出来的</p>
-<p>因此背包的遍历顺序<strong>必须</strong>是<strong>逆序</strong>的，即从大到小遍历，否则会出现<strong>重复选择</strong>的情况</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = m; j &gt;= w[i]; --j)&#123;<span class="comment">//背包</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="二、完全背包问题"><a href="#二、完全背包问题" class="headerlink" title="二、完全背包问题"></a>二、完全背包问题</h1><h2 id="2-1-适用场景"><a href="#2-1-适用场景" class="headerlink" title="2.1 适用场景"></a>2.1 适用场景</h2><p>完全背包问题的特点是：<strong>每个物品可以被选择多次</strong>，两种状态即<strong>装入背包或者不装入背包</strong> </p>
-<h2 id="2-2-问题描述"><a href="#2-2-问题描述" class="headerlink" title="2.2 问题描述"></a>2.2 问题描述</h2><p>有一个<strong>背包</strong>，其容量为<code>m</code></p>
-<p>现有<code>n</code>个<strong>物品</strong>，每个物品的重量为<code>w[i]</code>，价值为<code>v[i]</code></p>
-<p>现在需要选择<strong>一些可重复的物品</strong>装入背包，使得背包中物品的总价值最大。</p>
-<h2 id="2-3-通用代码思路-一维数组方式"><a href="#2-3-通用代码思路-一维数组方式" class="headerlink" title="2.3 通用代码思路-一维数组方式"></a>2.3 通用代码思路-一维数组方式</h2><h3 id="2-3-1-数组含义"><a href="#2-3-1-数组含义" class="headerlink" title="2.3.1 数组含义"></a>2.3.1 数组含义</h3><p><code>dp[j]</code>表示<strong>背包容量为j</strong>时的最大价值</p>
-<h3 id="2-3-2-状态转移方程"><a href="#2-3-2-状态转移方程" class="headerlink" title="2.3.2 状态转移方程"></a>2.3.2 状态转移方程</h3><ul>
-<li>当<code>j&gt;=w[i]</code>时，即当前物品的重量小于等于背包容量，此时可以选择<strong>装入或者不装入</strong>背包，因此<code>dp[j]=max(dp[j],dp[j-w[i]]+v[i])</code></li>
-</ul>
-<h3 id="2-3-3-通用代码"><a href="#2-3-3-通用代码" class="headerlink" title="2.3.3 通用代码"></a>2.3.3 通用代码</h3><p><strong>1. 初始化</strong></p>
-<p>可以不用初始化（全初始化为0）</p>
-<p><strong>2. 遍历顺序</strong></p>
-<p>可以采用先<strong>物品</strong>后<strong>背包</strong></p>
-<p>也可以采用先<strong>背包</strong>后<strong>物品</strong></p>
-<p><strong>3. 背包的遍历顺序</strong></p>
-<p>由于要求每个物品可以被选择多次，所以允许前面的状态中也包含该物品</p>
-<p>因此背包的遍历顺序<strong>必须</strong>是<strong>正序</strong>的，即从小到大遍历</p>
-<ul>
-<li><p>先遍历<strong>物品</strong>，再遍历<strong>背包</strong></p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = w[i]; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>先遍历<strong>背包</strong>，再遍历<strong>物品</strong></p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> j = w[i]; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-]]></content>
-      <categories>
-        <category>数据结构与算法</category>
       </categories>
   </entry>
   <entry>
@@ -7845,57 +7845,6 @@ var ParticlePool = (function() {
       </categories>
   </entry>
   <entry>
-    <title>计算机网络层</title>
-    <url>/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/</url>
-    <content><![CDATA[<blockquote>
-<p>计算机网络层主要关注的就是<strong>IP、路由器、Ping-ICMP</strong>等内容，是<strong>传输层</strong>和<strong>应用层</strong>之间的桥梁，负责<strong>数据包的传输</strong>和<strong>路由选择</strong>等功能</p>
-</blockquote>
-<h2 id="一、IP地址"><a href="#一、IP地址" class="headerlink" title="一、IP地址"></a>一、IP地址</h2><p>IP用于在网络中<strong>唯一标识和定位网络中的设备</strong>，分为IPv4和IPv6两种，其中IPv4地址为32位(有地址枯竭问题)，IPv6地址为128位</p>
-<ul>
-<li>IPv4：划分为4个按点分，<strong>每部分8位</strong>，范围为0~255，如<code>255.255.255.0</code></li>
-<li>IPv6：划分为8个按冒号分，<strong>每部分16位</strong>，如<code>2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
-</ul>
-<p><strong>Mac地址与IP地址的区别：</strong></p>
-<p>而Mac地址在数据链路层，是与<strong>网卡硬件</strong>绑定的，不会因为网络变化而变化，而<strong>IP地址是根据连接不同的网络而变化的</strong></p>
-<ul>
-<li>局域网中：通过Mac地址直接通信<ul>
-<li>mac是用于<strong>局域网设备</strong>通信的</li>
-<li>mac地址在<strong>数据链路层</strong></li>
-<li><strong>交换机</strong>工作在MAC层，主要实现<strong>局域网内</strong>的数据转发</li>
-</ul>
-</li>
-<li>互联网中：通过IP地址路由传递信息的<ul>
-<li>IP用于<strong>不同网络之间</strong>的通信</li>
-<li>IP地址在<strong>网络层</strong></li>
-<li><strong>路由器</strong>工作在IP层，主要实现<strong>不同网络之间</strong>的数据转发</li>
-</ul>
-</li>
-</ul>
-<h2 id="二、NAT转换"><a href="#二、NAT转换" class="headerlink" title="二、NAT转换"></a>二、NAT转换</h2><p>NAT转换协议是在<strong>网络层节约公有IP资源</strong>。</p>
-<p>NAT转换可以将<strong>多个私有IP都转换成同一个公有IP</strong>，然后通过<strong>端口号</strong>来区分不同的设备，这样就可以<strong>减少公网IP的使用</strong></p>
-<img src="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/NAT.png" width="70%">
-
-<h2 id="三、Ping和ICMP协议"><a href="#三、Ping和ICMP协议" class="headerlink" title="三、Ping和ICMP协议"></a>三、Ping和ICMP协议</h2><p>ping是通过<strong>ICMP</strong>协议实现的，通过发送ICMP包给目标主机来测试目标主机是否可到达（ping是不带端口的，也就是包最高到达网络层，所以无法探测某个主机内的某个程序是否可达）</p>
-<img src="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/Ping.png" width="100%">
-
-<h2 id="四、DDOS攻击的预防"><a href="#四、DDOS攻击的预防" class="headerlink" title="四、DDOS攻击的预防"></a>四、DDOS攻击的预防</h2><p>DDOS攻击是指黑客<strong>短时间内用大量的僵尸机发送请求，耗尽服务器资源</strong>，导致服务器无法正常工作</p>
-<ul>
-<li>应用层DDOS：DNS洪水攻击</li>
-<li>传输层DDOS：SYN洪泛攻击</li>
-<li>网络层DDOS</li>
-</ul>
-<p>预防方法：</p>
-<ul>
-<li><strong>限制某个IP访问频率</strong>、<strong>设置防火墙规则拉黑一些IP</strong></li>
-<li>增加<strong>用户验证</strong></li>
-<li>第三方DDOS防护服务</li>
-</ul>
-]]></content>
-      <categories>
-        <category>计算机网络</category>
-      </categories>
-  </entry>
-  <entry>
     <title>从0开始实现线程池(C++)</title>
     <url>/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/</url>
     <content><![CDATA[<h2 id="一、线程池概述"><a href="#一、线程池概述" class="headerlink" title="一、线程池概述"></a>一、线程池概述</h2><h3 id="1-线程池的设计初衷"><a href="#1-线程池的设计初衷" class="headerlink" title="1. 线程池的设计初衷"></a>1. 线程池的设计初衷</h3><p>线程池是一种<strong>池式结构</strong>(内存池、消息队列也属于池式结构)，主要解决<strong>缓存问题</strong>，起缓冲作用</p>
@@ -8221,6 +8170,57 @@ var ParticlePool = (function() {
 ]]></content>
       <categories>
         <category>WebServer项目（C++）</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>计算机网络层</title>
+    <url>/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/</url>
+    <content><![CDATA[<blockquote>
+<p>计算机网络层主要关注的就是<strong>IP、路由器、Ping-ICMP</strong>等内容，是<strong>传输层</strong>和<strong>应用层</strong>之间的桥梁，负责<strong>数据包的传输</strong>和<strong>路由选择</strong>等功能</p>
+</blockquote>
+<h2 id="一、IP地址"><a href="#一、IP地址" class="headerlink" title="一、IP地址"></a>一、IP地址</h2><p>IP用于在网络中<strong>唯一标识和定位网络中的设备</strong>，分为IPv4和IPv6两种，其中IPv4地址为32位(有地址枯竭问题)，IPv6地址为128位</p>
+<ul>
+<li>IPv4：划分为4个按点分，<strong>每部分8位</strong>，范围为0~255，如<code>255.255.255.0</code></li>
+<li>IPv6：划分为8个按冒号分，<strong>每部分16位</strong>，如<code>2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></li>
+</ul>
+<p><strong>Mac地址与IP地址的区别：</strong></p>
+<p>而Mac地址在数据链路层，是与<strong>网卡硬件</strong>绑定的，不会因为网络变化而变化，而<strong>IP地址是根据连接不同的网络而变化的</strong></p>
+<ul>
+<li>局域网中：通过Mac地址直接通信<ul>
+<li>mac是用于<strong>局域网设备</strong>通信的</li>
+<li>mac地址在<strong>数据链路层</strong></li>
+<li><strong>交换机</strong>工作在MAC层，主要实现<strong>局域网内</strong>的数据转发</li>
+</ul>
+</li>
+<li>互联网中：通过IP地址路由传递信息的<ul>
+<li>IP用于<strong>不同网络之间</strong>的通信</li>
+<li>IP地址在<strong>网络层</strong></li>
+<li><strong>路由器</strong>工作在IP层，主要实现<strong>不同网络之间</strong>的数据转发</li>
+</ul>
+</li>
+</ul>
+<h2 id="二、NAT转换"><a href="#二、NAT转换" class="headerlink" title="二、NAT转换"></a>二、NAT转换</h2><p>NAT转换协议是在<strong>网络层节约公有IP资源</strong>。</p>
+<p>NAT转换可以将<strong>多个私有IP都转换成同一个公有IP</strong>，然后通过<strong>端口号</strong>来区分不同的设备，这样就可以<strong>减少公网IP的使用</strong></p>
+<img src="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/NAT.png" width="70%">
+
+<h2 id="三、Ping和ICMP协议"><a href="#三、Ping和ICMP协议" class="headerlink" title="三、Ping和ICMP协议"></a>三、Ping和ICMP协议</h2><p>ping是通过<strong>ICMP</strong>协议实现的，通过发送ICMP包给目标主机来测试目标主机是否可到达（ping是不带端口的，也就是包最高到达网络层，所以无法探测某个主机内的某个程序是否可达）</p>
+<img src="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/Ping.png" width="100%">
+
+<h2 id="四、DDOS攻击的预防"><a href="#四、DDOS攻击的预防" class="headerlink" title="四、DDOS攻击的预防"></a>四、DDOS攻击的预防</h2><p>DDOS攻击是指黑客<strong>短时间内用大量的僵尸机发送请求，耗尽服务器资源</strong>，导致服务器无法正常工作</p>
+<ul>
+<li>应用层DDOS：DNS洪水攻击</li>
+<li>传输层DDOS：SYN洪泛攻击</li>
+<li>网络层DDOS</li>
+</ul>
+<p>预防方法：</p>
+<ul>
+<li><strong>限制某个IP访问频率</strong>、<strong>设置防火墙规则拉黑一些IP</strong></li>
+<li>增加<strong>用户验证</strong></li>
+<li>第三方DDOS防护服务</li>
+</ul>
+]]></content>
+      <categories>
+        <category>计算机网络</category>
       </categories>
   </entry>
   <entry>
@@ -8826,7 +8826,7 @@ setInterval(ClickConnect, 60000)
 </li>
 </ul>
 </li>
-<li><p>提交后若出现”Please tell me who you are”，则根据提示输入<code>git config --global user.email &quot;you@example.com&quot;</code>和<code>git config --global user.name &quot;Your Name&quot;</code>(如”<a href="mailto:&#x31;&#52;&#x32;&#56;&#51;&#x38;&#x34;&#56;&#55;&#56;&#64;&#113;&#113;&#46;&#99;&#111;&#109;">&#x31;&#52;&#x32;&#56;&#51;&#x38;&#x34;&#56;&#55;&#56;&#64;&#113;&#113;&#46;&#99;&#111;&#109;</a>“和”AkiraZheng”)</p>
+<li><p>提交后若出现”Please tell me who you are”，则根据提示输入<code>git config --global user.email &quot;you@example.com&quot;</code>和<code>git config --global user.name &quot;Your Name&quot;</code>(如”<a href="mailto:&#x31;&#52;&#50;&#x38;&#x33;&#x38;&#x34;&#56;&#x37;&#x38;&#64;&#x71;&#x71;&#46;&#99;&#x6f;&#109;">&#x31;&#52;&#50;&#x38;&#x33;&#x38;&#x34;&#56;&#x37;&#x38;&#64;&#x71;&#x71;&#46;&#99;&#x6f;&#109;</a>“和”AkiraZheng”)</p>
 </li>
 </ul>
 </li>
