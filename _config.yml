@@ -103,7 +103,7 @@ theme: archer
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: https://AkiraZheng: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@github.com/AkiraZheng/AkiraZheng.github.io.git ## https://AkiraZheng:.ztyn0709@github.com/AkiraZheng/AkiraZheng.github.io.git    https://github.com/AkiraZheng/AkiraZheng.github.io.git
+  repo: https://AkiraZheng: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@github.com/AkiraZheng/AkiraZheng.github.io.git ## https://AkiraZheng:.ztyn0709@github.com/AkiraZheng/AkiraZheng.github.io.git    https://github.com/AkiraZheng/AkiraZheng.github.io.git
   branch: main
 
 # Global search
