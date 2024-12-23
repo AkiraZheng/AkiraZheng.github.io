@@ -98,6 +98,7 @@ categories:
 				<img src='creat_token.png' width='%50' height='%50'>
 
 				<img src='creat_token2.png' width='%50' height='%50'>
+			- 在博客的`_config.yml`文件中修改`repo`项为`https://AkiraZheng:拿到的token@github.com/AkiraZheng/AkiraZheng.github.io.git`
 
 		- `hexo d`这个过程可能会出现各种错误，FATAL中如果出现code: 128错误，很可能是网络问题无法打开github仓库，这是可以关闭cmd挂个梯子后再进行部署
 	- 提交后若出现"Please tell me who you are"，则根据提示输入`git config --global user.email "you@example.com"`和`git config --global user.name "Your Name"`(如"1428384878@qq.com"和"AkiraZheng")

@@ -182,9 +182,9 @@ top -pid PID
 7. 启动worker：`./worker`
     <img src="runWorker.png">
 
-## 从windows中查看代码（windows+vscode打开centos的文件夹）
+从windows中查看代码（windows+vscode打开centos的文件夹）
 
-# vscode+docker远程调试
+### vscode+docker远程调试
 
 在vscode中远程连接centos，然后在远程打开的centos中安装`dev container`插件和`docker`插件
 
@@ -192,7 +192,7 @@ top -pid PID
 
 参考视频：[VsCode轻松使用docker容器-Remote Containers](https://b23.tv/hl3aHnK)
 
-## 接口调试
+### 接口调试
 
 接口调试网站中创建自己的api测试案例：[Apipost](https://www.apipost.cn/)
 
