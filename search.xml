@@ -6656,7 +6656,7 @@ var ParticlePool = (function() {
 <img src="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%80%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/Ranking.png" width="80%" height="80%">
 
 <ul>
-<li>举例：在“跑步鞋”搜索结果中，精排阶段会确保广告中最相关的、用户最可能点击的跑步鞋广告排在前面，考虑到价格、品牌偏好等因素。 </li>
+<li>举例：在“跑步鞋”搜索结果中，精排阶段会确保广告中最相关的、用户最可能点击的跑步鞋广告排在前面，考虑到价格、品牌偏好等因素。</li>
 </ul>
 </li>
 <li><p><strong>混排</strong>：为<strong>避免内容越推越窄</strong>，将精排后的推荐结果进行一定修改，<strong>例如控制某一类型的频次</strong>。</p>
@@ -6673,7 +6673,7 @@ var ParticlePool = (function() {
 <li><strong>连续特征</strong>：如<strong>价值、销量</strong>等可以直接数值化</li>
 <li><strong>类别特征</strong>：如<strong>性别、等级、星期、城市等</strong>这些可选项、不具备数值化意义的需要用<strong>哈希散列、one-hot等进行编码向量化</strong>。</li>
 </ul>
-<h4 id="1）哈希散列"><a href="#1）哈希散列" class="headerlink" title="1）哈希散列"></a>1）哈希散列</h4><p>哈希散列是一种将特征值映射到<strong>固定长度为n的向量</strong>的方法</p>
+<h3 id="1）哈希散列"><a href="#1）哈希散列" class="headerlink" title="1）哈希散列"></a>1）哈希散列</h3><p>哈希散列是一种将特征值映射到<strong>固定长度为n的向量</strong>的方法</p>
 <p>比如需要将<code>weekly</code>特征映射到长度为<code>n=3</code>的向量中，也就是通过二进制编码制定映射规则<code>Tuesday=[0,1,0]=十进制的2</code>，用长度为3的向量可以无哈希冲突地映射所有星期值。</p>
 <p><strong>缺点：</strong></p>
 <ul>
@@ -6684,7 +6684,7 @@ var ParticlePool = (function() {
 <ul>
 <li>内存占用较低，适合大规模数据集</li>
 </ul>
-<h4 id="2）one-hot"><a href="#2）one-hot" class="headerlink" title="2）one-hot"></a>2）one-hot</h4><p>one-hot是一种将特征值映射到<strong>固定长度为n的向量</strong>的方法，<strong>其中n为可选类别的个数</strong></p>
+<h3 id="2）one-hot"><a href="#2）one-hot" class="headerlink" title="2）one-hot"></a>2）one-hot</h3><p>one-hot是一种将特征值映射到<strong>固定长度为n的向量</strong>的方法，<strong>其中n为可选类别的个数</strong></p>
 <p>比如将<code>weekly</code>特征映射到长度为7的向量中，选中了星期几就把该位置置为1，比如<code>Tuesday=[0,1,0,0,0,0,0]</code>，用长度为7的向量可以无哈希冲突地映射所有星期值。</p>
 <p><strong>缺点：</strong></p>
 <ul>
