@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="一、内核缓冲区Page Cache进程在调用write函数写入文件描述符时，其实不是直接写入文件，而是  先中段到内核空间 然后再由内核空间写入内核缓冲区Page Cache(因为内核缓冲区相较于磁盘I&#x2F;O速度更快) 最后内核会在适当的时机将内核缓冲区的内容写入磁盘  通过这种机制，可以减少操作磁盘I&#x2F;O的次数，提高磁盘I&#x2F;O效率（当然也可以通过mmap函数将文件映射到内存中，这样就可以直接操作内">
+    <meta name="description" content="一、内核缓冲区Page Cache 进程在调用write函数写入文件描述符时，其实不是直接写入文件，而是  先中段到内核空间 然后再由内核空间写入内核缓冲区Page Cache(因为内核缓冲区相较于磁盘I&#x2F;O速度更快) 最后内核会在适当的时机将内核缓冲区的内容写入磁盘  通过这种机制，可以减少操作磁盘I&#x2F;O的次数，提高磁盘I&#x2F;O效率（当然也可以通过mmap函数将文件映射到内存中，这样就可以直接操作">
 <meta property="og:type" content="article">
 <meta property="og:title" content="文件描述符">
 <meta property="og:url" content="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一、内核缓冲区Page Cache进程在调用write函数写入文件描述符时，其实不是直接写入文件，而是  先中段到内核空间 然后再由内核空间写入内核缓冲区Page Cache(因为内核缓冲区相较于磁盘I&#x2F;O速度更快) 最后内核会在适当的时机将内核缓冲区的内容写入磁盘  通过这种机制，可以减少操作磁盘I&#x2F;O的次数，提高磁盘I&#x2F;O效率（当然也可以通过mmap函数将文件映射到内存中，这样就可以直接操作内">
+<meta property="og:description" content="一、内核缓冲区Page Cache 进程在调用write函数写入文件描述符时，其实不是直接写入文件，而是  先中段到内核空间 然后再由内核空间写入内核缓冲区Page Cache(因为内核缓冲区相较于磁盘I&#x2F;O速度更快) 最后内核会在适当的时机将内核缓冲区的内容写入磁盘  通过这种机制，可以减少操作磁盘I&#x2F;O的次数，提高磁盘I&#x2F;O效率（当然也可以通过mmap函数将文件映射到内存中，这样就可以直接操作">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/two_copy.png">
 <meta property="og:image" content="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/one_copy.png">
@@ -32,7 +32,7 @@
 <meta property="og:image" content="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/mmap.png">
 <meta property="og:image" content="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/sendfile.png">
 <meta property="article:published_time" content="2024-05-18T13:08:33.000Z">
-<meta property="article:modified_time" content="2024-10-10T09:00:07.695Z">
+<meta property="article:modified_time" content="2024-12-25T13:57:49.852Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/two_copy.png">
@@ -491,58 +491,59 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="一、内核缓冲区Page-Cache"><a href="#一、内核缓冲区Page-Cache" class="headerlink" title="一、内核缓冲区Page Cache"></a>一、内核缓冲区Page Cache</h1><p>进程在调用write函数写入文件描述符时，其实不是直接写入文件，而是</p>
+        <h1 id="一内核缓冲区page-cache">一、内核缓冲区Page Cache</h1>
+<p>进程在调用write函数写入文件描述符时，其实不是直接写入文件，而是</p>
 <ul>
 <li>先<strong>中段</strong>到内核空间</li>
-<li>然后再由内核空间写入<strong>内核缓冲区Page Cache</strong>(因为内核缓冲区相较于磁盘I/O速度更快)</li>
+<li>然后再由内核空间写入<strong>内核缓冲区Page
+Cache</strong>(因为内核缓冲区相较于磁盘I/O速度更快)</li>
 <li>最后内核会在适当的时机<strong>将内核缓冲区的内容写入磁盘</strong></li>
 </ul>
-<p>通过这种机制，可以<strong>减少操作磁盘I/O的次数</strong>，提高磁盘I/O效率（当然也可以通过<code>mmap</code>函数将文件映射到内存中，这样就可以直接操作内存，内存中的操作既快速，又不用经过内核态&lt;–&gt;用户态的切换，更加高效）</p>
+<p>通过这种机制，可以<strong>减少操作磁盘I/O的次数</strong>，提高磁盘I/O效率（当然也可以通过<code>mmap</code>函数将文件映射到内存中，这样就可以直接操作内存，内存中的操作既快速，又不用经过内核态&lt;--&gt;用户态的切换，更加高效）</p>
 <p>如果想立即将内核缓冲区的内容写入磁盘，可以调用<code>fsync</code>函数（调用<code>fflush</code>函数也会将缓冲区的内容强制写入磁盘，而不等待缓冲区满再刷新）</p>
-<h1 id="二、零拷贝技术：mmap"><a href="#二、零拷贝技术：mmap" class="headerlink" title="二、零拷贝技术：mmap"></a>二、零拷贝技术：mmap</h1><p>磁盘相对于计算机中的CPU、内存来说，属于慢速设备，因此针对磁盘的优化，有我们上述讲到的<strong>通过内核态中的缓冲区Page Cache减少I/O访问次数</strong>，还有通过<strong>零拷贝技术</strong>来减少数据在内核态和用户态之间的拷贝次数</p>
-<p>如果通过中断的方式，当我们发生系统调用<code>read</code>时，内核会将<strong>磁盘中的数据拷贝到内核缓冲区(第一次拷贝)<strong>，然后再将</strong>内核缓冲区的数据拷贝到用户缓冲区</strong>，这样就发生了两次拷贝</p>
-<img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/two_copy.png" width="80%">
-
+<h1 id="二零拷贝技术mmap">二、零拷贝技术：mmap</h1>
+<p>磁盘相对于计算机中的CPU、内存来说，属于慢速设备，因此针对磁盘的优化，有我们上述讲到的<strong>通过内核态中的缓冲区Page
+Cache减少I/O访问次数</strong>，还有通过<strong>零拷贝技术</strong>来减少数据在内核态和用户态之间的拷贝次数</p>
+<p>如果通过中断的方式，当我们发生系统调用<code>read</code>时，内核会将<strong>磁盘中的数据拷贝到内核缓冲区(第一次拷贝)</strong>，然后再将<strong>内核缓冲区的数据拷贝到用户缓冲区</strong>，这样就发生了两次拷贝</p>
+<p><img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/two_copy.png" width="80%"></p>
 <p>也就是说在大量数据拷贝过程都需要<strong>CPU</strong>参与搬运，这样会浪费CPU资源，降低效率</p>
 <p>因此进一步可以通过<strong>DMA直接内存访问技术</strong>进行优化：</p>
 <ul>
-<li><p>在不占用CPU资源的情况下(此时CPU可以执行其它任务)，将数据从磁盘拷贝到内核缓冲区</p>
-</li>
-<li><p>当DMA读取了足够多的数据，再通知<strong>CPU</strong>将数据从内核缓冲区拷贝到用户缓冲区，这样就只发生了一次拷贝</p>
-</li>
+<li><p>在不占用CPU资源的情况下(此时CPU可以执行其它任务)，将数据从磁盘拷贝到内核缓冲区</p></li>
+<li><p>当DMA读取了足够多的数据，再通知<strong>CPU</strong>将数据从内核缓冲区拷贝到用户缓冲区，这样就只发生了一次拷贝</p></li>
 </ul>
-<img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/one_copy.png" width="80%">
-
-<p>即使采用<strong>DMA</strong>技术，还是需要通过<strong>CPU</strong>进行一次拷贝，具体通过<code>read</code>和<code>write</code>的流程如下所示(<strong>各发生2次用户态&lt;–&gt;内核态的上下文切换</strong>，一次切换需要耗时几十纳秒到几微秒；以及<strong>各发生一次DMA拷贝+一次CPU拷贝</strong>)：</p>
-<p>‘’’shell<br>read(file, buffer, size)<br>write(socketfd, buffer, size)<br>‘’’</p>
-<img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/read_write.png" width="80%">
-
+<p><img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/one_copy.png" width="80%"></p>
+<p>即使采用<strong>DMA</strong>技术，还是需要通过<strong>CPU</strong>进行一次拷贝，具体通过<code>read</code>和<code>write</code>的流程如下所示(<strong>各发生2次用户态&lt;--&gt;内核态的上下文切换</strong>，一次切换需要耗时几十纳秒到几微秒；以及<strong>各发生一次DMA拷贝+一次CPU拷贝</strong>)：</p>
+<p>'''shell read(file, buffer, size) write(socketfd, buffer, size)
+'''</p>
+<p><img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/read_write.png" width="80%"></p>
 <p>而实际上，多次拷贝是没必要的，我们可以通过<code>mmap</code>函数将文件映射到内存中，使<code>read</code>和<code>write</code>直接操作<strong>共享的内核缓冲区</strong>，这样就可以<strong>减少一次拷贝，但也不是完全的零拷贝</strong>，具体流程如下：</p>
-<p>‘’’shell<br>buf = mmap(file, size)<br>write(socketfd, buf, size)<br>‘’’</p>
-<img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/mmap.png" width="80%">
-
+<p>'''shell buf = mmap(file, size) write(socketfd, buf, size) '''</p>
+<p><img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/mmap.png" width="80%"></p>
 <p>真正的零拷贝是Linux上提供的<code>sendfile</code>函数，它可以直接将文件描述符之间的数据拷贝，而<strong>不需要经过用户态，完全存在内核态中，只经过2次拷贝</strong>，具体流程如下：</p>
-<p>‘’’shell<br>sendfile(out_fd, in_fd, offset, size)<br>‘’’</p>
-<img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/sendfile.png" width="80%">
-
+<p>'''shell sendfile(out_fd, in_fd, offset, size) '''</p>
+<p><img src="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/sendfile.png" width="80%"></p>
 <blockquote>
 <p>参考：<a target="_blank" rel="noopener" href="https://xiaolincoding.com/os/8_network_system/zero_copy.html#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%9C%89-dma-%E6%8A%80%E6%9C%AF">什么是零拷贝？</a></p>
 </blockquote>
-<h1 id="三、I-O多路复用技术"><a href="#三、I-O多路复用技术" class="headerlink" title="三、I/O多路复用技术"></a>三、I/O多路复用技术</h1><h2 id="3-1-Linux中的五中I-O模型"><a href="#3-1-Linux中的五中I-O模型" class="headerlink" title="3.1 Linux中的五中I/O模型"></a>3.1 Linux中的五中I/O模型</h2><ul>
-<li><strong>阻塞I/O</strong>：调用<code>socket.read()</code>或<code>socket.write()</code>时，如果没有数据可读或写，会一直阻塞等待，直到有数据可读或写<ul>
+<h1 id="三io多路复用技术">三、I/O多路复用技术</h1>
+<h2 id="linux中的五中io模型">3.1 Linux中的五中I/O模型</h2>
+<ul>
+<li><strong>阻塞I/O</strong>：调用<code>socket.read()</code>或<code>socket.write()</code>时，如果没有数据可读或写，会一直阻塞等待，直到有数据可读或写
+<ul>
 <li>适合计算密集型，因为计算密集型消耗的是CPU资源</li>
-</ul>
-</li>
-<li><strong>非阻塞I/O</strong>：不断轮训查看数据是否准备好，所以非阻塞I/O也不会交出CPU<ul>
+</ul></li>
+<li><strong>非阻塞I/O</strong>：不断轮训查看数据是否准备好，所以非阻塞I/O也不会交出CPU
+<ul>
 <li>适合传视频，一直占用CPU减少线程切换的成本</li>
-</ul>
-</li>
+</ul></li>
 <li><strong>I/O复用</strong>：通过<code>select</code>、<code>poll</code>、<code>epoll</code>等函数，可以同时监听多个文件描述符，当其中任何一个文件描述符就绪时，就可以进行读写操作（监听的文件描述符本身也是阻塞的）</li>
 <li><strong>信号驱动I/O</strong>：通过信号来通知应用程序I/O已经完成</li>
 <li><strong>异步I/O</strong>：通过<code>aio_read</code>、<code>aio_write</code>等函数，可以在I/O操作完成后通知应用程序（应用程序发起I/O后可以直接进行其它操作，不用等待I/O完成）</li>
 </ul>
 <p>在文章<a href="https://akirazheng.github.io/2024/03/04/WebServer%E5%AD%A6%E4%B9%A03%EF%BC%9Asocket%E7%BC%96%E7%A8%8B%E4%B8%8Eepoll%E5%AE%9E%E7%8E%B0I-O%E5%A4%8D%E7%94%A8/#/%E4%BA%8C%E3%80%81I-O%E5%A4%8D%E7%94%A8">WebServer学习3：socket编程与epoll实现I/O复用</a>中已经有详细介绍，这里不再赘述</p>
-<h1 id="四、事件驱动模型"><a href="#四、事件驱动模型" class="headerlink" title="四、事件驱动模型"></a>四、事件驱动模型</h1><p>在文章<a href="https://akirazheng.github.io/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/">WebServer学习4：并发事件驱动模式Reactor和Proactor</a>中已经有详细介绍，这里不再赘述</p>
+<h1 id="四事件驱动模型">四、事件驱动模型</h1>
+<p>在文章<a href="https://akirazheng.github.io/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/">WebServer学习4：并发事件驱动模式Reactor和Proactor</a>中已经有详细介绍，这里不再赘述</p>
 
     </article>
     <!-- license -->
@@ -551,7 +552,7 @@
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">May 18th 2024, 9:08:33 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">October 10th 2024, 5:00:07 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">December 25th 2024, 9:57:49 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -717,7 +718,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%86%85%E6%A0%B8%E7%BC%93%E5%86%B2%E5%8C%BAPage-Cache"><span class="toc-text">一、内核缓冲区Page Cache</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E9%9B%B6%E6%8B%B7%E8%B4%9D%E6%8A%80%E6%9C%AF%EF%BC%9Ammap"><span class="toc-text">二、零拷贝技术：mmap</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81I-O%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E6%8A%80%E6%9C%AF"><span class="toc-text">三、I&#x2F;O多路复用技术</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-Linux%E4%B8%AD%E7%9A%84%E4%BA%94%E4%B8%ADI-O%E6%A8%A1%E5%9E%8B"><span class="toc-text">3.1 Linux中的五中I&#x2F;O模型</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%9E%8B"><span class="toc-text">四、事件驱动模型</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E5%86%85%E6%A0%B8%E7%BC%93%E5%86%B2%E5%8C%BApage-cache"><span class="toc-text">一、内核缓冲区Page Cache</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E9%9B%B6%E6%8B%B7%E8%B4%9D%E6%8A%80%E6%9C%AFmmap"><span class="toc-text">二、零拷贝技术：mmap</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89io%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E6%8A%80%E6%9C%AF"><span class="toc-text">三、I&#x2F;O多路复用技术</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#linux%E4%B8%AD%E7%9A%84%E4%BA%94%E4%B8%ADio%E6%A8%A1%E5%9E%8B"><span class="toc-text">3.1 Linux中的五中I&#x2F;O模型</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%9E%8B"><span class="toc-text">四、事件驱动模型</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1006,7 +1007,18 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1521,7 +1533,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 55
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1535,6 +1547,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
@@ -1930,14 +1948,14 @@
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">

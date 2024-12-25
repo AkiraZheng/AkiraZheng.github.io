@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="前言 本文中所有设计模式Github代码其中本文代理模式相关代码在ProxyPattern.h文件中  一、代理模式基础1. 代理模式的使用场景 当某些对象由于某些原因，不能直接访问另一个对象，需要通过一个代理对象来间接访问时，可以使用代理模式。   某些原因指的是比如：对象创建的开销大、某些操作需要安全控制、需要访问进程外的对象等。   在分布式系统中，代理模式的使用极其广泛，例如在分布式系统中">
+    <meta name="description" content="前言  本文中所有设计模式Github代码 其中本文代理模式相关代码在ProxyPattern.h文件中  一、代理模式基础 1. 代理模式的使用场景  当某些对象由于某些原因，不能直接访问另一个对象，需要通过一个代理对象来间接访问时，可以使用代理模式。   某些原因指的是比如：对象创建的开销大、某些操作需要安全控制、需要访问进程外的对象等。   在分布式系统中，代理模式的使用极其广泛，例如在分布">
 <meta property="og:type" content="article">
 <meta property="og:title" content="设计模式4：代理模式(C++)">
 <meta property="og:url" content="https://akirazheng.github.io/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F4%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="前言 本文中所有设计模式Github代码其中本文代理模式相关代码在ProxyPattern.h文件中  一、代理模式基础1. 代理模式的使用场景 当某些对象由于某些原因，不能直接访问另一个对象，需要通过一个代理对象来间接访问时，可以使用代理模式。   某些原因指的是比如：对象创建的开销大、某些操作需要安全控制、需要访问进程外的对象等。   在分布式系统中，代理模式的使用极其广泛，例如在分布式系统中">
+<meta property="og:description" content="前言  本文中所有设计模式Github代码 其中本文代理模式相关代码在ProxyPattern.h文件中  一、代理模式基础 1. 代理模式的使用场景  当某些对象由于某些原因，不能直接访问另一个对象，需要通过一个代理对象来间接访问时，可以使用代理模式。   某些原因指的是比如：对象创建的开销大、某些操作需要安全控制、需要访问进程外的对象等。   在分布式系统中，代理模式的使用极其广泛，例如在分布">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-02-02T15:11:11.000Z">
 <meta property="article:modified_time" content="2024-10-03T17:59:59.836Z">
@@ -324,7 +324,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">985</span>Reading time: <span class="post-count reading-time">3 min</span></span>
+                        <span>Word count: <span class="post-count word-count">986</span>Reading time: <span class="post-count reading-time">3 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -485,10 +485,14 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/AkiraZheng/designPattern/tree/master/designPattern">本文中所有设计模式Github代码</a><br>其中本文<strong>代理模式</strong>相关代码在<code>ProxyPattern.h</code>文件中</p>
+        <h2 id="前言">前言</h2>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/AkiraZheng/designPattern/tree/master/designPattern">本文中所有设计模式Github代码</a>
+其中本文<strong>代理模式</strong>相关代码在<code>ProxyPattern.h</code>文件中</p>
 </blockquote>
-<h2 id="一、代理模式基础"><a href="#一、代理模式基础" class="headerlink" title="一、代理模式基础"></a>一、代理模式基础</h2><h3 id="1-代理模式的使用场景"><a href="#1-代理模式的使用场景" class="headerlink" title="1. 代理模式的使用场景"></a>1. 代理模式的使用场景</h3><blockquote>
+<h2 id="一代理模式基础">一、代理模式基础</h2>
+<h3 id="代理模式的使用场景">1. 代理模式的使用场景</h3>
+<blockquote>
 <p>当某些对象由于某些原因，<strong>不能直接访问另一个对象</strong>，需要<strong>通过一个代理对象来间接访问</strong>时，可以使用代理模式。</p>
 </blockquote>
 <blockquote>
@@ -497,17 +501,17 @@
 <blockquote>
 <p>在<strong>分布式系统</strong>中，代理模式的使用极其广泛，例如在分布式系统中，客户端和服务器端的交互，客户端无法直接访问服务器端的对象，需要通过代理对象来访问服务器端的对象。</p>
 </blockquote>
-<h3 id="2-代理模式的定义"><a href="#2-代理模式的定义" class="headerlink" title="2. 代理模式的定义"></a>2. 代理模式的定义</h3><p>代理模式是一种结构型设计模式，它可以<strong>为其他对象提供一种代理以控制对这个对象的访问</strong></p>
+<h3 id="代理模式的定义">2. 代理模式的定义</h3>
+<p>代理模式是一种结构型设计模式，它可以<strong>为其他对象提供一种代理以控制对这个对象的访问</strong></p>
 <p>代理类和被代理类<strong>有相同的接口</strong>（继承同一个基类），代理类主要负责为被代理类预处理消息、过滤消息、把消息转发给被代理类，以及事后处理消息等。</p>
-<h2 id="二、代理模式的实现-C"><a href="#二、代理模式的实现-C" class="headerlink" title="二、代理模式的实现(C++)"></a>二、代理模式的实现(C++)</h2><p>在没有使用代理模式时，Client有一个需求是需要new一个RealSubject对象，然后调用其方法。</p>
+<h2 id="二代理模式的实现c">二、代理模式的实现(C++)</h2>
+<p>在没有使用代理模式时，Client有一个需求是需要new一个RealSubject对象，然后调用其方法。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Isubject</span>&#123;</span></span><br><span class="line">    <span class="comment">// 抽象基类</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Request</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RealSubject</span>:</span><span class="keyword">public</span> Isubject&#123;</span><br><span class="line">    <span class="comment">// 真实主题类</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">Request</span><span class="params">()</span></span>&#123;</span><br><span class="line">            cout &lt;&lt; <span class="string">&quot;RealSubject::Request()&quot;</span> &lt;&lt; endl;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Client</span>&#123;</span></span><br><span class="line">    Isubject* _subject;</span><br><span class="line">    <span class="comment">// 客户端</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="built_in">Client</span>()&#123;</span><br><span class="line">            _subject = <span class="keyword">new</span> <span class="built_in">RealSubject</span>();<span class="comment">//客户端需要使用一个RealSubject对象</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">DoTask</span><span class="params">()</span></span>&#123;</span><br><span class="line">            _subject-&gt;<span class="built_in">Request</span>();</span><br><span class="line">        &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
 <p>从上面的代码中中，我们可以看到，Client需要new一个RealSubject对象，然后调用其方法。但是由于某些原因，Client是无法实现直接new一个RealSubject对象</p>
 <p>那么这个时候需要通过<strong>一个代理对象Proxy</strong>来间接访问RealSubject对象</p>
 <p>在代理模式中，<strong>代理类Proxy</strong>和<strong>被代理类RealSubject</strong>都<strong>继承自同一个基类Isubject</strong>，这样可以保证代理类和被代理类有相同的接口。Proxy就可以在这个接口上实现对RealSubject的一系列代理操作</p>
 <p>Proxy在这个接口上可以创建一个RealSubject对象，然后调用其方法，Client通过Proxy来间接访问RealSubject对象；也可能在如<strong>分布式</strong>的场景下，Proxy在这个接口上可以通过网络访问RealSubject对象，然后调用其方法，Client通过Proxy来间接访问RealSubject对象。因此Proxy这个接口的实现方式是复杂多变的，这里介绍设计模式，因此将其简化了，旨在理解它的实现流程</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Isubject</span>&#123;</span></span><br><span class="line">    <span class="comment">// Proxy和RealSubject共同继承的抽象基类</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Request</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RealSubject</span>:</span><span class="keyword">public</span> Isubject&#123;</span><br><span class="line">    <span class="comment">// 真实主题类</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">Request</span><span class="params">()</span></span>&#123;</span><br><span class="line">            cout &lt;&lt; <span class="string">&quot;RealSubject::Request()&quot;</span> &lt;&lt; endl;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Proxy</span>:</span><span class="keyword">public</span> Isubject&#123;</span><br><span class="line">    <span class="comment">// 代理类</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">Request</span><span class="params">()</span></span>&#123;</span><br><span class="line">            <span class="comment">//实现一系列复杂的代理操作，来对RealSubject进行访问</span></span><br><span class="line">            <span class="comment">//有些框架会用自动工具来生成代理</span></span><br><span class="line">            <span class="comment">//不同代理类的内部实现粒度和方法都是相差很大的，但是具体实现思想是一致的（Proxy和RealSubject用相同的接口）</span></span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Client</span>&#123;</span></span><br><span class="line">    Isubject* _subject;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="built_in">Client</span>()&#123;</span><br><span class="line">            _subject = <span class="keyword">new</span> <span class="built_in">Proxy</span>();<span class="comment">//客户端需要使用一个Proxy对象</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">DoTask</span><span class="params">()</span></span>&#123;</span><br><span class="line">            _subject-&gt;<span class="built_in">Request</span>();<span class="comment">//通过Proxy类间接访问RealSubject对象</span></span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>这里Proxy和RealSubject共同继承的抽象基类Isubject，以通过同一个接口名的接口来实现Client实际想实现的对RealSubject的访问操作，好处是Client不用同时记住代理类和实际类的接口名，只需要知道抽象类的接口名就行，这种方法可以使客户端感觉是在对RealSubject进行操作。这种设计也是<strong>符合设计模式的开闭原则</strong>的，即对扩展开放，对修改关闭。</p>
 
     </article>
@@ -683,7 +687,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%E5%9F%BA%E7%A1%80"><span class="toc-text">一、代理模式基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%E7%9A%84%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">1. 代理模式的使用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-text">2. 代理模式的定义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0-C"><span class="toc-text">二、代理模式的实现(C++)</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%E5%9F%BA%E7%A1%80"><span class="toc-text">一、代理模式基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%E7%9A%84%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">1. 代理模式的使用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-text">2. 代理模式的定义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0c"><span class="toc-text">二、代理模式的实现(C++)</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -972,7 +976,18 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1487,7 +1502,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 55
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1501,6 +1516,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
@@ -1896,14 +1917,14 @@
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">

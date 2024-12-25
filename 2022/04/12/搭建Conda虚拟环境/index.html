@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="前言 编写这篇博客的目的是在学习李沐老师的《动手学深度学习》课程、或者自学其它python编程内容时，需要用到的python环境各不相同   为了方便学习，还是需要创建多个不同的Conda环境进行区分   本文的命令内容是基于Windows10系统的，Linux系统的后续有机会继续更新  Conda中的常用指令一般有Conda前缀的指令都是针对所有环境进行操作的，或者说是在主环境中操作的 如果需要">
+    <meta name="description" content="前言  编写这篇博客的目的是在学习李沐老师的《动手学深度学习》课程、或者自学其它python编程内容时，需要用到的python环境各不相同   为了方便学习，还是需要创建多个不同的Conda环境进行区分   本文的命令内容是基于Windows10系统的，Linux系统的后续有机会继续更新  Conda中的常用指令 一般有Conda前缀的指令都是针对所有环境进行操作的，或者说是在主环境中操作的 如果">
 <meta property="og:type" content="article">
 <meta property="og:title" content="搭建Conda虚拟环境">
 <meta property="og:url" content="https://akirazheng.github.io/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="前言 编写这篇博客的目的是在学习李沐老师的《动手学深度学习》课程、或者自学其它python编程内容时，需要用到的python环境各不相同   为了方便学习，还是需要创建多个不同的Conda环境进行区分   本文的命令内容是基于Windows10系统的，Linux系统的后续有机会继续更新  Conda中的常用指令一般有Conda前缀的指令都是针对所有环境进行操作的，或者说是在主环境中操作的 如果需要">
+<meta property="og:description" content="前言  编写这篇博客的目的是在学习李沐老师的《动手学深度学习》课程、或者自学其它python编程内容时，需要用到的python环境各不相同   为了方便学习，还是需要创建多个不同的Conda环境进行区分   本文的命令内容是基于Windows10系统的，Linux系统的后续有机会继续更新  Conda中的常用指令 一般有Conda前缀的指令都是针对所有环境进行操作的，或者说是在主环境中操作的 如果">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://akirazheng.github.io/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/Conda-envs.png">
 <meta property="og:image" content="https://akirazheng.github.io/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/pip-install-package.png">
@@ -348,7 +348,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">455</span>Reading time: <span class="post-count reading-time">1 min</span></span>
+                        <span>Word count: <span class="post-count word-count">456</span>Reading time: <span class="post-count reading-time">1 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -509,7 +509,8 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+        <h1 id="前言">前言</h1>
+<blockquote>
 <p>编写这篇博客的目的是在学习李沐老师的《动手学深度学习》课程、或者自学其它python编程内容时，需要用到的python环境各不相同</p>
 </blockquote>
 <blockquote>
@@ -518,55 +519,47 @@
 <blockquote>
 <p>本文的命令内容是基于Windows10系统的，Linux系统的后续有机会继续更新</p>
 </blockquote>
-<h1 id="Conda中的常用指令"><a href="#Conda中的常用指令" class="headerlink" title="Conda中的常用指令"></a>Conda中的常用指令</h1><p>一般有<strong>Conda前缀</strong>的指令都是针对<strong>所有环境</strong>进行操作的，或者说是在主环境中操作的</p>
+<h1 id="conda中的常用指令">Conda中的常用指令</h1>
+<p>一般有<strong>Conda前缀</strong>的指令都是针对<strong>所有环境</strong>进行操作的，或者说是在主环境中操作的</p>
 <p>如果需要在当前的<strong>自定义Conda虚拟环境</strong>中执行安装或者查看指令时，<strong>不需要加Conda前缀</strong></p>
-<h2 id="Conda前缀的指令"><a href="#Conda前缀的指令" class="headerlink" title="Conda前缀的指令"></a>Conda前缀的指令</h2><ul>
+<h2 id="conda前缀的指令">Conda前缀的指令</h2>
+<ul>
 <li><p>查看安装包</p>
-<p>  <code>conda list</code></p>
-</li>
+<p><code>conda list</code></p></li>
 <li><p>查看当前存在的Conda虚拟环境</p>
-<p>  <code>conda env list </code></p>
-<p>  <code>conda info -e</code></p>
-</li>
+<p><code>conda env list</code></p>
+<p><code>conda info -e</code></p></li>
 <li><p>更新当前Conda</p>
-<p>  <code>conda update conda</code></p>
-</li>
+<p><code>conda update conda</code></p></li>
 <li><p>创建Python虚拟环境</p>
-<p>  <code>conda create -n your_env_name python=x.x</code></p>
-<p>  其中<strong>your_env_name</strong>为所起的环境名，<strong>x.x</strong>为python版本号，创建的环境可以在Anaconda安装目录的envs文件中找到。</p>
-<p>  如在创建Pytorch深度学习环境时可以输入：</p>
-<p>  <code>conda create -n d2l_Pytorch python=3.8</code></p>
-</li>
+<p><code>conda create -n your_env_name python=x.x</code></p>
+<p>其中<strong>your_env_name</strong>为所起的环境名，<strong>x.x</strong>为python版本号，创建的环境可以在Anaconda安装目录的envs文件中找到。</p>
+<p>如在创建Pytorch深度学习环境时可以输入：</p>
+<p><code>conda create -n d2l_Pytorch python=3.8</code></p></li>
 <li><p>激活、关闭、删除虚拟环境</p>
-<p>  激活或者切换虚拟环境：</p>
-<p>  <code>activate your_env_name</code></p>
-<p>  关闭虚拟环境切回Root环境:</p>
-<p>  <code>activate root</code></p>
-<p>  删除虚拟环境：</p>
-<p>  <code>conda remove -n your_env_name --all</code></p>
-</li>
+<p>激活或者切换虚拟环境：</p>
+<p><code>activate your_env_name</code></p>
+<p>关闭虚拟环境切回Root环境:</p>
+<p><code>activate root</code></p>
+<p>删除虚拟环境：</p>
+<p><code>conda remove -n your_env_name --all</code></p></li>
 </ul>
-<h2 id="自定义虚拟环境内的指令"><a href="#自定义虚拟环境内的指令" class="headerlink" title="自定义虚拟环境内的指令"></a>自定义虚拟环境内的指令</h2><p><strong>以下指令均在已经切换到对应环境的情况下</strong>进行输入，如下所示表示已经切换到<strong>d2l_Pytorch</strong>环境：</p>
-<img src="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/Conda-envs.png">
-
+<h2 id="自定义虚拟环境内的指令">自定义虚拟环境内的指令</h2>
+<p><strong>以下指令均在已经切换到对应环境的情况下</strong>进行输入，如下所示表示已经切换到<strong>d2l_Pytorch</strong>环境：</p>
+<p><img src="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/Conda-envs.png"></p>
 <ul>
 <li><p>检查Python版本（CMD中输入）</p>
-<p>  <code>python --version</code></p>
-</li>
+<p><code>python --version</code></p></li>
 <li><p>查看环境中已有的安装包</p>
-<p>  <code>pip list</code></p>
-</li>
+<p><code>pip list</code></p></li>
 <li><p>安装虚拟环境中对于版本的包</p>
-<p>  <code>pip install package_name==x.x</code>    </p>
-<p>  其中<strong>x.x</strong>代表包对应的版本号，如下所示：</p>
-</li>
+<p><code>pip install package_name==x.x</code></p>
+<p>其中<strong>x.x</strong>代表包对应的版本号，如下所示：</p></li>
 </ul>
-<img src="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/pip-install-package.png">
-
+<p><img src="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/pip-install-package.png"></p>
 <ul>
 <li><p>删除环境中的某个包</p>
-<p>  <code>pip uninstall  package_name</code></p>
-</li>
+<p><code>pip uninstall  package_name</code></p></li>
 </ul>
 
     </article>
@@ -742,7 +735,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Conda%E4%B8%AD%E7%9A%84%E5%B8%B8%E7%94%A8%E6%8C%87%E4%BB%A4"><span class="toc-text">Conda中的常用指令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Conda%E5%89%8D%E7%BC%80%E7%9A%84%E6%8C%87%E4%BB%A4"><span class="toc-text">Conda前缀的指令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E5%86%85%E7%9A%84%E6%8C%87%E4%BB%A4"><span class="toc-text">自定义虚拟环境内的指令</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#conda%E4%B8%AD%E7%9A%84%E5%B8%B8%E7%94%A8%E6%8C%87%E4%BB%A4"><span class="toc-text">Conda中的常用指令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#conda%E5%89%8D%E7%BC%80%E7%9A%84%E6%8C%87%E4%BB%A4"><span class="toc-text">Conda前缀的指令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E5%86%85%E7%9A%84%E6%8C%87%E4%BB%A4"><span class="toc-text">自定义虚拟环境内的指令</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1031,7 +1024,18 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1546,7 +1550,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 55
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1560,6 +1564,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
@@ -1955,14 +1965,14 @@
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">

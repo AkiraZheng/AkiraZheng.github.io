@@ -19,19 +19,19 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="一、整体框架（异步任务框架）1. 整体框架在Asyncflow项目中，主要包括以下部分的设计：  任务调度器Worker 异步执行实际的任务 执行完毕后将任务status、stage更新提交到flowSvr   代理FlowSvr 接收任务请求 将任务请求转发给Worker 获取数据库中的任务 任务治理（定时执行任务位置表更新、定时轮询是否达到分表阈值500w（更新任务位置表）、间隔查看和处理卡死">
+    <meta name="description" content="一、整体框架（异步任务框架） 1. 整体框架 在Asyncflow项目中，主要包括以下部分的设计：  任务调度器Worker  异步执行实际的任务 执行完毕后将任务status、stage更新提交到flowSvr  代理FlowSvr  接收任务请求 将任务请求转发给Worker 获取数据库中的任务 任务治理（定时执行任务位置表更新、定时轮询是否达到分表阈值500w（更新任务位置表）、间隔查看和处">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Asyncflow项目2：整体设计思路">
 <meta property="og:url" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一、整体框架（异步任务框架）1. 整体框架在Asyncflow项目中，主要包括以下部分的设计：  任务调度器Worker 异步执行实际的任务 执行完毕后将任务status、stage更新提交到flowSvr   代理FlowSvr 接收任务请求 将任务请求转发给Worker 获取数据库中的任务 任务治理（定时执行任务位置表更新、定时轮询是否达到分表阈值500w（更新任务位置表）、间隔查看和处理卡死">
+<meta property="og:description" content="一、整体框架（异步任务框架） 1. 整体框架 在Asyncflow项目中，主要包括以下部分的设计：  任务调度器Worker  异步执行实际的任务 执行完毕后将任务status、stage更新提交到flowSvr  代理FlowSvr  接收任务请求 将任务请求转发给Worker 获取数据库中的任务 任务治理（定时执行任务位置表更新、定时轮询是否达到分表阈值500w（更新任务位置表）、间隔查看和处">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/Asyncflow_structure.png">
 <meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/work_structure.png">
 <meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/flow_structure.png">
 <meta property="og:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/status_flow.png">
 <meta property="article:published_time" content="2024-07-15T12:10:14.000Z">
-<meta property="article:modified_time" content="2024-10-03T17:59:59.573Z">
+<meta property="article:modified_time" content="2024-12-25T13:55:40.495Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/Asyncflow_structure.png">
@@ -329,7 +329,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">3.7k</span>Reading time: <span class="post-count reading-time">12 min</span></span>
+                        <span>Word count: <span class="post-count word-count">3.7k</span>Reading time: <span class="post-count reading-time">13 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -490,67 +490,70 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="一、整体框架（异步任务框架）"><a href="#一、整体框架（异步任务框架）" class="headerlink" title="一、整体框架（异步任务框架）"></a>一、整体框架（异步任务框架）</h1><h2 id="1-整体框架"><a href="#1-整体框架" class="headerlink" title="1. 整体框架"></a>1. 整体框架</h2><p>在Asyncflow项目中，主要包括以下部分的设计：</p>
+        <h1 id="一整体框架异步任务框架">一、整体框架（异步任务框架）</h1>
+<h2 id="整体框架">1. 整体框架</h2>
+<p>在Asyncflow项目中，主要包括以下部分的设计：</p>
 <ul>
-<li>任务调度器Worker<ul>
+<li>任务调度器Worker
+<ul>
 <li>异步执行实际的任务</li>
 <li>执行完毕后将<strong>任务status、stage</strong>更新提交到flowSvr</li>
-</ul>
-</li>
-<li>代理FlowSvr<ul>
+</ul></li>
+<li>代理FlowSvr
+<ul>
 <li>接收任务请求</li>
 <li>将任务请求转发给Worker</li>
 <li>获取数据库中的任务</li>
 <li>任务治理（定时执行<strong>任务位置表更新</strong>、定时轮询<strong>是否达到分表阈值500w（更新任务位置表）</strong>、间隔查看和处理<strong>卡死任务</strong>等）</li>
-</ul>
-</li>
-<li>DB数据库设计<ul>
-<li>数据库表、字段、索引、优先级设计<ul>
+</ul></li>
+<li>DB数据库设计
+<ul>
+<li>数据库表、字段、索引、优先级设计
+<ul>
 <li>上下文设计：<strong>content</strong>字段，框架worker和flower<strong>不需要理解上下文</strong>，<strong>只需要存储和传递</strong>，所以可以实现对各种类型任务的快速注册（新增任务类型typeX）</li>
-</ul>
-</li>
+</ul></li>
 <li>分表设计</li>
-</ul>
-</li>
-<li>Cache缓存设计<ul>
+</ul></li>
+<li>Cache缓存设计
+<ul>
 <li>分布式锁设计</li>
-</ul>
-</li>
+</ul></li>
 </ul>
 <p>在主要实现流程中，代理做为worker、用户、数据库之间的桥梁，负责接收、分发任务以及管理任务状态转移。</p>
 <p>由于worker是异步执行的，因此对于多个woker获取同一类型任务时，需要在worker与flowSvr之间加一层分布式锁，只有获得锁的worker才能向flowSvr请求任务。</p>
 <p>具体流程如下：</p>
-<img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/Asyncflow_structure.png">
-
-<img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/work_structure.png">
-
-<img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/flow_structure.png" width="50%">
-
-<h2 id="2-中间件"><a href="#2-中间件" class="headerlink" title="2. 中间件"></a>2. 中间件</h2><p>在整体框架中，主要用到的中间件为<strong>MySQL</strong>和<strong>Redis</strong>，根据需求可以引入<strong>消息队列</strong></p>
+<p><img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/Asyncflow_structure.png"></p>
+<p><img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/work_structure.png"></p>
+<p><img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/flow_structure.png" width="50%"></p>
+<h2 id="中间件">2. 中间件</h2>
+<p>在整体框架中，主要用到的中间件为<strong>MySQL</strong>和<strong>Redis</strong>，根据需求可以引入<strong>消息队列</strong></p>
 <ul>
 <li><strong>MySQL</strong>作为<strong>持久化存储</strong>，用于存储任务的<strong>状态</strong>、<strong>优先级</strong>、<strong>任务类型</strong>等信息</li>
-<li><strong>Redis</strong>作为<strong>信息缓存</strong>加速查询，以及实现<strong>分布式锁</strong>解决冲突问题<ul>
+<li><strong>Redis</strong>作为<strong>信息缓存</strong>加速查询，以及实现<strong>分布式锁</strong>解决冲突问题
+<ul>
 <li>一类任务的多个worker需要一把分布式锁</li>
 <li>而不同任务之间会打到不同flowsvr上，操作不同的表格，所以不同任务之间不需要加锁</li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<h2 id="3-框架部署方式"><a href="#3-框架部署方式" class="headerlink" title="3. 框架部署方式"></a>3. 框架部署方式</h2><p>当前部署方式为：</p>
+<h2 id="框架部署方式">3. 框架部署方式</h2>
+<p>当前部署方式为：</p>
 <ul>
-<li><strong>多flowSvr单MySQL单Redis</strong>：<ul>
+<li><strong>多flowSvr单MySQL单Redis</strong>：
+<ul>
 <li>多个flowSvr部署在单机上，共用一个MySQL数据库，通过<strong>分布式锁</strong>解决并发问题</li>
 <li>路由通过<strong>Nginx</strong>实现<strong>负载均衡</strong></li>
 <li>部署在阿里云服务器上</li>
-</ul>
-</li>
-<li><strong>多Worker</strong><ul>
+</ul></li>
+<li><strong>多Worker</strong>
+<ul>
 <li>worker处理任务的接口逻辑需要用户自己实现</li>
 <li>worker用于占据并执行任务、更新任务状态（任务提交）</li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<p>当前阶段单机（1个server）中部署了<strong>3个flowSvr pod</strong>和<strong>3个worker</strong>，通过<strong>Nginx</strong>实现<strong>负载均衡</strong>，<strong>MySQL</strong>和<strong>Redis</strong>也是单机部署</p>
-<h2 id="4-表结构设计"><a href="#4-表结构设计" class="headerlink" title="4. 表结构设计"></a>4. 表结构设计</h2><p><strong>1）任务信息表t_video_task_1</strong></p>
+<p>当前阶段单机（1个server）中部署了<strong>3个flowSvr
+pod</strong>和<strong>3个worker</strong>，通过<strong>Nginx</strong>实现<strong>负载均衡</strong>，<strong>MySQL</strong>和<strong>Redis</strong>也是单机部署</p>
+<h2 id="表结构设计">4. 表结构设计</h2>
+<p><strong>1）任务信息表t_video_task_1</strong></p>
 <p>以其中一种任务类型<code>video</code>为例，其表名为<code>t_video_task_1</code>，表结构如下：</p>
 <table>
 <thead>
@@ -560,7 +563,8 @@
 <th>说明</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>id</td>
 <td>bigint</td>
 <td>自增ID，主键</td>
@@ -635,41 +639,42 @@
 <td>datetime</td>
 <td>修改时间</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <ul>
-<li><code>id</code>和<code>task_id</code>的区别<ul>
+<li><code>id</code>和<code>task_id</code>的区别
+<ul>
 <li><code>id</code>是表内自增不对外暴露的</li>
 <li><code>task_id</code>可以是uuid，<strong>提供用户进行轮询查询任务状态</strong>以及做为唯一标识<strong>保证接口幂等</strong>的</li>
-</ul>
-</li>
-<li><code>task_type</code><ul>
+</ul></li>
+<li><code>task_type</code>
+<ul>
 <li>这里是用于识别<strong>不同类任</strong>务的，比如音视频和北斗解算就是不同类型任务有不同type</li>
 <li>而对于<strong>同一个任务</strong>的<strong>多阶段</strong>是用<code>task_stage</code>去区分的，<strong>不同类型任务不会出现在一张表格中的</strong></li>
-</ul>
-</li>
-<li><code>task_stage</code>：如一个任务有三个阶段，则有task_1、task_2、task_3<ul>
+</ul></li>
+<li><code>task_stage</code>：如一个任务有三个阶段，则有task_1、task_2、task_3
+<ul>
 <li>举例：北斗解算可以划分为<strong>采集数据过滤预处理</strong>、<strong>数据解算</strong>两个阶段</li>
-</ul>
-</li>
-<li><code>status</code><ul>
-<li>指的是worker对当前任务的执行状态，有<strong>4种</strong><ul>
+</ul></li>
+<li><code>status</code>
+<ul>
+<li>指的是worker对当前任务的执行状态，有<strong>4种</strong>
+<ul>
 <li><strong>过程态会在不同任务阶段动态变化</strong>：1（等待worker调度）、2（正在被worker调度）</li>
 <li><strong>任务终态不会变化</strong>：3（任务失败）、4（任务成功）</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><code>max_retry_interval</code>：比如设置为10，重试时会从1开始，翻倍递增，直到10后一直不变，直到达到最大重试次数<ul>
+</ul></li>
+</ul></li>
+<li><code>max_retry_interval</code>：比如设置为10，重试时会从1开始，翻倍递增，直到10后一直不变，直到达到最大重试次数
+<ul>
 <li>公式：<code>max_retry_interval = min(1&lt;&lt;crt_retry_num, max_retry_interval)</code></li>
 <li>举例：[1, 2, 4, 8, 10, 10, 10, 10, 10, 10]</li>
-</ul>
-</li>
+</ul></li>
 <li><code>schedule_log</code>：json格式，包含本次<strong>任务追踪id、耗时、失败原因</strong>等信息</li>
-<li><code>task_content</code><ul>
+<li><code>task_content</code>
+<ul>
 <li>一般是存json，所以flowsvr对语义是无感知的，worker方与用户需要统一里面的语义进行业务操作</li>
 <li>只能存储4096字节，如果业务复杂的话应该<strong>开辟单独的表专门存储上下文，然后在task_content中值存一个类似content_id的标识用于查询对应的结果</strong></li>
-</ul>
-</li>
+</ul></li>
 <li><code>order_time</code>：用于排序设置优先级的，与优先级、当前失败后重试间隔有关（实现重试的关键）</li>
 </ul>
 <p><strong>2）任务配置表t_schedule_cfg</strong></p>
@@ -682,7 +687,8 @@
 <th>说明</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>task_type</td>
 <td>varchar</td>
 <td>任务类型</td>
@@ -717,7 +723,8 @@
 <td>datetime</td>
 <td>修改时间</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p><strong>3）任务位置表t_schedule_pos</strong></p>
 <p>也属于一种配置信息，属于动态变化的配置，用于实现<strong>分表</strong>，分表有助于实现<strong>负载均衡</strong></p>
 <p>最主要的字段是<strong>schedule_begin_pos</strong>和<strong>schedule_end_pos</strong>，分别用于标记<strong>worker下次调度在哪个表拉取任务</strong>和<strong>user下次在哪个表插入任务</strong>，两个值一般跨度最大只有两个表，表结构如下：</p>
@@ -729,7 +736,8 @@
 <th>说明</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>task_type</td>
 <td>varchar</td>
 <td>任务类型</td>
@@ -754,40 +762,45 @@
 <td>datetime</td>
 <td>修改时间</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <ul>
-<li><code>schedule_begin_pos</code>和<code>schedule_end_pos</code>的更新<ul>
+<li><code>schedule_begin_pos</code>和<code>schedule_end_pos</code>的更新
+<ul>
 <li>在flowSvr的<strong>任务治理模块</strong>中，会定时更新这两个信息</li>
 <li><code>schedule_begin_pos</code>更新：定时<strong>全表扫描</strong>，当前表<code>status</code>都为终态<code>3执行成功</code>或<code>4执行失败</code>时，更新pos++</li>
 <li><code>schedule_end_pos</code>更新：当前表count&gt;500w时，更新pos++</li>
-</ul>
-</li>
-<li><code>schedule_begin_pos</code>和<code>schedule_end_pos</code>的作用<ul>
-<li><code>schedule_begin_pos</code>：<ul>
+</ul></li>
+<li><code>schedule_begin_pos</code>和<code>schedule_end_pos</code>的作用
+<ul>
+<li><code>schedule_begin_pos</code>：
+<ul>
 <li>拉取任务会根据<code>begin_pos</code>找到那张表</li>
 <li>然后用sql语句按顺序过滤筛选一批未执行完所有阶段且处于待执行的任务</li>
 <li>根据<code>order_time</code>选出top limit条任务</li>
 <li>更新或查询任务时不需要获取任务位置表，因为<strong>task_id会自带这个任务的位置信息</strong></li>
-</ul>
-</li>
+</ul></li>
 <li><code>schedule_end_pos</code>：user下次在哪个表插入任务</li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<h2 id="5-状态流转"><a href="#5-状态流转" class="headerlink" title="5. 状态流转"></a>5. 状态流转</h2><img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/status_flow.png">
-
-<h2 id="6-选用的网络通信协议"><a href="#6-选用的网络通信协议" class="headerlink" title="6. 选用的网络通信协议"></a>6. 选用的网络通信协议</h2><p>走<strong>HTTP</strong>实现通信</p>
-<h2 id="7-webserver依赖框架"><a href="#7-webserver依赖框架" class="headerlink" title="7. webserver依赖框架"></a>7. webserver依赖框架</h2><ol>
+<h2 id="状态流转">5. 状态流转</h2>
+<p><img src="/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/status_flow.png"></p>
+<h2 id="选用的网络通信协议">6. 选用的网络通信协议</h2>
+<p>走<strong>HTTP</strong>实现通信</p>
+<h2 id="webserver依赖框架">7. webserver依赖框架</h2>
+<ol type="1">
 <li>tinyWebServer</li>
 <li><a target="_blank" rel="noopener" href="https://github.com/drogonframework/drogon/wiki/Home.zh-CN">Drogon框架</a>（有完整的路由配置）</li>
 </ol>
-<h1 id="二、使用场景"><a href="#二、使用场景" class="headerlink" title="二、使用场景"></a>二、使用场景</h1><p>Asyncflow项目主要用于解决异步任务调度问题，因此适用于需要<strong>多阶段任务</strong>、<strong>阶段间相互依赖</strong>且<strong>耗时</strong>的异步执行的场景，例如：</p>
+<h1 id="二使用场景">二、使用场景</h1>
+<p>Asyncflow项目主要用于解决异步任务调度问题，因此适用于需要<strong>多阶段任务</strong>、<strong>阶段间相互依赖</strong>且<strong>耗时</strong>的异步执行的场景，例如：</p>
 <ul>
 <li>音视频</li>
 <li>图片处理</li>
-<li>数据处理…</li>
+<li>数据处理...</li>
 </ul>
-<h1 id="三、同步和异步的区别"><a href="#三、同步和异步的区别" class="headerlink" title="三、同步和异步的区别"></a>三、同步和异步的区别</h1><p><strong>1）同步与异步的区别</strong></p>
+<h1 id="三同步和异步的区别">三、同步和异步的区别</h1>
+<p><strong>1）同步与异步的区别</strong></p>
 <p>同步任务是指任务执行完毕后，才会继续执行下一个任务。而异步任务是指任务执行过程中，可以继续执行下一个任务，只需要<strong>轮询处理结果</strong>即可，因此异步很适合在<strong>耗时的操作</strong>中使用。</p>
 <p>相当于在同步任务中，user发起任务请求后会阻塞干等；而在异步任务中，user发起任务请求后会收到一个<strong>任务ID</strong>，然后可以继续做其他事情，等到任务执行完毕后再获取结果（通常是通过<strong>回调函数or轮询结果</strong>）。</p>
 <p>本项目中同一个任务的多个阶段是同步执行的，需要按顺序，而不同任务之间是异步执行的，可以并行执行。</p>
@@ -801,25 +814,27 @@
 <p>因为轮询对于客户端来说更加灵活，可以根据自己的需求来决定轮询的频率，而服务器主动通知则<strong>需要客户端保持长连接</strong>（得使用WebSocket、HTTP2等支持主动push的协议，而轮询的话大多数协议都支持），增加了服务器的压力。</p>
 <p><strong>4）框架中体现异步的两个主要的点</strong></p>
 <ul>
-<li>对于<strong>用户</strong>而言的异步<ul>
+<li>对于<strong>用户</strong>而言的异步
+<ul>
 <li>提交任务后，直接交给Async执行，用户不需要等待任务执行完毕，轮询即可</li>
-</ul>
-</li>
-<li>对于<strong>Async框架</strong>而言的异步<ul>
+</ul></li>
+<li>对于<strong>Async框架</strong>而言的异步
+<ul>
 <li>对于Async框架来说，将任务分解后，worker拉取某个阶段的<strong>任务交由下游接口执行</strong>，此时的<strong>worker</strong>相对于下游接口也是用户，<strong>只需要异步等待下游接口返回结果就行</strong>（多阶段异步），此时框架就可以去做别的任务调度了</li>
 <li>举例：比如下游业务是向腾讯云发出任务请求，那么其实worker主要要完成的就是向腾讯云调接口而不是Asyncflow实际执行业务逻辑，消费者worker的工作是实现调度，去查结果</li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<h1 id="四、Asycnflow与消息队列的区别"><a href="#四、Asycnflow与消息队列的区别" class="headerlink" title="四、Asycnflow与消息队列的区别"></a>四、Asycnflow与消息队列的区别</h1><h2 id="1-Asycnflow的特点"><a href="#1-Asycnflow的特点" class="headerlink" title="1. Asycnflow的特点"></a>1. Asycnflow的特点</h2><p>Asycnflow最主要的亮点是：<strong>异步</strong>、<strong>多阶段任务</strong>、<strong>任务调度框架化</strong>、<strong>轻量级</strong></p>
+<h1 id="四asycnflow与消息队列的区别">四、Asycnflow与消息队列的区别</h1>
+<h2 id="asycnflow的特点">1. Asycnflow的特点</h2>
+<p>Asycnflow最主要的亮点是：<strong>异步</strong>、<strong>多阶段任务</strong>、<strong>任务调度框架化</strong>、<strong>轻量级</strong></p>
 <ul>
 <li>天生为<strong>异步</strong>任务设计（适合多阶段、耗时任务）</li>
 <li>任务<strong>状态转移</strong>明确（任务状态：未开始、进行中、已完成）</li>
 <li>任务<strong>优先级</strong>明确（任务优先级：高、中、低）</li>
-<li>提供通用框架，<strong>注册</strong>各种任务类型，实现任务逻辑即可<ul>
+<li>提供通用框架，<strong>注册</strong>各种任务类型，实现任务逻辑即可
+<ul>
 <li>非框架下，总是做重复代码，于是先做调研做一个框架节省代码开发时间，只需要做业务逻辑就行</li>
-</ul>
-</li>
+</ul></li>
 <li>核心是<strong>任务调度器</strong>，负责任务的调度和执行，因此相比消息队列（只是消息传递的组件），Asyncflow具备<strong>简化任务管理-调度</strong>的优势</li>
 </ul>
 <p>功能设计上有以下特点：</p>
@@ -829,7 +844,9 @@
 <li>解耦多个排序因素：抽象<code>order_time</code>字段作为排序依据</li>
 <li>接入GORM接入GORM库简化数据库操作，实现数据库连接池优化性能</li>
 </ul>
-<h2 id="2-为什么用Asyncflow而不用消息队列呢？"><a href="#2-为什么用Asyncflow而不用消息队列呢？" class="headerlink" title="2. 为什么用Asyncflow而不用消息队列呢？"></a>2. 为什么用Asyncflow而不用消息队列呢？</h2><p><strong>1）消息队列和Asyncflow的区别与联系</strong></p>
+<h2 id="为什么用asyncflow而不用消息队列呢">2.
+为什么用Asyncflow而不用消息队列呢？</h2>
+<p><strong>1）消息队列和Asyncflow的区别与联系</strong></p>
 <p>消息队列与Asyncflow之间是纯队列和调度框架的区别，实际上Asyncflow也可以引入消息队列作为中间件提高性能：</p>
 <ul>
 <li>在flowSvr中，由于拉取跟执行任务是耦合的，所以导致多个worker拉取任务时需要排队</li>
@@ -846,7 +863,8 @@
 <p>因为消息队列只是消息传递的组件，而Asyncflow是一个任务调度框架，提供了任务的<strong>管理、调度、状态更新</strong>等功能，更适合于任务的调度和执行。</p>
 <p>虽然用Kafka也可以实现，但是也是要重新实现<strong>MySQL的接入和一些worker调度逻辑</strong>的实现</p>
 <p>调研了一下，C++实现这种框架的其实是很少的，Go中有一个<strong>Machine</strong>框架，但是该框架的功能过与齐全，对于本项目来说属于过度设计，所以觉得仿照其他语言的框架实现一个<strong>轻量级Asyncflow</strong>，实现单任务多阶段串联</p>
-<h1 id="五、C-语言异步框架比较"><a href="#五、C-语言异步框架比较" class="headerlink" title="五、C++语言异步框架比较"></a>五、C++语言异步框架比较</h1><p>C++语言的异步框架有很多，比如<strong>libuv</strong>、<strong>boost.asio</strong>等，这些框架都是<strong>事件驱动</strong>的，可以实现<strong>异步IO</strong>，<strong>多线程</strong>等功能。</p>
+<h1 id="五c语言异步框架比较">五、C++语言异步框架比较</h1>
+<p>C++语言的异步框架有很多，比如<strong>libuv</strong>、<strong>boost.asio</strong>等，这些框架都是<strong>事件驱动</strong>的，可以实现<strong>异步IO</strong>，<strong>多线程</strong>等功能。</p>
 <p><strong>1）libuv</strong></p>
 <p>libuv是一个<strong>跨平台</strong>的异步IO库，主要用于<strong>事件驱动</strong>的编程，它提供了<strong>事件循环</strong>、<strong>异步IO</strong>、<strong>定时器</strong>、<strong>线程池</strong>等功能，可以用于开发高性能的网络应用</p>
 <p>它更适合于<strong>网络编程</strong>，<strong>异步IO</strong>等场景，适用于编写高性能的网络服务器和客户端，如WebSocket服务器、HTTP服务器等</p>
@@ -863,7 +881,7 @@
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">July 15th 2024, 8:10:14 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">October 4th 2024, 1:59:59 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/07/15/Asyncflow%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">December 25th 2024, 9:55:40 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -1029,7 +1047,8 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%95%B4%E4%BD%93%E6%A1%86%E6%9E%B6%EF%BC%88%E5%BC%82%E6%AD%A5%E4%BB%BB%E5%8A%A1%E6%A1%86%E6%9E%B6%EF%BC%89"><span class="toc-text">一、整体框架（异步任务框架）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%95%B4%E4%BD%93%E6%A1%86%E6%9E%B6"><span class="toc-text">1. 整体框架</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-text">2. 中间件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%A1%86%E6%9E%B6%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F"><span class="toc-text">3. 框架部署方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E8%A1%A8%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">4. 表结构设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E7%8A%B6%E6%80%81%E6%B5%81%E8%BD%AC"><span class="toc-text">5. 状态流转</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E9%80%89%E7%94%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE"><span class="toc-text">6. 选用的网络通信协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-webserver%E4%BE%9D%E8%B5%96%E6%A1%86%E6%9E%B6"><span class="toc-text">7. webserver依赖框架</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">二、使用场景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">三、同步和异步的区别</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Asycnflow%E4%B8%8E%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">四、Asycnflow与消息队列的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Asycnflow%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-text">1. Asycnflow的特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8Asyncflow%E8%80%8C%E4%B8%8D%E7%94%A8%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%91%A2%EF%BC%9F"><span class="toc-text">2. 为什么用Asyncflow而不用消息队列呢？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81C-%E8%AF%AD%E8%A8%80%E5%BC%82%E6%AD%A5%E6%A1%86%E6%9E%B6%E6%AF%94%E8%BE%83"><span class="toc-text">五、C++语言异步框架比较</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E6%95%B4%E4%BD%93%E6%A1%86%E6%9E%B6%E5%BC%82%E6%AD%A5%E4%BB%BB%E5%8A%A1%E6%A1%86%E6%9E%B6"><span class="toc-text">一、整体框架（异步任务框架）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E6%A1%86%E6%9E%B6"><span class="toc-text">1. 整体框架</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-text">2. 中间件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%86%E6%9E%B6%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F"><span class="toc-text">3. 框架部署方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A8%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">4. 表结构设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E6%B5%81%E8%BD%AC"><span class="toc-text">5. 状态流转</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%89%E7%94%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE"><span class="toc-text">6. 选用的网络通信协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#webserver%E4%BE%9D%E8%B5%96%E6%A1%86%E6%9E%B6"><span class="toc-text">7. webserver依赖框架</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">二、使用场景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">三、同步和异步的区别</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9Basycnflow%E4%B8%8E%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">四、Asycnflow与消息队列的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#asycnflow%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-text">1. Asycnflow的特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8asyncflow%E8%80%8C%E4%B8%8D%E7%94%A8%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%91%A2"><span class="toc-text">2.
+为什么用Asyncflow而不用消息队列呢？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94c%E8%AF%AD%E8%A8%80%E5%BC%82%E6%AD%A5%E6%A1%86%E6%9E%B6%E6%AF%94%E8%BE%83"><span class="toc-text">五、C++语言异步框架比较</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1318,7 +1337,18 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1833,7 +1863,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 55
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1847,6 +1877,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
@@ -2242,14 +2278,14 @@
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">

@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="一、0-1背包问题1.1 适用场景0-1背包问题属于背包问题中的一种，其特点是：每个物品只能被选择一次，两种状态即要么装入背包，要么不装入背包。 1.2 问题描述有一个背包，其容量为m 现有n个物品，每个物品的重量为w[i]，价值为v[i] 现在需要选择一些物品装入背包，使得背包中物品的总价值最大。 1.3 通用代码思路1.3.1 二维数组方式数组含义dp[i][j]表示前i个物品在背包容量为j时">
+    <meta name="description" content="一、0-1背包问题 1.1 适用场景 0-1背包问题属于背包问题中的一种，其特点是：每个物品只能被选择一次，两种状态即要么装入背包，要么不装入背包。 1.2 问题描述 有一个背包，其容量为m 现有n个物品，每个物品的重量为w[i]，价值为v[i] 现在需要选择一些物品装入背包，使得背包中物品的总价值最大。 1.3 通用代码思路 1.3.1 二维数组方式 数组含义 dp[i][j]表示前i个物品在背">
 <meta property="og:type" content="article">
 <meta property="og:title" content="动态规划-背包问题">
 <meta property="og:url" content="https://akirazheng.github.io/2024/04/26/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一、0-1背包问题1.1 适用场景0-1背包问题属于背包问题中的一种，其特点是：每个物品只能被选择一次，两种状态即要么装入背包，要么不装入背包。 1.2 问题描述有一个背包，其容量为m 现有n个物品，每个物品的重量为w[i]，价值为v[i] 现在需要选择一些物品装入背包，使得背包中物品的总价值最大。 1.3 通用代码思路1.3.1 二维数组方式数组含义dp[i][j]表示前i个物品在背包容量为j时">
+<meta property="og:description" content="一、0-1背包问题 1.1 适用场景 0-1背包问题属于背包问题中的一种，其特点是：每个物品只能被选择一次，两种状态即要么装入背包，要么不装入背包。 1.2 问题描述 有一个背包，其容量为m 现有n个物品，每个物品的重量为w[i]，价值为v[i] 现在需要选择一些物品装入背包，使得背包中物品的总价值最大。 1.3 通用代码思路 1.3.1 二维数组方式 数组含义 dp[i][j]表示前i个物品在背">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-04-26T09:58:16.000Z">
 <meta property="article:modified_time" content="2024-10-03T17:59:59.777Z">
@@ -485,16 +485,24 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="一、0-1背包问题"><a href="#一、0-1背包问题" class="headerlink" title="一、0-1背包问题"></a>一、0-1背包问题</h1><h2 id="1-1-适用场景"><a href="#1-1-适用场景" class="headerlink" title="1.1 适用场景"></a>1.1 适用场景</h2><p>0-1背包问题属于背包问题中的一种，其特点是：<strong>每个物品只能被选择一次</strong>，两种状态即<strong>要么装入背包，要么不装入背包</strong>。</p>
-<h2 id="1-2-问题描述"><a href="#1-2-问题描述" class="headerlink" title="1.2 问题描述"></a>1.2 问题描述</h2><p>有一个<strong>背包</strong>，其容量为<code>m</code></p>
+        <h1 id="一0-1背包问题">一、0-1背包问题</h1>
+<h2 id="适用场景">1.1 适用场景</h2>
+<p>0-1背包问题属于背包问题中的一种，其特点是：<strong>每个物品只能被选择一次</strong>，两种状态即<strong>要么装入背包，要么不装入背包</strong>。</p>
+<h2 id="问题描述">1.2 问题描述</h2>
+<p>有一个<strong>背包</strong>，其容量为<code>m</code></p>
 <p>现有<code>n</code>个<strong>物品</strong>，每个物品的重量为<code>w[i]</code>，价值为<code>v[i]</code></p>
 <p>现在需要选择一些物品装入背包，使得背包中物品的总价值最大。</p>
-<h2 id="1-3-通用代码思路"><a href="#1-3-通用代码思路" class="headerlink" title="1.3 通用代码思路"></a>1.3 通用代码思路</h2><h3 id="1-3-1-二维数组方式"><a href="#1-3-1-二维数组方式" class="headerlink" title="1.3.1 二维数组方式"></a>1.3.1 二维数组方式</h3><h4 id="数组含义"><a href="#数组含义" class="headerlink" title="数组含义"></a>数组含义</h4><p><code>dp[i][j]</code>表示<strong>前i个物品</strong>在<strong>背包容量为j</strong>时的最大价值</p>
-<h4 id="状态转移方程"><a href="#状态转移方程" class="headerlink" title="状态转移方程"></a>状态转移方程</h4><ul>
+<h2 id="通用代码思路">1.3 通用代码思路</h2>
+<h3 id="二维数组方式">1.3.1 二维数组方式</h3>
+<h4 id="数组含义">数组含义</h4>
+<p><code>dp[i][j]</code>表示<strong>前i个物品</strong>在<strong>背包容量为j</strong>时的最大价值</p>
+<h4 id="状态转移方程">状态转移方程</h4>
+<ul>
 <li>当<code>j&lt;w[i]</code>时，即当前物品的重量大于背包容量，此时无法装入背包，因此<code>dp[i][j]=dp[i-1][j]</code></li>
 <li>当<code>j&gt;=w[i]</code>时，即当前物品的重量小于等于背包容量，此时可以选择<strong>装入或者不装入</strong>背包，因此<code>dp[i][j]=max(dp[i-1][j],dp[i-1][j-w[i]]+v[i])</code></li>
 </ul>
-<h4 id="通用代码"><a href="#通用代码" class="headerlink" title="通用代码"></a>通用代码</h4><p><strong>1. 初始化</strong></p>
+<h4 id="通用代码">通用代码</h4>
+<p><strong>1. 初始化</strong></p>
 <p>通常初始化第一排</p>
 <p><strong>2. 遍历顺序</strong></p>
 <p>可以采用先<strong>物品</strong>后<strong>背包</strong></p>
@@ -502,12 +510,15 @@
 <p><strong>3. 背包的遍历顺序</strong></p>
 <p><strong>正序</strong>就行</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">        <span class="keyword">if</span>(j &lt; w[i]) dp[i][j] = dp[i<span class="number">-1</span>][j];</span><br><span class="line">        <span class="keyword">else</span> dp[i][j] = <span class="built_in">max</span>(dp[i<span class="number">-1</span>][j],dp[i<span class="number">-1</span>][j-w[i]]+v[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="1-3-2-一维数组方式"><a href="#1-3-2-一维数组方式" class="headerlink" title="1.3.2 一维数组方式"></a>1.3.2 一维数组方式</h3><h4 id="数组含义-1"><a href="#数组含义-1" class="headerlink" title="数组含义"></a>数组含义</h4><p><code>dp[j]</code>表示<strong>背包容量为j</strong>时的最大价值</p>
-<h4 id="状态转移方程-1"><a href="#状态转移方程-1" class="headerlink" title="状态转移方程"></a>状态转移方程</h4><ul>
+<h3 id="一维数组方式">1.3.2 一维数组方式</h3>
+<h4 id="数组含义-1">数组含义</h4>
+<p><code>dp[j]</code>表示<strong>背包容量为j</strong>时的最大价值</p>
+<h4 id="状态转移方程-1">状态转移方程</h4>
+<ul>
 <li>当<code>j&gt;=w[i]</code>时，即当前物品的重量小于等于背包容量，此时可以选择<strong>装入或者不装入</strong>背包，因此<code>dp[j]=max(dp[j],dp[j-w[i]]+v[i])</code></li>
 </ul>
-<h4 id="通用代码-1"><a href="#通用代码-1" class="headerlink" title="通用代码"></a>通用代码</h4><p><strong>1. 初始化</strong></p>
+<h4 id="通用代码-1">通用代码</h4>
+<p><strong>1. 初始化</strong></p>
 <p>可以不用初始化（全初始化为0）</p>
 <p><strong>2. 遍历顺序</strong></p>
 <p><strong>必须</strong>采用先<strong>物品</strong>后<strong>背包</strong>的遍历顺序</p>
@@ -515,16 +526,22 @@
 <p>由于要求每个物品只能被选择一次，且状态转移方程是由前面的状态推导出来的</p>
 <p>因此背包的遍历顺序<strong>必须</strong>是<strong>逆序</strong>的，即从大到小遍历，否则会出现<strong>重复选择</strong>的情况</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = m; j &gt;= w[i]; --j)&#123;<span class="comment">//背包</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="二、完全背包问题"><a href="#二、完全背包问题" class="headerlink" title="二、完全背包问题"></a>二、完全背包问题</h1><h2 id="2-1-适用场景"><a href="#2-1-适用场景" class="headerlink" title="2.1 适用场景"></a>2.1 适用场景</h2><p>完全背包问题的特点是：<strong>每个物品可以被选择多次</strong>，两种状态即<strong>装入背包或者不装入背包</strong> </p>
-<h2 id="2-2-问题描述"><a href="#2-2-问题描述" class="headerlink" title="2.2 问题描述"></a>2.2 问题描述</h2><p>有一个<strong>背包</strong>，其容量为<code>m</code></p>
+<h1 id="二完全背包问题">二、完全背包问题</h1>
+<h2 id="适用场景-1">2.1 适用场景</h2>
+<p>完全背包问题的特点是：<strong>每个物品可以被选择多次</strong>，两种状态即<strong>装入背包或者不装入背包</strong></p>
+<h2 id="问题描述-1">2.2 问题描述</h2>
+<p>有一个<strong>背包</strong>，其容量为<code>m</code></p>
 <p>现有<code>n</code>个<strong>物品</strong>，每个物品的重量为<code>w[i]</code>，价值为<code>v[i]</code></p>
 <p>现在需要选择<strong>一些可重复的物品</strong>装入背包，使得背包中物品的总价值最大。</p>
-<h2 id="2-3-通用代码思路-一维数组方式"><a href="#2-3-通用代码思路-一维数组方式" class="headerlink" title="2.3 通用代码思路-一维数组方式"></a>2.3 通用代码思路-一维数组方式</h2><h3 id="2-3-1-数组含义"><a href="#2-3-1-数组含义" class="headerlink" title="2.3.1 数组含义"></a>2.3.1 数组含义</h3><p><code>dp[j]</code>表示<strong>背包容量为j</strong>时的最大价值</p>
-<h3 id="2-3-2-状态转移方程"><a href="#2-3-2-状态转移方程" class="headerlink" title="2.3.2 状态转移方程"></a>2.3.2 状态转移方程</h3><ul>
+<h2 id="通用代码思路-一维数组方式">2.3 通用代码思路-一维数组方式</h2>
+<h3 id="数组含义-2">2.3.1 数组含义</h3>
+<p><code>dp[j]</code>表示<strong>背包容量为j</strong>时的最大价值</p>
+<h3 id="状态转移方程-2">2.3.2 状态转移方程</h3>
+<ul>
 <li>当<code>j&gt;=w[i]</code>时，即当前物品的重量小于等于背包容量，此时可以选择<strong>装入或者不装入</strong>背包，因此<code>dp[j]=max(dp[j],dp[j-w[i]]+v[i])</code></li>
 </ul>
-<h3 id="2-3-3-通用代码"><a href="#2-3-3-通用代码" class="headerlink" title="2.3.3 通用代码"></a>2.3.3 通用代码</h3><p><strong>1. 初始化</strong></p>
+<h3 id="通用代码-2">2.3.3 通用代码</h3>
+<p><strong>1. 初始化</strong></p>
 <p>可以不用初始化（全初始化为0）</p>
 <p><strong>2. 遍历顺序</strong></p>
 <p>可以采用先<strong>物品</strong>后<strong>背包</strong></p>
@@ -533,10 +550,10 @@
 <p>由于要求每个物品可以被选择多次，所以允许前面的状态中也包含该物品</p>
 <p>因此背包的遍历顺序<strong>必须</strong>是<strong>正序</strong>的，即从小到大遍历</p>
 <ul>
-<li><p>先遍历<strong>物品</strong>，再遍历<strong>背包</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = w[i]; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>先遍历<strong>背包</strong>，再遍历<strong>物品</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> j = w[i]; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>先遍历<strong>物品</strong>，再遍历<strong>背包</strong>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = w[i]; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p></li>
+<li><p>先遍历<strong>背包</strong>，再遍历<strong>物品</strong>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> j = w[i]; j &lt;= m; ++j)&#123;<span class="comment">//背包</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i)&#123;<span class="comment">//物品</span></span><br><span class="line">        dp[j] = <span class="built_in">max</span>(dp[j],dp[j-w[i]]+v[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p></li>
 </ul>
 
     </article>
@@ -712,7 +729,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%810-1%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98"><span class="toc-text">一、0-1背包问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">1.1 适用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="toc-text">1.2 问题描述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81%E6%80%9D%E8%B7%AF"><span class="toc-text">1.3 通用代码思路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-1-%E4%BA%8C%E7%BB%B4%E6%95%B0%E7%BB%84%E6%96%B9%E5%BC%8F"><span class="toc-text">1.3.1 二维数组方式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E5%90%AB%E4%B9%89"><span class="toc-text">数组含义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB%E6%96%B9%E7%A8%8B"><span class="toc-text">状态转移方程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81"><span class="toc-text">通用代码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-2-%E4%B8%80%E7%BB%B4%E6%95%B0%E7%BB%84%E6%96%B9%E5%BC%8F"><span class="toc-text">1.3.2 一维数组方式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E5%90%AB%E4%B9%89-1"><span class="toc-text">数组含义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB%E6%96%B9%E7%A8%8B-1"><span class="toc-text">状态转移方程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81-1"><span class="toc-text">通用代码</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AE%8C%E5%85%A8%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98"><span class="toc-text">二、完全背包问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">2.1 适用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="toc-text">2.2 问题描述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81%E6%80%9D%E8%B7%AF-%E4%B8%80%E7%BB%B4%E6%95%B0%E7%BB%84%E6%96%B9%E5%BC%8F"><span class="toc-text">2.3 通用代码思路-一维数组方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-1-%E6%95%B0%E7%BB%84%E5%90%AB%E4%B9%89"><span class="toc-text">2.3.1 数组含义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-2-%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB%E6%96%B9%E7%A8%8B"><span class="toc-text">2.3.2 状态转移方程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-3-%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81"><span class="toc-text">2.3.3 通用代码</span></a></li></ol></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%800-1%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98"><span class="toc-text">一、0-1背包问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">1.1 适用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="toc-text">1.2 问题描述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81%E6%80%9D%E8%B7%AF"><span class="toc-text">1.3 通用代码思路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E7%BB%B4%E6%95%B0%E7%BB%84%E6%96%B9%E5%BC%8F"><span class="toc-text">1.3.1 二维数组方式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E5%90%AB%E4%B9%89"><span class="toc-text">数组含义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB%E6%96%B9%E7%A8%8B"><span class="toc-text">状态转移方程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81"><span class="toc-text">通用代码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E6%95%B0%E7%BB%84%E6%96%B9%E5%BC%8F"><span class="toc-text">1.3.2 一维数组方式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E5%90%AB%E4%B9%89-1"><span class="toc-text">数组含义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB%E6%96%B9%E7%A8%8B-1"><span class="toc-text">状态转移方程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81-1"><span class="toc-text">通用代码</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E5%AE%8C%E5%85%A8%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98"><span class="toc-text">二、完全背包问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-1"><span class="toc-text">2.1 适用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0-1"><span class="toc-text">2.2 问题描述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81%E6%80%9D%E8%B7%AF-%E4%B8%80%E7%BB%B4%E6%95%B0%E7%BB%84%E6%96%B9%E5%BC%8F"><span class="toc-text">2.3 通用代码思路-一维数组方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E5%90%AB%E4%B9%89-2"><span class="toc-text">2.3.1 数组含义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB%E6%96%B9%E7%A8%8B-2"><span class="toc-text">2.3.2 状态转移方程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E4%BB%A3%E7%A0%81-2"><span class="toc-text">2.3.3 通用代码</span></a></li></ol></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1001,7 +1018,18 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1516,7 +1544,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 55
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1530,6 +1558,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
@@ -1925,14 +1959,14 @@
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">

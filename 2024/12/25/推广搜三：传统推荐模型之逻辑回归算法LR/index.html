@@ -19,24 +19,22 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="前言 深度学习模型需要GPU加持提高训练速度，但是目前GPU和许多云端租借的GPU价格昂贵，因此本文将用谷歌团队的colab实现免费GPU的使用，满足深度学习的个人学习需求 以下链接为部署原文 参考网站： Colab基本使用方法及配置 目前所用到的代码功能 1、查看GPU资源  # 查看GPU资源 !nvidia-smi  2、连接谷歌云端硬盘  # 连接谷歌云端硬盘 from google.co">
+    <meta name="description" content="一、基础知识 1.1 梯度下降 梯度下降也称为最速下降法，其目的是找到一个函数的局部极小值。 假设有一个函数$ y &#x3D; f(x) &#x3D; w_1x + w_2. $">
 <meta property="og:type" content="article">
-<meta property="og:title" content="部署colab利用GPU资源训练深度学习模型">
-<meta property="og:url" content="https://akirazheng.github.io/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/index.html">
+<meta property="og:title" content="推广搜三：传统推荐模型之逻辑回归算法LR">
+<meta property="og:url" content="https://akirazheng.github.io/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="前言 深度学习模型需要GPU加持提高训练速度，但是目前GPU和许多云端租借的GPU价格昂贵，因此本文将用谷歌团队的colab实现免费GPU的使用，满足深度学习的个人学习需求 以下链接为部署原文 参考网站： Colab基本使用方法及配置 目前所用到的代码功能 1、查看GPU资源  # 查看GPU资源 !nvidia-smi  2、连接谷歌云端硬盘  # 连接谷歌云端硬盘 from google.co">
+<meta property="og:description" content="一、基础知识 1.1 梯度下降 梯度下降也称为最速下降法，其目的是找到一个函数的局部极小值。 假设有一个函数$ y &#x3D; f(x) &#x3D; w_1x + w_2. $">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-03-13T08:03:00.000Z">
-<meta property="article:modified_time" content="2024-10-03T17:59:59.838Z">
+<meta property="article:published_time" content="2024-12-25T04:01:54.000Z">
+<meta property="article:modified_time" content="2024-12-25T13:34:27.720Z">
 <meta property="article:author" content="AkiraZheng">
-<meta property="article:tag" content="环境配置">
-<meta property="article:tag" content="深度学习">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>部署colab利用GPU资源训练深度学习模型 · AkiraZheng&#39;s Time</title>
+    <title>推广搜三：传统推荐模型之逻辑回归算法LR · AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -261,7 +259,7 @@
                 <a href="/">AkiraZheng&#39;s Time.</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">部署colab利用GPU资源训练深度学习模型</a>
+                <a href="#" class="post-name">推广搜三：传统推荐模型之逻辑回归算法LR</a>
             </div>
         </div>
     
@@ -307,7 +305,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                部署colab利用GPU资源训练深度学习模型
+                推广搜三：传统推荐模型之逻辑回归算法LR
             <!-- 404 -->
             
         </h1>
@@ -324,25 +322,15 @@
             <div class="post-intros">
                 <!-- 文章页标签  -->
                 
-                    <div class= post-intro-tags >
-    
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="环境配置">环境配置</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="深度学习">深度学习</a>
-    
-</div>
-
-                
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">343</span>Reading time: <span class="post-count reading-time">1 min</span></span>
+                        <span>Word count: <span class="post-count word-count">51</span>Reading time: <span class="post-count reading-time">1 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
                     <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2022/03/13</span>
+                    <span class="post-intro-time">2024/12/25</span>
                     <!-- busuanzi -->
                     
                         <span id="busuanzi_container_page_pv" class="busuanzi-pv">
@@ -497,68 +485,19 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="前言">前言</h1>
-<p>深度学习模型需要GPU加持提高训练速度，但是目前GPU和许多云端租借的GPU价格昂贵，因此本文将用谷歌团队的colab实现免费GPU的使用，满足深度学习的个人学习需求</p>
-<h1 id="以下链接为部署原文">以下链接为部署原文</h1>
-<p>参考网站： <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011119817/article/details/108519389">Colab基本使用方法及配置</a></p>
-<h1 id="目前所用到的代码功能">目前所用到的代码功能</h1>
-<p>1、查看GPU资源</p>
-<p><font color="white"></font></p>
-<pre><code># 查看GPU资源
-!nvidia-smi</code></pre>
-<p></p>
-<p>2、连接谷歌云端硬盘</p>
-<p><font color="white"></font></p>
-<pre><code># 连接谷歌云端硬盘
-from google.colab import drive
-drive.mount(&#39;/content/drive&#39;)</code></pre>
-<p></p>
-<p>3、查看库版本</p>
-<p><font color="white"></font></p>
-<pre><code># 查看版本
-import scipy
-scipy.__version__</code></pre>
-<p></p>
-<p>4、 pip安装库</p>
-<p><font color="white"></font></p>
-<pre><code># pip安装库
-!pip install scipy==1.2.1</code></pre>
-<p></p>
-<p>5、运行代码-训练模型</p>
-<p><font color="white"></font></p>
-<pre><code># 运行代码
-import os
-path = &quot;/content/drive/MyDrive/srcnn-tensorflow-image-master&quot; 
-os.chdir(path)
-os.listdir(path)
-!python main.py</code></pre>
-<p></p>
-<p>6、部署github项目到colab</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_47306605/article/details/123921943?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-0-123921943-blog-121534768.235%5Ev43%5Econtrol&amp;spm=1001.2101.3001.4242.1&amp;utm_relevant_index=3">参考链接</a></p>
-</blockquote>
-<h1 id="解决colab每12h断连的问题">解决Colab每12h断连的问题</h1>
-<p>每60分钟自动运行代码刷新，解除90分钟断开限制.</p>
-<p>使用方法：colab页面按下 <strong>F12</strong>或者 Ctrl+Shift+I (mac按
-Option+Command+I)
-在<strong>console（控制台）</strong>输入以下代码并回车.</p>
-<p><strong>复制以下代码粘贴在浏览器console！！不要关闭浏览器以免失效</strong></p>
-<pre><code>function ClickConnect()&#123;
-  colab.config
-  console.log(&quot;Connnect Clicked - Start&quot;); 
-  document.querySelector(&quot;#top-toolbar &gt; colab-connect-button&quot;).shadowRoot.querySelector(&quot;#connect&quot;).click();
-  console.log(&quot;Connnect Clicked - End&quot;);
-&#125;;
-setInterval(ClickConnect, 60000)</code></pre>
+        <h1 id="一基础知识">一、基础知识</h1>
+<h2 id="梯度下降">1.1 梯度下降</h2>
+<p>梯度下降也称为最速下降法，其目的是<strong>找到一个函数的局部极小值</strong>。</p>
+<p>假设有一个函数$ y = f(x) = w_1x + w_2. $</p>
 
     </article>
     <!-- license -->
     
         <div class="license-wrapper">
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
-            <p>Link：<a href="https://akirazheng.github.io/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">https://akirazheng.github.io/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/</a>
-            <p>Publish date：<a href="https://akirazheng.github.io/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">March 13th 2022, 4:03:00 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">October 4th 2024, 1:59:59 am</a>
+            <p>Link：<a href="https://akirazheng.github.io/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">https://akirazheng.github.io/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">December 25th 2024, 12:01:54 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">December 25th 2024, 9:34:27 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -566,17 +505,12 @@ setInterval(ClickConnect, 60000)</code></pre>
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/" title="搭建Conda虚拟环境">
-                    <div class="nextTitle">搭建Conda虚拟环境</div>
-                </a>
-            
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/" title="重装系统后Hexo博客部署教程">
-                    <div class="prevTitle">重装系统后Hexo博客部署教程</div>
+                <a href="/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%BA%8C%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/" title="推广搜二：传统推荐模型之协同过滤算法">
+                    <div class="prevTitle">推广搜二：传统推荐模型之协同过滤算法</div>
                 </a>
             
         </li>
@@ -626,6 +560,21 @@ setInterval(ClickConnect, 60000)</code></pre>
     <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
     
     <!-- Mathjax -->
+    
+        
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
+
+
     
 </main>
 
@@ -724,7 +673,7 @@ setInterval(ClickConnect, 60000)</code></pre>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A5%E4%B8%8B%E9%93%BE%E6%8E%A5%E4%B8%BA%E9%83%A8%E7%BD%B2%E5%8E%9F%E6%96%87"><span class="toc-text">以下链接为部署原文</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%9B%AE%E5%89%8D%E6%89%80%E7%94%A8%E5%88%B0%E7%9A%84%E4%BB%A3%E7%A0%81%E5%8A%9F%E8%83%BD"><span class="toc-text">目前所用到的代码功能</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3colab%E6%AF%8F12h%E6%96%AD%E8%BF%9E%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">解决Colab每12h断连的问题</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text">一、基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D"><span class="toc-text">1.1 梯度下降</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->

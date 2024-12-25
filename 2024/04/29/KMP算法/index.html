@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="前言 最主要是掌握KMP算法的next数组的构建过程，具体的解法看参考的文章，讲得很好  一、KMP算法Next构建  二、代码实现（C++）1234567891011121314151617181920212223void getNext(vector&lt;int&gt; &amp;next, string templateStr) &amp;#123;	int i &#x3D; 0;&#x2F;&#x2F;后缀结尾	int j">
+    <meta name="description" content="前言  最主要是掌握KMP算法的next数组的构建过程，具体的解法看参考的文章，讲得很好  一、KMP算法Next构建  二、代码实现（C++） 1234567891011121314151617181920212223void getNext(vector&lt;int&gt; &amp;next, string templateStr) &amp;#123;	int i &#x3D; 0;&#x2F;&#x2F;后缀结尾	int">
 <meta property="og:type" content="article">
 <meta property="og:title" content="KMP算法">
 <meta property="og:url" content="https://akirazheng.github.io/2024/04/29/KMP%E7%AE%97%E6%B3%95/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="前言 最主要是掌握KMP算法的next数组的构建过程，具体的解法看参考的文章，讲得很好  一、KMP算法Next构建  二、代码实现（C++）1234567891011121314151617181920212223void getNext(vector&lt;int&gt; &amp;next, string templateStr) &amp;#123;	int i &#x3D; 0;&#x2F;&#x2F;后缀结尾	int j">
+<meta property="og:description" content="前言  最主要是掌握KMP算法的next数组的构建过程，具体的解法看参考的文章，讲得很好  一、KMP算法Next构建  二、代码实现（C++） 1234567891011121314151617181920212223void getNext(vector&lt;int&gt; &amp;next, string templateStr) &amp;#123;	int i &#x3D; 0;&#x2F;&#x2F;后缀结尾	int">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://akirazheng.github.io/2024/04/29/KMP%E7%AE%97%E6%B3%95/createNext.png">
 <meta property="article:published_time" content="2024-04-29T12:22:31.000Z">
@@ -487,22 +487,26 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+        <h1 id="前言">前言</h1>
+<blockquote>
 <p>最主要是掌握KMP算法的<strong>next数组</strong>的构建过程，具体的解法看参考的文章，讲得很好</p>
 </blockquote>
-<h1 id="一、KMP算法Next构建"><a href="#一、KMP算法Next构建" class="headerlink" title="一、KMP算法Next构建"></a>一、KMP算法Next构建</h1><img src="/2024/04/29/KMP%E7%AE%97%E6%B3%95/createNext.png" width="70%">
-
-<h1 id="二、代码实现（C-）"><a href="#二、代码实现（C-）" class="headerlink" title="二、代码实现（C++）"></a>二、代码实现（C++）</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getNext</span><span class="params">(vector&lt;<span class="keyword">int</span>&gt; &amp;next, string templateStr)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i = <span class="number">0</span>;<span class="comment">//后缀结尾</span></span><br><span class="line">	<span class="keyword">int</span> j = <span class="number">0</span>;<span class="comment">//前缀结尾</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> str_size = templateStr.<span class="built_in">size</span>();</span><br><span class="line">	next = vector&lt;<span class="keyword">int</span>&gt;(str_size);</span><br><span class="line">	next[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; str_size; ++i) &#123;</span><br><span class="line">		<span class="comment">//前缀跟后缀不相等的话，说明得往前查找</span></span><br><span class="line">		<span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; templateStr[j] != templateStr[i]) &#123;</span><br><span class="line">			j = next[j<span class="number">-1</span>];</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//前缀跟后缀相等的话，说明可以往后移一位了</span></span><br><span class="line">		<span class="keyword">if</span> (templateStr[j] == templateStr[i]) &#123;</span><br><span class="line">			++j;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//构建当前后缀的最长前缀</span></span><br><span class="line">		next[i] = j;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h1 id="一kmp算法next构建">一、KMP算法Next构建</h1>
+<p><img src="/2024/04/29/KMP%E7%AE%97%E6%B3%95/createNext.png" width="70%"></p>
+<h1 id="二代码实现c">二、代码实现（C++）</h1>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getNext</span><span class="params">(vector&lt;<span class="keyword">int</span>&gt; &amp;next, string templateStr)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i = <span class="number">0</span>;<span class="comment">//后缀结尾</span></span><br><span class="line">	<span class="keyword">int</span> j = <span class="number">0</span>;<span class="comment">//前缀结尾</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> str_size = templateStr.<span class="built_in">size</span>();</span><br><span class="line">	next = vector&lt;<span class="keyword">int</span>&gt;(str_size);</span><br><span class="line">	next[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; str_size; ++i) &#123;</span><br><span class="line">		<span class="comment">//前缀跟后缀不相等的话，说明得往前查找</span></span><br><span class="line">		<span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; templateStr[j] != templateStr[i]) &#123;</span><br><span class="line">			j = next[j<span class="number">-1</span>];</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//前缀跟后缀相等的话，说明可以往后移一位了</span></span><br><span class="line">		<span class="keyword">if</span> (templateStr[j] == templateStr[i]) &#123;</span><br><span class="line">			++j;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//构建当前后缀的最长前缀</span></span><br><span class="line">		next[i] = j;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">KMP</span><span class="params">(vector&lt;<span class="keyword">int</span>&gt;&amp; next, string templateStr, string searchStr)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i = <span class="number">0</span>;<span class="comment">//searchStr的</span></span><br><span class="line">	<span class="keyword">int</span> j = <span class="number">0</span>;<span class="comment">//templateStr的</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (; i &lt; searchStr.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">		<span class="comment">//跟模板不相等则跳转到模板对应的位置</span></span><br><span class="line">		<span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; templateStr[j] != searchStr[i]) &#123;</span><br><span class="line">			j = next[j<span class="number">-1</span>];</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//跟模板相等则模板指针加一，说明可以对下一个字符进行判断</span></span><br><span class="line">		<span class="keyword">if</span> (templateStr[j] == searchStr[i]) &#123;</span><br><span class="line">			++j;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//已经找全了（模板指针指向末尾）</span></span><br><span class="line">		<span class="keyword">if</span> (j == templateStr.<span class="built_in">size</span>()) <span class="keyword">return</span> i-templateStr.<span class="built_in">size</span>()+<span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//没找到</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="三、测试"><a href="#三、测试" class="headerlink" title="三、测试"></a>三、测试</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	vector&lt;<span class="keyword">int</span>&gt; next;</span><br><span class="line">	string s = <span class="string">&quot;ababaca&quot;</span>;</span><br><span class="line"></span><br><span class="line">	myKMP kmp;</span><br><span class="line">	kmp.<span class="built_in">getNext</span>(next, s);</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; s.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">		cout &lt;&lt; next[i] &lt;&lt; <span class="string">&quot; &quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	cout &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">	cout &lt;&lt; kmp.<span class="built_in">KMP</span>(next, s, <span class="string">&quot;bacbababadababacambabacaddababacasdsd&quot;</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="四、相关leetcode题目"><a href="#四、相关leetcode题目" class="headerlink" title="四、相关leetcode题目"></a>四、相关leetcode题目</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/find-the-index-of-the-first-occurrence-in-a-string/description/">28. 实现 strStr()</a></li>
-<li><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/repeated-substring-pattern/">459. 重复的子字符串</a></li>
+<h1 id="三测试">三、测试</h1>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	vector&lt;<span class="keyword">int</span>&gt; next;</span><br><span class="line">	string s = <span class="string">&quot;ababaca&quot;</span>;</span><br><span class="line"></span><br><span class="line">	myKMP kmp;</span><br><span class="line">	kmp.<span class="built_in">getNext</span>(next, s);</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; s.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">		cout &lt;&lt; next[i] &lt;&lt; <span class="string">&quot; &quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	cout &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">	cout &lt;&lt; kmp.<span class="built_in">KMP</span>(next, s, <span class="string">&quot;bacbababadababacambabacaddababacasdsd&quot;</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="四相关leetcode题目">四、相关leetcode题目</h1>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/find-the-index-of-the-first-occurrence-in-a-string/description/">28.
+实现 strStr()</a></li>
+<li><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/repeated-substring-pattern/">459.
+重复的子字符串</a></li>
 </ul>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><blockquote>
+<h1 id="总结">总结</h1>
+<blockquote>
 <p>参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/lijingran/p/8619711.html">字符串匹配KMP算法的讲解C++</a></p>
 </blockquote>
 
@@ -679,7 +683,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81KMP%E7%AE%97%E6%B3%95Next%E6%9E%84%E5%BB%BA"><span class="toc-text">一、KMP算法Next构建</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%EF%BC%88C-%EF%BC%89"><span class="toc-text">二、代码实现（C++）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%B5%8B%E8%AF%95"><span class="toc-text">三、测试</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%9B%B8%E5%85%B3leetcode%E9%A2%98%E7%9B%AE"><span class="toc-text">四、相关leetcode题目</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80kmp%E7%AE%97%E6%B3%95next%E6%9E%84%E5%BB%BA"><span class="toc-text">一、KMP算法Next构建</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0c"><span class="toc-text">二、代码实现（C++）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E6%B5%8B%E8%AF%95"><span class="toc-text">三、测试</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E7%9B%B8%E5%85%B3leetcode%E9%A2%98%E7%9B%AE"><span class="toc-text">四、相关leetcode题目</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -968,7 +972,18 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1483,7 +1498,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 55
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1497,6 +1512,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
@@ -1892,14 +1913,14 @@
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">

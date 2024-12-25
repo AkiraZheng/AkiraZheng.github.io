@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="一、TCP1.1 TCP的包结构TCP常见的字段有：  序列号seq 确认号ack 错误连接RST：重置连接（复位） 窗口大小：接收方的缓冲区大小，进行流量控制 请求建立一个连接SYN：同步序列号 请求关闭一个连接FIN：结束连接  TCP四元组：  源地址 源端口 目的地址 目的端口  而五元组相比四元组多了协议类型，即TCP或UDP，其中只要五元组有一个不同，就是不同的通信，因此TCP和UDP">
+    <meta name="description" content="一、TCP 1.1 TCP的包结构 TCP常见的字段有：  序列号seq 确认号ack 错误连接RST：重置连接（复位） 窗口大小：接收方的缓冲区大小，进行流量控制 请求建立一个连接SYN：同步序列号 请求关闭一个连接FIN：结束连接  TCP四元组：  源地址 源端口 目的地址 目的端口  而五元组相比四元组多了协议类型，即TCP或UDP，其中只要五元组有一个不同，就是不同的通信，因此TCP和U">
 <meta property="og:type" content="article">
 <meta property="og:title" content="计算机网络传输层">
 <meta property="og:url" content="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一、TCP1.1 TCP的包结构TCP常见的字段有：  序列号seq 确认号ack 错误连接RST：重置连接（复位） 窗口大小：接收方的缓冲区大小，进行流量控制 请求建立一个连接SYN：同步序列号 请求关闭一个连接FIN：结束连接  TCP四元组：  源地址 源端口 目的地址 目的端口  而五元组相比四元组多了协议类型，即TCP或UDP，其中只要五元组有一个不同，就是不同的通信，因此TCP和UDP">
+<meta property="og:description" content="一、TCP 1.1 TCP的包结构 TCP常见的字段有：  序列号seq 确认号ack 错误连接RST：重置连接（复位） 窗口大小：接收方的缓冲区大小，进行流量控制 请求建立一个连接SYN：同步序列号 请求关闭一个连接FIN：结束连接  TCP四元组：  源地址 源端口 目的地址 目的端口  而五元组相比四元组多了协议类型，即TCP或UDP，其中只要五元组有一个不同，就是不同的通信，因此TCP和U">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_3.png">
 <meta property="og:image" content="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_3_2.png">
@@ -37,7 +37,7 @@
 <meta property="og:image" content="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_congestion_2.png">
 <meta property="og:image" content="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_package.png">
 <meta property="article:published_time" content="2024-10-21T06:36:24.000Z">
-<meta property="article:modified_time" content="2024-10-21T14:40:03.227Z">
+<meta property="article:modified_time" content="2024-12-25T13:43:35.384Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_3.png">
@@ -496,7 +496,9 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="一、TCP"><a href="#一、TCP" class="headerlink" title="一、TCP"></a>一、TCP</h1><h2 id="1-1-TCP的包结构"><a href="#1-1-TCP的包结构" class="headerlink" title="1.1 TCP的包结构"></a>1.1 TCP的包结构</h2><p>TCP常见的字段有：</p>
+        <h1 id="一tcp">一、TCP</h1>
+<h2 id="tcp的包结构">1.1 TCP的包结构</h2>
+<p>TCP常见的字段有：</p>
 <ul>
 <li>序列号<code>seq</code></li>
 <li>确认号<code>ack</code></li>
@@ -514,49 +516,51 @@
 </ul>
 <p>而五元组相比四元组多了协议类型，即<strong>TCP</strong>或<strong>UDP</strong>，其中只要五元组有一个不同，就是不同的通信，因此<strong>TCP和UDP的端口号是不冲突的，允许有TCP端口号==UDP端口号</strong></p>
 <p>其中TCP像<strong>三次握手四次挥手</strong>、<strong>ACK确认和序列号</strong>、<strong>重传机制</strong>、<strong>滑动窗口流量控制</strong>、<strong>拥塞控制</strong>等都是保证其<strong>可靠传输</strong>的重要机制</p>
-<h2 id="1-2-TCP的三次握手"><a href="#1-2-TCP的三次握手" class="headerlink" title="1.2 TCP的三次握手"></a>1.2 TCP的三次握手</h2><p><strong>1）客户端和服务端建立socket</strong></p>
+<h2 id="tcp的三次握手">1.2 TCP的三次握手</h2>
+<p><strong>1）客户端和服务端建立socket</strong></p>
 <p>TCP通信中，客户端创建与服务端的socket连接需要经过以下步骤：</p>
 <ul>
-<li>创建客户端socket</li>
-<li>connect连接服务端socket<br>而创建用于监听的服务端socket需要经过以下步骤：</li>
-<li><strong>创建</strong>服务端socket文件描述符</li>
-<li><strong>bind</strong>绑定服务端socket</li>
-<li><strong>listen</strong>监听服务端socket</li>
-<li><strong>accept</strong>等待接受客户端socket</li>
+<li><p>创建客户端socket</p></li>
+<li><p>connect连接服务端socket
+而创建用于监听的服务端socket需要经过以下步骤：</p></li>
+<li><p><strong>创建</strong>服务端socket文件描述符</p></li>
+<li><p><strong>bind</strong>绑定服务端socket</p></li>
+<li><p><strong>listen</strong>监听服务端socket</p></li>
+<li><p><strong>accept</strong>等待接受客户端socket</p></li>
 </ul>
 <p>那么理论上最多能支持多少个连接？</p>
 <ul>
-<li>总理论连接数=IP地址数<em>端口号数=2^32</em>2^16=2^48</li>
+<li>总理论连接数=IP地址数<em>端口号数=2^32</em>2<sup>16=2</sup>48</li>
 </ul>
 <p>但是实际上受<strong>文件描述符个数、内存大小、进程数等限制</strong>，导致实际连接数远远小于这个数，一般只支持<strong>65535</strong>个连接</p>
 <p><strong>2）TCP的三次握手的状态流转</strong></p>
 <p>TCP的三次握手过程如下：</p>
 <ul>
-<li>第一次握手-客户端：发送<code>SYN+Seq</code>请求连接-&gt;进入<strong>SYN_SENT</strong>状态<ul>
+<li>第一次握手-客户端：发送<code>SYN+Seq</code>请求连接-&gt;进入<strong>SYN_SENT</strong>状态
+<ul>
 <li>随机生成客户端的<code>Seq</code>序列号</li>
-</ul>
-</li>
-<li>第二次握手-服务端：返回<code>SYN+(ACK=Seq_client+1)+Seq</code>确认连接-&gt;进入<strong>SYN_RCVD</strong>状态<ul>
-<li>随机生成服务端的<code>Seq</code>序列号 </li>
+</ul></li>
+<li>第二次握手-服务端：返回<code>SYN+(ACK=Seq_client+1)+Seq</code>确认连接-&gt;进入<strong>SYN_RCVD</strong>状态
+<ul>
+<li>随机生成服务端的<code>Seq</code>序列号</li>
 <li>将该客户端的socket信息加入<strong>半连接队列</strong></li>
-</ul>
-</li>
-<li>第三次握手-客户端：发送<code>(ACK=Seq_server)+Seq</code>确认连接-&gt;进入<strong>ESTABLISHED</strong>状态<ul>
+</ul></li>
+<li>第三次握手-客户端：发送<code>(ACK=Seq_server)+Seq</code>确认连接-&gt;进入<strong>ESTABLISHED</strong>状态
+<ul>
 <li>在<strong>ESTABLISHED</strong>状态下，如果收到<code>RST</code>则进入<strong>CLOSED</strong>状态</li>
-</ul>
-</li>
-<li>服务端：接收到<code>ACK+Seq</code>确认连接-&gt;进入<strong>ESTABLISHED</strong>状态<ul>
+</ul></li>
+<li>服务端：接收到<code>ACK+Seq</code>确认连接-&gt;进入<strong>ESTABLISHED</strong>状态
+<ul>
 <li>将该客户端的socket信息从<strong>半连接队列</strong>移入<strong>全连接队列</strong></li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_3.png" width="80%">
-
+<p><img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_3.png" width="80%"></p>
 <p><code>SYN</code>洪泛攻击：攻击方短时间内发送大量<code>SYN</code>请求，导致服务端<strong>半连接队列</strong>满了，无法再接受新的连接，从而导致<strong>拒绝服务攻击</strong></p>
 <p>解决方法：</p>
 <ul>
 <li>增大半连接队列</li>
-<li>开启SYN Cookies绕过半连接队列，将<code>SYN</code>请求的<code>Seq</code>序列号加密后发送给客户端，客户端返回<code>ACK</code>时解密后才能建立连接</li>
+<li>开启SYN
+Cookies绕过半连接队列，将<code>SYN</code>请求的<code>Seq</code>序列号加密后发送给客户端，客户端返回<code>ACK</code>时解密后才能建立连接</li>
 </ul>
 <p><strong>3）TCP的三次握手的原因</strong></p>
 <p><strong>a. 避免历史连接造成资源浪费</strong></p>
@@ -568,12 +572,11 @@
 <li>而在这段时间内由于服务端已经建立连接了，所以已经可以给客户端发消息了，这是一种资源浪费</li>
 </ul>
 <p>三次握手的重新连接过程：</p>
-<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_3_2.png" width="60%">
-
+<p><img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_3_2.png" width="60%"></p>
 <p>两次握手的重新连接过程：</p>
-<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_2_2.png" width="60%">
-
-<p><strong>b. 保证通信双方均具备收发能力&amp;&amp;序列号被确认</strong></p>
+<p><img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_2_2.png" width="60%"></p>
+<p><strong>b.
+保证通信双方均具备收发能力&amp;&amp;序列号被确认</strong></p>
 <p>如果只有两次握手，那么只能保证<strong>服务端具备收发能力</strong>，而<strong>客户端并不一定具备收发能力</strong>；同时也不能保证两方的<strong>序列号</strong>都被确认</p>
 <p><strong>4）TCP的三次握手失败分别会发生什么</strong></p>
 <ul>
@@ -581,35 +584,34 @@
 <li>第二次握手丢包：<strong>客户端和服务端</strong>都会重试</li>
 <li>第三次握手丢包：<strong>服务端</strong>会重试</li>
 </ul>
-<h2 id="1-3-TCP的四次挥手"><a href="#1-3-TCP的四次挥手" class="headerlink" title="1.3 TCP的四次挥手"></a>1.3 TCP的四次挥手</h2><p><strong>1）TCP的四次挥手的状态流转</strong></p>
+<h2 id="tcp的四次挥手">1.3 TCP的四次挥手</h2>
+<p><strong>1）TCP的四次挥手的状态流转</strong></p>
 <p>挥手前<strong>客户端</strong>和<strong>服务端</strong>都处于<strong>ESTABLISHED</strong>状态</p>
 <p>TCP的四次挥手过程如下：</p>
 <ul>
-<li>第一次挥手-客户端：发送<code>FIN</code>请求关闭连接-&gt;进入<strong>FIN_WAIT_1</strong>状态<ul>
+<li>第一次挥手-客户端：发送<code>FIN</code>请求关闭连接-&gt;进入<strong>FIN_WAIT_1</strong>状态
+<ul>
 <li>发送<code>FIN</code>并调用<code>close</code>函数，属于<strong>系统调用</strong></li>
-</ul>
-</li>
-<li>第二次挥手-服务端：接收到<code>FIN</code>请求关闭连接-&gt;发送<code>ACK</code>确认-&gt;进入<strong>CLOSE_WAIT</strong>状态<ul>
+</ul></li>
+<li>第二次挥手-服务端：接收到<code>FIN</code>请求关闭连接-&gt;发送<code>ACK</code>确认-&gt;进入<strong>CLOSE_WAIT</strong>状态
+<ul>
 <li>在<strong>CLOSE_WAIT</strong>状态下会发送未发完的数据</li>
 <li>发送<code>ACK</code>属于<strong>内核</strong>操作</li>
-</ul>
-</li>
-<li>第三次挥手-服务端：发送<code>FIN</code>请求关闭连接，并调用close函数关闭连接-&gt;进入<strong>LAST_ACK</strong>状态<ul>
+</ul></li>
+<li>第三次挥手-服务端：发送<code>FIN</code>请求关闭连接，并调用close函数关闭连接-&gt;进入<strong>LAST_ACK</strong>状态
+<ul>
 <li>发送<code>FIN</code>并调用<code>close</code>函数，属于<strong>系统调用</strong></li>
-</ul>
-</li>
-<li>第四次挥手-客户端：收到服务端的<code>FIN</code>请求关闭连接-&gt;发送<code>ACK</code>确认-&gt;进入<strong>TIME_WAIT</strong>状态<ul>
+</ul></li>
+<li>第四次挥手-客户端：收到服务端的<code>FIN</code>请求关闭连接-&gt;发送<code>ACK</code>确认-&gt;进入<strong>TIME_WAIT</strong>状态
+<ul>
 <li>在<strong>TIME_WAIT</strong>状态下会等待<strong>2MSL</strong>时间，等待可能丢失的ACK确认</li>
 <li>2MSL是为了保证<strong>服务端</strong>收到<strong>客户端</strong>的<strong>ACK</strong>确认，如果<strong>服务端</strong>没有收到<strong>ACK</strong>确认，那么会重传<code>FIN</code>请求关闭连接</li>
 <li>TIME_WAIT状态下的socket会等待<strong>2MSL</strong>时间，然后进入<strong>CLOSED</strong>状态</li>
 <li>客户端发送<code>ACK</code>确认属于<strong>内核操作</strong></li>
-</ul>
-</li>
+</ul></li>
 <li>服务端：收到客户端的<code>ACK</code>确认-&gt;进入<strong>CLOSED</strong>状态</li>
 </ul>
-<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_4.png" width="80%">
-
-
+<p><img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_4.png" width="80%"></p>
 <p><strong>2）TCP的四次挥手的原因</strong></p>
 <p>TCP挥手不能跟握手一样只有三次，相比握手中服务端将<code>SYN+ACK</code>合并成一个步骤，而挥手需要分成两个步骤，因为客户端发送<code>FIN</code>后只是代表不会再发送数据了（还可以接收）</p>
 <p>但是服务端可能还有数据没发送完，所以需要将<code>FIN</code>和<code>ACK</code>分开，在<code>FIN</code>和<code>ACK</code>中间，服务端处于<strong>CLOSE_WAIT</strong>状态，这个状态内会发送剩余的数据，然后再发送<code>FIN</code>请求关闭连接</p>
@@ -632,16 +634,19 @@
 <p><strong>5）服务端CLOSE_WAIT过多</strong></p>
 <p><strong>CLOSE_WAIT</strong>是在服务端返回<code>FIN</code>且<code>close</code>关闭了连接时才会转成<strong>LAST_ACK</strong>状态等待客户端的<code>ACK</code>确认</p>
 <p>因此可以判断<strong>CLOSE_WAIT</strong>过多可能是因为没有调用<code>close</code>关闭连接，导致服务端一直处于<strong>CLOSE_WAIT</strong>状态</p>
-<h2 id="1-4-TCP的可靠性"><a href="#1-4-TCP的可靠性" class="headerlink" title="1.4 TCP的可靠性"></a>1.4 TCP的可靠性</h2><p>TCP像<strong>三次握手四次挥手</strong>、<strong>ACK确认和序列号</strong>、<strong>重传机制</strong>、<strong>滑动窗口流量控制</strong>、<strong>拥塞控制</strong>等都是保证其<strong>可靠传输</strong>的重要机制</p>
-<h3 id="1-4-1-TCP的滑动窗口与流量控制"><a href="#1-4-1-TCP的滑动窗口与流量控制" class="headerlink" title="1.4.1 TCP的滑动窗口与流量控制"></a>1.4.1 TCP的滑动窗口与流量控制</h3><p>TCP滑动窗口分为<strong>发送端窗口</strong>和<strong>接收端窗口</strong>，主要作用是<strong>防止发送方发送过快导致接收方无法接收</strong>，并导致<strong>接收方被淹没</strong></p>
+<h2 id="tcp的可靠性">1.4 TCP的可靠性</h2>
+<p>TCP像<strong>三次握手四次挥手</strong>、<strong>ACK确认和序列号</strong>、<strong>重传机制</strong>、<strong>滑动窗口流量控制</strong>、<strong>拥塞控制</strong>等都是保证其<strong>可靠传输</strong>的重要机制</p>
+<h3 id="tcp的滑动窗口与流量控制">1.4.1 TCP的滑动窗口与流量控制</h3>
+<p>TCP滑动窗口分为<strong>发送端窗口</strong>和<strong>接收端窗口</strong>，主要作用是<strong>防止发送方发送过快导致接收方无法接收</strong>，并导致<strong>接收方被淹没</strong></p>
 <p><strong>滑动窗口内的数据就是缓冲区，可以不用等上一个的ACK</strong>，连续发送<strong>滑动窗口大小的数据</strong></p>
-<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_window.png" width="80%">
-
+<p><img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_window.png" width="80%"></p>
 <p>发送窗口<code>swnd</code>原则上是约等于接收窗口<code>rwnd</code>的，但是由于发送方维护者拥塞窗口<code>cwnd</code>，因此发送窗口<code>swnd</code>的大小实际上是</p>
 <ul>
 <li><code>swnd = min(rwnd, cwnd)</code></li>
 </ul>
-<h3 id="1-4-2-TCP的超时重传与拥塞控制"><a href="#1-4-2-TCP的超时重传与拥塞控制" class="headerlink" title="1.4.2 TCP的超时重传与拥塞控制"></a>1.4.2 TCP的超时重传与拥塞控制</h3><h4 id="1-4-2-1-重传"><a href="#1-4-2-1-重传" class="headerlink" title="1.4.2.1 重传"></a>1.4.2.1 重传</h4><p><strong>1）超时重传：时间驱动</strong></p>
+<h3 id="tcp的超时重传与拥塞控制">1.4.2 TCP的超时重传与拥塞控制</h3>
+<h4 id="重传">1.4.2.1 重传</h4>
+<p><strong>1）超时重传：时间驱动</strong></p>
 <p>超时重传就是最朴素的，一个包发送出去后，如果在<strong>一定时间内</strong>没有收到ACK确认，那么就会<strong>重传</strong>这个包；</p>
 <p>由于是以<strong>时间为驱动的，因此可能会出现重传较慢的问题</strong></p>
 <p>这里有<strong>RTT为数据发送到接收ACK所需的往返时间</strong>，而<strong>RTO为重传超时时间</strong>，一般来说有：</p>
@@ -655,46 +660,51 @@
 <li>重传后面所有的包：如果后面的包没丢失，那么会浪费网络资源</li>
 </ul>
 <p>解决办法：用<code>SACK</code>来解决，即<strong>选择性重传</strong>，只重传丢失的包</p>
-<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_resend.png" width="80%">
-
-<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_SACK.png" width="80%">
-
-<h4 id="1-4-2-2-拥塞控制"><a href="#1-4-2-2-拥塞控制" class="headerlink" title="1.4.2.2 拥塞控制"></a>1.4.2.2 拥塞控制</h4><p>拥塞控制一般要经过以下步骤：</p>
+<p><img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_resend.png" width="80%"></p>
+<p><img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_SACK.png" width="80%"></p>
+<h4 id="拥塞控制">1.4.2.2 拥塞控制</h4>
+<p>拥塞控制一般要经过以下步骤：</p>
 <ul>
 <li>慢启动（窗口大小指数上升），直到到达<strong>慢启动门限</strong></li>
 <li>拥塞避免（窗口大小线性上升）</li>
-<li>拥塞发生（<strong>更新慢启动门限、更新拥塞窗口</strong>）<ul>
-<li>方法1：<strong>超时重传</strong><ul>
+<li>拥塞发生（<strong>更新慢启动门限、更新拥塞窗口</strong>）
+<ul>
+<li>方法1：<strong>超时重传</strong>
+<ul>
 <li>将<strong>慢启动门限</strong>设置为<strong>拥塞窗口的一半</strong></li>
 <li>将<strong>拥塞窗口</strong>设置为<strong>1</strong>，会导致发送速度断崖式变慢</li>
-<li>从<strong>慢启动</strong>开始<strong>指数</strong>增长<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_congestion.png" width="80%"></li>
-</ul>
-</li>
-<li>方法2：<strong>快速重传</strong><ul>
+<li>从<strong>慢启动</strong>开始<strong>指数</strong>增长
+<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_congestion.png" width="80%"></li>
+</ul></li>
+<li>方法2：<strong>快速重传</strong>
+<ul>
 <li>将<strong>慢启动门限</strong>设置为<strong>拥塞窗口的一半</strong></li>
 <li>将<strong>拥塞窗口</strong>设置为跟<strong>慢启动门限</strong></li>
-<li>从<strong>拥塞避免</strong>开始<strong>线性</strong>增长<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_congestion_2.png" width="80%"></li>
+<li>从<strong>拥塞避免</strong>开始<strong>线性</strong>增长
+<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_congestion_2.png" width="80%"></li>
+</ul></li>
+</ul></li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="1-5-TCP的拆包和粘包"><a href="#1-5-TCP的拆包和粘包" class="headerlink" title="1.5 TCP的拆包和粘包"></a>1.5 TCP的拆包和粘包</h2><h3 id="1-5-1-拆包"><a href="#1-5-1-拆包" class="headerlink" title="1.5.1 拆包"></a>1.5.1 拆包</h3><p>一个网络包的最大大小为<strong>MTU</strong>，一般为<strong>1500字节</strong></p>
+<h2 id="tcp的拆包和粘包">1.5 TCP的拆包和粘包</h2>
+<h3 id="拆包">1.5.1 拆包</h3>
+<p>一个网络包的最大大小为<strong>MTU</strong>，一般为<strong>1500字节</strong></p>
 <p>网络包中除开<strong>IP头和TCP头外</strong>外的数据包称为<strong>MSS</strong>，一般为<strong>1460字节</strong>，MSS中也包含了HTTP整个协议的头和content等内容</p>
 <ul>
 <li><code>MTU = IP头 + TCP头 + MSS</code></li>
 </ul>
-<img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_package.png" width="80%">
-
+<p><img src="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/TCP_package.png" width="80%"></p>
 <p>由于要求数据的最大大小为<strong>MSS</strong>，因此如果数据包大于<strong>MSS</strong>，那么就会<strong>拆包</strong>，将数据包拆分成多个包发送（也就是应用层的一个数据包被拆成多段进行发送）</p>
-<h3 id="1-5-2-粘包"><a href="#1-5-2-粘包" class="headerlink" title="1.5.2 粘包"></a>1.5.2 粘包</h3><p>TCP有一个<strong>Negle算法</strong>，会将多个小包合并成一个大包发送，这样可以减少网络包的数量，提高网络的利用率</p>
+<h3 id="粘包">1.5.2 粘包</h3>
+<p>TCP有一个<strong>Negle算法</strong>，会将多个小包合并成一个大包发送，这样可以减少网络包的数量，提高网络的利用率</p>
 <p>但是由于TCP基于字节流是没有数据边界的，因此可能会出现<strong>粘包</strong>问题</p>
 <p>解决办法是在<strong>应用层加一些边界（如HTTP、HTTPS协议）</strong></p>
 <ul>
 <li><strong>定长包</strong>：每个包的长度是固定的，不足的用空格填充</li>
 <li><strong>特殊字符隔离</strong>：在每个包的末尾加上特殊字符，如<code>\r\n</code></li>
 </ul>
-<h1 id="二、TCP和UDP"><a href="#二、TCP和UDP" class="headerlink" title="二、TCP和UDP"></a>二、TCP和UDP</h1><h2 id="2-1-TCP和UDP的区别"><a href="#2-1-TCP和UDP的区别" class="headerlink" title="2.1 TCP和UDP的区别"></a>2.1 TCP和UDP的区别</h2><p><strong>1）可靠性上</strong></p>
+<h1 id="二tcp和udp">二、TCP和UDP</h1>
+<h2 id="tcp和udp的区别">2.1 TCP和UDP的区别</h2>
+<p><strong>1）可靠性上</strong></p>
 <ul>
 <li>TCP：面向连接的协议，提供<strong>可靠传输</strong>，通过<strong>序列号</strong>和<strong>ACK确认</strong>机制保证数据的<strong>可靠传输</strong></li>
 <li>UDP：无连接的协议，提供<strong>不可靠传输</strong></li>
@@ -712,10 +722,10 @@
 <p><strong>4）应用场景</strong></p>
 <ul>
 <li>TCP：适用于<strong>要求可靠传输</strong>的场景，如<strong>文件传输</strong>、<strong>HTTP</strong>、<strong>HTTPS</strong>等</li>
-<li>UDP：适用于<strong>实时性要求高</strong>的场景，如<strong>视频直播</strong>、<strong>语音通话</strong>、<strong>DNS</strong>等<ul>
+<li>UDP：适用于<strong>实时性要求高</strong>的场景，如<strong>视频直播</strong>、<strong>语音通话</strong>、<strong>DNS</strong>等
+<ul>
 <li>如果视频用UDP，丢失数据只会丢失某一瞬间的画面，而TCP会等待重传，导致<strong>卡顿甚至卡死</strong></li>
-</ul>
-</li>
+</ul></li>
 </ul>
 
     </article>
@@ -725,7 +735,7 @@
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">October 21st 2024, 2:36:24 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">October 21st 2024, 10:40:03 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">December 25th 2024, 9:43:35 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -891,7 +901,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81TCP"><span class="toc-text">一、TCP</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-TCP%E7%9A%84%E5%8C%85%E7%BB%93%E6%9E%84"><span class="toc-text">1.1 TCP的包结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-TCP%E7%9A%84%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B"><span class="toc-text">1.2 TCP的三次握手</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-TCP%E7%9A%84%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B"><span class="toc-text">1.3 TCP的四次挥手</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-TCP%E7%9A%84%E5%8F%AF%E9%9D%A0%E6%80%A7"><span class="toc-text">1.4 TCP的可靠性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-1-TCP%E7%9A%84%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%8E%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6"><span class="toc-text">1.4.1 TCP的滑动窗口与流量控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-2-TCP%E7%9A%84%E8%B6%85%E6%97%B6%E9%87%8D%E4%BC%A0%E4%B8%8E%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6"><span class="toc-text">1.4.2 TCP的超时重传与拥塞控制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-4-2-1-%E9%87%8D%E4%BC%A0"><span class="toc-text">1.4.2.1 重传</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-4-2-2-%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6"><span class="toc-text">1.4.2.2 拥塞控制</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-5-TCP%E7%9A%84%E6%8B%86%E5%8C%85%E5%92%8C%E7%B2%98%E5%8C%85"><span class="toc-text">1.5 TCP的拆包和粘包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-1-%E6%8B%86%E5%8C%85"><span class="toc-text">1.5.1 拆包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-2-%E7%B2%98%E5%8C%85"><span class="toc-text">1.5.2 粘包</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81TCP%E5%92%8CUDP"><span class="toc-text">二、TCP和UDP</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-TCP%E5%92%8CUDP%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">2.1 TCP和UDP的区别</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80tcp"><span class="toc-text">一、TCP</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#tcp%E7%9A%84%E5%8C%85%E7%BB%93%E6%9E%84"><span class="toc-text">1.1 TCP的包结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcp%E7%9A%84%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B"><span class="toc-text">1.2 TCP的三次握手</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcp%E7%9A%84%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B"><span class="toc-text">1.3 TCP的四次挥手</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcp%E7%9A%84%E5%8F%AF%E9%9D%A0%E6%80%A7"><span class="toc-text">1.4 TCP的可靠性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tcp%E7%9A%84%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%8E%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6"><span class="toc-text">1.4.1 TCP的滑动窗口与流量控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcp%E7%9A%84%E8%B6%85%E6%97%B6%E9%87%8D%E4%BC%A0%E4%B8%8E%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6"><span class="toc-text">1.4.2 TCP的超时重传与拥塞控制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E4%BC%A0"><span class="toc-text">1.4.2.1 重传</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6"><span class="toc-text">1.4.2.2 拥塞控制</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcp%E7%9A%84%E6%8B%86%E5%8C%85%E5%92%8C%E7%B2%98%E5%8C%85"><span class="toc-text">1.5 TCP的拆包和粘包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8B%86%E5%8C%85"><span class="toc-text">1.5.1 拆包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B2%98%E5%8C%85"><span class="toc-text">1.5.2 粘包</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8Ctcp%E5%92%8Cudp"><span class="toc-text">二、TCP和UDP</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#tcp%E5%92%8Cudp%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">2.1 TCP和UDP的区别</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1180,7 +1190,18 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1695,7 +1716,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 55
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1709,6 +1730,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
@@ -2104,14 +2131,14 @@
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">

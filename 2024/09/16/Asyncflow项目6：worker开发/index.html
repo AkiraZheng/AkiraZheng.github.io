@@ -19,15 +19,15 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="1. 配置文件使用TOML作为配置管理  导入配置文件 通过DecodeFile读取某路径下的配置文件并解析到结构体实例Conf中  定义结构体解析配置文件 对于 123456&#x2F;&#x2F; TomlConfig 配置type TomlConfig struct &amp;#123;FlowsvrAddr       string &#96;toml:&quot;flowsvr_addr&quot;&#96;        &#x2F;&#x2F;">
+    <meta name="description" content="1. 配置文件 使用TOML作为配置管理  导入配置文件 通过DecodeFile读取某路径下的配置文件并解析到结构体实例Conf中  定义结构体解析配置文件 对于 123456&#x2F;&#x2F; TomlConfig 配置type TomlConfig struct &amp;#123;FlowsvrAddr       string &#96;toml:&quot;flowsvr_addr&quot;&#96;        &#x2F;&#x2F;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Asyncflow项目6：worker开发">
 <meta property="og:url" content="https://akirazheng.github.io/2024/09/16/Asyncflow%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="1. 配置文件使用TOML作为配置管理  导入配置文件 通过DecodeFile读取某路径下的配置文件并解析到结构体实例Conf中  定义结构体解析配置文件 对于 123456&#x2F;&#x2F; TomlConfig 配置type TomlConfig struct &amp;#123;FlowsvrAddr       string &#96;toml:&quot;flowsvr_addr&quot;&#96;        &#x2F;&#x2F;">
+<meta property="og:description" content="1. 配置文件 使用TOML作为配置管理  导入配置文件 通过DecodeFile读取某路径下的配置文件并解析到结构体实例Conf中  定义结构体解析配置文件 对于 123456&#x2F;&#x2F; TomlConfig 配置type TomlConfig struct &amp;#123;FlowsvrAddr       string &#96;toml:&quot;flowsvr_addr&quot;&#96;        &#x2F;&#x2F;">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-09-16T08:09:18.000Z">
-<meta property="article:modified_time" content="2024-10-03T17:59:59.591Z">
+<meta property="article:modified_time" content="2024-12-25T14:57:47.794Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -485,7 +485,8 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="1-配置文件"><a href="#1-配置文件" class="headerlink" title="1. 配置文件"></a>1. 配置文件</h1><p>使用<code>TOML</code>作为配置管理</p>
+        <h1 id="配置文件">1. 配置文件</h1>
+<p>使用<code>TOML</code>作为配置管理</p>
 <hr>
 <p>导入配置文件</p>
 <p>通过<code>DecodeFile</code>读取某路径下的配置文件并解析到结构体实例<code>Conf</code>中</p>
@@ -493,24 +494,26 @@
 <p>定义结构体解析配置文件</p>
 <p>对于</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TomlConfig 配置</span></span><br><span class="line"><span class="keyword">type</span> TomlConfig <span class="keyword">struct</span> &#123;</span><br><span class="line">FlowsvrAddr       <span class="keyword">string</span> <span class="string">`toml:&quot;flowsvr_addr&quot;`</span>        <span class="comment">// flowsvr的地址</span></span><br><span class="line">RedisLockAddr     <span class="keyword">string</span> <span class="string">`toml:&quot;redis_lock_addr&quot;`</span>     <span class="comment">// redis分布式锁的地址</span></span><br><span class="line">RedisLockPassword <span class="keyword">string</span> <span class="string">`toml:&quot;redis_lock_password&quot;`</span> <span class="comment">// redis分布式锁的密码</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="2-分布式锁：go-redis框架"><a href="#2-分布式锁：go-redis框架" class="headerlink" title="2. 分布式锁：go-redis框架"></a>2. 分布式锁：go-redis框架</h1><p>本项目中使用<code>go-redis</code>库来实现分布式锁，通过<code>SetNX</code>命令结合<strong>看门狗机制</strong>手动实现一个<strong>分布式锁</strong>的，<code>SetNX</code>命令是一个原子性的操作，只有在key不存在时才会设置key的值。</p>
+<h1 id="分布式锁go-redis框架">2. 分布式锁：go-redis框架</h1>
+<p>本项目中使用<code>go-redis</code>库来实现分布式锁，通过<code>SetNX</code>命令结合<strong>看门狗机制</strong>手动实现一个<strong>分布式锁</strong>的，<code>SetNX</code>命令是一个原子性的操作，只有在key不存在时才会设置key的值。</p>
 <p>其中使用的key为<code>taskType</code>，value为用uuid生成的<code>token</code>，过期时间为<code>expireTimeSecond</code>。</p>
 <blockquote>
 <p>参考</p>
-<ol>
-<li><a target="_blank" rel="noopener" href="https://github.com/redis/go-redis">Github go-redis</a></li>
-<li><a target="_blank" rel="noopener" href="https://redis.uptrace.dev/zh/guide/go-redis.html">Go Redis 快速入门</a></li>
+<ol type="1">
+<li><p><a target="_blank" rel="noopener" href="https://github.com/redis/go-redis">Github
+go-redis</a></p></li>
+<li><p><a target="_blank" rel="noopener" href="https://redis.uptrace.dev/zh/guide/go-redis.html">Go
+Redis 快速入门</a></p></li>
 </ol>
 </blockquote>
-<h1 id="3-Task处理"><a href="#3-Task处理" class="headerlink" title="3. Task处理"></a>3. Task处理</h1><p>Task处理完的返包用的是<code>http.Client</code>，通过<code>http.NewRequest</code>实现对服务端接口的调用</p>
+<h1 id="task处理">3. Task处理</h1>
+<p>Task处理完的返包用的是<code>http.Client</code>，通过<code>http.NewRequest</code>实现对服务端接口的调用</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">req, err := http.NewRequest(method, reqUrl, reader)</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="3-1-注册Task"><a href="#3-1-注册Task" class="headerlink" title="3.1 注册Task"></a>3.1 注册Task</h2><p>将Task注册到worker的<code>map</code>数据结构中，以<code>taskType</code>为键，<code>task</code>为值。</p>
+<h2 id="注册task">3.1 注册Task</h2>
+<p>将Task注册到worker的<code>map</code>数据结构中，以<code>taskType</code>为键，<code>task</code>为值。</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> TaskHandler <span class="keyword">struct</span> &#123;</span><br><span class="line">    TaskType <span class="keyword">string</span></span><br><span class="line">    NewProc  <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="title">TaskIntf</span></span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// RegisterHandler func RegisterHandler</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">RegisterHandler</span><span class="params">(handler *TaskHandler)</span></span> &#123;</span><br><span class="line">	taskHandlerMap[handler.TaskType] = handler</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="3-2-Task任务需要实现的公用接口"><a href="#3-2-Task任务需要实现的公用接口" class="headerlink" title="3.2 Task任务需要实现的公用接口"></a>3.2 Task任务需要实现的公用接口</h2><p>task需要实现几个公用接口，封装在上述<code>TaskHandler</code>结构体中。主要实现：</p>
+<h2 id="task任务需要实现的公用接口">3.2 Task任务需要实现的公用接口</h2>
+<p>task需要实现几个公用接口，封装在上述<code>TaskHandler</code>结构体中。主要实现：</p>
 <ul>
 <li><code>ContextLoad</code>：加载上下文</li>
 <li><code>HandleProcess</code>：处理、执行任务</li>
@@ -522,49 +525,56 @@
 <li><code>HandleFailedMust</code>：处理失败的任务，<strong>任务状态重置为失败</strong>，结束任务</li>
 </ul>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TaskIntf Task interface</span></span><br><span class="line"><span class="keyword">type</span> TaskIntf <span class="keyword">interface</span> &#123;</span><br><span class="line">	ContextLoad() error</span><br><span class="line">	HandleProcess() error</span><br><span class="line">	SetTask() error</span><br><span class="line">	HandleFinish()</span><br><span class="line">	HandleFinishError() error</span><br><span class="line">	Base() *TaskBase</span><br><span class="line">	CreateTask() (<span class="keyword">string</span>, error)</span><br><span class="line">	HandleFailedMust() error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="3-3-Task序列化反序列化处理：json"><a href="#3-3-Task序列化反序列化处理：json" class="headerlink" title="3.3 Task序列化反序列化处理：json"></a>3.3 Task序列化反序列化处理：json</h2><p>使用go中自带的<code>&quot;encoding/json&quot;</code>库来实现Task的序列化和反序列化。</p>
-<h3 id="3-3-1-Task序列化"><a href="#3-3-1-Task序列化" class="headerlink" title="3.3.1 Task序列化"></a>3.3.1 Task序列化</h3><p>序列化是将结构体转换为json字符串的过程，使用<code>json.Marshal</code>函数实现。</p>
+<h2 id="task序列化反序列化处理json">3.3
+Task序列化反序列化处理：json</h2>
+<p>使用go中自带的<code>"encoding/json"</code>库来实现Task的序列化和反序列化。</p>
+<h3 id="task序列化">3.3.1 Task序列化</h3>
+<p>序列化是将结构体转换为json字符串的过程，使用<code>json.Marshal</code>函数实现。</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">b, err := json.Marshal(body)</span><br></pre></td></tr></table></figure>
-<h3 id="3-3-2-Task反序列化"><a href="#3-3-2-Task反序列化" class="headerlink" title="3.3.2 Task反序列化"></a>3.3.2 Task反序列化</h3><p>反序列化是将json字符串转换为结构体的过程，使用<code>json.Unmarshal</code>函数实现。当向接口发送请求获得<code>response</code>后，需要将<code>response</code>的<code>body</code>部分反序列化为结构体。</p>
+<h3 id="task反序列化">3.3.2 Task反序列化</h3>
+<p>反序列化是将json字符串转换为结构体的过程，使用<code>json.Unmarshal</code>函数实现。当向接口发送请求获得<code>response</code>后，需要将<code>response</code>的<code>body</code>部分反序列化为结构体。</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">err = json.Unmarshal(respStr, respData)</span><br></pre></td></tr></table></figure>
-
 <blockquote>
 <p>参考</p>
-<ol>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/115066986">golang解析json数据（Encoding/Json）</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/niuben/p/15666154.html">golang json解析</a></li>
+<ol type="1">
+<li><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/115066986">golang解析json数据（Encoding/Json）</a></p></li>
+<li><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/niuben/p/15666154.html">golang
+json解析</a></p></li>
 </ol>
 </blockquote>
-<h1 id="4-任务调度"><a href="#4-任务调度" class="headerlink" title="4. 任务调度"></a>4. 任务调度</h1><h2 id="4-1-任务调度：load任务配置"><a href="#4-1-任务调度：load任务配置" class="headerlink" title="4.1 任务调度：load任务配置"></a>4.1 任务调度：load任务配置</h2><p>在worker启动时，先通过<code>get_task_schedule_cfg_list</code>接口获取任务调度配置，然后根据配置的调度时间，定时执行任务。</p>
+<h1 id="任务调度">4. 任务调度</h1>
+<h2 id="任务调度load任务配置">4.1 任务调度：load任务配置</h2>
+<p>在worker启动时，先通过<code>get_task_schedule_cfg_list</code>接口获取任务调度配置，然后根据配置的调度时间，定时执行任务。</p>
 <p>开启一个goroutine，每隔<code>20s</code>请求更新一次任务调度配置。</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">once.Do(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 初始化加载任务配置信息表</span></span><br><span class="line">	<span class="keyword">if</span> err := LoadCfg(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		msg := <span class="string">&quot;load task cfg schedule err&quot;</span> + err.Error()</span><br><span class="line">		martlog.Errorf(msg)</span><br><span class="line">		fmt.Println(msg)</span><br><span class="line">		os.Exit(<span class="number">1</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		CycleReloadCfg()</span><br><span class="line">	&#125;()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<h2 id="4-2-任务调度：定时拉取任务"><a href="#4-2-任务调度：定时拉取任务" class="headerlink" title="4.2 任务调度：定时拉取任务"></a>4.2 任务调度：定时拉取任务</h2><p>在worker的主线程中阻塞，执行任务调度。根据任务配置表中的<code>cfg.ScheduleInterval</code>时间开启定时器定时拉取一批任务</p>
+<h2 id="任务调度定时拉取任务">4.2 任务调度：定时拉取任务</h2>
+<p>在worker的主线程中阻塞，执行任务调度。根据任务配置表中的<code>cfg.ScheduleInterval</code>时间开启定时器定时拉取一批任务</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">cfg, ok := scheduleCfgDic[p.TaskType]</span><br><span class="line"><span class="keyword">if</span> !ok &#123;</span><br><span class="line">	martlog.Errorf(<span class="string">&quot;scheduleCfgDic %s, not have taskType %s&quot;</span>, tools.GetFmtStr(scheduleCfgDic), p.TaskType)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line">intervalTime := time.Second * time.Duration(cfg.ScheduleInterval)</span><br><span class="line"><span class="keyword">if</span> cfg.ScheduleInterval == <span class="number">0</span> &#123;</span><br><span class="line">	intervalTime = time.Second * DEFAULT_TIME_INTERVAL</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 前后波动500ms[0,501)</span></span><br><span class="line">step := RandNum(<span class="number">501</span>)</span><br><span class="line"><span class="comment">// 加上波动的时间</span></span><br><span class="line">intervalTime += time.Duration(step) * time.Millisecond</span><br><span class="line">t := time.NewTimer(intervalTime)</span><br><span class="line">&lt;-t.C</span><br></pre></td></tr></table></figure>
-
 <p>每到定时时间拉取一批任务时开启一个新的goroutine，并在新开启的goroutine中，假设拿到一批数量为<code>n</code>的任务，遍历这<code>n</code>个任务，每个任务开启一个goroutine执行。</p>
-<h2 id="4-3-任务调度：分布式锁"><a href="#4-3-任务调度：分布式锁" class="headerlink" title="4.3 任务调度：分布式锁"></a>4.3 任务调度：分布式锁</h2><p>其中，在每次拉取一批新任务时先通过<strong>阻塞模式redis抢锁</strong>，通过 Redis 的<strong>LUA原子操作</strong>实现跨进程/跨机器的互斥访问。5s内抢不到锁则返回等待下一次拉取任务。持有锁的过期时间为3s。</p>
+<h2 id="任务调度分布式锁">4.3 任务调度：分布式锁</h2>
+<p>其中，在每次拉取一批新任务时先通过<strong>阻塞模式redis抢锁</strong>，通过
+Redis
+的<strong>LUA原子操作</strong>实现跨进程/跨机器的互斥访问。5s内抢不到锁则返回等待下一次拉取任务。持有锁的过期时间为3s。</p>
 <p>其中redis的分布式锁连接地址在配置文件中配置。</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 阻塞模式，如果没有抢到锁，就会阻塞直到抢锁成功（默认阻塞最长时间为5秒）</span></span><br><span class="line">mutex := redislock.NewRedisLock(p.TaskType, lockClient, redislock.WithBlock(), redislock.WithWatchDogMode(), redislock.WithExpireSeconds(<span class="number">3</span>))</span><br><span class="line"><span class="keyword">if</span> err := mutex.Lock(context.Background()); err != <span class="literal">nil</span> &#123;</span><br><span class="line">	martlog.Errorf(<span class="string">&quot;RedisLock lock err %s&quot;</span>, err.Error())</span><br><span class="line">	<span class="keyword">return</span> <span class="comment">// 没有抢到锁，直接返回</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在<code>redislock.NewRedisLock</code>处理完创建锁的操作后，会在<code>redislock.Lock</code>中调用<code>redislock.WatchDog</code>函数通过延时函数在抢占到分布式锁后开启<strong>看门狗</strong>机制，启动一个后台 goroutine 来定期续期锁的有效期。</p>
+<p>在<code>redislock.NewRedisLock</code>处理完创建锁的操作后，会在<code>redislock.Lock</code>中调用<code>redislock.WatchDog</code>函数通过延时函数在抢占到分布式锁后开启<strong>看门狗</strong>机制，启动一个后台
+goroutine 来定期续期锁的有效期。</p>
 <p>redis加锁是通过<code>SETNX</code>命令结合<strong>看门狗机制</strong>手动实现一个<strong>分布式锁</strong>的，<code>SETNX</code>命令是一个原子性的操作，只有在key不存在时才会设置key的值，如果key已经存在，则不做任何操作。</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Lock 加锁</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *RedisLock)</span> <span class="title">Lock</span><span class="params">(ctx context.Context)</span> <span class="params">(err error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 加锁成功的情况下，会启动看门狗</span></span><br><span class="line">		<span class="comment">// 关于该锁本身是不可重入的，所以不会出现同一把锁下看门狗重复启动的情况</span></span><br><span class="line">		r.watchDog(ctx)</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 不管是不是阻塞模式，都要先获取一次锁</span></span><br><span class="line">	err = r.tryLock(ctx)</span><br><span class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">// 加锁成功</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 非阻塞模式加锁失败直接返回错误</span></span><br><span class="line">	<span class="keyword">if</span> !r.isBlock &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 判断错误是否可以允许重试，不可允许的类型则直接返回错误</span></span><br><span class="line">	<span class="keyword">if</span> !IsRetryableErr(err) &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 基于阻塞模式持续轮询取锁</span></span><br><span class="line">	err = r.blockingLock(ctx)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 尝试通过 SETNX 命令获取锁</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *RedisLock)</span> <span class="title">tryLock</span><span class="params">(ctx context.Context)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="comment">// 首先查询锁是否属于自己</span></span><br><span class="line">	result, err := r.client.pool.SetNX(ctx, r.key, r.token, time.Duration(r.expireTimeSecond)*time.Second).Result()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 加锁失败，已经有锁</span></span><br><span class="line">	<span class="keyword">if</span> !result &#123;</span><br><span class="line">		<span class="keyword">return</span> ErrLockAcquiredByOthers</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 启动看门狗</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *RedisLock)</span> <span class="title">watchDog</span><span class="params">(ctx context.Context)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 1. 非看门狗模式，不处理</span></span><br><span class="line">	<span class="keyword">if</span> !r.watchDogMode &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 2. 确保之前启动的看门狗已经正常回收</span></span><br><span class="line">	<span class="keyword">for</span> !atomic.CompareAndSwapInt32(&amp;r.runningDog, <span class="number">0</span>, <span class="number">1</span>) &#123;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 3. 启动看门狗</span></span><br><span class="line">	ctx, r.stopDog = context.WithCancel(ctx)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			atomic.StoreInt32(&amp;r.runningDog, <span class="number">0</span>)</span><br><span class="line">		&#125;()</span><br><span class="line">		r.runWatchDog(ctx)</span><br><span class="line">	&#125;()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// runWatchDog 看门狗运作</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *RedisLock)</span> <span class="title">runWatchDog</span><span class="params">(ctx context.Context)</span></span> &#123;</span><br><span class="line">	ticker := time.NewTicker(r.watchDogWorkStepTime)</span><br><span class="line">	<span class="keyword">defer</span> ticker.Stop()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> <span class="keyword">range</span> ticker.C &#123;</span><br><span class="line">		<span class="keyword">select</span> &#123;</span><br><span class="line">		<span class="keyword">case</span> &lt;-ctx.Done():</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 看门狗负责在用户未显式解锁时，持续为分布式锁进行续期</span></span><br><span class="line">		<span class="comment">// 通过 lua 脚本，延期之前会确保保证锁仍然属于自己</span></span><br><span class="line">		_ = r.DelayExpire(ctx, r.expireTimeSecond)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 更新锁的过期时间，基于 lua 脚本实现操作原子性</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *RedisLock)</span> <span class="title">DelayExpire</span><span class="params">(ctx context.Context, expireSeconds <span class="keyword">int64</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	result, err := r.client.pool.Eval(ctx, LuaCheckAndExpireDistributionLock, []<span class="keyword">string</span>&#123;r.key&#125;, []<span class="keyword">interface</span>&#123;&#125;&#123;r.token, expireSeconds&#125;).Bool()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !result &#123;</span><br><span class="line">		<span class="keyword">return</span> ErrDelayExpire</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="4-3-任务调度：任务执行"><a href="#4-3-任务调度：任务执行" class="headerlink" title="4.3 任务调度：任务执行"></a>4.3 任务调度：任务执行</h2><p>在每个任务的goroutine中，执行任务的过程中，需要<strong>先加载上下文<code>ContextLoad</code>，然后执行任务<code>HandleProcess</code>，任务执行完后，根据任务执行结果调用<code>SetTask</code>接口更新任务状态</strong>。</p>
+<h2 id="任务调度任务执行">4.3 任务调度：任务执行</h2>
+<p>在每个任务的goroutine中，执行任务的过程中，需要<strong>先加载上下文<code>ContextLoad</code>，然后执行任务<code>HandleProcess</code>，任务执行完后，根据任务执行结果调用<code>SetTask</code>接口更新任务状态</strong>。</p>
 <p>当任务执行完<code>HandleProcess</code>后需要重置<strong>任务阶段和任务状态</strong>，并更新task结构体中的<code>schedule_log</code>(这里包括记录track-uuid时间戳、ErrMsg和cost任务执行时间)</p>
 <p>最后再更新当前任务的排序时间<code>order_time</code>:</p>
 <ul>
-<li><strong>任务执行成功</strong>：<code>order_time = modify_time - priority</code><ul>
+<li><strong>任务执行成功</strong>：<code>order_time = modify_time - priority</code>
+<ul>
 <li>说明：根据优先级<strong>提前任务调度时间</strong></li>
-</ul>
-</li>
-<li><strong>任务执行失败</strong>：<code>order_time = modify_time + retry_interval</code><ul>
+</ul></li>
+<li><strong>任务执行失败</strong>：<code>order_time = modify_time + retry_interval</code>
+<ul>
 <li>说明：根据<strong>重试时间</strong>延迟任务被调度时间</li>
 <li>这里不能加上priority，否则无法保证<strong>重试时间间隔retry_interval内</strong>不会被调度</li>
-</ul>
-</li>
+</ul></li>
 </ul>
 
     </article>
@@ -574,7 +584,7 @@
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2024/09/16/Asyncflow%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">https://akirazheng.github.io/2024/09/16/Asyncflow%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2024/09/16/Asyncflow%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">September 16th 2024, 4:09:18 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2024/09/16/Asyncflow%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">October 4th 2024, 1:59:59 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/09/16/Asyncflow%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">December 25th 2024, 10:57:47 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -740,7 +750,8 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-text">1. 配置文件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%EF%BC%9Ago-redis%E6%A1%86%E6%9E%B6"><span class="toc-text">2. 分布式锁：go-redis框架</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-Task%E5%A4%84%E7%90%86"><span class="toc-text">3. Task处理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E6%B3%A8%E5%86%8CTask"><span class="toc-text">3.1 注册Task</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-Task%E4%BB%BB%E5%8A%A1%E9%9C%80%E8%A6%81%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%85%AC%E7%94%A8%E6%8E%A5%E5%8F%A3"><span class="toc-text">3.2 Task任务需要实现的公用接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-Task%E5%BA%8F%E5%88%97%E5%8C%96%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%A4%84%E7%90%86%EF%BC%9Ajson"><span class="toc-text">3.3 Task序列化反序列化处理：json</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-1-Task%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-text">3.3.1 Task序列化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-2-Task%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-text">3.3.2 Task反序列化</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6"><span class="toc-text">4. 任务调度</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%EF%BC%9Aload%E4%BB%BB%E5%8A%A1%E9%85%8D%E7%BD%AE"><span class="toc-text">4.1 任务调度：load任务配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%EF%BC%9A%E5%AE%9A%E6%97%B6%E6%8B%89%E5%8F%96%E4%BB%BB%E5%8A%A1"><span class="toc-text">4.2 任务调度：定时拉取任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%EF%BC%9A%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="toc-text">4.3 任务调度：分布式锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%EF%BC%9A%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C"><span class="toc-text">4.3 任务调度：任务执行</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-text">1. 配置文件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81go-redis%E6%A1%86%E6%9E%B6"><span class="toc-text">2. 分布式锁：go-redis框架</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#task%E5%A4%84%E7%90%86"><span class="toc-text">3. Task处理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E5%86%8Ctask"><span class="toc-text">3.1 注册Task</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#task%E4%BB%BB%E5%8A%A1%E9%9C%80%E8%A6%81%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%85%AC%E7%94%A8%E6%8E%A5%E5%8F%A3"><span class="toc-text">3.2 Task任务需要实现的公用接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#task%E5%BA%8F%E5%88%97%E5%8C%96%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%A4%84%E7%90%86json"><span class="toc-text">3.3
+Task序列化反序列化处理：json</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#task%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-text">3.3.1 Task序列化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#task%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-text">3.3.2 Task反序列化</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6"><span class="toc-text">4. 任务调度</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6load%E4%BB%BB%E5%8A%A1%E9%85%8D%E7%BD%AE"><span class="toc-text">4.1 任务调度：load任务配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%AE%9A%E6%97%B6%E6%8B%89%E5%8F%96%E4%BB%BB%E5%8A%A1"><span class="toc-text">4.2 任务调度：定时拉取任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="toc-text">4.3 任务调度：分布式锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C"><span class="toc-text">4.3 任务调度：任务执行</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1029,7 +1040,18 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1544,7 +1566,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 55
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1558,6 +1580,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
@@ -1953,14 +1981,14 @@
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">

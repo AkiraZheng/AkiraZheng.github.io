@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="一、并发模式当处理并发客户端的请求时，最直接的想法就是使用多线程来解决，但是线程完成业务逻辑后就销毁，不断地创建销毁会造成很大的性能开销，因此选择优化为采用线程池来处理业务，那么线程池该如何高效地处理业务呢?我们需要选择适合地并发模式来实现 我们知道，epoll中监听的是多个fd，epoll_wait等待到的事件可能是读&#x2F;写&#x2F;accept客户端&#x2F;信号&#x2F;定时等，这些事件都是并发的，我们需要对这些事件">
+    <meta name="description" content="一、并发模式 当处理并发客户端的请求时，最直接的想法就是使用多线程来解决，但是线程完成业务逻辑后就销毁，不断地创建销毁会造成很大的性能开销，因此选择优化为采用线程池来处理业务，那么线程池该如何高效地处理业务呢?我们需要选择适合地并发模式来实现 我们知道，epoll中监听的是多个fd，epoll_wait等待到的事件可能是读&#x2F;写&#x2F;accept客户端&#x2F;信号&#x2F;定时等，这些事件都是并发的，我们需要对这些事">
 <meta property="og:type" content="article">
 <meta property="og:title" content="WebServer学习4：并发事件驱动模式Reactor和Proactor">
 <meta property="og:url" content="https://akirazheng.github.io/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一、并发模式当处理并发客户端的请求时，最直接的想法就是使用多线程来解决，但是线程完成业务逻辑后就销毁，不断地创建销毁会造成很大的性能开销，因此选择优化为采用线程池来处理业务，那么线程池该如何高效地处理业务呢?我们需要选择适合地并发模式来实现 我们知道，epoll中监听的是多个fd，epoll_wait等待到的事件可能是读&#x2F;写&#x2F;accept客户端&#x2F;信号&#x2F;定时等，这些事件都是并发的，我们需要对这些事件">
+<meta property="og:description" content="一、并发模式 当处理并发客户端的请求时，最直接的想法就是使用多线程来解决，但是线程完成业务逻辑后就销毁，不断地创建销毁会造成很大的性能开销，因此选择优化为采用线程池来处理业务，那么线程池该如何高效地处理业务呢?我们需要选择适合地并发模式来实现 我们知道，epoll中监听的是多个fd，epoll_wait等待到的事件可能是读&#x2F;写&#x2F;accept客户端&#x2F;信号&#x2F;定时等，这些事件都是并发的，我们需要对这些事">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://akirazheng.github.io/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/singleReactor.png">
 <meta property="og:image" content="https://akirazheng.github.io/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/reactor_thread_pool.png">
@@ -490,10 +490,12 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h2 id="一、并发模式"><a href="#一、并发模式" class="headerlink" title="一、并发模式"></a>一、并发模式</h2><p>当处理并发客户端的请求时，最直接的想法就是使用多线程来解决，但是线程完成业务逻辑后就销毁，不断地创建销毁会造成很大的性能开销，因此选择优化为采用<strong>线程池来处理业务</strong>，那么线程池该如何高效地处理业务呢?我们需要选择适合地并发模式来实现</p>
+        <h2 id="一并发模式">一、并发模式</h2>
+<p>当处理并发客户端的请求时，最直接的想法就是使用多线程来解决，但是线程完成业务逻辑后就销毁，不断地创建销毁会造成很大的性能开销，因此选择优化为采用<strong>线程池来处理业务</strong>，那么线程池该如何高效地处理业务呢?我们需要选择适合地并发模式来实现</p>
 <p>我们知道，epoll中监听的是多个fd，epoll_wait等待到的事件可能是读/写/accept客户端/信号/定时等，这些事件都是并发的，我们需要对这些事件进行并发处理</p>
 <p>而事件并发处理模式有两种:Reactor和Proactor，下面对这两种并发模式进行介绍</p>
-<h2 id="二、Reactor模式"><a href="#二、Reactor模式" class="headerlink" title="二、Reactor模式"></a>二、Reactor模式</h2><p>Reactor又称为<strong>反应堆</strong>，是一种<strong>事件驱动机制</strong>。Reactor通常使用<strong>同步I/O</strong>(如<code>epoll_wait</code>)实现。</p>
+<h2 id="二reactor模式">二、Reactor模式</h2>
+<p>Reactor又称为<strong>反应堆</strong>，是一种<strong>事件驱动机制</strong>。Reactor通常使用<strong>同步I/O</strong>(如<code>epoll_wait</code>)实现。</p>
 <ul>
 <li>同步(阻塞)I/O：当一个I/O操作发生时，程序会阻塞在这个I/O操作上，直到这个I/O操作完成，程序才会继续执行</li>
 <li>Reactor将所有要处理的<strong>I/O事件注册到I/O多路复用器上(如epoll)</strong></li>
@@ -501,69 +503,73 @@
 <li>I/O多路复用器监听到I/O事件发生后，<strong>根据事件类型将事件分发给工作线程(逻辑单元)处理</strong></li>
 </ul>
 <p>Reator模式要求<strong>主线程只负责监听是否有事件发生</strong>，当有事件发生时，主线程将事件分发给工作线程(逻辑单元)处理(包括读和写)，也就是将socket可读可写事件放入工作线程的请求队列中等待处理</p>
-<h3 id="模式一：单Reactor单线程"><a href="#模式一：单Reactor单线程" class="headerlink" title="模式一：单Reactor单线程"></a>模式一：单Reactor单线程</h3><p>这种模型下，通常只有<strong>1个epoll对象</strong>，所有的<strong>客户端连接、读写事件</strong>都在<strong>主线程</strong>中实现（redis这种中间件就是采用这种模式）</p>
-<img src="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/singleReactor.png" width="80%" heigh="80">
-
+<h3 id="模式一单reactor单线程">模式一：单Reactor单线程</h3>
+<p>这种模型下，通常只有<strong>1个epoll对象</strong>，所有的<strong>客户端连接、读写事件</strong>都在<strong>主线程</strong>中实现（redis这种中间件就是采用这种模式）</p>
+<p><img src="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/singleReactor.png" width="80%" heigh="80"></p>
 <p>而实际上非I/O的业务型操作不应该也放在主线程中，（如图中的decode、compute、encode）应该从Reactor中卸载，放入工作线程中（这种就是模式二采用的方法）</p>
-<h3 id="模式二-单Reactor-线程池-Thread-Pool-（多线程）"><a href="#模式二-单Reactor-线程池-Thread-Pool-（多线程）" class="headerlink" title="模式二: 单Reactor + 线程池(Thread Pool)（多线程）"></a>模式二: 单Reactor + 线程池(Thread Pool)（多线程）</h3><p>这种模式的特定是，client的accept和read/send都在主线程<code>MainReactor</code>中完成，然后读取客户端数据后，将计算和请求处理等工作交给线程池执行，可以充分利用多核CPU的优势</p>
-<p>采用此模式时有可能存在多个线程同时计算同一个连接上的多个请求，算出的结果的次序是不确定的， 所以需要网络框架在设计协议时<strong>带一个id标示</strong>，以便让客户端区分response对应的是哪个request。</p>
-<img src="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/reactor_thread_pool.png" width="80%" heigh="80">
-
-<h3 id="模式三-muduo-⽹络库中所提出的-Multi-Reactor-并发框架-线程池实现"><a href="#模式三-muduo-⽹络库中所提出的-Multi-Reactor-并发框架-线程池实现" class="headerlink" title="模式三: muduo ⽹络库中所提出的 Multi-Reactor 并发框架 + 线程池实现"></a>模式三: muduo ⽹络库中所提出的 Multi-Reactor 并发框架 + 线程池实现</h3><p>Multi-Reactor模式的特点是one loop per thread， 有一个<strong>main Reactor</strong>负责<code>accept</code>连接， 然后把该连接挂在某个<strong>sub Reactor</strong>中(可以采用<strong>round-robin</strong>、<strong>随机方法</strong>、<strong>一致性哈希</strong>等实现<strong>负载均衡</strong>)，这样该连接的所有操作都在哪个sub Reactor所处的线程中完成，每个sub Reactor都处于线程池中的某个线程中</p>
-<p>通过<strong>Multi-Reactor + Pools</strong>的模式结合epoll实现多路复用也要<strong>遵循每个fd的操作只有一个线程完成（一致性哈希可以实现）</strong>，防止出现数据收发顺序问题以及多个线程同时操作一个fd的问题</p>
-<img src="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/multipleReactors+Pools.png">
-
-<h2 id="三、Proactor模式"><a href="#三、Proactor模式" class="headerlink" title="三、Proactor模式"></a>三、Proactor模式</h2><p>proactor模式中</p>
+<h3 id="模式二-单reactor-线程池thread-pool多线程">模式二: 单Reactor +
+线程池(Thread Pool)（多线程）</h3>
+<p>这种模式的特定是，client的accept和read/send都在主线程<code>MainReactor</code>中完成，然后读取客户端数据后，将计算和请求处理等工作交给线程池执行，可以充分利用多核CPU的优势</p>
+<p>采用此模式时有可能存在多个线程同时计算同一个连接上的多个请求，算出的结果的次序是不确定的，
+所以需要网络框架在设计协议时<strong>带一个id标示</strong>，以便让客户端区分response对应的是哪个request。</p>
+<p><img src="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/reactor_thread_pool.png" width="80%" heigh="80"></p>
+<h3 id="模式三-muduo-络库中所提出的-multi-reactor-并发框架-线程池实现">模式三:
+muduo ⽹络库中所提出的 Multi-Reactor 并发框架 + 线程池实现</h3>
+<p>Multi-Reactor模式的特点是one loop per thread， 有一个<strong>main
+Reactor</strong>负责<code>accept</code>连接，
+然后把该连接挂在某个<strong>sub
+Reactor</strong>中(可以采用<strong>round-robin</strong>、<strong>随机方法</strong>、<strong>一致性哈希</strong>等实现<strong>负载均衡</strong>)，这样该连接的所有操作都在哪个sub
+Reactor所处的线程中完成，每个sub Reactor都处于线程池中的某个线程中</p>
+<p>通过<strong>Multi-Reactor +
+Pools</strong>的模式结合epoll实现多路复用也要<strong>遵循每个fd的操作只有一个线程完成（一致性哈希可以实现）</strong>，防止出现数据收发顺序问题以及多个线程同时操作一个fd的问题</p>
+<p><img src="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/multipleReactors+Pools.png"></p>
+<h2 id="三proactor模式">三、Proactor模式</h2>
+<p>proactor模式中</p>
 <ul>
-<li><p><strong>主线程</strong>和内核<strong>负责处理读写数据、接受新连接等I/O操作</strong>，主线程读写完后，主线程向工作线程通知并直接发送读取后的结果给工作线程进行处理</p>
-</li>
-<li><p><strong>工作线程</strong>仅负责<strong>业务逻辑</strong>，如处理<strong>客户请求</strong>。通常由异步I/O实现</p>
-</li>
+<li><p><strong>主线程</strong>和内核<strong>负责处理读写数据、接受新连接等I/O操作</strong>，主线程读写完后，主线程向工作线程通知并直接发送读取后的结果给工作线程进行处理</p></li>
+<li><p><strong>工作线程</strong>仅负责<strong>业务逻辑</strong>，如处理<strong>客户请求</strong>。通常由异步I/O实现</p></li>
 </ul>
 <p><strong>同步I/O模拟Proactor模式</strong></p>
 <p>异步I/O一般采用如<code>aio_read</code>和<code>aio_write</code>等函数来处理读写数据，但本项目中使用同步I/O模拟Proactor事件处理模式</p>
 <p>以epoll_wait实现同步I/O模型为例:</p>
 <ul>
-<li><p>主线程往<strong>epoll内核事件表注册</strong>socket上的读就绪事件。</p>
-</li>
-<li><p>主线程调用<strong>epoll_wait等待</strong>socket上有数据可读</p>
-</li>
-<li><p>当socket上有数据可读，epoll_wait通知主线程，<strong>主线程从socket循环读取数据，直到没有更多数据可读</strong>，然后将读取到的数据封装成一个请求对象并插入请求队列。</p>
-</li>
-<li><p>睡眠在请求队列上<strong>某个工作线程被唤醒</strong>，它获得请求对象并<strong>处理客户请求</strong>，然后往epoll内核事件表中<strong>注册</strong>该socket上的<strong>写就绪事件</strong></p>
-</li>
-<li><p>主线程调用<strong>epoll_wait等待socket可写</strong>。</p>
-</li>
-<li><p>当socket上有数据可写，epoll_wait通知主线程。<strong>主线程</strong>往socket上<strong>写入服务器处理客户请求的结果</strong>。</p>
-</li>
+<li><p>主线程往<strong>epoll内核事件表注册</strong>socket上的读就绪事件。</p></li>
+<li><p>主线程调用<strong>epoll_wait等待</strong>socket上有数据可读</p></li>
+<li><p>当socket上有数据可读，epoll_wait通知主线程，<strong>主线程从socket循环读取数据，直到没有更多数据可读</strong>，然后将读取到的数据封装成一个请求对象并插入请求队列。</p></li>
+<li><p>睡眠在请求队列上<strong>某个工作线程被唤醒</strong>，它获得请求对象并<strong>处理客户请求</strong>，然后往epoll内核事件表中<strong>注册</strong>该socket上的<strong>写就绪事件</strong></p></li>
+<li><p>主线程调用<strong>epoll_wait等待socket可写</strong>。</p></li>
+<li><p>当socket上有数据可写，epoll_wait通知主线程。<strong>主线程</strong>往socket上<strong>写入服务器处理客户请求的结果</strong>。</p></li>
 </ul>
-<img src="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/proactor.png" width="80%" heigh="80">
-
+<p><img src="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/proactor.png" width="80%" heigh="80"></p>
 <p><strong>Reactor与Proactor的区别</strong></p>
 <ul>
-<li>Reactor模式中，主线程负责监听是否有事件发生，并将事件分发给工作线程处理<ul>
+<li>Reactor模式中，主线程负责监听是否有事件发生，并将事件分发给工作线程处理
+<ul>
 <li>操作是同步的，严格按照时序执行（因为要严格按照时序，所以数据读写都是在工作线程内跟解析和打包同步执行）</li>
-</ul>
-</li>
-<li>Proactor模式中，主线程负责处理读写数据、接受新连接等I/O操作，等<strong>处理完事件后</strong>再直接发送读取后的结果给工作线程进行业务处理<ul>
+</ul></li>
+<li>Proactor模式中，主线程负责处理读写数据、接受新连接等I/O操作，等<strong>处理完事件后</strong>再直接发送读取后的结果给工作线程进行业务处理
+<ul>
 <li>在I/O操作时是异步的，当I/O操作执行时，线程可以处理其他事情</li>
-</ul>
-</li>
+</ul></li>
 </ul>
 <blockquote>
 <p>参考：<a target="_blank" rel="noopener" href="https://mbd.baidu.com/ma/s/xTShUzFr">Reactor和Proactor的区别</a></p>
 </blockquote>
 <blockquote>
-<p>举个实际生活中的例子，Reactor 模式就是快递员在楼下，给你打电话告诉你快递到你家小区了，你需要自己下楼来拿快递。而在 Proactor 模式下，快递员直接将快递送到你家门口，然后通知你。</p>
+<p>举个实际生活中的例子，Reactor
+模式就是快递员在楼下，给你打电话告诉你快递到你家小区了，你需要自己下楼来拿快递。而在
+Proactor 模式下，快递员直接将快递送到你家门口，然后通知你。</p>
 </blockquote>
-<h2 id="四、总结"><a href="#四、总结" class="headerlink" title="四、总结"></a>四、总结</h2><ul>
+<h2 id="四总结">四、总结</h2>
+<ul>
 <li><strong>reactor</strong>是一种基于<strong>待完成事件</strong>的<strong>同步I/O</strong>模型</li>
 <li><strong>proactor</strong>是一种基于<strong>已完成事件</strong>的<strong>异步I/O</strong>模型</li>
 </ul>
 <p>学完并发模式，我们就可以了解了WebServer项目中，主线程创建epoll监听后，分别对I/O事件如信号、定时、socket接受客户端连接、客户端socket读写事件等的多线程处理模式</p>
 <p>接下来就可以完成<strong>半同步半反应堆线程池</strong>的代码和理论学习，因为线程池是实现并发模式的基础，也是项目中进行事件处理的基础：<a href="https://akirazheng.github.io/2024/03/09/WebServer%E5%AD%A6%E4%B9%A05%EF%BC%9A%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%AE%BE%E8%AE%A1/">WebServer学习5：线程池与数据库连接池设计</a></p>
 <blockquote>
-<p>参考：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/EDzFOo3gcivOe_RgipkTkQ">​网络 IO 演变发展过程和模型介绍</a></p>
+<p>参考：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/EDzFOo3gcivOe_RgipkTkQ">​网络 IO
+演变发展过程和模型介绍</a></p>
 </blockquote>
 
     </article>
@@ -739,7 +745,9 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%B9%B6%E5%8F%91%E6%A8%A1%E5%BC%8F"><span class="toc-text">一、并发模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Reactor%E6%A8%A1%E5%BC%8F"><span class="toc-text">二、Reactor模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E4%B8%80%EF%BC%9A%E5%8D%95Reactor%E5%8D%95%E7%BA%BF%E7%A8%8B"><span class="toc-text">模式一：单Reactor单线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E4%BA%8C-%E5%8D%95Reactor-%E7%BA%BF%E7%A8%8B%E6%B1%A0-Thread-Pool-%EF%BC%88%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%89"><span class="toc-text">模式二: 单Reactor + 线程池(Thread Pool)（多线程）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E4%B8%89-muduo-%E2%BD%B9%E7%BB%9C%E5%BA%93%E4%B8%AD%E6%89%80%E6%8F%90%E5%87%BA%E7%9A%84-Multi-Reactor-%E5%B9%B6%E5%8F%91%E6%A1%86%E6%9E%B6-%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%AE%9E%E7%8E%B0"><span class="toc-text">模式三: muduo ⽹络库中所提出的 Multi-Reactor 并发框架 + 线程池实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Proactor%E6%A8%A1%E5%BC%8F"><span class="toc-text">三、Proactor模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">四、总结</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%B9%B6%E5%8F%91%E6%A8%A1%E5%BC%8F"><span class="toc-text">一、并发模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8Creactor%E6%A8%A1%E5%BC%8F"><span class="toc-text">二、Reactor模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E4%B8%80%E5%8D%95reactor%E5%8D%95%E7%BA%BF%E7%A8%8B"><span class="toc-text">模式一：单Reactor单线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E4%BA%8C-%E5%8D%95reactor-%E7%BA%BF%E7%A8%8B%E6%B1%A0thread-pool%E5%A4%9A%E7%BA%BF%E7%A8%8B"><span class="toc-text">模式二: 单Reactor +
+线程池(Thread Pool)（多线程）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E4%B8%89-muduo-%E7%BB%9C%E5%BA%93%E4%B8%AD%E6%89%80%E6%8F%90%E5%87%BA%E7%9A%84-multi-reactor-%E5%B9%B6%E5%8F%91%E6%A1%86%E6%9E%B6-%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%AE%9E%E7%8E%B0"><span class="toc-text">模式三:
+muduo ⽹络库中所提出的 Multi-Reactor 并发框架 + 线程池实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89proactor%E6%A8%A1%E5%BC%8F"><span class="toc-text">三、Proactor模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E6%80%BB%E7%BB%93"><span class="toc-text">四、总结</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1028,7 +1036,18 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1543,7 +1562,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 55
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1557,6 +1576,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
@@ -1952,14 +1977,14 @@
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">
