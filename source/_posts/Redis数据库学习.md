@@ -19,18 +19,22 @@ categories:
 - `setnx key value`：如果key不存在则设置，否则失败
 
 查询
+
 - `get key`
 - `mget key1 key2`：一次获取多个key的值
 
 更新
+
 - `set key value`
 
 删除
+
 - `del key`
 
 ### 1.2 底层实现
 
 编码格式：
+
 - `int`：存储整数
 - `embstr`：小于等于44字节的字符串（浮点型会被转换为字符串存储）
 - `raw`：大于44字节的字符串
@@ -52,20 +56,24 @@ list就是一个列表
 list是允许双端操作的，不是完全的先入先出，也不是完全的后入先出
 
 创建
+
 - `lpush key value1 value2`：从左边插入
 - `rpush key value1 value2`：从右边插入
 
 查询
+
 - `llen key`：获取列表长度
 - `lrange key start end`：获取指定范围的元素
 
 更新
+
 - `lpush key value1 value2`：从左边插入
 - `rpush key value1 value2`：从右边插入
 - `lpop key`：从左边弹出
 - `rpop key`：从右边弹出
 
 删除
+
 - `del key`
 - `lrem key count value`：删除指定数量的元素，时间复杂度O(n)
 - `ltrim key start end`：删除指定范围的元素，时间复杂度O(n)
@@ -83,18 +91,22 @@ set适用于**去重**场景和**交集场景**，可以在**点赞**和**共同
 ### 3.1 基本操作
 
 创建
+
 - `sadd key value1 value2`：添加元素
 
 查询
+
 - `sismember key value`：判断元素是否存在
 - `smembers key`：获取所有元素的列表
 - `SUNION key1 key2`：求并集，如用于共同关注的人
 
 更新
+
 - `sadd key value1 value2`：添加元素
 - `srem key value1 value2`：删除元素
 
 删除
+
 - `del key`
 
 ### 3.2 底层实现
@@ -109,10 +121,12 @@ set适用于**去重**场景和**交集场景**，可以在**点赞**和**共同
 ### 4.1 基本操作
 
 创建
+
 - `hset key field1 value1 field2 value2`：添加元素
 - `hsetnx key field value`：如果field不存在则设置，否则失败
 
 查询
+
 - `hget key field`：获取元素
 - `hgetall key`：获取所有元素
 
@@ -122,6 +136,7 @@ set适用于**去重**场景和**交集场景**，可以在**点赞**和**共同
 - `hdel key field`：删除元素
 
 删除
+
 - `del key`
 
 ### 4.2 底层实现
@@ -168,6 +183,7 @@ redis**主要处理逻辑是单线程**的，主要的数据crud是短平快的�
 随着高并发场景的普及，单核cpu也逐渐不够用了（不过redis的多线程是默认关闭的，可以在redis.config配置文件中打开）
 
 redis的主要瓶颈在**I/O处理**上，所以采用**epoll多路复用用+reactor模式**来提高I/O处理效率。
+
 - 解包、回包用的是**多线程**
 - **RDB**全量备份时属于耗时操作，开一个单独进程来执行
 
@@ -342,6 +358,7 @@ set lock_key unique_value nx px 10000
 **2）解锁：用lua保证原子性**
 
 解锁有两个操作:
+
 - 判断锁的unique_value是否为准备执行解锁的客户端（key是锁的名字，values是owner保证原子性的，是锁持有者的id）
 - 然后再解锁
 

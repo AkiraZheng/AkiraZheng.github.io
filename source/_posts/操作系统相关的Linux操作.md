@@ -296,6 +296,7 @@ Windows下的`ipconfig`在Linux下是`ifconfig`，可以查看网络接口的信
 我们发现`Github`项目都会提供两个网址，一个是`https`的，一个是`ssh`的，所以可以联想到，`ssh`是一种类似于HTTPS的**安全网络协议**，它可以在不安全的网络中为网络服务提供安全的传输环境
 
 我们之前在配置**hexo**的时候，通过`ssh`连接到`github`，这样每次部署到`github`的时候就不用输入密码了，在实现时，我们在本机客户端会生成两个密钥文件：
+
 - `id_rsa`：私钥
 - `id_rsa.pub`：公钥
 
@@ -314,6 +315,7 @@ ps -eo pid,pcpu,time,comm | sort -k 2 -nr | head -n 10
 ```
 
 这个指令的意思是：
+
 - `-e`：显示所有进程
 - `-o`：指定输出的列
 - 只显示指定的列：`pid`、`pcpu`、`time`、`comm`

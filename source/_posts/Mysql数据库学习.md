@@ -16,10 +16,12 @@ categories:
 - 查看mysql密码：`sudo cat /etc/mysql/debian.cnf`
 
 根据查到的账号密码进入mysql：
+
 - `mysql -u debian-sys-maint -p`
 - 输入密码：（输入`debian-sys-maint`对应的密码即可）
 
 进入mysql后终端指令（指令以`;`结尾）：
+
 - 查看数据库：`show databases;`
 - 选择数据库：`use 数据库名;`
 - 查看表：`show tables;`
@@ -167,6 +169,7 @@ SELECT * FROM player ORDER BY level DESC;
 ```
 
 练习题：
+
 - 按照等级降序排列后，再根据经验升序排序：
     - `SELECT * FROM player ORDER BY level DESC, exp;`
 - 按照第五列降序排列：
@@ -258,6 +261,7 @@ SELECT * FROM player WHERE level BETWEEN 1 AND 3;
 子查询是指在**查询语句中嵌套查询语句**，子查询可以嵌套多层，子查询的结果可以是单行单列，也可以是多行多列
 
 比如，我们需要查找表格中等级大于平均等级的玩家，那么我们可以根据下面的步骤进行：
+
 - 先计算平均等级
     - `SELECT AVG(level) FROM player;`
 - 然后再查询大于平均等级的玩家
@@ -358,6 +362,7 @@ CREATE [UNIQUE|FULLTEXT|SPATIAL] INDEX 索引名 ON 表名(列名);
 比较有查询和无查询的效率：
 
 将`npc`表格copy一份到`npc_slow`表格中：
+
 - `CREATE TABLE npc_slow (SELECT * FROM npc);`
 - 查询`npc_slow`表格中是没有任何索引的
 
@@ -408,6 +413,7 @@ SELECT * FROM player ORDER BY level LIMIT 10;
 #### 3.1.1 事务的基础概念
 
 事务是指**一组SQL语句**组成的**操作序列**，这组操作要么全部成功，要么全部失败，事务是数据库管理系统执行的**最小工作单位**。
+
 - 如在银行操作中，A转账给B，要经过两个步骤：1. A账户减少金额；2. B账户增加金额。这两个步骤要么同时成功(commit)，要么同时失败(rollback全部回滚)。
 
 事务的四个特性是ACID：**原子性**、**一致性**、**隔离性**、**持久性**
@@ -415,6 +421,7 @@ SELECT * FROM player ORDER BY level LIMIT 10;
 **1）原子性（atomicity）-基础**：事务是一个不可分割的工作单位（整体性），要么全部成功，要么全部失败，用**commit**来结束一个事务，由**事务回滚undo日志**来实现
 
 **2）一致性（consistency）-约束条件**：事务执行前后，数据会从一个**语义合法状态**转换到另一个**语义合法状态**，即事务执行前后数据的**完整性约束**没有被破坏（满足现实中的约束）
+
   - 如：A有200元（合法），转帐300元出去变成-100元（不合法），这就是不一致的状态，所以必须定义约束就是余额大于等于0
   - 如：表中把name设置成唯一约束，但是由于事务提交或者回滚导致了重复的name，破坏了约束
   - 如：A转账100w给B，A扣除100w成功后，服务器宕机了，B没有收到100w，也破坏了完整性约束
@@ -422,6 +429,7 @@ SELECT * FROM player ORDER BY level LIMIT 10;
 **3）隔离性（isolation）-手段**：多个事务之间是相互隔离的，一个事务的执行不会影响其它事务，能够处理并发情况
 
 隔离性四个级别：**读未提交**、**读已提交**、**可重复读（InnoDB默认的）**、**串行化**
+
 - **脏读**：一个事务读取到另一个事务未提交的数据
   - 解决：通过**读已提交**级别来解决，保证一个事务内读到的数据起码是已经提交的数据
     <img src="dirty_read.png" width="50%">
@@ -480,6 +488,7 @@ SELECT * FROM player ORDER BY level LIMIT 10;
 **Read View在MVCC中的工作原理**
 
 Read View快照中有四个字段：
+
 - `creator_trx_id`：创建该快照的事务ID
 - `m_ids`：创建快照时，所有**活跃且未提交的事务**ID
 - `min_trx_id`：创建快照时，**活跃且未提交事务中的最小`m_ids`**，`trx_id<=min_trx_id`的事务都是当前快照可见的
@@ -533,6 +542,7 @@ COMMIT;
 #### 3.2.1 锁的基础概念
 
 并发情况下的加锁方案：
+
 - 方案一：**读用MVCC，写用加锁**，读的可能是旧版本，但是性能更高
 - 方案二：**读写都用加锁**，读写都是最新版本
 
@@ -556,6 +566,7 @@ COMMIT;
 意向锁：意向锁与**行级锁**不冲突，表示有意向对表中的某些行加锁。正因为如此，意向锁并**不会影响到多个事务对不同数据行加排他锁时的并发性**
 
 作用：意向锁的目的是为了快速判断表里是否有记录被加锁，从而避免了直接对表加锁，提高了并发性
+
 - **意向共享锁-IS**：`select ... lock in share mode;`
   - 用于**表级锁**，表示**准备对表进行读操作**，但是不会立即加锁，只是表示**准备加锁**，如果有**写锁**则会等待
 - **意向独占锁-IX**：`select ... for update;`
@@ -586,6 +597,7 @@ COMMIT;
 死锁的排查：`SHOW ENGINE INNODB STATUS;`，查看死锁日志
 
 死锁的解决：
+
 - **超时机制**：设置一个超时时间，如果超过这个时间还没有解锁，则自动解锁
 - **死锁检测**：检测到死锁后，自动回滚一方的事务
 - **尽量不要逆序加锁**
@@ -1074,6 +1086,7 @@ binlog是在事务提交后记录**表结构更新**和**数据更新**的日志
 ### 3.7 分库分表：路由和切片
 
 MySQL的高可用性体现在：
+
 - 主从复制下的读写分离
 - 分库分表下的路由和切片
 - 分布式事务下的分布式ID保证全局唯一
@@ -1112,10 +1125,15 @@ MySQL的高可用性体现在：
 
 
 > 参考：
+> 
 > 1. [事务隔离级别是怎么实现的？](https://xiaolincoding.com/mysql/transaction/mvcc.html)
+> 
 > 2. [08 索引：排序的艺术](https://learn.lianglianglee.com/%E4%B8%93%E6%A0%8F/MySQL%E5%AE%9E%E6%88%98%E5%AE%9D%E5%85%B8/08%20%20%E7%B4%A2%E5%BC%95%EF%BC%9A%E6%8E%92%E5%BA%8F%E7%9A%84%E8%89%BA%E6%9C%AF.md)
+> 
 > 3. [为什么 MySQL 采用 B+ 树作为索引？](https://xiaolincoding.com/mysql/index/why_index_chose_bpuls_tree.html#%E6%80%8E%E6%A0%B7%E7%9A%84%E7%B4%A2%E5%BC%95%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%98%AF%E5%A5%BD%E7%9A%84)
+> 
 > 4. [MySQL 日志：undo log、redo log、binlog 有什么用？](https://xiaolincoding.com/mysql/log/how_update.html#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-undo-log)
+> 
 > 5. [分布式唯一 ID 生成方案浅谈](https://zhuanlan.zhihu.com/p/534893180)
 
 
@@ -1124,6 +1142,7 @@ MySQL的高可用性体现在：
 SQL会存在**SQL注入**问题，攻击者在**HTTP包中注入一些SQL操作**从而破坏数据库
 
 预防办法：
+
 - 使用**orm**框架：摒弃手动拼接SQL语句，而是通过**orm框架传参**实现SQL操作
 - 增强**用户验证**
 - 完善**数据库操作最小权限**

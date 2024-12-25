@@ -76,7 +76,8 @@ categories:
 	- DEPENDPATH += "D:\Project\Wireless_communication_software\mysql_v8.0.32\MySQL Server 8.0\include"
 
 ## 4.4 Nivicate破解版安装
-	- [NavicatPremium16破解](https://www.cnblogs.com/kkdaj/p/16260681.html)
+
+- [NavicatPremium16破解](https://www.cnblogs.com/kkdaj/p/16260681.html)
 
 # 五、Vscode相关编译器配置
 

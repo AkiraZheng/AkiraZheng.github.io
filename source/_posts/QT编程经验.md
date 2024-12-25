@@ -137,6 +137,7 @@ tags: 杂货铺-休闲
 ## 2. sqlite加密设置
 
 将下面四个文件拷贝到QT下载路径下对于编译器的sql驱动文件夹中，比如我的是`\QT\Qt5.12.6\5.12.6\mingw73_64\plugins\sqldrivers`，然后在QT的.pro文件中添加`sqlcipher`库。
+
 - `libsqlcipher.a`
 - `libsqlcipher.a`
 - `sqlcipher.dll`

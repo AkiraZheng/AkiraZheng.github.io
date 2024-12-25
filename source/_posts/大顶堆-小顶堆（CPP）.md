@@ -11,6 +11,7 @@ categories:
 C++中实现大/小顶堆的数据结构是`priority_queue`，其**默认是大顶堆**，如果要实现小顶堆，需要传入第三个参数`greater<int>`。
 
 `priority_queue`结构有三个传参：
+
 - 第一个参数**type**：进行排序的数据类型
 - 第二个参数**container**：底层存储根堆的容器类型，默认是`vector`，且只能是**数组类型**，所以不能是`list`等
 - 第三个参数**compare**：比较函数，用于实现大顶堆或小顶堆
@@ -28,10 +29,12 @@ priority_queue<int, vector<int>, greater<int>> q;//小顶堆
 `priority_queue`如果要自定义比较逻辑，也是通过传入第三个参数(比较函数)来实现的。
 
 `sort`的比较函数中
+
 - 如果要实现**升序**，比较函数`return a < b`
 - 如果要实现**降序**，比较函数`return a > b`
 
 而`priority_queue`中
+
 - 如果要实现**大根堆（类似升序）**，比较函数`return a[0] < b[0]`
 - 如果要实现**小根堆（类似降序）**，比较函数`return a[0] > b[0]`
 

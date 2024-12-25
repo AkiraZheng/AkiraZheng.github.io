@@ -38,7 +38,9 @@ RedisLockPassword string `toml:"redis_lock_password"` // redis分布式锁的密
 其中使用的key为`taskType`，value为用uuid生成的`token`，过期时间为`expireTimeSecond`。
 
 > 参考
+> 
 > 1. [Github go-redis](https://github.com/redis/go-redis)
+> 
 > 2. [Go Redis 快速入门](https://redis.uptrace.dev/zh/guide/go-redis.html)
 
 
@@ -114,7 +116,9 @@ err = json.Unmarshal(respStr, respData)
 ```
 
 > 参考
+> 
 > 1. [golang解析json数据（Encoding/Json）](https://zhuanlan.zhihu.com/p/115066986)
+> 
 > 2. [golang json解析](https://www.cnblogs.com/niuben/p/15666154.html)
 
 

@@ -15,8 +15,9 @@ categories:
 ### 1.2 `http_conn.cpp`文件中的HTTP用户初始化函数的实现
 
 在`http_conn.cpp`文件中对新用户连接的初始化
-    - 包括类中一些如数据库信息、数据读取模式等变量、以及一些HTTP处理中间变量的初始化
-    - 同时还包括对主函数中的`epoll`监听该客户端`socketfd的初始化`
+
+- 包括类中一些如数据库信息、数据读取模式等变量、以及一些HTTP处理中间变量的初始化
+- 同时还包括对主函数中的`epoll`监听该客户端`socketfd的初始化`
 
 #### 对http_conn类中的变量初始化
 
@@ -446,6 +447,7 @@ http_conn::HTTP_CODE http_conn::process_read()
 由于请求头只有一行，所以我们只需要解析一次结束后，就将主状态机的状态从`CHECK_STATE_REQUESTLINE`转为`CHECK_STATE_HEADER`。
 
 其中获取的`URL`在本项目中共有8种情况，分别是：
+
 - `/`：主页，即`judge.html`，**（GET）**
 - `/0`：注册页面，即`register.html`，**（POST）**
 - `/1`：登录页面，即`log.html`，**（POST）**
@@ -843,10 +845,12 @@ http_conn::HTTP_CODE http_conn::do_request()
 工作线程中`process_write`根据`do_request`的请求解析结果（8种状态），通过**5个相关函数**逐个进行响应报文的打包，最后在工作线程中将http_conn用户对应的socketfd注册到epoll中，监听写事件，等待下一次写事件触发，完成响应报文的发送。
 
 通过`iovec`结构体将多个非连续的内存区域组合在一起（以便在epoll写事件触发时，一次性的I/O操作将内存数据writev写入socketfd中发送给客户端）。
+
 - `iovec`结构体中的`iov_base`指向内存区域的起始地址
 - `iov_len`指明内存区域的长度
 
 本项目中，`iovec`结构体的`m_iv`数组中存放了两个`iovec`结构体，分别指向`m_write_buf`和`m_file_address`
+
 - 如果请求报文处理结果是`FILE_REQUEST`状态，代表请求的文件资源是可以正常访问的，所以会把响应资源`m_file_address`也添加到`m_iv`数组中作为响应报文的**响应体**
 - 如果请求报文处理结果是`GET_REQUEST`状态，代表请求的文件资源是空的，生成一个空的html文件（ok_string）返回
 - 如果请求报文处理结果是其它状态，只申请一个buff的iovec，将`m_write_buf`添加到`m_iv`数组中，报文**响应体**调用`add_content`函数直接添加**格式化的字符串**到`m_write_buf`中，不需要第二个`iovec`
@@ -940,6 +944,7 @@ bool http_conn::process_write(HTTP_CODE ret)
     - 将`content`中的内容添加到`m_write_buf`中
 
 其中，**状态行**下的**状态码**有以下几种：
+
 - 200：请求成功
 - 400：请求报文语法有错
 - 403：禁止访问
@@ -955,6 +960,7 @@ const char *error_500_title = "Internal Error";
 ```
 
 **响应体**的内容有以下几种（只针对请求处理错误的情况，请求资源可访问的情况会返回对应的文件资源而不是这种格式化字符串）：
+
 - error_400_form：请求报文语法有错
 - error_403_form：禁止访问
 - error_404_form：请求资源不存在

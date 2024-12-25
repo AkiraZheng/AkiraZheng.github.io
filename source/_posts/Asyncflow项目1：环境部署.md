@@ -98,12 +98,14 @@ docker info
 **1）框架接入**
 
 step1：依赖中间件需要用户部署，并在flowSvr的config文件中配置对应的信息：
+
 - MySQL
 - Redis
 
 step2：启动flowSvr
 
 step3：worker由业务方import进来后实现三个接口的业务逻辑：
+
 - ContentLoad：解析上下文
 - HandleProcess：业务处理逻辑
 - HandleFinish：处理业务日志等信息

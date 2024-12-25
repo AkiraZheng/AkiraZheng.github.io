@@ -206,7 +206,7 @@ mermaid:
 # LaTeX Math Equations Support
 math:
   mathjax:
-    enable: false
+    enable: true
     # Specified version number no less than '3.0.0', or you need to modify the CDN link manually.
     # Version number '3' is for the latest '3.x' version of MathJax.
     version: 3.2.0

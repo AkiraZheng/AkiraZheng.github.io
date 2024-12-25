@@ -51,8 +51,11 @@ type commonConfig struct {
     ```
 
 > 参考
+> 
 > 1. [Golang toml完全解析示例](https://blog.csdn.net/Gusand/article/details/106094535)
+> 
 > 2. [toml-go客户端](https://github.com/BurntSushi/toml)
+> 
 > 3. [3分钟教你go语言如何使用go module下载指定版本的golang库依赖管理](https://b23.tv/CqBtVlV)
 
 # 2. 项目资源
@@ -230,14 +233,23 @@ redis缓存主要用于客户端轮询查询**任务信息表**中某个`TaskId`
 ```
 
 > 参考
+> 
 > 1. [GORM 指南:中文官方文档-数据库操](https://gorm.io/zh_CN/docs/index.html)
+> 
 > 2. [gin框架](https://gin-gonic.com/zh-cn/docs/)
+> 
 > 3. [golang框架-web框架之gin](https://juejin.cn/post/6844903938093744142)
+> 
 > 4. [一文搞懂gin框架httprouter路由实现原理](https://juejin.cn/post/7121614553649004575)
+> 
 > 5. [超全的Go Http路由框架性能比较](https://colobu.com/2016/03/23/Go-HTTP-request-router-and-web-framework-benchmark/)
+> 
 > 6. [Github go-redis](https://github.com/redis/go-redis)
+> 
 > 7. [Go Redis 快速入门](https://redis.uptrace.dev/zh/guide/go-redis.html)
+> 
 > 8. [Go 日志框架：seelog github](https://github.com/cihub/seelog)
+> 
 > 9. [seelog使用](https://blog.csdn.net/qq_36051316/article/details/118696592)
 
 # 3. 路由对应的任务调度方法：task
@@ -283,6 +295,7 @@ type HandlerIntf interface {
 ### 1）HandleInput
 
 `c.ShouldBind(&hd.Req)`：将请求的json数据自动绑定到结构体`task`中，然后检查请求参数是否合法
+
 - 检查`hd.Req`中的`TaskType`是否为空
 - 检查`hd.Req`中的`Priority`是否为空
 - 检查`hd.Req`中的`Priority`值在`[0, db.MAX_PRIORIT]`之间
