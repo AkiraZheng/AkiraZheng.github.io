@@ -118,7 +118,51 @@ categories:
 	```
     - 执行完命令后，在sourceTree中拉取本地这个文件夹，就能更方便地进行更换分支等操作了
 
-## 四、实现在vscode的Terminal中使用hexo指令
+## 四、引入mathjax公式
+
+**首先，如果blog源码还没开启过mathjax**:
+
+由于`archer`主题中已经配置了mathjax，但是默认是`false`，因此需要先在`_config.yml`同目录下的`_config.archer.yml`中将`mathjax: false`改为`mathjax: true`：
+
+```Yaml
+math:
+  mathjax:
+    enable: true
+    version: 3.2.0
+```
+
+如果已经修改完`_config.archer.yml`文件，那么就需要开始配置`npm`环境了：
+
+1. 卸载默认渲染引擎
+
+```bash
+npm uninstall hexo-renderer-marked --save
+```
+
+2. 系统上安装 `pandoc` 和渲染引擎插件
+
+- 检查 Pandoc 是否已安装
+
+	```bash
+	   pandoc -v
+	```
+ 
+   如果未安装 `Pandoc`，可以使用以下命令安装：
+   
+  ```bash
+   brew install pandoc  # MacOS
+   sudo apt install pandoc  # Linux
+  ```
+   
+- blog目录下配置npm环境：安装 `hexo-renderer-pandoc`
+
+   ```bash
+   npm install hexo-renderer-pandoc --save
+  ```
+
+> 参考：[启用 LaTeX 数学公式](https://github.com/fi3ework/hexo-theme-archer?tab=readme-ov-file#%E5%90%AF%E7%94%A8-latex-%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F)
+
+## 五、实现在vscode的Terminal中使用hexo指令
 
 当通过上述步骤搭载完博客后，包括在blog中也**配置好npm环境和hexo环境后**，可以通过下述步骤实现**在vscode的Terminal中使用hexo指令**，这样就不需要每次都通过在文件夹中打开cmd或者Git Bash中输入hexo指令了
 
@@ -138,7 +182,7 @@ categories:
 - 至此，我们已经完成了配置，可以重启VSCode，然后打开Terminal，输入`hexo s`或其它指令，这时就可以正常运行hexo指令了
 - **Point：**当在Terminal中启动`hexo s`后，在浏览器中输入`http://localhost:4000`即可查看博客网站，这时在VSCode中进行博客的编写、修改、部署等操作,保存更改后回到**浏览器刷新即可看到更改后的效果**
 
-## 五、关于Archer主题的相关配置
+## 六、关于Archer主题的相关配置
 
 [Archer主题配置](https://github.com/fi3ework/hexo-theme-archer/wiki/)指南在github网站中
 
