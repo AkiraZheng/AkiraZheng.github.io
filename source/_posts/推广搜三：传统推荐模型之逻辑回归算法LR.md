@@ -143,7 +143,7 @@ $$L(\mathbf{w}) = \prod_{i=1}^m p(y_i|\mathbf{x_i})$$
 
 $$J(\mathbf{w}) = -\frac{1}{k}\sum_{i=1}^m p(y_i|\mathbf{x_i})$$
 
-*3）确定参数更新公式**
+**3）确定参数更新公式**
 
 对代价函数$J(\mathbf{w})$求偏导，并按步长$\alpha$更新参数：
 
