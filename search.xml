@@ -7242,7 +7242,7 @@ p(y_i|\mathbf{x_i})\]</span></p>
 <p>由于代价函数一般是求最小值问题，而似然函数是求最大值问题，因此需要将似然函数转化为最小化问题，也就是乘上系数<span class="math inline">\(-\frac{1}{k}\)</span>，并取对数<span class="math inline">\(ln\)</span>转换成连加，最终得到代价函数为：</p>
 <p><span class="math display">\[J(\mathbf{w}) = -\frac{1}{k}\sum_{i=1}^m
 p(y_i|\mathbf{x_i})\]</span></p>
-<p>*3）确定参数更新公式**</p>
+<p><strong>3）确定参数更新公式</strong></p>
 <p>对代价函数<span class="math inline">\(J(\mathbf{w})\)</span>求偏导，并按步长<span class="math inline">\(\alpha\)</span>更新参数：</p>
 <p><span class="math display">\[w_j = w_j - \alpha \frac{\partial
 J(\mathbf{w})}{\partial w_j}\]</span></p>
