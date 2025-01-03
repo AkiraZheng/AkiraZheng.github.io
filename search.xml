@@ -10906,4 +10906,53 @@ GBDT + LR 理解与实践（附数据 + 代码）</a></p>
         <category>深度学习算法</category>
       </categories>
   </entry>
+  <entry>
+    <title>推广搜6：传统推荐模型之阿里LS-PLM模型</title>
+    <url>/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/</url>
+    <content><![CDATA[<h1 id="ls-plm">LS-PLM</h1>
+<h2 id="非线性化分割">非线性化分割</h2>
+<p>LS-PLM模型也称为MLR(混合逻辑回归)，它的结构类似于<strong>三层神经网络（三层神经网络包含的隐藏层具有非线性变换的能力，通常通过激活函数实现）</strong>，他的输入层是样本的特征向量，中间层是由m个神经元组成的隐层（m是模型的分片数量，通过控制m来控制分片数，防止过拟合）</p>
+<p>传统的LR线性模型只能对样本进行线性分割，而LS-PLM在深度学习到来之前，已经将<strong>线性模型提升为非线性模型</strong>，实现了模型端到端的非线性学习能力。</p>
+<p>其中的非线性化主要是通过softmax函数（也就是<span class="math inline">\(\pi_i(x)\)</span>）将特征切分到m个不同的空间，并由LR部分（也就是<span class="math inline">\(\eta_i(x)\)</span>）对m个空间的特征进行线性学习来实现的。</p>
+<p>其中随着m的增长，需要的样本数也增加，阿里推荐的值为<span class="math inline">\(m=12\)</span>。</p>
+<p>最终的预估函数<span class="math inline">\(f(x)\)</span>为：</p>
+<p><span class="math display">\[f(x) = \sum_{i=1}^{m} \pi_i(x) \cdot
+\eta_i(x)=\sum_{i=1}^{m}
+\frac{e^{\eta_i(x)}}{\sum_{j=1}^{m} e^{\eta_j(x)}}\cdot
+\frac{1}{1+e^{-w_i\cdot x}}\]</span></p>
+<p><img src="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/function.png" width="60%" height="60%"></p>
+<p>所以实际上，<strong>LS-PLM模型也可以看做是一个三层的神经网络模型</strong>：</p>
+<ul>
+<li>第一层：输入层，也指样本的特征向量</li>
+<li>第二层：隐层，通过两个激活函数相乘实现非线性化，实现了Embedding操作
+<ul>
+<li>其中第一个激活函数实现聚类，包含m个神经元
+<ul>
+<li>聚类的原因：不同的人群具有聚类特性，同一类人群具有类似的广告点击偏好</li>
+</ul></li>
+<li>第二个激活函数实现LR分类，包含m个神经元</li>
+<li>隐藏层输出为m维切片</li>
+</ul></li>
+<li>第三层：输出层，包含单一神经元</li>
+</ul>
+<p><img src="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/LS-PLM.png" width="60%" height="60%"></p>
+<p>如下图所示，LR不能拟合非线性数据，MLR可以拟合非线性数据（m=4，实现4切片）</p>
+<p><img src="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/nonlinear.png" width="80%" height="80%"></p>
+<h2 id="解决稀疏性问题代价函数加入正则化">解决稀疏性问题：代价函数加入正则化</h2>
+<p>LS-PLM主要是通过<span class="math inline">\(L_1\)</span>和<span class="math inline">\(L_{2,1}\)</span>正则化来做到这件事情。其中 <span class="math inline">\(L_{2,1}\)</span>用于实现特征筛选，<span class="math inline">\(L_1\)</span>则用于得到尽可能多的稀疏解。</p>
+<p>目标损失函数为：</p>
+<p><img src="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/loss.png" width="70%" height="70%"></p>
+<p>此时由于<span class="math inline">\(L_1\)</span>和<span class="math inline">\(L_2\)</span>正则化函数都是非平滑的，所以损失函数是非凸函数（不止一个极值点），所以可能求得的结果是局部最优解而非全局最优解。</p>
+<p><img src="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/loss2.png" width="70%" height="70%"></p>
+<blockquote>
+<p>参考：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/406615820">经典推荐算法学习（四）|
+阿里LS-PLM（MLR）模型原理解析</a></p>
+<p><a href="https://jesse-csj.github.io/2019/08/12/MLR/">（读论文）推荐系统之ctr预估-MLR(LS-PLM)模型解析</a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>深度学习算法</category>
+      </categories>
+  </entry>
 </search>
