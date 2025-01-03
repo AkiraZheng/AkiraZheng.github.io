@@ -1,5 +1,5 @@
 ---
-title: 推广搜四：传统推荐模型之FM模型
+title: 推广搜4：传统推荐模型之FM模型
 date: 2025-01-02 18:24:51
 tags:
 categories:
@@ -15,7 +15,7 @@ mathjax: true
 
 而**POLY2模型、FM模型、FFM模型具备特征交叉的能力，其表达能力更强**。
 
-<img src="CombineChareters.png" width="60%" height="60%">
+<img src="CombineChareters.png" width="80%" height="80%">
 
 传统的**逻辑回归**模型的预测函数为：
 
@@ -33,7 +33,7 @@ $$y=\sum_{i=1}^{n-1}\sum_{j=i+1}^n w_{i,j} x_i x_j$$
 
 # 二、FM模型
 
-关于**特征分解隐向量**的相关基础知识参考博客[推广搜二：传统推荐模型之协同过滤算法](https://akirazheng.github.io/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%BA%8C%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/#/%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86)
+关于**特征分解隐向量**的相关基础知识参考博客[推广搜2：传统推荐模型之协同过滤算法](https://akirazheng.github.io/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C2%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/)
 
 POLY2为每个特征组合赋予一个权重，相当于每个特征都有一个对应其他所有特征的向量组合，也就是向量矩阵大小为$n\times n$。
 
@@ -57,10 +57,10 @@ $$y=\sum_{i=1}^{n-1}\sum_{j=i+1}^n\mathbf{v_{i,f_j}}\mathbf{v_{j,f_i}^T} x_jx_j$
 
 其中$\mathbf{v_{i,f_j}}$表示在总共存在的**n个隐向量矩阵**中，特征$i$作用于特征$j$上对应的隐向量为第$j$张矩阵的第$i$行。
 
-<img src="POLY_FM_FFM.png" width="60%" height="60%">
+<img src="POLY_FM_FFM.png" width="80%" height="80%">
 
 
-**缺点：**由FM的二阶变为三阶，其模型参数计算量剧增。
+**缺点：**FM和FFM一般只能做到二阶特征交叉（也就是特征两两交叉），由FM的二阶变为三阶，其模型参数计算量剧增。
 
 **解决办法：**通过如**GBDT+LR**的**组合模型**来解决高阶特征交叉的问题。
 
