@@ -6993,138 +6993,6 @@ new 或 malloc ）和释放（使⽤ delete 或 free ）。（先进先出）</l
       </categories>
   </entry>
   <entry>
-    <title>推广搜一：基础知识及学习路线篇</title>
-    <url>/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%80%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/</url>
-    <content><![CDATA[<h1 id="一基础知识">一、基础知识</h1>
-<h2 id="推广搜使用场景及特征类型">1.1 推广搜使用场景及特征类型</h2>
-<p><strong>1）场景</strong></p>
-<p>推搜常用场景有</p>
-<ul>
-<li>购物</li>
-<li>新闻</li>
-<li>视频</li>
-<li>音乐...</li>
-</ul>
-<p>推荐目的是</p>
-<ul>
-<li>增加点击率</li>
-<li>增加观看时长</li>
-<li>增加购买转化率</li>
-<li>增加用户粘性...</li>
-</ul>
-<p><strong>2）特征类型</strong></p>
-<p>搜推模型的输入特征类型主要有三种：<strong>物品信息、用户信息、场景信息</strong>，这三类协同作用得到推荐结果</p>
-<p>物品信息：</p>
-<ul>
-<li>价格</li>
-<li>销量</li>
-<li>评价...</li>
-</ul>
-<p>用户信息：</p>
-<ul>
-<li>历史行为（购买记录）</li>
-<li>关系网</li>
-<li>性别...</li>
-</ul>
-<p>场景信息：</p>
-<ul>
-<li>时间</li>
-<li>地区</li>
-<li>用户状态...</li>
-</ul>
-<h2 id="自然推荐和推荐广告">1.2 自然推荐和推荐广告</h2>
-<ul>
-<li>自然推荐：自然推荐是<strong>提升用户体验和信息分发效率</strong>的，属于<strong>免费</strong>流量，因此主要考虑<strong>用户和平台利益</strong>，基本不考虑商家
-<ul>
-<li>指标：<strong>CTR（点击率）</strong></li>
-<li>主要排序：<strong>CTR</strong>，可能还会再结合销量、评价等指标</li>
-<li>感知：自然推荐通常是无感的</li>
-</ul></li>
-<li>推荐广告：推荐广告是<strong>商家花钱投放</strong>的，因此主要考虑<strong>商家利益</strong>，同时<strong>兼顾用户和平台的利益</strong>
-<ul>
-<li>指标：<strong>CPM（千次展示成本）</strong></li>
-<li>主要排序：<strong>eCPM</strong>，广告侧还需要去考虑广告商品的质量、历史销量、历史好评率等等各种因素，将这些因素综合考虑组成另外一个分数Q值，最终二者按照一定权重，形成一个复合公式：<code>Rank_Score = a×eCPM + b×Q</code></li>
-<li>感知：推荐广告通常会有<strong>广告</strong>字样用于标识</li>
-</ul></li>
-</ul>
-<h2 id="推荐算法基本流程">1.3 推荐算法基本流程</h2>
-<p>整个推搜系统的运作流程图如下：</p>
-<p><img src="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%80%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/structure.png" width="100%" height="100%"></p>
-<p>推荐算法最主要的流程是：</p>
-<ul>
-<li><p>数据处理：将<strong>数据数值化</strong>。其中数据可以分为<strong>连续特征</strong>和<strong>类别特征</strong>两种，连续特征如<strong>价值、销量</strong>等可以直接数值化；而类别特征如<strong>性别、等级、星期、城市等</strong>这些可选项、不具备数值化意义的需要用<strong>哈希散列、one-hot等进行编码向量化</strong>。</p></li>
-<li><p>建模</p>
-<ul>
-<li><p><strong>召回</strong>：一般用<strong>召回规则（如用户的搜索关键词、历史行为）</strong>从海量的<strong>候选集</strong>中召回用户可能感兴趣的物品。</p>
-<ul>
-<li>举例：用户在搜索框中输入“跑步鞋”，系统会召回所有与“跑步鞋”相关的广告，包括直接相关的广告（如某品牌的跑步鞋）和间接相关的广告（如运动装备、健身课程等）。</li>
-</ul></li>
-<li><p><strong>过滤</strong>：过滤一般会进一步保证结果的<strong>实时性、相关性、物品相似性和用户相似度等</strong>，通常会考虑用户的地域限制、匹配度等因素。</p>
-<ul>
-<li>举例：对于用户输入“跑步鞋”的搜索，过滤系统可能会移除不相关的广告（如与“跑步”无关的时尚鞋类广告）或已经过期的广告。</li>
-</ul></li>
-<li><p><strong>精排</strong>：<strong>百量级的内容并按照顺序推送，精排也一直是推搜模型优化的重点</strong>，确保最优质、最相关的广告位于前列，提升广告的点击率和转化率。通常会使用<strong>CTR预测模型、双塔深度学习等模型</strong>来优化排序。
-<img src="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%80%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/Ranking.png" width="80%" height="80%"></p>
-<ul>
-<li>举例：在“跑步鞋”搜索结果中，精排阶段会确保广告中最相关的、用户最可能点击的跑步鞋广告排在前面，考虑到价格、品牌偏好等因素。</li>
-</ul></li>
-<li><p><strong>混排</strong>：为<strong>避免内容越推越窄</strong>，将精排后的推荐结果进行一定修改，<strong>例如控制某一类型的频次</strong>。</p></li>
-<li><p><strong>强规则</strong>：强规则是一些行业规定的、无法修改的<strong>固定规则</strong>，如<strong>广告不能违法违规、广告不能虚假宣传恶意竞争等规则</strong>。通常需要<strong>确保广告展示符合法律、平台及广告主的要求</strong></p></li>
-</ul>
-<p><img src="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%80%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/Modeling.png" width="60%" height="60%"></p></li>
-<li><p>评估：评估模型在测试集上的效果，常用的评估指标包括<strong>准确率、召回率、F1值、AUC</strong>等</p></li>
-</ul>
-<h2 id="数据预处理算法原理">1.3 数据预处理算法原理</h2>
-<p>数据预处理中的数据可以分为<strong>连续特征</strong>和<strong>类别特征</strong>两种</p>
-<ul>
-<li><strong>连续特征</strong>：如<strong>价值、销量</strong>等可以直接数值化</li>
-<li><strong>类别特征</strong>：如<strong>性别、等级、星期、城市等</strong>这些可选项、不具备数值化意义的需要用<strong>哈希散列、one-hot等进行编码向量化</strong>。</li>
-</ul>
-<h3 id="哈希散列">1）哈希散列</h3>
-<p>哈希散列是一种将特征值映射到<strong>固定长度为n的向量</strong>的方法</p>
-<p>比如需要将<code>weekly</code>特征映射到长度为<code>n=3</code>的向量中，也就是通过二进制编码制定映射规则<code>Tuesday=[0,1,0]=十进制的2</code>，用长度为3的向量可以无哈希冲突地映射所有星期值。</p>
-<p><strong>缺点：</strong></p>
-<ul>
-<li>当映射空间不足时会导致<strong>哈希冲突</strong>，从而导致某些特征的信息丢失。（比如用n=2去映射weekly时会出现哈希碰撞）</li>
-<li>使用了哈希函数增加了<strong>计算复杂度</strong></li>
-</ul>
-<p><strong>优点：</strong></p>
-<ul>
-<li>内存占用较低，适合大规模数据集</li>
-</ul>
-<h3 id="one-hot">2）one-hot</h3>
-<p>one-hot是一种将特征值映射到<strong>固定长度为n的向量</strong>的方法，<strong>其中n为可选类别的个数</strong></p>
-<p>比如将<code>weekly</code>特征映射到长度为7的向量中，选中了星期几就把该位置置为1，比如<code>Tuesday=[0,1,0,0,0,0,0]</code>，用长度为7的向量可以无哈希冲突地映射所有星期值。</p>
-<p><strong>缺点：</strong></p>
-<ul>
-<li>会导致存在大量数量为0的值，导致输入的<strong>特征向量稀疏</strong>，导致<strong>维度爆炸和训练速度慢</strong>。</li>
-<li>维度高，内存占用高</li>
-</ul>
-<p><strong>优点：</strong></p>
-<ul>
-<li>直观、容易理解</li>
-</ul>
-<blockquote>
-<p>参考：</p>
-<p><a href="https://zhuanlan.zhihu.com/p/395062194">广告和推荐算法论文梳理</a></p>
-<p><a href="https://blog.csdn.net/weixin_43805551/article/details/123416478">自然推荐和推荐广告的区别：推荐算法（推广搜）</a></p>
-<p><a href="https://blog.csdn.net/m0_59596990/article/details/122240815">超全推荐算法基础知识：超全，7种经典推荐算法模型及应用</a></p>
-<p><a href="https://cloud.tencent.com/developer/article/2220394">!!!详细推搜知识包含召回-排序：推荐系统[一]：超详细知识介绍，一份完整的入门指南，解答推荐系统相关算法流程、衡量指标和应用，以及如何使用jieba分词库进行相似推荐</a></p>
-</blockquote>
-<h1 id="二学习路线">二、学习路线</h1>
-<blockquote>
-<p>推荐算法学习博客&amp;github：https://datawhalechina.github.io/fun-rec/#/</p>
-<p>学习路线参考文章：<a href="https://zhuanlan.zhihu.com/p/431446738">推荐算法&amp;广告算法学习路线</a>，其中重点关注文章中的<strong>三、推荐算法</strong>和<strong>四、广告算法</strong></p>
-</blockquote>
-<p>tmp记录文章：</p>
-<blockquote>
-<p><a href="https://blog.csdn.net/m0_48086806/article/details/136914225">【主要推荐算法概览，包括召回与排序】</a></p>
-<p><a href="https://blog.csdn.net/u011863024/article/details/115721328">Elasticsearch学习笔记</a></p>
-<p><a href="https://blog.csdn.net/aibo_yyds/article/details/120081333">Elasticsearch工具使用</a></p>
-</blockquote>
-]]></content>
-  </entry>
-  <entry>
     <title>搭建Conda虚拟环境</title>
     <url>/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/</url>
     <content><![CDATA[<h1 id="前言">前言</h1>
@@ -10979,7 +10847,7 @@ x_i x_j\]</span></p>
 <p>这种属于暴力组合，由于互联网数据本身通过<strong>one-hot</strong>成的<strong>稀疏数据</strong>，因此通过暴力组合增加维度后会更加稀疏，导致模型<strong>计算量剧增、泛化能力差</strong>。</p>
 <p><strong>解决办法：</strong>可以通过<strong>矩阵分解出隐向量</strong>的方式来降低计算量、提高模型泛化能力。<strong>FM模型</strong>就是通过这种方式构建的。</p>
 <h1 id="二fm模型">二、FM模型</h1>
-<p>关于<strong>特征分解隐向量</strong>的相关基础知识参考博客<a href="https://akirazheng.github.io/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%BA%8C%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/#/%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86">推广搜二：传统推荐模型之协同过滤算法</a></p>
+<p>关于<strong>特征分解隐向量</strong>的相关基础知识参考博客<a href="https://akirazheng.github.io/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C2%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/">推广搜2：传统推荐模型之协同过滤算法</a></p>
 <p>POLY2为每个特征组合赋予一个权重，相当于每个特征都有一个对应其他所有特征的向量组合，也就是向量矩阵大小为<span class="math inline">\(n\times n\)</span>。</p>
 <p>FM模型则通过<strong>矩阵分解</strong>的方式将特征向量分解为隐向量，其隐向量大小为<span class="math inline">\(n\times k\)</span>，每两个特征向量的权值<span class="math inline">\(w_ij\)</span>是由这两个向量的隐向量内积计算而得的：</p>
 <p><span class="math display">\[w_{ij}=\mathbf{v_i}\mathbf{v_j^T}\]</span></p>
@@ -11010,7 +10878,32 @@ x_jx_j\]</span></p>
   <entry>
     <title>推广搜5：传统推荐模型之GBDT+LR模型</title>
     <url>/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/</url>
-    <content><![CDATA[
+    <content><![CDATA[<h1 id="gbdtlr模型">GBDT+LR模型</h1>
+<p>CTR预估早期使用最多的方案是逻辑回归(LR)，LR
+性能非常高，但是其效果十分依赖于大量的特征工程。但是手动构造许多有用特征费时费力，因此<strong>需要有更自动化的方法来发现有效特征并构造组合特征</strong>。</p>
+<p>相比FM和FFM通过交互所有的二阶特征导致特征冗余问题，<strong>GBDT自动在特征传入LR模型前先对特征进行自动筛选和组合</strong>，筛选和组合后的包含各阶特征的向量再传入LR模型中进行线性训练。</p>
+<p>这里就包含了两部分的独立训练：</p>
+<ul>
+<li>GBDT模型训练构建特征工程</li>
+<li>LR模型训练预估CTR</li>
+</ul>
+<p><img src="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/GBDT+LR模型.png" width="80%" height="80%"></p>
+<h2 id="gbdt">GBDT</h2>
+<p>GBDT
+基于集成学习中的boosting思想，每次迭代都在<strong>减少残差的梯度方向新建立一颗决策树</strong>，迭代多少次就会生成多少颗决策树，不断减少误差。</p>
+<p>假设GBDT由两颗树构成，如下图中的 树1 和 树2 ：</p>
+<p><img src="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/GBDT.png" width="80%" height="80%"></p>
+<p>模型最终到达叶子节点形成一个<strong>one-hot编码</strong>，每个节点为1表示该特征被选择，0表示该特征未被选择。如上图形成的one-hot编码为[0,
+1, 0, 1, 0]。</p>
+<p>同时，决策树决定了特征的阶数，如果决策树深度为3，则说明是通过2次节点分裂得到的，最终叶节点是2阶特征组合的结果，其缺点是相比FFM会损失很多数值信息。</p>
+<blockquote>
+<p>参考</p>
+<p><a href="https://github.com/zxxwin/GBDT_LR">广告点击率(CTR)预测经典模型
+GBDT + LR 理解与实践（附数据 + 代码）</a></p>
+</blockquote>
 ]]></content>
+      <categories>
+        <category>深度学习算法</category>
+      </categories>
   </entry>
 </search>
