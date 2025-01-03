@@ -19,25 +19,20 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="本文假设有n个特征  一、POLY2模型 前面学到的逻辑回归模型只对多维特征进行简单线性加权，没有多维特征的组合（逻辑回归模型只能通过工程师手动组合特征）。 而POLY2模型、FM模型、FFM模型具备特征交叉的能力，其表达能力更强。  传统的逻辑回归模型的预测函数为： \[y&#x3D;w_0+\sum_{i}^n w_i x_i\] POLY2模型会为每个特征组合赋予一个权重，因此其n个特征需要\(n^">
-<meta property="og:type" content="article">
-<meta property="og:title" content="推广搜四：传统推荐模型之FM模型">
-<meta property="og:url" content="https://akirazheng.github.io/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/index.html">
+    <meta property="og:type" content="article">
+<meta property="og:title" content="推广搜5：传统推荐模型之GBDT+LR模型">
+<meta property="og:url" content="https://akirazheng.github.io/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="本文假设有n个特征  一、POLY2模型 前面学到的逻辑回归模型只对多维特征进行简单线性加权，没有多维特征的组合（逻辑回归模型只能通过工程师手动组合特征）。 而POLY2模型、FM模型、FFM模型具备特征交叉的能力，其表达能力更强。  传统的逻辑回归模型的预测函数为： \[y&#x3D;w_0+\sum_{i}^n w_i x_i\] POLY2模型会为每个特征组合赋予一个权重，因此其n个特征需要\(n^">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://akirazheng.github.io/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/CombineChareters.png">
-<meta property="og:image" content="https://akirazheng.github.io/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/POLY_FM_FFM.png">
-<meta property="article:published_time" content="2025-01-02T10:24:51.000Z">
-<meta property="article:modified_time" content="2025-01-02T14:54:01.101Z">
+<meta property="article:published_time" content="2025-01-03T03:03:27.000Z">
+<meta property="article:modified_time" content="2025-01-03T03:08:04.589Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://akirazheng.github.io/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/CombineChareters.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>推广搜四：传统推荐模型之FM模型 · AkiraZheng&#39;s Time</title>
+    <title>推广搜5：传统推荐模型之GBDT+LR模型 · AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -262,7 +257,7 @@
                 <a href="/">AkiraZheng&#39;s Time.</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">推广搜四：传统推荐模型之FM模型</a>
+                <a href="#" class="post-name">推广搜5：传统推荐模型之GBDT+LR模型</a>
             </div>
         </div>
     
@@ -308,7 +303,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                推广搜四：传统推荐模型之FM模型
+                推广搜5：传统推荐模型之GBDT+LR模型
             <!-- 404 -->
             
         </h1>
@@ -327,13 +322,13 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">835</span>Reading time: <span class="post-count reading-time">3 min</span></span>
+                        <span>Word count: <span class="post-count word-count">0</span>Reading time: <span class="post-count reading-time">1 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
                     <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2025/01/02</span>
+                    <span class="post-intro-time">2025/01/03</span>
                     <!-- busuanzi -->
                     
                         <span id="busuanzi_container_page_pv" class="busuanzi-pv">
@@ -488,54 +483,16 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <blockquote>
-<p>本文假设有n个特征</p>
-</blockquote>
-<h1 id="一poly2模型">一、POLY2模型</h1>
-<p>前面学到的<strong>逻辑回归模型</strong>只对多维特征进行<strong>简单线性加权，没有多维特征的组合</strong>（逻辑回归模型只能通过工程师手动组合特征）。</p>
-<p>而<strong>POLY2模型、FM模型、FFM模型具备特征交叉的能力，其表达能力更强</strong>。</p>
-<p><img src="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/CombineChareters.png" width="60%" height="60%"></p>
-<p>传统的<strong>逻辑回归</strong>模型的预测函数为：</p>
-<p><span class="math display">\[y=w_0+\sum_{i}^n w_i x_i\]</span></p>
-<p><strong>POLY2模型</strong>会为每个特征组合赋予一个权重，因此其n个特征需要<span class="math inline">\(n^2\)</span>个参数。其复杂度为<span class="math inline">\(O(n^2)\)</span>，预测结果在线性模型的基础上多了一个多项式：</p>
-<p><span class="math display">\[y=\sum_{i=1}^{n-1}\sum_{j=i+1}^n w_{i,j}
-x_i x_j\]</span></p>
-<p><strong>缺点：</strong></p>
-<p>这种属于暴力组合，由于互联网数据本身通过<strong>one-hot</strong>成的<strong>稀疏数据</strong>，因此通过暴力组合增加维度后会更加稀疏，导致模型<strong>计算量剧增、泛化能力差</strong>。</p>
-<p><strong>解决办法：</strong>可以通过<strong>矩阵分解出隐向量</strong>的方式来降低计算量、提高模型泛化能力。<strong>FM模型</strong>就是通过这种方式构建的。</p>
-<h1 id="二fm模型">二、FM模型</h1>
-<p>关于<strong>特征分解隐向量</strong>的相关基础知识参考博客<a href="https://akirazheng.github.io/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%BA%8C%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/#/%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86">推广搜二：传统推荐模型之协同过滤算法</a></p>
-<p>POLY2为每个特征组合赋予一个权重，相当于每个特征都有一个对应其他所有特征的向量组合，也就是向量矩阵大小为<span class="math inline">\(n\times n\)</span>。</p>
-<p>FM模型则通过<strong>矩阵分解</strong>的方式将特征向量分解为隐向量，其隐向量大小为<span class="math inline">\(n\times k\)</span>，每两个特征向量的权值<span class="math inline">\(w_ij\)</span>是由这两个向量的隐向量内积计算而得的：</p>
-<p><span class="math display">\[w_{ij}=\mathbf{v_i}\mathbf{v_j^T}\]</span></p>
-<p>因此带入到前面的POLY2模型中，FM的预测函数为：</p>
-<p><span class="math display">\[y=\sum_{i=1}^{n-1}\sum_{j=i+1}^n
-\mathbf{v_i}\mathbf{v_j^T} x_jx_j\]</span></p>
-<h1 id="三ffm模型">三、FFM模型</h1>
-<p>FM模型中，<strong>每个特征向量<span class="math inline">\(v_i\)</span>都只有一个隐向量</strong>，也就是说，当某个特征<span class="math inline">\(i\)</span>跟其他任意特征<span class="math inline">\(j\)</span>交互时，发挥的都是相同的作用（因为使用的是同一个隐向量<span class="math inline">\(\vec{v_i}\)</span>。</p>
-<p>但是很多时候一个特征对不同特征发挥的作用效果是不同的，为了解决这个问题，FFM提出了<strong>域field</strong>的概念，也就是将每个特征从一个隐向量扩展为每个特征有<strong>一组隐向量</strong>，缺点是这也增加了计算复杂度，从<strong>FM模型</strong>到<strong>FFM模型</strong>复杂度由<span class="math inline">\(O(nk)\)</span>变为<span class="math inline">\(O(n^2k)\)</span>。</p>
-<p><strong>FFM模型</strong>的预测函数为：</p>
-<p><span class="math display">\[y=\sum_{i=1}^{n-1}\sum_{j=i+1}^n\mathbf{v_{i,f_j}}\mathbf{v_{j,f_i}^T}
-x_jx_j\]</span></p>
-<p>其中<span class="math inline">\(\mathbf{v_{i,f_j}}\)</span>表示在总共存在的<strong>n个隐向量矩阵</strong>中，特征<span class="math inline">\(i\)</span>作用于特征<span class="math inline">\(j\)</span>上对应的隐向量为第<span class="math inline">\(j\)</span>张矩阵的第<span class="math inline">\(i\)</span>行。</p>
-<p><img src="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/POLY_FM_FFM.png" width="60%" height="60%"></p>
-<p><strong>缺点：</strong>由FM的二阶变为三阶，其模型参数计算量剧增。</p>
-<p><strong>解决办法：</strong>通过如<strong>GBDT+LR</strong>的<strong>组合模型</strong>来解决高阶特征交叉的问题。</p>
-<blockquote>
-<p>参考</p>
-<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/342803984">推荐算法(一)——FM因式分解(原理+代码)</a></p>
-<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/348596108">推荐算法(二)——FFM原理浅析及代码实战</a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/jc-LeeHub/Recommend-System-tf2.0">包括多种基础推搜算法的github代码仓库</a></p>
-</blockquote>
+        
 
     </article>
     <!-- license -->
     
         <div class="license-wrapper">
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
-            <p>Link：<a href="https://akirazheng.github.io/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">https://akirazheng.github.io/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/</a>
-            <p>Publish date：<a href="https://akirazheng.github.io/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">January 2nd 2025, 6:24:51 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">January 2nd 2025, 10:54:01 pm</a>
+            <p>Link：<a href="https://akirazheng.github.io/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/">https://akirazheng.github.io/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/">January 3rd 2025, 11:03:27 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/">January 3rd 2025, 11:08:04 am</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -547,8 +504,8 @@ x_jx_j\]</span></p>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/" title="推广搜三：传统推荐模型之逻辑回归算法LR">
-                    <div class="prevTitle">推广搜三：传统推荐模型之逻辑回归算法LR</div>
+                <a href="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C4%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/" title="推广搜4：传统推荐模型之FM模型">
+                    <div class="prevTitle">推广搜4：传统推荐模型之FM模型</div>
                 </a>
             
         </li>
@@ -598,21 +555,6 @@ x_jx_j\]</span></p>
     <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
     
     <!-- Mathjax -->
-    
-        
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-            }
-        };
-    </script>
-
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
-
-
     
 </main>
 
@@ -711,7 +653,7 @@ x_jx_j\]</span></p>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80poly2%E6%A8%A1%E5%9E%8B"><span class="toc-text">一、POLY2模型</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8Cfm%E6%A8%A1%E5%9E%8B"><span class="toc-text">二、FM模型</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89ffm%E6%A8%A1%E5%9E%8B"><span class="toc-text">三、FFM模型</span></a></li></ol>
+                
             </div>
         
         <!-- sidebar -->
@@ -1010,7 +952,51 @@ x_jx_j\]</span></p>
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1543,7 +1529,7 @@ x_jx_j\]</span></p>
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 57
+        Total : 59
         </div>
         <!-- search  -->
         
@@ -1559,8 +1545,14 @@ x_jx_j\]</span></p>
             
         
         <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/">推广搜5：传统推荐模型之GBDT+LR模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
             <span class="archive-post-date">01/02</span>
-            <a class="archive-post-title" href="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C%E5%9B%9B%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">推广搜四：传统推荐模型之FM模型</a>
+            <a class="archive-post-title" href="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C4%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">推广搜4：传统推荐模型之FM模型</a>
         </li>
     
         
@@ -1575,19 +1567,25 @@ x_jx_j\]</span></p>
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/25</span>
-            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%89%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜三：传统推荐模型之逻辑回归算法LR</a>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C3%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜3：传统推荐模型之逻辑回归算法LR</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/24</span>
-            <a class="archive-post-title" href="/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%BA%8C%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/">推广搜二：传统推荐模型之协同过滤算法</a>
+            <a class="archive-post-title" href="/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C2%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/">推广搜2：传统推荐模型之协同过滤算法</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/20</span>
             <a class="archive-post-title" href="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C%E4%B8%80%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/">推广搜一：基础知识及学习路线篇</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span>
+            <a class="archive-post-title" href="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C1%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/">推广搜1：基础知识及学习路线篇</a>
         </li>
     
         
