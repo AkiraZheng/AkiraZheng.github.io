@@ -79,7 +79,10 @@ categories:
 
 	- 继续在blog路径的cmd下输入`npm install hexo-deployer-git --save`安装环境
 
-	- 之后便可以继续用`hexo s`查看hexo博客，此时的博客已经恢复成旧博客的内容了
+	- 按需添加博客加密`npm install hexo-blog-encrypt`
+		- 参考：[【Hexo】静态博客设置文章加密访问](https://blog.csdn.net/qq_42951560/article/details/122552109)
+
+  - 之后便可以继续用`hexo s`查看hexo博客，此时的博客已经恢复成旧博客的内容了
 
 ## 三、部署博客到github上
 

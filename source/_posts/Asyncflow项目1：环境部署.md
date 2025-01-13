@@ -1,9 +1,15 @@
 ---
 title: Asyncflow项目1：环境部署
 date: 2024-06-14 20:33:20
+
 tags:
 categories:
 - Asyncflow
+
+password: ztyn
+abstract: 需要填入密码才可访问阅读
+message: 需要填入密码才可访问阅读
+wrong_pass_message: 错误密码，请重试
 ---
 
 ## 1. Docker
