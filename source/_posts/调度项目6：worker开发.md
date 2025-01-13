@@ -1,13 +1,12 @@
 ---
-title: Asyncflow项目6：worker开发
+title: 调度项目6：worker开发
 date: 2024-09-16 16:09:18
 tags:
 categories:
-  - Asyncflow
-
+  - 任务调度项目
 password: ztyn
-abstract: 需要填入密码才可访问阅读
-message: 需要填入密码才可访问阅读
+abstract: 填入密码才可访问阅读
+message: 填入密码才可访问阅读
 wrong_pass_message: 错误密码，请重试
 ---
 
