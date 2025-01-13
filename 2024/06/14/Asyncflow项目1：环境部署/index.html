@@ -19,31 +19,17 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="1. Docker  Docker 安装教程参考  如果pull时出现 missing signing key，应该是因为版本过低，需要更新到最新版本： 卸载旧版本： 1234567891011yum erase docker \                  docker-client \                  docker-client-latest \">
+    <meta name="description" content="需要填入密码才可访问阅读">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Asyncflow项目1：环境部署">
 <meta property="og:url" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="1. Docker  Docker 安装教程参考  如果pull时出现 missing signing key，应该是因为版本过低，需要更新到最新版本： 卸载旧版本： 1234567891011yum erase docker \                  docker-client \                  docker-client-latest \">
+<meta property="og:description" content="需要填入密码才可访问阅读">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/AliSource.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/wrk.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/wrk_stroage.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/top-pid.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/startDocker.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/runDB_error.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/runDB_error_removeDB.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/intodocker.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/intoDist.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/runFlowSvr.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/runWorker.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/apipost_error.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/apipost_proxy.png">
 <meta property="article:published_time" content="2024-06-14T12:33:20.000Z">
-<meta property="article:modified_time" content="2024-12-25T13:56:29.651Z">
+<meta property="article:modified_time" content="2025-01-13T03:44:36.098Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/AliSource.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
@@ -338,7 +324,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">921</span>Reading time: <span class="post-count reading-time">3 min</span></span>
+                        <span>Word count: <span class="post-count word-count">13</span>Reading time: <span class="post-count reading-time">1 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -499,148 +485,18 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h2 id="docker">1. Docker</h2>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1701451">Docker
-安装教程参考</a></p>
-</blockquote>
-<p>如果pull时出现
-<code>missing signing key</code>，应该是因为版本过低，需要更新到最新版本：</p>
-<p>卸载旧版本：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">yum erase docker \</span><br><span class="line">                  docker-client \</span><br><span class="line">                  docker-client-latest \</span><br><span class="line">                  docker-common \</span><br><span class="line">                  docker-latest \</span><br><span class="line">                  docker-latest-logrotate \</span><br><span class="line">                  docker-logrotate \</span><br><span class="line">                  docker-selinux \</span><br><span class="line">                  docker-engine-selinux \</span><br><span class="line">                  docker-engine \</span><br><span class="line">                  docker-ce</span><br></pre></td></tr></table></figure>
-<p>安装最新版本：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install docker-ce -y</span><br></pre></td></tr></table></figure>
-<h2 id="docker-安装完整过程">2. Docker 安装完整过程</h2>
-<p>添加软件仓库：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>自动安装Docker社区版：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install docker-ce docker-ce-cli containerd.io</span><br></pre></td></tr></table></figure>
-<p>启动Docker：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
-<p>查看Docker状态：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status docker</span><br></pre></td></tr></table></figure>
-<p>配置阿里云国内镜像：</p>
-<ul>
-<li>获取自己的阿里云镜像加速地址：https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors</li>
-</ul>
-<p><img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/AliSource.png"></p>
-<ul>
-<li>编辑Docker配置文件：</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /etc/dockr</span><br><span class="line"></span><br><span class="line">tee /etc/docker/daemon.json &lt;&lt;-<span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="string">&quot;registry-mirrors&quot;</span>:[<span class="string">&quot;https://填入刚刚的镜像源.mirror.aliyuncs.com&quot;</span>]</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">systemctl restart docker</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<ul>
-<li>查看是否配置正确：</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker info</span><br></pre></td></tr></table></figure>
-<p>配置完docker后pull代码即可</p>
-<h2 id="框架接入和部署方案">3. 框架接入和部署方案</h2>
-<p><strong>1）框架接入</strong></p>
-<p>step1：依赖中间件需要用户部署，并在flowSvr的config文件中配置对应的信息：</p>
-<ul>
-<li>MySQL</li>
-<li>Redis</li>
-</ul>
-<p>step2：启动flowSvr</p>
-<p>step3：worker由业务方import进来后实现三个接口的业务逻辑：</p>
-<ul>
-<li>ContentLoad：解析上下文</li>
-<li>HandleProcess：业务处理逻辑</li>
-<li>HandleFinish：处理业务日志等信息</li>
-</ul>
-<p>step4：启动worker</p>
-<p>注：worker和flowSvr之间的通信是通过HTTP协议，且双方之间独立的，其中只有flowSvr会对数据库中<strong>任务信息表</strong>、<strong>任务配置表</strong>及<strong>任务位置表</strong>进行操作</p>
-<p><strong>2）框架部署参数</strong></p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>值</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>flowSvr</td>
-<td>单机上3个（北斗解算1个，传感数据查询与存储2个）</td>
-</tr>
-<tr>
-<td>worker</td>
-<td>单机上每个flowSvr各1个</td>
-</tr>
-<tr>
-<td>MySQL</td>
-<td>单机上1个</td>
-</tr>
-<tr>
-<td>Redis</td>
-<td>单机上1个</td>
-</tr>
-<tr>
-<td>代码量</td>
-<td>约8000行</td>
-</tr>
-<tr>
-<td>硬件</td>
-<td>阿里云服务器（2核4G）</td>
-</tr>
-<tr>
-<td>压测</td>
-<td>3000QPS</td>
-</tr>
-</tbody>
-</table>
-<h2 id="使用wrk进行接口压测">4. 使用wrk进行接口压测</h2>
-<p>mac环节下通过<code>docker</code>安装<code>wrk</code>：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull williamyeh/wrk</span><br></pre></td></tr></table></figure>
-<p>注：如果docker镜像拉取失败可能是配置的镜像源有问题，可以选择更换镜像源或者通过<a target="_blank" rel="noopener" href="https://github.com/AkiraZheng/DockerPull/actions">本地镜像源（使用x86）</a>获取并下载本地镜像，然后通过<code>docker load -i xxx.tar</code>将镜像导入到docker中</p>
-<p>运行Asyncflow
-server端，并测试<code>/get_task</code>接口（测试某个task_id就行）：</p>
-<p><strong>1）QPS-接口耗时测试</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --rm williamyeh/wrk -t12 -c400 -d15s <span class="string">&quot;http://172.18.18.26:41555/v1/get_task?task_id=ca4e59ab-f661-462b-842a-bc6e27936754_lark_1&quot;</span></span><br></pre></td></tr></table></figure>
-<p><img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/wrk.png"></p>
-<p><img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/wrk_stroage.png"></p>
-<p><strong>2）Asyncflow server端CPU、内存监控</strong></p>
-<p>先查看对应端口的进程PID和进程名，可以通过进程名在活动监视器中查看CPU、内存占用情况：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsof -i:41555</span><br></pre></td></tr></table></figure>
-<p>然后在启动<code>wrk</code>后，动态查看对应进程的CPU、内存占用情况：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">top -pid PID</span><br></pre></td></tr></table></figure>
-<p><img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/top-pid.png"></p>
-<h2 id="附录">附录</h2>
-<h3 id="运行代码">运行代码</h3>
-<ol type="1">
-<li>从akira用户进入后切换到root用户：<code>sudo su</code></li>
-<li>启动docker：<code>systemctl start docker</code>
-<img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/startDocker.png"></li>
-<li>启动db
-<ul>
-<li><p>遇到remove
-container时，表示尝试启动的Docker容器名字“async-flow-db”已经被另一个正在运行或已经存在的容器所占用，需要先删除container再启动db就可以看到db启动成功的结果
-<img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/runDB_error.png"></p>
-<p><img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/runDB_error_removeDB.png"></p></li>
-</ul></li>
-<li>进入容器环境 <img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/intodocker.png"></li>
-<li>进入dist目录 <img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/intoDist.png"></li>
-<li>从后台启动flowSvr：<code>./flowsvr &amp;</code>
-<img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/runFlowSvr.png"></li>
-<li>启动worker：<code>./worker</code> <img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/runWorker.png"></li>
-</ol>
-<p>从windows中查看代码（windows+vscode打开centos的文件夹）</p>
-<h3 id="vscodedocker远程调试">vscode+docker远程调试</h3>
-<p>在vscode中远程连接centos，然后在远程打开的centos中安装<code>dev container</code>插件和<code>docker</code>插件</p>
-<p>自然就能通过attach visual studio code to
-container打开新的容器的vscode窗口来调试代码</p>
-<p>参考视频：<a target="_blank" rel="noopener" href="https://b23.tv/hl3aHnK">VsCode轻松使用docker容器-Remote
-Containers</a></p>
-<h3 id="接口调试">接口调试</h3>
-<p>接口调试网站中创建自己的api测试案例：<a target="_blank" rel="noopener" href="https://www.apipost.cn/">Apipost</a></p>
-<ul>
-<li>发送请求时出现报错：</li>
-</ul>
-<p><img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/apipost_error.png" width="70%"></p>
-<ul>
-<li>解决方法：在设置-代理中添加代理（测试接口需要关掉vpn）</li>
-</ul>
-<p><img src="/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/apipost_proxy.png" width="70%"></p>
-
+        <div class="hbe hbe-container" id="hexo-blog-encrypt" data-wpm="错误密码，请重试" data-whm="OOPS, these decrypted content may changed, but you can still have a look.">
+  <script id="hbeData" type="hbeData" data-hmacdigest="a1cab0e727ac860f6843ab2d20c9eaa9f54ee1d83534323be4140c06e7533f4e">e67aaf3b219a461d5f53a135dd966c7e1d838eaa3a61bc019116235e7e147a204975e05e2504a8d96fb25f9057aca4fa8b658124d3c7cb246833241bbc7c951e21f0c90e5081e6c05c3488ac773da3313ba9e9b7eeab8cd4d911492d9739e4ebc45abece53ad1a20e46608f55483d7765bd3217363fbf3d2e1bdd3432b32df0b76458b4d2ee923d73959e0a8d3fe5cc06796e020fb4abe347240fe26c181cb1e02b58ef659eede01c7776bfca03c8444891e2b47048a9bff09a9c02730be797924b90e807e89a7dfa7931e98742c174c9d3a424fa8d817d4915fe106a7b1bd78dbf7cd03601c831332458e79decda75df2b4ca47095663d3b180c86fea25d2090c1a76568e7e6cae169546b20d0576c60bd8eadf81d9b6cbc59c3ee50c39faf775bf9737a1746957fda60f4dba65057f27d43e7eef1152f2f65d668c24b2c40bc90aa6f58b43021e2a69d422ef1c3b93c6d19e81c5dd69598b625867832e435a58fa6b07c5cd565117a9ff173afee32b0b4f9119e28a55d7306fd192e59a5feb071d62d2c13ef32e2117d5123f49efeffb57507a4aadb3d96e82f7c54e92047f817c3afb570d469bf55742f6e26cb51a9d6db6e9c3d1ed921d71c5fd34a2911fb41240308ffd5ebfae12c0e7b12d7ee57f6a0ff5cd98d4fe587213748a27323765a9a70f6af50794262efb30900310c2d97918b3a4ad829fc07a7163e1d8e029b3cbe6400fff4f9157df877be0fe7708ab0e6d440bf9b5e80a52c4d562a73c96025c589fa59e9906b5d5607a545937b3cfea6c038ef0002d423001414d702cea2542845d3ce085179430f2b173950855602059544d8aa63352f816420a3c98a70b15a584cbd4349ea7a93a92a2996a72f1b047d4dce8ac3b302092e57b2bd12da5ab8ba0158abd1e2c1380d3b7da5d50bf0ce44d759c0d752f655991873ae2334041f0e20ea00e2100cc786a4dae83fd51dfa3745c8435457598b8a1cdca67d3fd8ae85cfe0f5e7c9b8ebdc4005c4861f18f28180e225d1f886afad7629ee45876bf2687dde4b85d0e8b4f2e7154aa648c4f16bddcd3dea55508e0ef857d974d5a15740f4a238f76791ea46463cc564674032dd74fdcc53feb1ebebf0ff1455a9fc2b522f826cf6bb1e7e8e0dfda6e36740d76a6a292688ae17ba2e7f64e3a07f27cc6edb9a62b0b1aa2998431e4ed6d3bde0f65ef9efdc3931db3c429d520bd1936af784df49ec388de8a58ec4248d3d2283f54362a70fb4cff7d4308d410c95d7cf78a7fa3342c7f05cda7f2fcc4e31e7204d191495f32e35145b076d3d602fbad559cf91294505fc0a5e825347f30a5b78858b56681b1f66b4b4fe188fcc7aa3f3b44150e2783efe45ec53ba1766e12a4be11f0061ce6edc3942e1af89aab9e79a69b88857e42e285c98cb4ec6c3508a418dc04bb5328962b618844e1835c2687071cad722a0172488339cb2a48d6b432fc416b92ba9d9bae5968a0c36c4b620959cf76edffcdb09ab9b7460550f16753c7381585047bbae120c41300a345ff93fd5e7223de0368c01b365bd224da0f8741df76c6a71b968aa89f235f2f78f1c4627e7e4661938459f6d313005bc9665da6b92c6da4ad952eb3d80a7caf20ed78dd350ca57a35948e07034b8b9e7e4aa9c3c870e942e283502b89b91bf67090f81afba6301ea8367b4f151c644e7e2dc66aa893d361db0b00764ba3cb8143a9acea067ead3faa1d96626648c34b536d5b390a0e6b82f88f9e3cd1c5dfb1f1b800ca662a0e22f6c7f7235838861a33fa7bb655331a1cba17c84726c947d4c728f684f9297855d91a135b7ec97244f2c41113ee9f41bb851775e823a26378288c94ebd3c20afb44ba064fe528297d090a6f9625f4db9e500695489947102b9419d8df5d0b5a6e236851fa925ad63b2c4bc7881cbd28b26128cd58e12a4e931316123c2d0e4cdd828c4645da1ba07605042bef8e548fe5cc8509d0bf391ce6aa96e9cca6f1a657be722cb6e8d49672558e9d576c7c08b63e67a47a08676d6694c02be548b9acf8b57eafd3a9cc6da5a579f4d00e1acd027209b7f44eb4700ea74dce69018cca687b32496106486af51b644b9f5ea35738e074c2fde50ac015026b11939200f73367a15959d18fbc0434c19139e2f51711e7cc65f6a76ec89674dc3e641104d05a6131cef42792b4556412eb789795b1739f5bb996489f03def1c5898b18708dbff328f87b61fabc19068f5ee22dc4e78bbb5673125f92773e18d1933082a1a46c45edaded86c23e468b2830e1f0203fb3b029138f5256f1d57ae86122a97992bfe654dfb05223971af756ad68767621378865821565878bd051b9b4a78e590273233378f8666c99743db8b574b14be89c9935bdb2d4e6c7a43309fcd6ab8f9b0fa2996683b514490a7daa091d3a8d4ba9e49176f4c6366de9f6834b51726c6cd9b1a32da0b4786f14122b22285f5ac526061bfe08f6954af02a8c0423dfda86ca4025a8aa4ff4fca012f03d433e444039340b9d66b32a2b8db8e6029c63139f4176d7045a9d72e09116680bb0185938ce45ee7c55c46698a9a02764b3be509b2532e5c4f2d03280f5b019388e562cb62ee843ebb7f6598763149ddbe5b2bf4d99dec1801608875219e8918c12d4c27b6f835666eec69af3b357914c6b610373aab2271a4e75e0fbaee6a8119c130a03eaa4a2734021149311ced2d761d6dca74fbac8eeaae5cfacf02c40af2904ec66e042bcd3e927a6dc77ccffe4e665866b5ce48d238d5b5fc43de96ffd244053f32894a85a8677fe491bee2df583321aa6cfc4482410c120951e942bc4ea75e6ebab5d9d9628e5ac18e480677218a08263c60c9a64f3559ebd2e6ec818a9d93e4db3912f4816547a7b5a9b97a22e3c9424ecbdb7bcea0fb74ff3c3a572d4bd93940efb8d9294b80c3fa8e9ab27b49630410124b7d2c799b164016104375e134363b084e93c49645977cab2442a0895774ead00e436b01322639b98547a6a3c88510992f5da48db9b03ef2906e2c06da542bf0f4352f177ac869b631bd0f8ada16f52c4d3cfc855f2adf60f861e92a78678f2aab38e3fb0fe1a46116ebd8865667e1a943e9a643ea91632701c0d45640688450277d7b3c0c8604da5769a801e7632c0c97ab727d7cd8f4f1bd55218c39381de8dec0cafb4498c8a363ed559f18714453d12a2c2417f0770b3ba4603cffe65405c8e3572f7d042fd6cbd173676a29b4c75d7a59e798c17c6de9bd33dacef37538bbb5d85be8dd9a96b712458a4f73a1f5b18fa58958c10ad33853e93b3bf3b363ad6639c60e03b4167c27b0a917faf8a6f25c5390e2239e7034363aeec4f7d614e578d5716ca00b33afa7bd508e0aec2b88f604f1e62209725ae4816f22c78e6324f5b70e8a0c0eaa12b5146ca12e1550e18b2b09e572bb19bb9e616635c29f0c3de5899ae9edaf144b5f108d5d7ee5e1a6b1ca03b301824a6566e5732e5303a2f8dbb28390afad672c790897140d299779c2cdd015c5936b0fa3b246fc65f44a2258c3cc309352ed481b0d1e8c60f8ecdf67b71dde88724d92bc681e4bc563af4df4e850ea614d13a8a800879254a60cb4dae6cc48ab9dbdfb0601ad875d6a1be64c79fc44fb771dfa962ffc81e18ad96bdf5de2a732eaa127aaebd8ab768feed2f27f7cdcb17b9e1b350c692c4546eb7b2cb489493d2cafd54c9402be2610d5e7518fb8ad04e5753a8062f61d1f58b7a6c2eb37e6bf969332b0efd9323942e7e989cdc74d7db6331c062cadf465a38ff07ce51239c2ad0a7d7e48b6bfaf3f93802ab3ffb1fb4cbadacb8d3161653f50d94b2377ad9216d220ceb003fc7a003634410f7015b276f18d95663ccfc02ed8796a64007bf7268052d64fcd469f408474d14ad11d6e3eea22362eae07e22360e33c9a86b7f1ae60ab51e0538a8847376b69a3094c0843da20f766b379dcfed074c246b0518362c8384f0dd4abf086f946a5e58dc4f4c04f7c6fd155cc9dc88a70a3b11df9aadc40088b933b22f5c78b463112b21f2f4cb65d389183873e695707b7f1b14a56afd23cc4bfa69d164b20d5ccbc573c6bd54088b1231031c1e74891bc5929818ec7f72e1e57d1b87c49ece1d3b0af2c9fa4a07e459b98b2a2234bfbd723c763885cd9a40eff36ecd8694a5739c13fc7b500ee138ead2571a9986dc5ffd2fdcd67c554f552c113167367e004b59dad81ed1b0f6e31060826165c462cbae9bcf8b4328083fdffa4fd8d2deabc0545464031b82ccec4efde86dfe675ec2fed0ac24bcd6bb3108f67e4f7bd8c769fe048e6ea5d058b8a566f42911738dab9a887cdf4cf322c52706023c840deab48dc5ffd157a47186329e9b0e12ed7626790360471c51d431afb0a4762d7a4a1da66f430946e29af238b7f573746e0a449364736a81bb9e875ffa1ed07be0db69c50303bad93744f696d3c6d9e851b1a711d4b35088171dbd4c77e604478cb7454d01aa8043b72dda587b9aa7c7a0b9e7ed278476e785a29c6931d27538c35fa21feb3cea62a74b64ef09fbd2539c52a15463c11dc82837724078ca072c99734097b73376a6ebc897e492a31f61c1bf66cb4b0c28af9e435973c16fe59347af1ec2811c33f89513d884dafb6d10fb6cb4be77a85a1724b38f01b810aac826f26bcc4f62cc4233dd471e084d8ae579eda8f8f02186297cb02fe01308493eed49d6ad7e8c81d723f0efad57ab0af03ed874292ff7d7da521537aa3dc9e03041ad52ebf0383cf6dfaf8710660ad95caf735acc0a563657a21e1f868e4d54de00131618a9b57b092de6c2e4d83f78a9b6c919eaab447b95d4f8996f89fccae2117cbca7b110bdc338ef5b01a042a202135601790283f286d702d9673ef60467d93e8b521aa936f3de2e8ad284eba4fe05b9d7cef03955adf730bc1b9271c03fb2a69e49a2d581b57e605be44ed6be360a086e08150e434e93401e77f78e7f5dd2a374585e06c6b5356b01900a39c034e20dfacd99efda2099a9232fa227cd37920d575e83f00f33854956562127095b7bcf00c085e6528877a9749d340cf9d883d5e0864f4cbda968ee69bd11139d5d632e1e43dc056463197c3dd4300c15db70ce6493914c18135897a409ba08bd0e7113d1aa93fd2e2ba8385ef3a395b25fd3655c6354d21026ffe926abf23983f8ac696c98fec11b694d2f7ed171683e8a53babdf9e93a07b0245ddb9f03cc3c6bfd7607f0e67a778d6d4da43f8d45aa5886c13ffa7e89e91cf4a356584636dcb790e9d8bdaa65d24fd201fb667f8c64d898d254eceade760e0f941b71d108e529a5ff69509ff1e4695fc294ccf9353b8028c1e9d4c0eec7244480eafc8c37dd66c58e038be73ad9aab74c46c3b2181e5fc03e563a889016b1d4dafdb6d77e9aa58a7db541d8cdf73a8a3223c75f59becb31b3ffc9eb93210fd56a48c4307d7c971998d3587fdb0bcde4464b6bffb810545d9a1c68865df6c4d0689fa923aaf519b57f8566e540afc29deaa5b4a0613dbd77b8c03d283f13fd8e77c8f942f19f63f758a36796c9ece923e7b9a86834c609f782e90a3743d034d2b78652225eb181bf616030b16698e36855e38f4226c9f26e6a8d0322945cf6d45e6890562aed36d1bc48a5786004b0dc39875ec3f1746536afce462f4f60e68c2bfbbec5df0297673b81bcc25f52b13f9bebf409834dedd0db202d71286e7b68bb903df0ff9db45af880355ab8de8b834a14cdedaf8c497e1bec4587575c91de7918eb8721c7e7c262b4656470580bab9cb2b53182c6e1d3c50c9b1e16db3e74f5cdde215ce1ddc861779bd618cd7657ffaeceae5c9a4ee06892d49d54a713a2b89db6116f3beabb1137ecbc9b5c044c3cd8485e21329ea88b6f315b92a896819a4a4fd0d4c5a86a0a71ed93260f168ec12e061a55b88b6c384f900a834b65d1bb0dd2600f3162e0fb4241303009c157a53a097fcc4ddb53409401413458d2fad39aca335c9e3b3e16812f638496db3ebb922e675fc8f4f2202229d8cc9b29730ffcf775c00d5329a274c2ea2990af8cd791c0c776a441e80606ebc1b62361ec9e87111521537cdb80c138669c4c38a2ca0ea9df6a7d96e768c59737690654daf055ccde393df23d9e291d6c555403465fb4923745a1f03aa202ccf2a2ca4addb555c31df3baeb3b30bfc7dd9dccf780ab99d2299845df24e3ee02bbd7123c4f49db71396cc6ddaa410f81868b0159a34ad2c3f79c2316bdf7349a716e3ff4f2824cc049507b36232fdb9977ba28abbe9bfe527ee563f79a12a14e8f8310f766437fb3d7d6a1dc2d967b05e8011b81b80f9e1acaf58850972943fefe9d2f0a92631b2c08082e9499503372677580e5669917be26b51517e3f1e20ba27fd1e9df37ebd38de8a72127c594a0b363b619ebad67b4a759f8295d90fef5e5253ca37f437f95e110a1d6429a84e9af704ab5830a13175dc1008a20dad0db4990229baa3cd98277a8b24d043ac056e7f6280229d2ebf26bf3a5bdf11863d480ff2bcfe6aaf5a7c84f483aaa05e18cb7a10ca92320aad90888c09ba92a67147b0961769ee45dce4a4b0b5bba6311b563c83d3c405aae5826c28b43a95924498749cde7590c44ce46d49ff28683e552f27b2aa29d4d97c8991abc7533af1f21bab144bea21c09fc961a8704b8ae6e316b89d24b706d5f8778af71647bacfefa2275038108ac8f219f2ccc294d7ad4fbbae14a10e0566d76bdff12c064c8c2a2f0a95fc8ca2016abe0189ac32092d5d42a9159dc43a30427c2fcccef6dca282af5c5f971868a2a41b734b9d9bc75e6ea2647916073d343cefaefebb6651ae8e9e0413848d05a47e1d1924bcf47602739b2c1d473a884b8545ffc77d767c01bee2bc2dfc9816ff4fe925b1b7621c325dbcb52911101233f136a6750b46831e709147a334be0ccaf84accfbbcab627fc0dd210766bc7090b13d69ba2c46472e3cabe9700cd5af9b2a90f97245e3e2f609d8f584df52a06e2c83a0bd84682806036d2b826b1507929b6b5909922fa4621f64cfe67708a0c0c44a8b773ec54259f760e1f374458cd7812a3c9d16b379ba99d93ed7851b8012305694f76d096934bfd1184a5847299f7aa928feb76ec22cd4a8a26521c7547a302b76f0a07a58a7d3cf7fbf0991ea3e57fcac6fdba95f6aaf5197f7ef9864a837e2544a500278b35c46e80d027d9690877154276a0baf4a977195edef8615dc6c6713db0276e07e72355ccccdc1f91280c3f577c24bd57dd7b0cb698c34f865f8dbddfbf25cf3c6283fed849aa67677bb8eebe3b75fca99ed09f454b13664e1b5c4268ceb64f16a689f50766994cf1eb823b336eb977541f207006abe0eb3d3d819c30752278d64a9f601639568b26d3c40ce619bd15bedcd65f968091d5b65d277ac1ebcb4984e2f194e03744334c4a1cc403144464febca83ab379550c40bb34b8844e867fdabda15cfeb6ea4a4968d3a76b4d707a7d7a662cda18daef8da0b34afc51a2f039bef30f2e568e3297aa1a97051adad7db659725b593716078b54297ab9762d3eb9b86a71f8eea6441b98b3c28c3a9cf597b0cd6ef315893bcd4b86b1facc77732298a9f2230e262eb179e30cdddb70393ef15f00e6ea2ee0d29f46bfb2f7b4bca868e1739d288773043afb19590c88258c761784f8aeaea34e725c8427af99cf27d142aed52afb8773424210aa6ec3fc42e031bd5f7c673ba704a465f38f49e498d1891b2589af910c96a02aeae43dfa7f4beaa17211e27f108308e68f0d71c2d00801e2026cc2e6ad48a8cbe0408f39c9356dc2f34250587bdfe457cc71ee9546a597e8d164efd2fa160c6e8444db921b66f317a034c6838bc48d11568d18285badd67c755bb00997b0f935dbae2aac49220306fcaa7872527aab2b416a1f5b9f6f3401963644371df83648aeb64a02a0e64732cb4a2a4cb0ac172278a6adc39a802745d0cd474b7d530a63ddf53d51cf9be20a599fa198d03b745f318356d0843d229859ccdee53b7ae39d6e18b5816f74e9b368a89d453d3189ea4abda911dca22731e6faccc194fbfba393d05e62798b0503d830c9dc4afdda237d15da873d97924ac5cdf23ab9d4ffb0d113ab39da78e95b51b78e77bcf15b1ccfbb60b50a8c71fa70d0de55faa433b3ea2f3b5386d08c1e4acd9f03b7b46a0d1997f065e2c8fddf835214a0cb11e24b4b89dc9715016d50d2deb32692a2d7dd899cded471ec1608dc2e506e92a416086e22955419fcb06bb46c92668a5d8764595ae01dd77908815ac383ead375a0b3e4a52e66f75efa2f4d6ac0396489ce5fb1205b1663bdfede4f6a7c8645f0c45a24ef62fdc6ca3acf38ba51417bb83f03a9656677d3fdb8a4b2d6a18e59187bbcda30330bae518826a5bb5994bc712d11dfabdebd4e75561ab79ef42d9a73cabf54f6e71b835d85fe3226ba9ebb2b1f7fded53395d5d56f4efcf8f8b16baf534e36bef31207d1e7745efec7395010b6ee8457c44586b7b33cf40c55e0de16a9886c809db9d781f0a550389d4b29af68f610f070906a9e8c0f6f2513da90cf63529ef5693f17fe475424e8ec2d059f7eae7e3bbffc8ce2ca091677865374f87826151c45b85f8be887b9d6f232d5ecb1b0893ce188f3a64ef0c433a305234104065a0fbdeda1649f9c66f986f3d84772a67e70d96320d156916aece99e9a68ee5fa1efdbc2ec1a71eea440131c04ac89458991a6c67b6c5df143364110a3fb8423b3ee487f11392719e0aa5f0a810309131e740c13deddf28b01ea386a984c41c288e0c5c85ddfb642bc40ed8bd2c73b83324e19abd418ebbdf19f79db9526661a1e12c349d94388be019ba1d78836664d7a0e7b22a2debc162f7030cdd9b68aec24e8aaab9cf1da123fd31a9c9acfac1b6d68ed36fce186a116d0138b6723f3888972ad011585210728bd5914e0b9dd612c061d7e7320721b3889f0f086bef65a457209e2ad032b99a380fa739877d25bfa1f4d3bd6f3c25fe2b258f0a2b20f6443c5c91c7a961cfb3912fa1cab8f97bfb5c381c08e94be5619a53685bb646c0c110bffa6bc371cc2026e5788892a266b11b61ebefc90cf11087d22b2597afc06f2c888fdc69c99192cfb92633e65149c3cc1fdfa790981cecf3dc63884b7ebe72bed5221450d5257d36f69f307ede255758797f71af288c13e8bcd4cb07824f3d08876fe22479968ded9c32a22cf784af8ffd0f31ebb7e5ca741b93b59ae133397e186e5ce9ba033a0dfd2dd7255b168078a2246e89352cd069ec862e30f0e99a65342dd3f1ec9ac938c02e985617bede2eeda596331d983b843f659bc3aa6d30088789194dc019de50012808c061cde84816ec1e5a73e9105b45d23526ce5f36e3d2d811caebdd23f63568be683830b85077dd12eb4f4379b538e65abfbf1c8076e2b67833c5ebd43ea82b5d108ccc73bfba202f999f194a81cd0559586d29aa0c922556e64e3bd5ab5d704c65a3edbbbd5a320f077fad6861caaa1c039c2cb8ab356e1aabbd3b738ec1ba3c7074f5ad1c5b8b0ae2bf5b59ca8a92f4102b9256059fce818a8f8af56cf4055c38596bcec619f36de0707bbe57b8ee1ee1a175c4b69b8803cb6bd9cbfc68088da205fc91138c4a24434dcccaee3921259e327f39fbcd0c670d4ffc411d6c1c96edfdd44bb931284b49157a131850b2976d84ccd28213754b69f18617b8223ec635b1e291d25f7279153d8758ebe3449051d5011cc428067234761e0d04461132e1f66e7646a063ae306e7101a2b644af02ada7d33aef61c013c6debb4aeb825fcad840b6e491b7e82fef094d843d3fa511da0d9f0140215331d3c1f4561787812e57721000cbc058fab9e2c06bf52089956bd0064276bf5afe6e5bd1a1dc985b3efe71b4b9d347145d88e97ae9832fe3d1609f95fd6918f47b090ce882f61c342d9fe4ce57a49c54ca39bc6a1638a56dfc1037a629682a761cac211db2e99abf44340663a63b57bd5616da1a9c5dd18fd05175f8bc695cabdadba3d5457df642f308fc55ca7f6c05b99aea89af675d713ca4ec2c62451c7af8ef216ad52a9ea48431ce16992047141f00977d89fd81aae5d504577a55cdee58388a1999d6776de889fe2a23491e352ff174609b9d2ee8b4358b3ba51a1aad10b5e312b942f733c9fcc361fb58be0d8e5f7f4784de3544dc8fc53efe23cf461058683817f987efecf11f8cfa1539180768f64e3a33b6faedab51ad476b3502290a2e322c5ae634adb8f469125d174e4eb94b0e9b3e020b359271c171fc049904fc918c9c271241d430a2cee00ba190409000ccc477535ec181f04936d2c75f564d50d96b6b45a378c0280685644c6687dcd52d00c3301b2de046f5daad44b194b65b2668c2cb0bf439b500e2c2f120e2a3629ea23c1d0ba6a1e6be377b80160ea3a2d0eeb5cc25c233243eccddfc3b12f590b58e60c2b671c79a37a83950ae7832bd7f9faf62ee5a7bcabe345ba6e0587d10501bdca1ec24c849d681b43a18305ae93970f0134a0199e25183002e1632bc63ced05c75f27f59ba5a00485fca9726bdfe58bec23422faa81ee96948e0ca858f4c1d7bb7c8d0a4cb57a57b85327c929f3ebd0e8c7f3ad431a0b534c510a6ba3a306d3c1134d2a1c08124906fc803ba9592c0c8774bedf6c8526030a1242180a4a3c679cc882648aeb4f8cc6d81e3b4839ceddec6baa57bee4f08154e1b29beadb12bc5adcb007a967243aa35ad30ce52e3f43954c9b7d2c377f6a82b9f08e51c1cc47568b074f8411f554333a3052e76be09615f4c593470c57401b0ed8adff54e1959cf4a5e504c645793ea03de08062bae4d6999b0491a693e5d89baa907445d2ec3a43b055dcbf274fbfa64244fdd9ca4eaa84cf8c8484146df6c43ad460f01c13f3f026ec21aa6a364e12854b8d9ca6915320454744d4de3b0def3f2d67adcc9fd887890feb32a4a7fdeabd3fbb1f12ba8358ab76c1c49185daed1aa64a89d60e4b0fcc1a62faee177f0e97ad7b6d167210a63c34d81ab4e08b000f900ff693da743ed2274f63b0a6725fb21c7b2d3fc845ea56b37d66f854c5d27f702b43bcfebbedc4ca96eb5365d3cb220fbf9182b2afd1faf14ab2dc49be3c0d4e3ad61d0b8195d3ac531ddf8bf274d11747d90f69427dd1267e8be0ec8398e64394ec62df9555f49a5121dabbcb2fa0ad23d603512cb0bcf95970f24d1a1addb6007e4ce55055419625b3bc0a1c72d980803910961fb9aabe9ee698e4a0bff1514a9b7d3d0f3fc4384199b69385b9fd779e0de05ae3059818da44a0c4b91cbe84350a29fd5e2d5a21349858cecf259830e1bf609346579000e050e39608af640c8bb8192ba1275a78ff4c5c83136f0b185407ba6516287ac4b165b193a009d9da14aabb09e881585c19bf8f13bd4cca9149be21344a7bddae7958f3d7ea68402651d95e244b8dff8f011e13b47f8520c3492dc0195ff16e87cfdd2df8155cf89ea4ed71a669c398033716697f9e6416154efb458b9bfc0cdbe8558049bd3fcc7ee0c2580494dc4acad36c1896e586611c0700da88e0452cc64855c7cd4b4d508f709672edd7fb8198c988a6b7d5c20c586f7548c03cd1b805f1242e2b95ff7e4b3b57159e2386bb08d15063c64e73ade3fa3122f68dfeb8ed1a94d938c9e2054355a7ed0388f2592e8d6e9315aad9e9fa87bd50567dd2032990d7a6012c7391d0ec6d86e30e8300b16a7d03b674a69af08690b704a662dee79a6971ee53eac620d51d6e42ffeaf8bacdea5b193771388e0a32147acfd877119eee8e907c7e4a8921906f1a58864802b768de23df563da7903650dcd72eaf7542a6c4c01e4ad44ae0809e9b98e954b550b708433dfd609361422187d420ab1840dd218f94437a504696275625d058cea49e3693ed2d10d290fa3042ed55084a89929242f2bcc06ad91ea22d569243ca19984d36d7f10a84dfb03064d9637771f100715c25fde42ae81ebd438c6f967e4fc8ce38c58991a6e5106ff350ebb9b04b286f496ee1a70b6cf3b5d8b2be1873b1db5fe033ada59e83fcac29ba6e15989bc051ce7646d3af20dab28619c45e1503337f7a14f30a5cc1e6f910942c55d400652d7c07e5345e6d01f1609fdb38c18bb8d53da31ecc1a32b03b28833302615a1a78f82f9413133fb6468415ca9840c091094c9ff6f3c4eb1c941e4d1786c5488c74a5b6568ecbb79c2ffe7bf19eeceab146bcdd548d45791d40ed1564fdfb47e2a678ee6a273e5961078fd67d4c446fc1fefbadf9c0743248631ad8bd88e959330f373f66a8084a3a250183f3660be8f44fd6dffcb324b3b4bf70cd2a4c2de530f88b9c90bf087f81d7a00b5a364b7f0ef277e6172e3959f0258d813dff37a90e98a57943ab56844d55dca88eb550aa185ef8848b4d005e95b74eed4a76cf96cc58f47c21d28ed152c33bd123e6df8a8cfa78b1d23055b137e4ffa720fefc21511e6104f3a536c53e91e6fad65ede1e78f413f844e2274cdde3e0292f3d983e20be77470ac2f819c3be9fad4aab732aee3bfb941cbaa90d1ac6fadb14ef84be19ea5836504acabcce95aa5031b8146edc5e4d86583a534aee971a3a12819f05cc886752401a834205188884c2efa32fa53f10b4f46326b56bd59438b77488188caf9dde3f6a4247723a7296b9a54e6e00cbdaca3af28ab05a1f375b08242da5395852416840daf73ebae0fc3d7f460d0f6b92690844aa75030984a47cb90b0402f5cc53a1c65c289cf54cb6a0c00c6094bb0be187bdac10815d26a6d140839572970c5af4b87df3ef7ffdac6eeaeab8fe1544e66c568738fd46a97f2dfe0ba54537569e9b2f4c2e710d0fdd355553268da0a3a60eb8fe4a9f6089e3bb99047e6f90b690ef02d769263c42da36f048ca13d63378283218c5186e0a6b698b49faf1b11d1a9bd0e1a7084ec60e26bf37637627604be9160d0bf805c51b8ac1203756c277c26f2b2c22675694a209976bfcac1bfe9631ca664146185859e82c3e0385ffab393de4c6af006b32ffe47526c566afbaaf933016df24d91e08df2165852791258be568ec4e551c6e7ce246258b098ab549ef3644c8cd07ceb246209a385621b65f9a27b7b90ab96b08543ba8ecf331c072e7868cf227b45ef4e95ef02e221c7cfa93eb78e65bc0905de1a84058854160d4c9a90bc2a6c238140cc15333eb66254d2af93bdc9c368282d8dd4bb04c8f40f506999dbbefb538c51af7b766e6c00c0d59d4dea589d076e507be43ebaaeb591da2d75ca30b070c8c2cdd32b74ce522404182d727efb516455b357a39ac9ad0f30efe2f3f7e3c5494e375c7dccf87d97d695b4f3a2f2991f8c14379465bd6f67f398e102bce08a5a47b85146f769dac93f3d079172edf5ddc3dd3d6474773e0b8c114183f6f204514727ea76b3df393c37cc2a87c89be7445469b7dabb7f61c9c5661c7bb0862e84c2949050cea711c59b279bdf6dce805609302666e8c22e222515350d80d20879a3ecb04b6e9a403ea9ff2ea2ea2324ca5bf9ac99491fc0412dd05040aad2a3ee28f9248aafbd66d6e24a65b91876dbced91119a672f1cb6cf91d83f7b5d5b5f682218bf78b838264293bba13bdc55d3e43e889d59bd8f4b9fd89a39af1bc7cdc4aeba47683a79055bee6e671fa13838c99f3aaf1924dd32bf16103178acee829917cd536ddaf8ca53787e1f2d903c22b89aab52f646fd0080c4bfb01e1531e5b41703ada7a9ec4f74abc803bf568394ff39d729b3d440bd3887e4a36a4b1ac877c3ea28251b460b6f3c3a79203d976bf9dcec91eb5dcb38492087190e800715eea77daabf8c1fa1881bb5176c9f199e9cf7e9bb589eb58f2fa28ed7e9821b313c84bba7e5da8f1cbe1f778c4ae162ba80123a322668455bc52056e016b9156de041ec4ecce18ba6783ac71ba1ac6f320ffdc08aa1bce9b571e6f022d06bfa3c4db845829d516f88e5afde24e90d2674b0bb2f7e28cb532bbe19e63ebec54c0d1e3beee0edd83435fac3335088a55d8ce2d872efe99939b053b36b960c63625bca909678661f414cbdd6857cf72a73b09612c417a4b00382ca43877daf4d10af92c640f09a29e9614ad3c18848526841d2b45a6b4dfc6d29cbfd8a3268eed9dca44d5ae26d913673d8ae263003fc3b0b90f9ecdb880df5861c2bf21bd356498c22a16b469115452290f3a800b5a39a8166e8c24d46467d72579173352d3b041af503cc0d5f19e22d158c23e165180b2a3e93a437be1c7526a3260788503420647d77345fbb1dc7b858aeb0b6dbdbcd89885978cee478951f8edb2d81db04e51ffdb1c55e62b74780bb3cedfc804c7b5d8c50097d6b317eea72bb411aeab34b255b5ba43ba91561d24ff6cafa5fd7269afa9b16716f39626aedf14ca905eb637abd015885f5187de108fffc1838fa5ba16556223cd528c93473243920f4abd543a588a4c8efd849b19f382998806882f875c87d3347e358e8053d8da4f70c18e72556f839f76704d6592b3013d473baf6a03e1cfdee76e4593ac4f0040859b4dd04b9ca66cde942efc86918bff37cc528bf0185a5d329050da654dcc5fc44a526dcc60fb795b615426468b76f4db7a63c02b75ea5a77bf19d139f49216b02b9c58c4ee7a41673417e05f091e38ef16d2cabc48d885e32bc9dcbf87dd81de3492d7d03340107decd272197ccc65e3307a8c229173d2aeba57eb56f3cbdff5e31d2e820e835e7e2ff774dd87ef14fc00b999ffe8fc8b6da8bdea2ac9e404befebf2507b346843c91556be450a607413995369c9d70d0f0974bb569fc8bde718e5525fe9883e2d5b111b8e69ba65244daf509713f6294770382045f478a04ad32a533f43a350bc126562fbc536bd6aa2018efec974b6ac24c8f4151efae80f9e4e45b28d73b25afd8c63df0717ce51735484a8e02aa5566b701e0a2e84af671675ba95efa5fcd5825bec8b7963d93494966956918072884236ad4de559aa3405ab05a00c0aea1ea476d854e86e43115459fe4771e83a1500c0cc8071112dcb3b37a5a520896ededb1d8e410517d0c6508e1d1dbda6733bbda0ac973a5c312ee157bd7a89f75d3cf52caa5794067ec7f4a271be9d1747ba73c11fafc9828bbe7471f179e4c2e9ffd93db6d8443dd1783b6abf5d47590cef60f811873acf41305cbc321ada5dcb90adae19b6e535397fa1c4e68d71cfdc3078156d8677058d1d5ca08743e31dec51976defee15247c9a9bbde405c2d776f6644dd918a29b7848bc52c32c71c174a375cac84fa8dabb3aedd286830dee565b5b080558b79923fab30ceccd9769718346aab08604bd815cf2b20c42853e52881075f09c5f4a3e2e2a300e6f24ae42d286a60be58b5f8c607e1efc2c7ed1e986f373db125e6a95310c562b5855fc9c45f7eda821b0296baa4a2c43d6a5492f9ca546ba06679f0e5952e85953a05162761c6b91df93df614052402e2162457c31e62bb7a89ea19a34bfd07fc33f07c4c0fbf8ab01b7a6ce0cd1fc9a5c22dfb074f7d69e15044ce852b6002a261f8</script>
+  <div class="hbe hbe-content">
+    <div class="hbe hbe-input hbe-input-default">
+      <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
+      <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">需要填入密码才可访问阅读</span>
+      </label>
+    </div>
+  </div>
+</div>
+<script data-pjax src="/lib/hbe.js"></script><link href="/css/hbe.style.css" rel="stylesheet" type="text/css">
     </article>
     <!-- license -->
     
@@ -648,7 +504,7 @@ Containers</a></p>
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">June 14th 2024, 8:33:20 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">December 25th 2024, 9:56:29 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">January 13th 2025, 11:44:36 am</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -814,7 +670,7 @@ Containers</a></p>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#docker"><span class="toc-text">1. Docker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#docker-%E5%AE%89%E8%A3%85%E5%AE%8C%E6%95%B4%E8%BF%87%E7%A8%8B"><span class="toc-text">2. Docker 安装完整过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%86%E6%9E%B6%E6%8E%A5%E5%85%A5%E5%92%8C%E9%83%A8%E7%BD%B2%E6%96%B9%E6%A1%88"><span class="toc-text">3. 框架接入和部署方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8wrk%E8%BF%9B%E8%A1%8C%E6%8E%A5%E5%8F%A3%E5%8E%8B%E6%B5%8B"><span class="toc-text">4. 使用wrk进行接口压测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95"><span class="toc-text">附录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E4%BB%A3%E7%A0%81"><span class="toc-text">运行代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vscodedocker%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95"><span class="toc-text">vscode+docker远程调试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E8%B0%83%E8%AF%95"><span class="toc-text">接口调试</span></a></li></ol></li></ol>
+                
             </div>
         
         <!-- sidebar -->
@@ -1124,10 +980,6 @@ Containers</a></p>
         
         
     
-        
-        
-        
-        
         
         
         
