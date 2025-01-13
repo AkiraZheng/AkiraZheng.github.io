@@ -2,12 +2,9 @@
 title: 调度项目4：Worker的设计
 date: 2024-08-18 17:32:49
 tags:
+  - 任务调度项目
 categories:
     - 任务调度项目
-password: ztyn
-abstract: 填入密码才可访问阅读
-message: 填入密码才可访问阅读
-wrong_pass_message: 错误密码，请重试
 ---
 
 # 一、Worker调度任务设计
