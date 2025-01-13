@@ -9,7 +9,7 @@
     <div class="hbe hbe-input hbe-input-default">
       <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
       <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
-        <span class="hbe hbe-input-label-content hbe-input-label-content-default">需要填入密码才可访问阅读</span>
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">填入密码才可访问阅读</span>
       </label>
     </div>
   </div>
@@ -28,7 +28,7 @@
     <div class="hbe hbe-input hbe-input-default">
       <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
       <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
-        <span class="hbe hbe-input-label-content hbe-input-label-content-default">需要填入密码才可访问阅读</span>
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">填入密码才可访问阅读</span>
       </label>
     </div>
   </div>
@@ -47,7 +47,7 @@
     <div class="hbe hbe-input hbe-input-default">
       <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
       <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
-        <span class="hbe hbe-input-label-content hbe-input-label-content-default">需要填入密码才可访问阅读</span>
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">填入密码才可访问阅读</span>
       </label>
     </div>
   </div>
@@ -66,7 +66,7 @@
     <div class="hbe hbe-input hbe-input-default">
       <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
       <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
-        <span class="hbe hbe-input-label-content hbe-input-label-content-default">需要填入密码才可访问阅读</span>
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">填入密码才可访问阅读</span>
       </label>
     </div>
   </div>
@@ -85,7 +85,7 @@
     <div class="hbe hbe-input hbe-input-default">
       <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
       <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
-        <span class="hbe hbe-input-label-content hbe-input-label-content-default">需要填入密码才可访问阅读</span>
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">填入密码才可访问阅读</span>
       </label>
     </div>
   </div>
@@ -104,7 +104,7 @@
     <div class="hbe hbe-input hbe-input-default">
       <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
       <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
-        <span class="hbe hbe-input-label-content hbe-input-label-content-default">需要填入密码才可访问阅读</span>
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">填入密码才可访问阅读</span>
       </label>
     </div>
   </div>
