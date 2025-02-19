@@ -5205,15 +5205,18 @@ K 个高频元素</a></p>
     <url>/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/</url>
     <content><![CDATA[<h1 id="一office快捷键">一、Office快捷键</h1>
 <h2 id="word">1.1 word</h2>
-<ul>
-<li><p>公式等号对齐</p>
+<p><strong>1）公式等号对齐</strong></p>
 <p>在想对齐的等号左边按<code>Shift+Enter</code>实现换行</p>
 <p><img src="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/shift enter.png" width="50%" heigh="50%"></p>
 <p>在上下两个等式左边均右键选择<code>在此字符处对齐</code></p>
 <p><img src="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/align according to equal mark.png" width="50%" heigh="50%"></p>
 <p>完成，注意对齐方式选择<code>两端对齐</code></p>
-<p><img src="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/align.png" width="50%" heigh="50%"></p></li>
-</ul>
+<p><img src="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/align.png" width="50%" heigh="50%"></p>
+<p><strong>2）图片自动编号</strong></p>
+<p>通过<strong>题注、交叉引用、更新域</strong>实现</p>
+<p>参考：<a href="https://blog.csdn.net/diaodaa/article/details/106893162">图片自动编号</a></p>
+<p><strong>3）公式编号</strong></p>
+<p>参考：<a href="https://blog.csdn.net/Flag_ing/article/details/112966671">公式编号（用方法三）</a></p>
 <h1 id="二vscode">二、vscode</h1>
 <ul>
 <li><p>python函数快速注释</p>
