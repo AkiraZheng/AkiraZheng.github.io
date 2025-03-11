@@ -5217,6 +5217,12 @@ K 个高频元素</a></p>
 <p>参考：<a href="https://blog.csdn.net/diaodaa/article/details/106893162">图片自动编号</a></p>
 <p><strong>3）公式编号</strong></p>
 <p>参考：<a href="https://blog.csdn.net/Flag_ing/article/details/112966671">公式编号（用方法三）</a></p>
+<ul>
+<li>其中<strong>5、插入题注</strong>步骤中，应该选中整个公式一行的表格框才可以右键找到<strong>插入题注</strong>选项</li>
+<li>表格中的文本需要设置成单倍行距</li>
+</ul>
+<p><strong>4）多张图片并排</strong></p>
+<p>参考：<a href="https://blog.csdn.net/weixin_42186456/article/details/104411843">Word中插入多张图片/论文图片排版的方法</a></p>
 <h1 id="二vscode">二、vscode</h1>
 <ul>
 <li><p>python函数快速注释</p>
