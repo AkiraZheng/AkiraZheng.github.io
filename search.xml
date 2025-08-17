@@ -9517,9 +9517,11 @@ pctoken
     <title>openeluer安装与内核替换</title>
     <url>/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/</url>
     <content><![CDATA[<blockquote>
-<p>前言 主机系统：Sonoma 14.4.1（x86） 虚拟软件：VMware Fusion
-openeluer系统：openEuler-24.03-LTS-SP2-x86_64-dvd.iso 内核选择：linux
-5.x 内核 64G</p>
+<p>前言</p>
+<p>主机系统：Sonoma 14.4.1（x86）</p>
+<p>虚拟软件：VMware Fusion</p>
+<p>openeluer系统：openEuler-24.03-LTS-SP2-x86_64-dvd.iso</p>
+<p>内核选择：linux 5.x 内核 64G</p>
 </blockquote>
 <h1 id="一mac工具准备">一、Mac工具准备</h1>
 <ol type="1">
