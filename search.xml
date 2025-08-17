@@ -9591,10 +9591,11 @@ Fusion</a></li>
 <p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23_1. 配置内核.png"></p>
 <p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23_2. 配置内核.png"></p>
 <p>然后按<code>Exit</code>保存刚刚的config信息</p>
-<p>最后需要禁用证书，否则后面编译会失败：</p>
+<p>最后需要禁用证书、BTF，否则后面编译会失败：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim .config</span><br></pre></td></tr></table></figure>
 <p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23_3. 配置内核_禁用证书_vim查看.png"></p>
 <p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23_4. 配置内核_禁用证书.png"></p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23_5.%20配置内核_BTF.png"></p>
 <h2 id="内核编译及安装">4.3 内核编译及安装</h2>
 <p>执行编译前先安装所需组件</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum install elfutils-libelf-devel</span><br><span class="line">yum install openssl-devel</span><br><span class="line">yum install bc</span><br></pre></td></tr></table></figure>
@@ -9603,7 +9604,19 @@ Fusion</a></li>
 <p>通常内核编译是一个 计算密集型任务，建议使用 -j 参数指定 CPU 核心数
 来加速编译。</p>
 <p>编译完成后，可以安装生成的 vmlinuz 文件：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make install</span><br><span class="line">make modules_install</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make modules_install</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/25. makeInstall安装内核结果.png"></p>
+<p>生成的新内核可以在 /boot/ 目录下查看：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/26. 生成的新内核.png"></p>
+<h2 id="更新引导">4.4 更新引导</h2>
+<p>下面的命令会根据 /boot/ 目录下的内核文件自动更新启动引导文件。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">grub2-mkconfig -o /boot/grub2/grub.cfg</span><br></pre></td></tr></table></figure>
+<p>然后重启系统就可以看到多个内核，其中一个就是我们新安装的内核，可自由选择一个内核启动系统。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">reboot</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/27. 选择新的内核.png"></p>
+<p>重启完后可以确认新的内核是否生效：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">uname -a</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/28. 确认新内核.png"></p>
 <h1 id="参考">参考</h1>
 <blockquote>
 <ol start="0" type="1">
