@@ -9575,8 +9575,35 @@ Fusion</a></li>
 <p>然后在termius中添加虚拟机：</p>
 <p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/termius添加虚拟机.png"></p>
 <h1 id="四进行内核替换">四、进行内核替换</h1>
+<p>内核替换主要参考<a href="https://blog.csdn.net/m0_56602092/article/details/118604262">openeluer的内核更新与替换</a></p>
 <p>首先查看当前安装了的linux内核版本：</p>
 <p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/openeluer初始内核_linux.png"></p>
+<h2 id="清理源代码树">4.1 清理源代码树</h2>
+<p>进入解压好的源码文件夹执行命令，清理过去内核编译产生的文件，第一次编译时可不执行此命令</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make mrproper</span><br></pre></td></tr></table></figure>
+<h2 id="生成内核配置文件.config">4.2 生成内核配置文件.config</h2>
+<p>可以先将将系统原配置文件拷贝过来，原配置文件在<code>/boot</code>目录下，输入<code>config-</code>后tab一下就出来了</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir ../cpConfig</span><br><span class="line">cp -v /boot/config-$(uname -r) ../cpConfig</span><br></pre></td></tr></table></figure>
+<p>执行依赖安装</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum install ncurses-devel</span><br></pre></td></tr></table></figure>
+<p>进入配置界面，直接选择默认配置，然后选择Save，生成了一个.config文件：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23. 配置内核.png"></p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23_1. 配置内核.png"></p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23_2. 配置内核.png"></p>
+<p>然后按<code>Exit</code>保存刚刚的config信息</p>
+<p>最后需要禁用证书，否则后面编译会失败：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim .config</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23_3. 配置内核_禁用证书_vim查看.png"></p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/23_4. 配置内核_禁用证书.png"></p>
+<h2 id="内核编译及安装">4.3 内核编译及安装</h2>
+<p>执行编译前先安装所需组件</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum install elfutils-libelf-devel</span><br><span class="line">yum install openssl-devel</span><br><span class="line">yum install bc</span><br></pre></td></tr></table></figure>
+<p>然后执行make开始编译，编译大概要一段时间，这个过程需要保证连接的稳定，中断了就要重新编译了</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make -j$(nproc)</span><br><span class="line"><span class="meta">#</span><span class="bash"> make -j4</span></span><br></pre></td></tr></table></figure>
+<p>通常内核编译是一个 计算密集型任务，建议使用 -j 参数指定 CPU 核心数
+来加速编译。</p>
+<p>编译完成后，可以安装生成的 vmlinuz 文件：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make install</span><br><span class="line">make modules_install</span><br></pre></td></tr></table></figure>
 <h1 id="参考">参考</h1>
 <blockquote>
 <ol start="0" type="1">
@@ -9585,7 +9612,7 @@ Vmware 安装 openEuler 20.03 最小镜像</a></p></li>
 <li><p><a href="https://blog.csdn.net/2302_82189125/article/details/137759482">VM虚拟机中安装openeluer</a></p></li>
 <li><p><a href="https://blog.csdn.net/m0_61998604/article/details/145700767">macOS中vmware
 Fusion的虚拟机创建</a></p></li>
-<li><p><a href="https://blog.csdn.net/m0_56602092/article/details/118604262">openeluer的内核更新与替换</a></p></li>
+<li><p><a href="https://blog.csdn.net/m0_56602092/article/details/118604262">openeluer的内核更新与替换：主要参考</a></p></li>
 <li><p><a href="https://bbs.huaweicloud.com/blogs/452112">探秘内核：openEuler的内核编译实战指南【华为根技术】</a></p></li>
 <li><p><a href="https://blog.csdn.net/m0_56602092/article/details/118604262">OpenEuler内核编译及替换</a></p></li>
 </ol>
