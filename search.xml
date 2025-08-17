@@ -9516,7 +9516,76 @@ pctoken
   <entry>
     <title>openeluer安装与内核替换</title>
     <url>/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/</url>
-    <content><![CDATA[
+    <content><![CDATA[<blockquote>
+<p>前言 主机系统：Sonoma 14.4.1（x86） 虚拟软件：VMware Fusion
+openeluer系统：openEuler-24.03-LTS-SP2-x86_64-dvd.iso 内核选择：linux
+5.x 内核 64G</p>
+</blockquote>
+<h1 id="一mac工具准备">一、Mac工具准备</h1>
+<ol type="1">
+<li>虚拟软件：<a href="https://mp.weixin.qq.com/s/Mg4byIT8W1ys-odz5Yk9Gw">VMware
+Fusion</a></li>
+<li>ssh远程控制软件：<a href="https://www.mac78.com/911.html#J_DLIPPCont">Termius</a></li>
+</ol>
+<h1 id="二虚拟机安装openeluer系统">二、虚拟机安装openeluer系统</h1>
+<p>首先去欧拉官网下载openeluer系统镜像文件：<a href="https://www.openeuler.org/zh/download/">openEuler</a>，下载LTS长期支持的版本</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/openeluer官网.png"></p>
+<p>镜像文件下载完成后，在虚拟软件 <code>VMware Fusion</code>
+中创建虚拟机，选择镜像文件并拖入到 <code>VMware</code> 中：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/1. 新建.png"></p>
+<p>然后选个linux内核和固件后直接安装：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/3. 选个内核.png"></p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/4. 选择固件.png"></p>
+<p>然后选择自定义配置进行配置：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/5. 自定义配置.png"></p>
+<p>常选择的配置如下：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/6. 选择需要修改的配置进行修改.png"></p>
+<p>先分配一个较大的磁盘空间：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/7. 分配一个较大的固态存储.png"></p>
+<p>选择<strong>显示全部</strong>回到配置选择界面：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/6_1. 返回去配置前面的选项.png"></p>
+<p>然后继续配置内存，将内存配置为4G（一定要换，最低4G）：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/8. 分配4GB的内存.png"></p>
+<p>配置完硬件配置后，就可以直接开启虚拟机进行安装了：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/9.配置完就可以直接开启虚机.png"></p>
+<p>进行系统配置，经常修改的配置项：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/11. 选择需要配置的内容.png"></p>
+<p>首先语言选择中文和英文：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/10. 选择语言.png"></p>
+<p>然后开启root：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/12. 启用root用户.png"></p>
+<p>安装目的地可以不用改：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/13. 安装目的地.png"></p>
+<p>打开网络选项：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/14. 打开网络.png"></p>
+<p>因为我是学习虚拟化的，所以选择了虚拟机配置，否则的话可以选择服务器即可：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/15. 虚拟化学习选择虚拟化主机_否则可以选服务器.png"></p>
+<p>然后开始安装，等待一段时间后完成安装就能进入系统：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/16. 然后开始安装.png"></p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/17. 安装中.png"></p>
+<p>安装完成后，进入系统：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/18. 安装完成重启系统.png"></p>
+<p>输入刚刚配置的root账号密码：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/19. 输入刚刚配置的root账号密码.png"></p>
+<h1 id="三termius中添加虚拟机">三、Termius中添加虚拟机</h1>
+<p>首先查看虚拟机地址：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/20. 找到虚拟机的ip_用远程连接工具连接.png"></p>
+<p>然后在termius中添加虚拟机：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/termius添加虚拟机.png"></p>
+<h1 id="四进行内核替换">四、进行内核替换</h1>
+<p>首先查看当前安装了的linux内核版本：</p>
+<p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/openeluer初始内核_linux.png"></p>
+<h1 id="参考">参考</h1>
+<blockquote>
+<ol start="0" type="1">
+<li><p><a href="https://segmentfault.com/a/1190000040810052">Fusion 或
+Vmware 安装 openEuler 20.03 最小镜像</a></p></li>
+<li><p><a href="https://blog.csdn.net/2302_82189125/article/details/137759482">VM虚拟机中安装openeluer</a></p></li>
+<li><p><a href="https://blog.csdn.net/m0_61998604/article/details/145700767">macOS中vmware
+Fusion的虚拟机创建</a></p></li>
+<li><p><a href="https://blog.csdn.net/m0_56602092/article/details/118604262">openeluer的内核更新与替换</a></p></li>
+</ol>
+</blockquote>
 ]]></content>
   </entry>
 </search>
