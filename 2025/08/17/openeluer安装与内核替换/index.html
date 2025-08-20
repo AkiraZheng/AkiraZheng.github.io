@@ -60,7 +60,7 @@
 <meta property="og:image" content="https://akirazheng.github.io/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/27.%20选择新的内核.png">
 <meta property="og:image" content="https://akirazheng.github.io/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/28.%20确认新内核.png">
 <meta property="article:published_time" content="2025-08-17T12:15:29.000Z">
-<meta property="article:modified_time" content="2025-08-17T16:48:01.949Z">
+<meta property="article:modified_time" content="2025-08-17T17:03:59.231Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/openeluer官网.png">
@@ -358,7 +358,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">914</span>Reading time: <span class="post-count reading-time">3 min</span></span>
+                        <span>Word count: <span class="post-count word-count">972</span>Reading time: <span class="post-count reading-time">3 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -620,6 +620,13 @@ Fusion</a></li>
 <p>重启完后可以确认新的内核是否生效：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uname -a</span><br></pre></td></tr></table></figure>
 <p><img src="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/28. 确认新内核.png"></p>
+<h1 id="五支持远程ssh连接">五、支持远程ssh连接</h1>
+<p>编辑 SSH 配置文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
+<p>找到并修改以下参数：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AllowTcpForwarding yes   # 取消注释或添加此行</span><br></pre></td></tr></table></figure>
+<p>保存文件并重启 SSH 服务：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart sshd  # 大多数 Linux 系统</span><br></pre></td></tr></table></figure>
 <h1 id="参考">参考</h1>
 <blockquote>
 <ol start="0" type="1">
@@ -641,7 +648,7 @@ Fusion的虚拟机创建</a></p></li>
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/">https://akirazheng.github.io/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/">August 17th 2025, 8:15:29 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/">August 18th 2025, 12:48:01 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/">August 18th 2025, 1:03:59 am</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -802,7 +809,7 @@ Fusion的虚拟机创建</a></p></li>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80mac%E5%B7%A5%E5%85%B7%E5%87%86%E5%A4%87"><span class="toc-text">一、Mac工具准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85openeluer%E7%B3%BB%E7%BB%9F"><span class="toc-text">二、虚拟机安装openeluer系统</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89termius%E4%B8%AD%E6%B7%BB%E5%8A%A0%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-text">三、Termius中添加虚拟机</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E8%BF%9B%E8%A1%8C%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2"><span class="toc-text">四、进行内核替换</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B8%85%E7%90%86%E6%BA%90%E4%BB%A3%E7%A0%81%E6%A0%91"><span class="toc-text">4.1 清理源代码树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E5%86%85%E6%A0%B8%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.config"><span class="toc-text">4.2 生成内核配置文件.config</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91%E5%8F%8A%E5%AE%89%E8%A3%85"><span class="toc-text">4.3 内核编译及安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E5%BC%95%E5%AF%BC"><span class="toc-text">4.4 更新引导</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80mac%E5%B7%A5%E5%85%B7%E5%87%86%E5%A4%87"><span class="toc-text">一、Mac工具准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85openeluer%E7%B3%BB%E7%BB%9F"><span class="toc-text">二、虚拟机安装openeluer系统</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89termius%E4%B8%AD%E6%B7%BB%E5%8A%A0%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-text">三、Termius中添加虚拟机</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E8%BF%9B%E8%A1%8C%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2"><span class="toc-text">四、进行内核替换</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B8%85%E7%90%86%E6%BA%90%E4%BB%A3%E7%A0%81%E6%A0%91"><span class="toc-text">4.1 清理源代码树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E5%86%85%E6%A0%B8%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.config"><span class="toc-text">4.2 生成内核配置文件.config</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91%E5%8F%8A%E5%AE%89%E8%A3%85"><span class="toc-text">4.3 内核编译及安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E5%BC%95%E5%AF%BC"><span class="toc-text">4.4 更新引导</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E6%94%AF%E6%8C%81%E8%BF%9C%E7%A8%8Bssh%E8%BF%9E%E6%8E%A5"><span class="toc-text">五、支持远程ssh连接</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
