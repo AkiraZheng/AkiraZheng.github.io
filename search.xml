@@ -9649,4 +9649,45 @@ Fusion的虚拟机创建</a></p></li>
 </blockquote>
 ]]></content>
   </entry>
+  <entry>
+    <title>驱动学习1：驱动demo练习</title>
+    <url>/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/</url>
+    <content><![CDATA[<blockquote>
+<p>前言</p>
+<p>环境：openeluer</p>
+<p>内核：5.10.0+</p>
+<p>代码参考：</p>
+<p>通过网盘分享的文件： 链接:
+https://pan.baidu.com/s/14-4XSjm-wvpqxdWcGoXXvw?pwd=9gj7 提取码: 9gj7
+复制这段内容后打开百度网盘手机App，操作更方便哦</p>
+</blockquote>
+<h1 id="内核模块相关的基本工具与信息">内核模块相关的基本工具与信息</h1>
+<ul>
+<li>lsmod：查看内核模块</li>
+<li>insmod：加载内核模块</li>
+<li>rmmod：卸载内核模块</li>
+<li></li>
+<li>~~<del>modinfo</del> &lt;module_name.ko&gt;：查看模块信息~~</li>
+</ul>
+<h1 id="一hello驱动">一、hello驱动</h1>
+<p>在linux中，驱动本身不加载进内核的话就只是个模块，模块加载进内核后，才能被内核调用，所以，我们先编写一个最简单的hello驱动来验证一下</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/init.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> __init <span class="title">hello_init</span><span class="params">(<span class="keyword">void</span>)</span></span>&#123;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;Hello world! I am Akira\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">module_init(hello_init);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> __exit <span class="title">hello_exit</span><span class="params">(<span class="keyword">void</span>)</span></span>&#123;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;Hello world! Akira exit\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line">module_exit(hello_exit);</span><br><span class="line"></span><br><span class="line">MODULE_AUTHOR(<span class="string">&quot;Tian Zheng &lt;tianzheng_edu@163.com&gt;&quot;</span>);</span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL v2&quot;</span>);</span><br><span class="line">MODULE_DESCRIPTION(<span class="string">&quot;A Simple Hello World Driver Module&quot;</span>);</span><br><span class="line">MODULE_ALIAS(<span class="string">&quot;a simple module&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>其中， -
+<code>module_init()</code>和<code>module_exit()</code>是内核模块的初始化和卸载函数</p>
+<ul>
+<li><code>__init</code>和<code>__exit</code>是内核模块的初始化和卸载函数的宏定义</li>
+<li></li>
+<li><code>MODULE_AUTHOR()</code>是模块作者的宏定义，<code>MODULE_LICENSE()</code>是模块许可证的宏定义，<code>MODULE_DESCRIPTION()</code>是模块描述的宏定义</li>
+</ul>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line">KVERS = <span class="variable">$(<span class="built_in">shell</span> uname -r)</span></span><br><span class="line"></span><br><span class="line">obj-m += hello.o</span><br><span class="line"></span><br><span class="line"><span class="section">build: kernel_modules</span></span><br><span class="line"></span><br><span class="line"><span class="section">kernel_modules:</span></span><br><span class="line">	make -C /lib/modules/<span class="variable">$(KVERS)</span>/build M=<span class="variable">$(CURDIR)</span> modules</span><br><span class="line"></span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">	make -C /lib/modules/<span class="variable">$(KVERS)</span>/build M=<span class="variable">$(CURDIR)</span> clean</span><br></pre></td></tr></table></figure>
+<p>运行<code>make</code>生成模块文件<code>hello.ko</code></p>
+<p><img src="/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/生成hello_ko文件.png"></p>
+<p>运行<code>insmod hello.ko</code>加载模块</p>
+<p>接着<code>lsmod | grep hello</code>查看模块是否加载成功</p>
+<p>用<code>dmesg</code>能看到末尾有输出了我刚刚在<code>hello_init()</code>中打印的<code>Hello world! I am Akira</code>信息，模块加载成功</p>
+<p>最后用<code>rmmod hello</code>卸载模块，重新运行<code>dmesg</code>，就能看到<code>hello_exit()</code>中输出<code>Hello world! Akira exit</code></p>
+<p>恭喜你，完成了第一个驱动的编写与加载！</p>
+<p><img src="/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/第一个hello驱动的加载与测试.png"></p>
+]]></content>
+  </entry>
 </search>
