@@ -5338,12 +5338,10 @@ drive）镜像的位置。如果没有正确配置或指定的镜像文件不存
 <p>而此次报错截图内容是<code>Boot failed:not a bootable device</code></p>
 <h2 id="编写mbr文件作为master的主引导程序">4.
 编写MBR文件作为master的主引导程序</h2>
-<p>具体操作见文档另一篇博文<a href></a></p>
+<p>具体操作见文档另一篇博文<a href="https://akirazheng.github.io/2025/08/23/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F2%EF%BC%9A%E7%BC%96%E5%86%99MBR%E4%B8%BB%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA/">手写操作系统2：编写MBR主引导扇区</a></p>
 <h1 id="四ubuntu设置开启ssh">四、ubuntu设置开启ssh</h1>
 <blockquote>
 <p>参考：<a href="https://blog.csdn.net/qq_45164331/article/details/122533327">ubuntu20.04开启SSH远程登录</a></p>
-</blockquote>
-<blockquote>
 <p>参考：<a href="https://zhuanlan.zhihu.com/p/442884471">Windows下VSCode连接Ubuntu远程开发</a>、<a href="https://zhuanlan.zhihu.com/p/143146239">mac下vscode连接ssh</a></p>
 </blockquote>
 <p>本机写得ssh config文件：</p>
@@ -5369,8 +5367,6 @@ Terminal无法打开</a>，其中nano用Ctrl+X 保存并退出</p></li>
 <h1 id="参考">参考</h1>
 <blockquote>
 <p>《操作系统真象还原》</p>
-</blockquote>
-<blockquote>
 <p><a href="https://github.com/Cooi-Boi/Tiny-OS?tab=readme-ov-file">Tiny-OS的项目介绍:大佬的github学习仓以及他的csdn学习笔记链接</a></p>
 </blockquote>
 ]]></content>
@@ -9763,6 +9759,10 @@ https://pan.baidu.com/s/14-4XSjm-wvpqxdWcGoXXvw?pwd=9gj7 提取码: 9gj7
 <p>最后用<code>rmmod hello</code>卸载模块，重新运行<code>dmesg</code>，就能看到<code>hello_exit()</code>中输出<code>Hello world! Akira exit</code></p>
 <p>恭喜你，完成了第一个驱动的编写与加载！</p>
 <p><img src="/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/第一个hello驱动的加载与测试.png"></p>
+<h1 id="参考">参考</h1>
+<blockquote>
+<p><a href="https://gitee.com/PennyLee/learn-LDDD">宋宝国驱动git仓</a></p>
+</blockquote>
 ]]></content>
       <categories>
         <category>Linux内核驱动</category>
