@@ -5279,22 +5279,100 @@ K 个高频元素</a></p>
   <entry>
     <title>手写操作系统1：项目环境部署</title>
     <url>/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/</url>
-    <content><![CDATA[<h1 id="一安装docker下的archlinux">一、安装docker下的archlinux</h1>
-<blockquote>
-<p>docker的安装教程可以参考：<a href="https://akirazheng.github.io/2024/06/14/Asyncflow%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/#/1-Docker">Asyncflow项目1：环境部署</a></p>
-</blockquote>
-<h2 id="下载archlinux镜像">1.1 下载archlinux镜像</h2>
+    <content><![CDATA[<h1 id="一所用ubuntu及虚拟机版本">一、所用ubuntu及虚拟机版本</h1>
+<p>之前还尝试了在docker下安装，但是出现很多奇奇怪怪的错误，所以放弃了，直接选择在虚机下安装</p>
+<h2 id="版本">版本</h2>
+<p>电脑：MacBook Pro</p>
+<p>虚拟机：VirtualBox 7.1.8</p>
+<p>linux 版本：ubuntu 20.04.6</p>
+<h2 id="虚拟机配置">虚拟机配置</h2>
+<p>内存：8192M</p>
+<p>硬盘：50G</p>
+<p>处理器：4</p>
+<h2 id="资源分享">资源分享</h2>
+<p><code>bochs-2.6.tar.gz</code>在下面的夸克网盘中：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">我用夸克网盘给你分享了「share_tinyOS」，点击链接或复制整段内容，打开「夸克APP」即可获取。</span><br><span class="line">/~9c4837w2hG~:/</span><br><span class="line">链接：https://pan.quark.cn/s/335eca91431f</span><br><span class="line">提取码：4JT8</span><br></pre></td></tr></table></figure>
+<h1 id="二bochs模拟器配置">二、bochs模拟器配置</h1>
+<p>首先用该链接下载<a href="https://sourceforge.net/projects/bochs/files/bochs/2.6.8/bochs-2.6.8.tar.gz/download">bochs-2.6.tar.gz</a></p>
+<p>先解压：tar -zxvf bochs-2.6.tar.gz</p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/1 Ubuntu中解压.png"></p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/2 Ubuntu中解压结果.png"></p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/3 config路径.png"></p>
+<p>终端cd
+到<code>bochs-2.6</code>文件夹中，执行<code>./configure</code>进行config，其中<code>--prefix=</code>后面路径中的<code>akira</code>修改为自己的用户名</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./configure \</span><br><span class="line">  --prefix=/home/akira/bochs \</span><br><span class="line">  --enable-debugger \</span><br><span class="line">  --enable-disasm \</span><br><span class="line">  --enable-iodebug \</span><br><span class="line">  --enable-x86-debugger \</span><br><span class="line">  --with-x \</span><br><span class="line">  --with-x11 \</span><br><span class="line">  LDFLAGS=&quot;-lpthread&quot;</span><br></pre></td></tr></table></figure>
 <ul>
-<li><p>方法一：直接通过docker pull命令下载（会有大概率pull不成功）
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker pull archlinux</span><br></pre></td></tr></table></figure></p></li>
-<li><p>方法二：通过开源github项目的action流手动下载<code>archlinux:base</code>的<code>tar</code>镜像</p>
-<ul>
-<li>项目地址：<a href="https://github.com/AkiraZheng/DockerPull/actions/">DockerPull</a>，<code>Workflow</code>的使用参考：<a href="https://b23.tv/dxefZCE">如何使用docker离线包？从此告别头疼的docker
-pull-哔哩哔哩</a></li>
-<li>解压完成后通过<code>docker load</code>命令导入 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker load -i ./xxx/archlinux.tar # 导入./xxx/archlinux:base-amd64.tar路径下的镜像</span><br><span class="line">docker images # 查看导入的镜像</span><br></pre></td></tr></table></figure></li>
-</ul></li>
+<li><p>第一个报错解决：<code>sudo apt-get -y install gcc</code>，解决方案是装一个编译器</p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/5 第一个报错&解决指令.png"></p></li>
+<li><p>第二个报错解决：<code>sudo apt-get install build-essential</code></p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/5 第二个报错&解决指令.png"></p></li>
 </ul>
-<h2 id="运行archlinux容器">1.2 运行archlinux容器</h2>
+<p>执行<code>make</code>和<code>make install</code></p>
+<ul>
+<li><p>出现报错，解决方法为：<code>sudo apt-get install -y libgtk2.0-dev</code>，然后重新执行<code>./configure</code>和<code>make</code></p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/6 make第一个报错&解决指令.png"></p></li>
+</ul>
+<p>成功执行完<code>make</code>和<code>make install</code>后，生成<code>bochs</code>文件夹，该文件夹下可以进行我们的内核编写、内核编译运行、起虚拟机等一系列学习操作。</p>
+<h1 id="三运行bochs">三、运行bochs</h1>
+<h2 id="配置bochsrc.disk">1. 配置<code>bochsrc.disk</code></h2>
+<p>由于<code>boxsrc.disk</code>文件需要用到下面生成的镜像文件路径，因此将该配置放在<a href="#附录-bochs配置文件说明">附录中</a></p>
+<h2 id="运行bochs无启动盘">2. 运行bochs：无启动盘</h2>
+<p>在<code>bochs</code>路径下执行<code>bin/bochs</code>：</p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/8 运行bochs生成窗口.png"></p>
+<p>之后输入<code>c</code>进入模拟器，但是显示没有启动盘。</p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/9 运行bochs输入c.png"></p>
+<p>Bochs 启动时会读取配置文件（通常是 bochsrc），其中指定了启动盘（boot
+drive）镜像的位置。如果没有正确配置或指定的镜像文件不存在，就会出现<strong>没有启动盘</strong>的问题。</p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/10 运行bochs没有bootable.png"></p>
+<p>因此需要用 <code>bximage</code> 创建 <code>.img</code> 镜像并正确配置
+<code>bochsrc</code>。</p>
+<h2 id="创建虚拟盘">3. 创建虚拟盘</h2>
+<p><code>bin/bximage</code>
+是一个虚拟磁盘镜像生成工具，生成的虚拟磁盘后缀名为<code>.img</code>，下面我们将运行<code>bin/bximage</code>
+创建一个虚拟磁盘镜像，根据运行后的指引一步步生成master镜像：</p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/11 bximage根据指引一步步生成master镜像.png"></p>
+<p>创建成功后，在<code>bin</code>目录下生成了<code>master-hd60M.img</code>，创建完并修改配置文件<code>bochsrc.disk</code>，将虚拟的镜像硬盘文件的路径添加进去，再次启动模拟器：</p>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/12 运行启动盘配置后.png"></p>
+<p>此时只有master盘，还是无法读取盘，但是报错内容跟未加磁盘前不一样了：</p>
+<p>上一个报错截图中shell的报错内容是<code>Boot failed:could not read the boot disk</code></p>
+<p>而此次报错截图内容是<code>Boot failed:not a bootable device</code></p>
+<h2 id="编写mbr文件作为master的主引导程序">4.
+编写MBR文件作为master的主引导程序</h2>
+<p>具体操作见文档另一篇博文<a href></a></p>
+<h1 id="四ubuntu设置开启ssh">四、ubuntu设置开启ssh</h1>
+<blockquote>
+<p>参考：<a href="https://blog.csdn.net/qq_45164331/article/details/122533327">ubuntu20.04开启SSH远程登录</a></p>
+</blockquote>
+<blockquote>
+<p>参考：<a href="https://zhuanlan.zhihu.com/p/442884471">Windows下VSCode连接Ubuntu远程开发</a>、<a href="https://zhuanlan.zhihu.com/p/143146239">mac下vscode连接ssh</a></p>
+</blockquote>
+<p>本机写得ssh config文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">Host 172.16.33.128</span><br><span class="line">  HostName 172.16.33.128</span><br><span class="line">  User akira</span><br></pre></td></tr></table></figure>
+<p><img src="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/13 ssh的IP.png"></p>
+<p>连接ssh需要先把本机的代理关了，解决办法是：</p>
+<h2 id="附录-bochs配置文件说明">附录-bochs配置文件说明</h2>
+<p>在<code>./bochs/</code>路径下创建<code>bochsrc.disk</code>文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim bochs.disk   #创建配置文件(配置文件存放位置和文件名可以随意)</span><br><span class="line"></span><br><span class="line">######################  配置文件开始 ####################</span><br><span class="line">#第一步，首先设置bochs在运行过程中能够使用的内存，本例为32MB</span><br><span class="line">#关键字为：megs</span><br><span class="line"></span><br><span class="line">megs: 32</span><br><span class="line"></span><br><span class="line">#第二步，设置对应真实机器的BIOS和VGA BIOS</span><br><span class="line">#对应两个关键字为: romimage 和vgaromiage</span><br><span class="line"></span><br><span class="line">romimage: file=/实际路径/bochs/share/bochs/BIOS-bochs-latest</span><br><span class="line">vgaromimage: file=/实际路径/bochs/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line"></span><br><span class="line">#第三步，选择启动盘符</span><br><span class="line">boot: disk        #从硬盘启动</span><br><span class="line"></span><br><span class="line">#第四步，设置日志文件的输出</span><br><span class="line">log: bochs.out</span><br><span class="line"></span><br><span class="line">#第五步，开启或关闭某些功能</span><br><span class="line">#下面是关闭鼠标，并打开键盘</span><br><span class="line">mouse: enabled=0</span><br><span class="line">keyboard_mapping: enabled=1,map=/实际路径/bochs/share/bochs/keymaps/x11-pc-us.map</span><br><span class="line"></span><br><span class="line">#硬盘设置</span><br><span class="line">ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14</span><br><span class="line">ata0-master: type=disk, path=&quot;hd60m.img&quot;, mode=flat, cylinders=121, heads=16, spt=63</span><br><span class="line">######################  配置文件结束 ####################</span><br></pre></td></tr></table></figure>
+<p>最后，以本人为例，编写的<code>disk</code>文件如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">megs : 32</span><br><span class="line"></span><br><span class="line">romimage: file=/home/akira/bochs/share/bochs/BIOS-bochs-latest</span><br><span class="line">vgaromimage: file=/home/akira/bochs/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line"></span><br><span class="line">boot: disk</span><br><span class="line"></span><br><span class="line">log: bochs.out</span><br><span class="line"></span><br><span class="line">mouse:enabled=0</span><br><span class="line">keyboard:keymap=/home/akira/bochs/share/bochs/keymaps/x11-pc-us.map</span><br><span class="line"></span><br><span class="line">ata0:enabled=1,ioaddr1=0x1f0,ioaddr2=0x3f0,irq=14</span><br><span class="line">ata0-master: type=disk, path=&quot;master-hd60M.img&quot;, mode=flat,cylinders=121,heads=16,spt=63</span><br><span class="line">#ata0-slave:  type=disk, path=&quot;hd80M.img&quot;, mode=flat,cylinders=162,heads=16,spt=63</span><br><span class="line"></span><br><span class="line">#gdbstub:enabled=1,port=1234,text_base=0,data_base=0,bss_base=0</span><br></pre></td></tr></table></figure>
+<h1 id="问题处理">问题处理</h1>
+<ol type="1">
+<li><p>无法打开终端，一直转圈</p>
+<p>解决方法：<a href="https://www.cnblogs.com/lifuqiang/articles/17167367.html">VirtualBox_Ubuntu22.04
+Terminal无法打开</a>，其中nano用Ctrl+X 保存并退出</p></li>
+<li><p>找不到root密码</p>
+<p>解决办法：在刚开始创建虚拟机时就输入密码了，当前密码为akira</p></li>
+<li><p>virtualbox共享文件</p>
+<p>解决办法：1）<a href="https://zhuanlan.zhihu.com/p/25148068">安装VBoxGuestAdditions</a>
+2）<a href="https://docs.pingcode.com/baike/3244459">打开拖放功能</a></p></li>
+</ol>
+<h1 id="参考">参考</h1>
+<blockquote>
+<p>《操作系统真象还原》</p>
+</blockquote>
+<blockquote>
+<p><a href="https://github.com/Cooi-Boi/Tiny-OS?tab=readme-ov-file">Tiny-OS的项目介绍:大佬的github学习仓以及他的csdn学习笔记链接</a></p>
+</blockquote>
 ]]></content>
       <categories>
         <category>操作系统</category>
@@ -9731,6 +9809,136 @@ https://pan.baidu.com/s/14-4XSjm-wvpqxdWcGoXXvw?pwd=9gj7 提取码: 9gj7
 ]]></content>
       <categories>
         <category>数据结构与算法</category>
+      </categories>
+  </entry>
+  <entry>
+    <title></title>
+    <url>/2025/05/26/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%BC%96%E5%86%99MBR/</url>
+    <content><![CDATA[<h1 id="一汇编编译器">一、汇编编译器</h1>
+<p>安装<code>nasm</code>汇编编译器：<code>sudo apt-get install nasm</code></p>
+<h1 id="二mbr">二、MBR</h1>
+<ol type="1">
+<li><p>编写<code>mbr.s</code>汇编文件，放在<code>boot</code>目录下</p>
+<p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">%include &quot;boot.inc&quot;</span><br><span class="line">SECTION MBR vstart=0x7c00 ;起始地址编译在0x7c00</span><br><span class="line">    mov ax,cs</span><br><span class="line">    mov ds,ax</span><br><span class="line">    mov es,ax</span><br><span class="line">    mov ss,ax</span><br><span class="line">    mov fs,ax</span><br><span class="line">    mov sp,0x7c00</span><br><span class="line">    mov ax,0xb800  ; ax为文本信号起始区</span><br><span class="line">    mov gs,ax      ; gs = ax 充当段基址的作用</span><br><span class="line">    </span><br><span class="line">            ; ah = 0x06 al = 0x00 想要调用int 0x06的BIOS提供的中断对应的函数 </span><br><span class="line">            ; 即向上移动即完成清屏功能</span><br><span class="line">            ; cx dx 分别存储左上角与右下角的左边 详情看int 0x06函数调用</span><br><span class="line">    mov ax,0600h </span><br><span class="line">    mov bx,0700h</span><br><span class="line">    mov cx,0</span><br><span class="line">    mov dx,184fh</span><br><span class="line">    </span><br><span class="line">    ;调用BIOS中断</span><br><span class="line">    int 0x10 </span><br><span class="line"></span><br><span class="line">            ;新增功能 直接操作显存部分</span><br><span class="line">            ;低位字节储存ascii字符 小端储存内存顺序相反</span><br><span class="line">    mov byte [gs:0x00],&#x27;L&#x27; </span><br><span class="line">    </span><br><span class="line">            ;背景储存在第二个字节 含字符与背景属性</span><br><span class="line">    mov byte [gs:0x01],0xA4    </span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x02],&#x27;O&#x27; </span><br><span class="line">    mov byte [gs:0x03],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x04],&#x27;V&#x27; </span><br><span class="line">    mov byte [gs:0x05],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x06],&#x27;E&#x27; </span><br><span class="line">    mov byte [gs:0x07],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x08],&#x27;6&#x27; </span><br><span class="line">    mov byte [gs:0x09],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x0A],&#x27; &#x27; </span><br><span class="line">    mov byte [gs:0x0B],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x0C],&#x27;O&#x27; </span><br><span class="line">    mov byte [gs:0x0D],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x0E],&#x27;S&#x27; </span><br><span class="line">    mov byte [gs:0x0F],0xA4</span><br><span class="line">    </span><br><span class="line">                ; 思考一下 在输出完“Love 6OS后 按照书上的逻辑是要把磁盘读入 </span><br><span class="line">                ; 先把配置信息给送到寄存器中”</span><br><span class="line">    </span><br><span class="line">            ; 为什么要送到 eax中呢 因为IN OUT IO接口 </span><br><span class="line">            ; 规定的就是dx里面存放的是端口号 ax是需要或者输送的信息</span><br><span class="line">    mov eax,LOADER_START_SECTOR    </span><br><span class="line">    </span><br><span class="line">    mov bx,LOADER_BASE_ADDR ;把要目标内存位置放进去 bx常作地址储存</span><br><span class="line">    </span><br><span class="line">    mov cx,4;读取磁盘数 cx常作计数</span><br><span class="line">    </span><br><span class="line">    call rd_disk_m_16</span><br><span class="line"></span><br><span class="line">    jmp LOADER_BASE_ADDR ; 直接当跳跳熊 开跳0x600</span><br><span class="line">;------------------------------------------------------------------------</span><br><span class="line">;读取第二块硬盘</span><br><span class="line">rd_disk_m_16:</span><br><span class="line">;------------------------------------------------------------------------</span><br><span class="line">;1 写入待操作磁盘数</span><br><span class="line">;2 写入LBA 低24位寄存器 确认扇区</span><br><span class="line">;3 device 寄存器 第4位主次盘 第6位LBA模式 改为1</span><br><span class="line">;4 command 写指令</span><br><span class="line">;5 读取status状态寄存器 判断是否完成工作</span><br><span class="line">;6 完成工作 取出数据</span><br><span class="line"></span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;1 写入待操作磁盘数</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">    mov esi,eax   ; !!! 备份eax</span><br><span class="line">    mov di,cx     ; !!! 备份cx</span><br><span class="line">    </span><br><span class="line">    mov dx,0x1F2  ; 0x1F2为Sector Count 端口号 送到dx寄存器中</span><br><span class="line">    mov al,cl     ; !!! 忘了只能由ax al传递数据</span><br><span class="line">    out dx,al     ; !!! 这里修改了 原out dx,cl</span><br><span class="line">    </span><br><span class="line">    mov eax,esi   ; !!!袄无! 原来备份是这个用 前面需要ax来传递数据 麻了</span><br><span class="line">    </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;2 写入LBA 24位寄存器 确认扇区</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">    mov cl,0x8    ; shr 右移8位 把24位给送到 LBA low mid high 寄存器中</span><br><span class="line"></span><br><span class="line">    mov dx,0x1F3  ; LBA low</span><br><span class="line">    out dx,al </span><br><span class="line">    </span><br><span class="line">    mov dx,0x1F4  ; LBA mid</span><br><span class="line">    shr eax,cl    ; eax为32位 ax为16位 eax的低位字节 右移8位即8~15</span><br><span class="line">    out dx,al</span><br><span class="line">    </span><br><span class="line">    mov dx,0x1F5</span><br><span class="line">    shr eax,cl</span><br><span class="line">    out dx,al</span><br><span class="line">    </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;3 device 寄存器 第4位主次盘 第6位LBA模式 改为1</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line"></span><br><span class="line">            </span><br><span class="line">            ; 24 25 26 27位 尽管我们知道ax只有2 但还是需要按规矩办事 </span><br><span class="line">            ; 把除了最后四位的其他位置设置成0</span><br><span class="line">    shr eax,cl</span><br><span class="line">    </span><br><span class="line">    and al,0x0f </span><br><span class="line">    or al,0xe0   ;!!! 把第四-七位设置成0111 转换为LBA模式</span><br><span class="line">    mov dx,0x1F6 ; 参照硬盘控制器端口表 Device </span><br><span class="line">    out dx,al</span><br><span class="line"></span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;4 向Command写操作 Status和Command一个寄存器</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line"></span><br><span class="line">    mov dx,0x1F7 ; Status寄存器端口号</span><br><span class="line">    mov ax,0x20  ; 0x20是读命令</span><br><span class="line">    out dx,al</span><br><span class="line">    </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;5 向Status查看是否准备好惹 </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">    </span><br><span class="line">        ;设置不断读取重复 如果不为1则一直循环</span><br><span class="line">.not_ready:     </span><br><span class="line">    nop           ; !!! 空跳转指令 在循环中达到延时目的</span><br><span class="line">    in al,dx      ; 把寄存器中的信息返还出来</span><br><span class="line">    and al,0x88   ; !!! 0100 0100 0x88</span><br><span class="line">    cmp al,0x08</span><br><span class="line">    jne .not_ready ; !!! jump not equal == 0</span><br><span class="line">    </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;6 读取数据</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line"></span><br><span class="line">    mov ax,di      ;把 di 储存的cx 取出来</span><br><span class="line">    mov dx,256</span><br><span class="line">    mul dx        ;与di 与 ax 做乘法 计算一共需要读多少次 方便作循环 低16位放ax 高16位放dx</span><br><span class="line">    mov cx,ax      ;loop 与 cx相匹配 cx-- 当cx == 0即跳出循环</span><br><span class="line">    mov dx,0x1F0</span><br><span class="line">.go_read_loop:</span><br><span class="line">    in ax,dx      ;两字节dx 一次读两字</span><br><span class="line">    mov [bx],ax</span><br><span class="line">    add bx,2</span><br><span class="line">    loop .go_read_loop</span><br><span class="line">    </span><br><span class="line">    ret ;与call 配对返回原来的位置 跳转到call下一条指令</span><br><span class="line">        </span><br><span class="line">    times 510 - ($ - $$) db 0 </span><br><span class="line">    db 0x55,0xaa</span><br></pre></td></tr></table></figure></p></li>
+<li><p>将源文件编译成二进制bin文件</p>
+<p><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nasm -o mbr.bin mbr.S</span><br></pre></td></tr></table></figure></p></li>
+</ol>
+]]></content>
+  </entry>
+  <entry>
+    <title></title>
+    <url>/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/</url>
+    <content><![CDATA[<h1 id="一所用ubuntu及虚拟机版本">一、所用ubuntu及虚拟机版本</h1>
+<p>之前还尝试了在docker下安装，但是出现很多奇奇怪怪的错误，所以放弃了，直接选择在虚机下安装</p>
+<h2 id="版本">版本</h2>
+<p>电脑：MacBook Pro</p>
+<p>虚拟机：VirtualBox 7.1.8</p>
+<p>linux 版本：ubuntu 20.04.6</p>
+<h2 id="虚拟机配置">虚拟机配置</h2>
+<p>内存：8192M</p>
+<p>硬盘：50G</p>
+<p>处理器：4</p>
+<h2 id="资源分享">资源分享</h2>
+<p><code>bochs-2.6.tar.gz</code>在下面的夸克网盘中：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">我用夸克网盘给你分享了「share_tinyOS」，点击链接或复制整段内容，打开「夸克APP」即可获取。</span><br><span class="line">/~9c4837w2hG~:/</span><br><span class="line">链接：https://pan.quark.cn/s/335eca91431f</span><br><span class="line">提取码：4JT8</span><br></pre></td></tr></table></figure>
+<h1 id="二bochs模拟器配置">二、bochs模拟器配置</h1>
+<p>首先用该链接下载<a href="https://sourceforge.net/projects/bochs/files/bochs/2.6.8/bochs-2.6.8.tar.gz/download">bochs-2.6.tar.gz</a></p>
+<p>先解压：tar -zxvf bochs-2.6.tar.gz</p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/1 Ubuntu中解压.png"></p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/2 Ubuntu中解压结果.png"></p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/3 config路径.png"></p>
+<p>终端cd
+到<code>bochs-2.6</code>文件夹中，执行<code>./configure</code>进行config，其中<code>--prefix=</code>后面路径中的<code>akira</code>修改为自己的用户名</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./configure \</span><br><span class="line">  --prefix=/home/akira/bochs \</span><br><span class="line">  --enable-debugger \</span><br><span class="line">  --enable-disasm \</span><br><span class="line">  --enable-iodebug \</span><br><span class="line">  --enable-x86-debugger \</span><br><span class="line">  --with-x \</span><br><span class="line">  --with-x11 \</span><br><span class="line">  LDFLAGS=&quot;-lpthread&quot;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>第一个报错解决：<code>sudo apt-get -y install gcc</code>，解决方案是装一个编译器</p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/5 第一个报错&解决指令.png"></p></li>
+<li><p>第二个报错解决：<code>sudo apt-get install build-essential</code></p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/5 第二个报错&解决指令.png"></p></li>
+</ul>
+<p>执行<code>make</code>和<code>make install</code></p>
+<ul>
+<li><p>出现报错，解决方法为：<code>sudo apt-get install -y libgtk2.0-dev</code>，然后重新执行<code>./configure</code>和<code>make</code></p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/6 make第一个报错&解决指令.png"></p></li>
+</ul>
+<p>成功执行完<code>make</code>和<code>make install</code>后，生成<code>bochs</code>文件夹，该文件夹下可以进行我们的内核编写、内核编译运行、起虚拟机等一系列学习操作。</p>
+<h1 id="三运行bochs">三、运行bochs</h1>
+<h2 id="配置bochsrc.disk">1. 配置<code>bochsrc.disk</code></h2>
+<p>由于<code>boxsrc.disk</code>文件需要用到下面生成的镜像文件路径，因此将该配置放在<a href="#附录-bochs配置文件说明">附录中</a></p>
+<h2 id="运行bochs无启动盘">2. 运行bochs：无启动盘</h2>
+<p>在<code>bochs</code>路径下执行<code>bin/bochs</code>：</p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/8 运行bochs生成窗口.png"></p>
+<p>之后输入<code>c</code>进入模拟器，但是显示没有启动盘。</p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/9 运行bochs输入c.png"></p>
+<p>Bochs 启动时会读取配置文件（通常是 bochsrc），其中指定了启动盘（boot
+drive）镜像的位置。如果没有正确配置或指定的镜像文件不存在，就会出现<strong>没有启动盘</strong>的问题。</p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/10 运行bochs没有bootable.png"></p>
+<p>因此需要用 <code>bximage</code> 创建 <code>.img</code> 镜像并正确配置
+<code>bochsrc</code>。</p>
+<h2 id="创建虚拟盘">3. 创建虚拟盘</h2>
+<p><code>bin/bximage</code>
+是一个虚拟磁盘镜像生成工具，生成的虚拟磁盘后缀名为<code>.img</code>，下面我们将运行<code>bin/bximage</code>
+创建一个虚拟磁盘镜像，根据运行后的指引一步步生成master镜像：</p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/11 bximage根据指引一步步生成master镜像.png"></p>
+<p>创建成功后，在<code>bin</code>目录下生成了<code>master-hd60M.img</code>，创建完并修改配置文件<code>bochsrc.disk</code>，将虚拟的镜像硬盘文件的路径添加进去，再次启动模拟器：</p>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/12 运行启动盘配置后.png"></p>
+<p>此时只有master盘，还是无法读取盘，但是报错内容跟未加磁盘前不一样了：</p>
+<p>上一个报错截图中shell的报错内容是<code>Boot failed:could not read the boot disk</code></p>
+<p>而此次报错截图内容是<code>Boot failed:not a bootable device</code></p>
+<h2 id="编写mbr文件作为master的主引导程序">4.
+编写MBR文件作为master的主引导程序</h2>
+<p>具体操作见文档另一篇博文<a href></a></p>
+<h1 id="四ubuntu设置开启ssh">四、ubuntu设置开启ssh</h1>
+<blockquote>
+<p>参考：<a href="https://blog.csdn.net/qq_45164331/article/details/122533327">ubuntu20.04开启SSH远程登录</a></p>
+</blockquote>
+<blockquote>
+<p>参考：<a href="https://zhuanlan.zhihu.com/p/442884471">Windows下VSCode连接Ubuntu远程开发</a>、<a href="https://zhuanlan.zhihu.com/p/143146239">mac下vscode连接ssh</a></p>
+</blockquote>
+<p>本机写得ssh config文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">Host 172.16.33.128</span><br><span class="line">  HostName 172.16.33.128</span><br><span class="line">  User akira</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2%E8%BF%87%E7%A8%8B/13 ssh的IP.png"></p>
+<p>连接ssh需要先把本机的代理关了，解决办法是：</p>
+<h2 id="附录-bochs配置文件说明">附录-bochs配置文件说明</h2>
+<p>在<code>./bochs/</code>路径下创建<code>bochsrc.disk</code>文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim bochs.disk   #创建配置文件(配置文件存放位置和文件名可以随意)</span><br><span class="line"></span><br><span class="line">######################  配置文件开始 ####################</span><br><span class="line">#第一步，首先设置bochs在运行过程中能够使用的内存，本例为32MB</span><br><span class="line">#关键字为：megs</span><br><span class="line"></span><br><span class="line">megs: 32</span><br><span class="line"></span><br><span class="line">#第二步，设置对应真实机器的BIOS和VGA BIOS</span><br><span class="line">#对应两个关键字为: romimage 和vgaromiage</span><br><span class="line"></span><br><span class="line">romimage: file=/实际路径/bochs/share/bochs/BIOS-bochs-latest</span><br><span class="line">vgaromimage: file=/实际路径/bochs/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line"></span><br><span class="line">#第三步，选择启动盘符</span><br><span class="line">boot: disk        #从硬盘启动</span><br><span class="line"></span><br><span class="line">#第四步，设置日志文件的输出</span><br><span class="line">log: bochs.out</span><br><span class="line"></span><br><span class="line">#第五步，开启或关闭某些功能</span><br><span class="line">#下面是关闭鼠标，并打开键盘</span><br><span class="line">mouse: enabled=0</span><br><span class="line">keyboard_mapping: enabled=1,map=/实际路径/bochs/share/bochs/keymaps/x11-pc-us.map</span><br><span class="line"></span><br><span class="line">#硬盘设置</span><br><span class="line">ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14</span><br><span class="line">ata0-master: type=disk, path=&quot;hd60m.img&quot;, mode=flat, cylinders=121, heads=16, spt=63</span><br><span class="line">######################  配置文件结束 ####################</span><br></pre></td></tr></table></figure>
+<p>最后，以本人为例，编写的<code>disk</code>文件如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">megs : 32</span><br><span class="line"></span><br><span class="line">romimage: file=/home/akira/bochs/share/bochs/BIOS-bochs-latest</span><br><span class="line">vgaromimage: file=/home/akira/bochs/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line"></span><br><span class="line">boot: disk</span><br><span class="line"></span><br><span class="line">log: bochs.out</span><br><span class="line"></span><br><span class="line">mouse:enabled=0</span><br><span class="line">keyboard:keymap=/home/akira/bochs/share/bochs/keymaps/x11-pc-us.map</span><br><span class="line"></span><br><span class="line">ata0:enabled=1,ioaddr1=0x1f0,ioaddr2=0x3f0,irq=14</span><br><span class="line">ata0-master: type=disk, path=&quot;master-hd60M.img&quot;, mode=flat,cylinders=121,heads=16,spt=63</span><br><span class="line">#ata0-slave:  type=disk, path=&quot;hd80M.img&quot;, mode=flat,cylinders=162,heads=16,spt=63</span><br><span class="line"></span><br><span class="line">#gdbstub:enabled=1,port=1234,text_base=0,data_base=0,bss_base=0</span><br></pre></td></tr></table></figure>
+<h1 id="问题处理">问题处理</h1>
+<ol type="1">
+<li><p>无法打开终端，一直转圈</p>
+<p>解决方法：<a href="https://www.cnblogs.com/lifuqiang/articles/17167367.html">VirtualBox_Ubuntu22.04
+Terminal无法打开</a>，其中nano用Ctrl+X 保存并退出</p></li>
+<li><p>找不到root密码</p>
+<p>解决办法：在刚开始创建虚拟机时就输入密码了，当前密码为akira</p></li>
+<li><p>virtualbox共享文件</p>
+<p>解决办法：1）<a href="https://zhuanlan.zhihu.com/p/25148068">安装VBoxGuestAdditions</a>
+2）<a href="https://docs.pingcode.com/baike/3244459">打开拖放功能</a></p></li>
+</ol>
+<h1 id="参考">参考</h1>
+<blockquote>
+<p>《操作系统真象还原》</p>
+</blockquote>
+<blockquote>
+<p><a href="https://github.com/Cooi-Boi/Tiny-OS?tab=readme-ov-file">Tiny-OS的项目介绍:大佬的github学习仓以及他的csdn学习笔记链接</a></p>
+</blockquote>
+]]></content>
+  </entry>
+  <entry>
+    <title>手写操作系统2：编写MBR主引导扇区</title>
+    <url>/2025/08/23/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F2%EF%BC%9A%E7%BC%96%E5%86%99MBR%E4%B8%BB%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA/</url>
+    <content><![CDATA[<h1 id="一汇编编译器">一、汇编编译器</h1>
+<p>安装<code>nasm</code>汇编编译器：<code>sudo apt-get install nasm</code></p>
+<h1 id="二mbr">二、MBR</h1>
+<ol type="1">
+<li><p>编写<code>mbr.s</code>汇编文件，放在<code>boot</code>目录下</p>
+<p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">%include &quot;boot.inc&quot;</span><br><span class="line">SECTION MBR vstart=0x7c00 ;起始地址编译在0x7c00</span><br><span class="line">    mov ax,cs</span><br><span class="line">    mov ds,ax</span><br><span class="line">    mov es,ax</span><br><span class="line">    mov ss,ax</span><br><span class="line">    mov fs,ax</span><br><span class="line">    mov sp,0x7c00</span><br><span class="line">    mov ax,0xb800  ; ax为文本信号起始区</span><br><span class="line">    mov gs,ax      ; gs = ax 充当段基址的作用</span><br><span class="line">    </span><br><span class="line">            ; ah = 0x06 al = 0x00 想要调用int 0x06的BIOS提供的中断对应的函数 </span><br><span class="line">            ; 即向上移动即完成清屏功能</span><br><span class="line">            ; cx dx 分别存储左上角与右下角的左边 详情看int 0x06函数调用</span><br><span class="line">    mov ax,0600h </span><br><span class="line">    mov bx,0700h</span><br><span class="line">    mov cx,0</span><br><span class="line">    mov dx,184fh</span><br><span class="line">    </span><br><span class="line">    ;调用BIOS中断</span><br><span class="line">    int 0x10 </span><br><span class="line"></span><br><span class="line">            ;新增功能 直接操作显存部分</span><br><span class="line">            ;低位字节储存ascii字符 小端储存内存顺序相反</span><br><span class="line">    mov byte [gs:0x00],&#x27;L&#x27; </span><br><span class="line">    </span><br><span class="line">            ;背景储存在第二个字节 含字符与背景属性</span><br><span class="line">    mov byte [gs:0x01],0xA4    </span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x02],&#x27;O&#x27; </span><br><span class="line">    mov byte [gs:0x03],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x04],&#x27;V&#x27; </span><br><span class="line">    mov byte [gs:0x05],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x06],&#x27;E&#x27; </span><br><span class="line">    mov byte [gs:0x07],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x08],&#x27;6&#x27; </span><br><span class="line">    mov byte [gs:0x09],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x0A],&#x27; &#x27; </span><br><span class="line">    mov byte [gs:0x0B],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x0C],&#x27;O&#x27; </span><br><span class="line">    mov byte [gs:0x0D],0xA4</span><br><span class="line">    </span><br><span class="line">    mov byte [gs:0x0E],&#x27;S&#x27; </span><br><span class="line">    mov byte [gs:0x0F],0xA4</span><br><span class="line">    </span><br><span class="line">                ; 思考一下 在输出完“Love 6OS后 按照书上的逻辑是要把磁盘读入 </span><br><span class="line">                ; 先把配置信息给送到寄存器中”</span><br><span class="line">    </span><br><span class="line">            ; 为什么要送到 eax中呢 因为IN OUT IO接口 </span><br><span class="line">            ; 规定的就是dx里面存放的是端口号 ax是需要或者输送的信息</span><br><span class="line">    mov eax,LOADER_START_SECTOR    </span><br><span class="line">    </span><br><span class="line">    mov bx,LOADER_BASE_ADDR ;把要目标内存位置放进去 bx常作地址储存</span><br><span class="line">    </span><br><span class="line">    mov cx,4;读取磁盘数 cx常作计数</span><br><span class="line">    </span><br><span class="line">    call rd_disk_m_16</span><br><span class="line"></span><br><span class="line">    jmp LOADER_BASE_ADDR ; 直接当跳跳熊 开跳0x600</span><br><span class="line">;------------------------------------------------------------------------</span><br><span class="line">;读取第二块硬盘</span><br><span class="line">rd_disk_m_16:</span><br><span class="line">;------------------------------------------------------------------------</span><br><span class="line">;1 写入待操作磁盘数</span><br><span class="line">;2 写入LBA 低24位寄存器 确认扇区</span><br><span class="line">;3 device 寄存器 第4位主次盘 第6位LBA模式 改为1</span><br><span class="line">;4 command 写指令</span><br><span class="line">;5 读取status状态寄存器 判断是否完成工作</span><br><span class="line">;6 完成工作 取出数据</span><br><span class="line"></span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;1 写入待操作磁盘数</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">    mov esi,eax   ; !!! 备份eax</span><br><span class="line">    mov di,cx     ; !!! 备份cx</span><br><span class="line">    </span><br><span class="line">    mov dx,0x1F2  ; 0x1F2为Sector Count 端口号 送到dx寄存器中</span><br><span class="line">    mov al,cl     ; !!! 忘了只能由ax al传递数据</span><br><span class="line">    out dx,al     ; !!! 这里修改了 原out dx,cl</span><br><span class="line">    </span><br><span class="line">    mov eax,esi   ; !!!袄无! 原来备份是这个用 前面需要ax来传递数据 麻了</span><br><span class="line">    </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;2 写入LBA 24位寄存器 确认扇区</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">    mov cl,0x8    ; shr 右移8位 把24位给送到 LBA low mid high 寄存器中</span><br><span class="line"></span><br><span class="line">    mov dx,0x1F3  ; LBA low</span><br><span class="line">    out dx,al </span><br><span class="line">    </span><br><span class="line">    mov dx,0x1F4  ; LBA mid</span><br><span class="line">    shr eax,cl    ; eax为32位 ax为16位 eax的低位字节 右移8位即8~15</span><br><span class="line">    out dx,al</span><br><span class="line">    </span><br><span class="line">    mov dx,0x1F5</span><br><span class="line">    shr eax,cl</span><br><span class="line">    out dx,al</span><br><span class="line">    </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;3 device 寄存器 第4位主次盘 第6位LBA模式 改为1</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line"></span><br><span class="line">            </span><br><span class="line">            ; 24 25 26 27位 尽管我们知道ax只有2 但还是需要按规矩办事 </span><br><span class="line">            ; 把除了最后四位的其他位置设置成0</span><br><span class="line">    shr eax,cl</span><br><span class="line">    </span><br><span class="line">    and al,0x0f </span><br><span class="line">    or al,0xe0   ;!!! 把第四-七位设置成0111 转换为LBA模式</span><br><span class="line">    mov dx,0x1F6 ; 参照硬盘控制器端口表 Device </span><br><span class="line">    out dx,al</span><br><span class="line"></span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;4 向Command写操作 Status和Command一个寄存器</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line"></span><br><span class="line">    mov dx,0x1F7 ; Status寄存器端口号</span><br><span class="line">    mov ax,0x20  ; 0x20是读命令</span><br><span class="line">    out dx,al</span><br><span class="line">    </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;5 向Status查看是否准备好惹 </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">    </span><br><span class="line">        ;设置不断读取重复 如果不为1则一直循环</span><br><span class="line">.not_ready:     </span><br><span class="line">    nop           ; !!! 空跳转指令 在循环中达到延时目的</span><br><span class="line">    in al,dx      ; 把寄存器中的信息返还出来</span><br><span class="line">    and al,0x88   ; !!! 0100 0100 0x88</span><br><span class="line">    cmp al,0x08</span><br><span class="line">    jne .not_ready ; !!! jump not equal == 0</span><br><span class="line">    </span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">;6 读取数据</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line"></span><br><span class="line">    mov ax,di      ;把 di 储存的cx 取出来</span><br><span class="line">    mov dx,256</span><br><span class="line">    mul dx        ;与di 与 ax 做乘法 计算一共需要读多少次 方便作循环 低16位放ax 高16位放dx</span><br><span class="line">    mov cx,ax      ;loop 与 cx相匹配 cx-- 当cx == 0即跳出循环</span><br><span class="line">    mov dx,0x1F0</span><br><span class="line">.go_read_loop:</span><br><span class="line">    in ax,dx      ;两字节dx 一次读两字</span><br><span class="line">    mov [bx],ax</span><br><span class="line">    add bx,2</span><br><span class="line">    loop .go_read_loop</span><br><span class="line">    </span><br><span class="line">    ret ;与call 配对返回原来的位置 跳转到call下一条指令</span><br><span class="line">        </span><br><span class="line">    times 510 - ($ - $$) db 0 </span><br><span class="line">    db 0x55,0xaa</span><br></pre></td></tr></table></figure></p></li>
+<li><p>将源文件编译成二进制bin文件</p>
+<p><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nasm -o mbr.bin mbr.S</span><br></pre></td></tr></table></figure></p></li>
+</ol>
+]]></content>
+      <categories>
+        <category>操作系统</category>
       </categories>
   </entry>
 </search>
