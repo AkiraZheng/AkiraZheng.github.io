@@ -9687,4 +9687,47 @@ https://pan.baidu.com/s/14-4XSjm-wvpqxdWcGoXXvw?pwd=9gj7 提取码: 9gj7
 <p><img src="/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/第一个hello驱动的加载与测试.png"></p>
 ]]></content>
   </entry>
+  <entry>
+    <title>进制转换CPP版</title>
+    <url>/2025/08/22/%E8%BF%9B%E5%88%B6%E8%BD%AC%E6%8D%A2CPP%E7%89%88/</url>
+    <content><![CDATA[<h1 id="一十进制---二进制">一、十进制 &lt;-&gt; 二进制</h1>
+<h2 id="十进制---二进制">1.1 十进制 -&gt; 二进制</h2>
+<p>在做笔试时，最好还是用现有的转换函数，方便点：</p>
+<ul>
+<li><code>bitset&lt;多少位的二进制&gt; b(decNum);</code></li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">string <span class="title">dec2Bin</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="function">bitset&lt;32&gt; <span class="title">b</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">return</span> b.<span class="built_in">to_string</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后是最原始的方法，纯C++实现： <figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dec2Bin</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> bin = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (n != <span class="number">0</span>) &#123;</span><br><span class="line">        bin += (n % <span class="number">2</span>) * <span class="built_in">pow</span>(<span class="number">10</span>, i);</span><br><span class="line">        n /= <span class="number">2</span>;</span><br><span class="line">        i++;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> bin;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="二进制---十进制">1.2 二进制 -&gt; 十进制</h2>
+<p>做笔试时，最好还是用现有的转换函数，方便点：</p>
+<ul>
+<li><code>stoi(binNum, 指针, 进制基数);</code></li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">uint32_t</span> <span class="title">bin2Dec</span><span class="params">(string binStr)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> decNum = <span class="built_in">stoi</span>(binStr, <span class="number">0</span>, <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">return</span> decNum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最原始的方法：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bin2Dec</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> dec = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (n != <span class="number">0</span>) &#123;</span><br><span class="line">        dec += (n % <span class="number">10</span>) * <span class="built_in">pow</span>(<span class="number">2</span>, i);</span><br><span class="line">        n /= <span class="number">10</span>;</span><br><span class="line">        i++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> dec;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="二十进制---十六进制">二、十进制 &lt;-&gt; 十六进制</h1>
+<h2 id="十进制---十六进制">2.1 十进制 -&gt; 十六进制</h2>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">string <span class="title">dec2Hex</span><span class="params">(<span class="keyword">uint32_t</span> decNum)</span> </span>&#123;</span><br><span class="line">    stringstream ss;</span><br><span class="line">    ss &lt;&lt; hex &lt;&lt; decNum;</span><br><span class="line">    <span class="keyword">return</span> ss.<span class="built_in">str</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="十六进制---十进制">2.2 十六进制 -&gt; 十进制</h2>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">uint32_t</span> <span class="title">hex2Dec</span><span class="params">(string hexStr)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> decNum = <span class="built_in">stoi</span>(hexStr, <span class="number">0</span>, <span class="number">16</span>);</span><br><span class="line">    <span class="keyword">return</span> decNum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="三二进制---十六进制">三、二进制 &lt;-&gt; 十六进制</h1>
+<p>二进制跟十六进制的转换需要借助十进制作为介质</p>
+<h2 id="二进制---十六进制">3.1 二进制 -&gt; 十六进制</h2>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">string <span class="title">bin2Hex</span><span class="params">(string binStr)</span> </span>&#123;</span><br><span class="line">    stringstream ss;</span><br><span class="line">    ss &lt;&lt; hex &lt;&lt; <span class="built_in">stoi</span>(binStr, <span class="number">0</span>, <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">return</span> ss.<span class="built_in">str</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="十六进制---二进制">3.2 十六进制 -&gt; 二进制</h2>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">string <span class="title">hex2Bin</span><span class="params">(string hexStr)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> decNum = <span class="built_in">stoi</span>(hexStr, <span class="number">0</span>, <span class="number">16</span>);</span><br><span class="line">    <span class="function">bitset&lt;32&gt; <span class="title">b</span><span class="params">(decNum)</span></span>;</span><br><span class="line">    <span class="keyword">return</span> b.<span class="built_in">to_string</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="四大小写转换">四、大小写转换</h1>
+<p>其实可以不需要函数，直接通过<code>'a' - 'A'</code>的差值进行转换，然后逐个转换就行
+- 小写字母转大写字母：<code>char c = c0 - ('a' - 'A');</code> -
+大写字母转小写字母：<code>char c = c0 + ('a' - 'A');</code></p>
+<h1 id="参考">参考</h1>
+<blockquote>
+<p><a href="https://blog.csdn.net/MOU_IT/article/details/89060249">C++中二进制、字符串、十六进制、十进制之间的转换</a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>数据结构与算法</category>
+      </categories>
+  </entry>
 </search>
