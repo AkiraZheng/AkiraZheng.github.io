@@ -85,3 +85,8 @@ clean:
 恭喜你，完成了第一个驱动的编写与加载！
 
 <img src="第一个hello驱动的加载与测试.png">
+
+
+# 参考
+
+> [宋宝国驱动git仓](https://gitee.com/PennyLee/learn-LDDD)
