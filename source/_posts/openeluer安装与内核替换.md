@@ -148,7 +148,7 @@ yum install ncurses-devel
 
 然后按`Exit`保存刚刚的config信息
 
-最后需要禁用证书，否则后面编译会失败：
+最后需要禁用证书、BTF，否则后面编译会失败：
 
 ```shell
 vim .config
@@ -157,6 +157,8 @@ vim .config
 <img src="23_3. 配置内核_禁用证书_vim查看.png">
 
 <img src="23_4. 配置内核_禁用证书.png">
+
+<img src="23_5.%20配置内核_BTF.png">
 
 ## 4.3 内核编译及安装
 
@@ -181,10 +183,59 @@ make -j$(nproc)
 编译完成后，可以安装生成的 vmlinuz 文件：
 
 ```shell
-make install
 make modules_install
+make install
 ```
 
+<img src="25. makeInstall安装内核结果.png">
+
+生成的新内核可以在 /boot/ 目录下查看：
+
+<img src="26. 生成的新内核.png">
+
+## 4.4 更新引导
+
+下面的命令会根据 /boot/ 目录下的内核文件自动更新启动引导文件。
+
+```shell
+grub2-mkconfig -o /boot/grub2/grub.cfg
+```
+
+然后重启系统就可以看到多个内核，其中一个就是我们新安装的内核，可自由选择一个内核启动系统。
+
+```shell
+reboot
+```
+
+<img src="27. 选择新的内核.png">
+
+重启完后可以确认新的内核是否生效：
+
+```shell
+uname -a
+```
+
+<img src="28. 确认新内核.png">
+
+# 五、支持远程ssh连接
+
+编辑 SSH 配置文件：
+
+```shell
+vi /etc/ssh/sshd_config
+```
+
+找到并修改以下参数：
+
+```shell
+AllowTcpForwarding yes   # 取消注释或添加此行
+```
+
+保存文件并重启 SSH 服务：
+
+```shell
+systemctl restart sshd  # 大多数 Linux 系统
+```
 
 # 参考
 
