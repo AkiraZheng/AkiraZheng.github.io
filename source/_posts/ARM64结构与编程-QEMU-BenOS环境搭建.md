@@ -34,7 +34,9 @@ tar -Jxf  armv8_trainning.git-20240318.tar.xz
 git log --oneline
 ```
 
-<img src=2025-09-14-17-50-52.png>
+<!-- <img src=2025-09-14-17-50-52.png> -->
+
+<img src=2025-09-15-00-03-44.png>
 
 
 在工作目录下载实验参考代码的git repo:
