@@ -34,8 +34,6 @@ tar -Jxf  armv8_trainning.git-20240318.tar.xz
 git log --oneline
 ```
 
-<!-- <img src=2025-09-14-17-50-52.png> -->
-
 <img src=2025-09-15-00-03-44.png>
 
 
@@ -55,10 +53,10 @@ git clone ssh://akira@ubuntu/home/akira/BenOS_Learn/BenOS_code/armv8_trainning.g
 
 代码下有两个分支：
 
-- master：是完整的代码，仅供参考
+- main：是完整的代码，仅供参考
 - my_labs：是BenOS的空骨架，在这里完成实验
 
-<img src=2025-09-14-18-12-37.png>
+<img src=2025-09-15-00-06-15.png>
 
 我们切换到`my_labs`分支进行实验：
 
