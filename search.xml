@@ -10309,12 +10309,11 @@ branch、是否有需要 commit 的</li>
     <url>/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/</url>
     <content><![CDATA[<h1 id="一虚拟化类型介绍">一、虚拟化类型介绍</h1>
 <p>Hypervisor：虚拟机管理程序，也叫做 VMM（Virtual Machine
-Manager），Hypervisor 位
-于计算机硬件和虚拟机之间，负责管理和分配计算机资源给各个虚拟机。 -
-Type1：第一类虚拟机管理程序就像<strong>小型操作系统</strong>，目的就是管理所有的虚拟机，常见的虚
-拟化软件有Xen、ACRN等。</p>
-<pre><code>&lt;img src=&quot;type1_hypervisor.png&quot;&gt;    </code></pre>
+Manager），Hypervisor
+位于计算机硬件和虚拟机之间，负责管理和分配计算机资源给各个虚拟机。</p>
 <ul>
+<li><p>Type1：第一类虚拟机管理程序就像<strong>小型操作系统</strong>，目的就是管理所有的虚拟机，常见的虚拟化软件有Xen、ACRN等</p>
+<p><img src="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/type1_hypervisor.png"></p></li>
 <li><p>Type2：第二类虚拟机管理程序依赖于Windows、Linux等主机操作系统来分配和管理调度资源，常见的虚拟化软件有VMware
 Player、KVM以及Virtual
 Box等。也就是说这一类必须有一个<strong>宿主操作系统</strong></p>
@@ -10323,10 +10322,7 @@ Box等。也就是说这一类必须有一个<strong>宿主操作系统</strong>
 <p>kvm 属于 type2 虚拟化，但是由于硬件问题，为了方便直接用 qemu
 做实验，我们将在 benos 基础上设计一个 type1
 的软件虚拟化。这部分在后面的实操会再进一步介绍。</p>
-<figure>
-<img src="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/2025-09-14-14-55-33.png" alt="vcpu">
-<figcaption aria-hidden="true">vcpu</figcaption>
-</figure>
+<p><img src="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/2025-09-14-14-55-33.png"></p>
 ]]></content>
       <categories>
         <category>虚拟化</category>
@@ -10397,5 +10393,39 @@ I/O控制的核心机制。</p>
 <p>[1] <a href="https://blog.csdn.net/weixin_71478434/article/details/126551082">一文搞懂内核块设备操作之ioctl系统调用过程</a></p>
 </blockquote>
 ]]></content>
+  </entry>
+  <entry>
+    <title>虚拟化：内存虚拟化</title>
+    <url>/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/</url>
+    <content><![CDATA[<h1 id="一内存虚拟化介绍">一、内存虚拟化介绍</h1>
+<p>虚拟化有<strong>软件模拟方式和硬件模拟方式</strong></p>
+<ul>
+<li><p>软件模拟方式需要通过<strong>影子页表</strong>来实现内存映射，速度比较慢</p></li>
+<li><p>硬件模拟方式丢弃了影子页表的方式，通过4种地址来实现转换：</p>
+<ul>
+<li><p>gva -&gt; vm转换为 -&gt; gpa</p></li>
+<li><p>hva -&gt; kvm转换为 -&gt; hpa</p></li>
+</ul></li>
+</ul>
+<p><img src="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/2025-09-14-15-15-33.png"></p>
+]]></content>
+      <categories>
+        <category>虚拟化</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>虚拟化：IO虚拟化</title>
+    <url>/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/</url>
+    <content><![CDATA[<h1 id="一io虚拟化介绍">一、IO虚拟化介绍</h1>
+<p>IO虚拟化通常有三种： -
+软件模拟设备：以磁盘为例，虚拟机管理程序可以在实际的磁盘上创建一个文件一块区域来模拟虚拟磁盘，并把它传递给客户机。缺点是每次都要陷入
+VMM，性能会下降 -
+设备透传：虚拟机管理程序把物理设备直接分配给特定的虚拟机。但是这样一个设备只能被一个虚拟机使用，如果多个虚拟机需要使用同一个设备，就会产生冲突
+- SR-IOV：解决设备透传带来的问题。他可以通过将一个 PF 创建为多个
+VF，然后把 VF 分配给不同的虚拟机，从而实现多个虚拟机使用同一个设备</p>
+]]></content>
+      <categories>
+        <category>虚拟化</category>
+      </categories>
   </entry>
 </search>
