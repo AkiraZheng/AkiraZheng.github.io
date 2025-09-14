@@ -10320,6 +10320,9 @@ Player、KVM以及Virtual
 Box等。也就是说这一类必须有一个<strong>宿主操作系统</strong></p>
 <p><img src="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/type2_hypervisor.png"></p></li>
 </ul>
+<p>kvm 属于 type2 虚拟化，但是由于硬件问题，为了方便直接用 qemu
+做实验，我们将在 benos 基础上设计一个 type1
+的软件虚拟化。这部分在后面的实操会再进一步介绍。</p>
 <figure>
 <img src="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/2025-09-14-14-55-33.png" alt="vcpu">
 <figcaption aria-hidden="true">vcpu</figcaption>
