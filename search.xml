@@ -10509,7 +10509,6 @@ LTS上安装定制的QEMU环境，需要两个文件<code>openocd-benos_1.0-3_am
 <h1 id="二代码仓配置">二、代码仓配置</h1>
 <p><code>armv8_trainning.git-20240318.tar.xz</code>代码解压到ubuntu中</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo mkdir BenOS_code</span><br><span class="line">sudo mv ./armv8_trainning.git-20240318.tar.xz ./BenOS_code/</span><br><span class="line">sudo chmod 777 -R ./BenOS_code</span><br><span class="line"><span class="built_in">cd</span> ./BenOS_code</span><br><span class="line">tar -Jxf  armv8_trainning.git-20240318.tar.xz</span><br><span class="line">git <span class="built_in">log</span> --oneline</span><br></pre></td></tr></table></figure>
-<!-- <img src=2025-09-14-17-50-52.png> -->
 <p><img src="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/2025-09-15-00-03-44.png"></p>
 <p>在工作目录下载实验参考代码的git repo:</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/akira/BenOS_Learn/BenOS_code/</span><br><span class="line">mkdir code</span><br><span class="line">git <span class="built_in">clone</span> ssh://akira@ubuntu/home/akira/BenOS_Learn/BenOS_code/armv8_trainning.git</span><br><span class="line"></span><br><span class="line"><span class="comment"># git diff 3262911^ f280813 # 查看某一次提交所修改的代码，跟旧代码相比较</span></span><br></pre></td></tr></table></figure>
@@ -10517,10 +10516,10 @@ LTS上安装定制的QEMU环境，需要两个文件<code>openocd-benos_1.0-3_am
 <p><img src="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/2025-09-14-18-06-06.png"></p>
 <p>代码下有两个分支：</p>
 <ul>
-<li>master：是完整的代码，仅供参考</li>
+<li>main：是完整的代码，仅供参考</li>
 <li>my_labs：是BenOS的空骨架，在这里完成实验</li>
 </ul>
-<p><img src="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/2025-09-14-18-12-37.png"></p>
+<p><img src="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/2025-09-15-00-06-15.png"></p>
 <p>我们切换到<code>my_labs</code>分支进行实验：</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git branch my_lab</span><br><span class="line">git checkout my_lab</span><br><span class="line">git reset 3262911 --hard</span><br></pre></td></tr></table></figure>
 <p>当需要提交代码时，可以提交到</p>
