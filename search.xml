@@ -10195,7 +10195,7 @@ branch、是否有需要 commit 的</li>
 <p>然后再切换到分支中：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git checkout old_branch # 切换到旧分支old_branch中</span><br><span class="line"><span class="meta">#</span><span class="bash">git checkout -b new_branch <span class="comment"># 创建并切换到新分支</span></span></span><br></pre></td></tr></table></figure>
 <p>后面有需要的话还要恢复到暂存状态（恢复暂存代码）：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 恢复特定的 stash （例如：stash@&#123;2&#125;）</span></span><br><span class="line">git stash apply stash@&#123;2&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash pop <span class="comment"># 恢复并删除栈顶的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 恢复所有 stash</span></span><br><span class="line"><span class="meta">#</span><span class="bash">git stash apply</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 恢复特定的 stash （例如：stash@&#123;2&#125;）</span></span><br><span class="line">git stash apply stash@&#123;2&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash pop <span class="comment"># 恢复并删除栈顶的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 恢复所有 stash</span></span><br><span class="line"><span class="meta">#</span><span class="bash">git stash apply</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash drop <span class="comment"># 删除栈顶的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash drop stash@&#123;2&#125; <span class="comment"># 删除特定的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash">git stash clear <span class="comment"># 清空所有 stash</span></span></span><br></pre></td></tr></table></figure>
 <p>修改完代码也可以取消修改：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git restore ./* # 取消当前目录下所有修改</span><br><span class="line"><span class="meta">#</span><span class="bash">git restore ./&lt;path&gt;</span></span><br></pre></td></tr></table></figure>
 <h1 id="diff-查看修改内容">4. diff 查看修改内容</h1>
@@ -10221,6 +10221,9 @@ branch、是否有需要 commit 的</li>
     <title>linux常用技巧</title>
     <url>/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</url>
     <content><![CDATA[<h1 id="vim">1. vim</h1>
+<ul>
+<li><code>.</code>:小数点，重复上一次的命令</li>
+</ul>
 <h1 id="vim-中进行查找">vim 中进行查找</h1>
 <p>1）基本查找命令</p>
 <p>查找下一个匹配项：</p>
@@ -10235,11 +10238,54 @@ branch、是否有需要 commit 的</li>
 <li>跳转到上一个匹配项：按<code>N</code>键</li>
 </ul>
 <p>3）<a href="https://www.cnblogs.com/imzhi/p/vim-drawit.html">vim-drawit操作指南</a></p>
-<h1 id="vim-中复制一整个文件的全文">vim 中复制一整个文件的全文</h1>
+<h1 id="vim-中复制粘贴">vim 中复制粘贴</h1>
 <p>复制：</p>
-<p><code>:%+y</code></p>
+<ul>
+<li><code>yy</code>: 复制当前行</li>
+<li><code>nyy</code>: 复制从当前行开始的 n 行（例如：<code>3yy</code>
+复制当前行及其下两行，共三行）</li>
+</ul>
 <p>粘贴：</p>
-<p><code>p</code></p>
+<ul>
+<li><code>p</code>: 在光标后粘贴</li>
+</ul>
+<h2 id="光标移动">光标移动</h2>
+<ul>
+<li><code>NG</code>: 跳转到第 N 行</li>
+<li><code>:n</code>: 跳转到第 N 行</li>
+<li><code>gg</code>: 跳转到第一行, 相当于 <code>1G</code></li>
+<li><code>G</code>: 跳转到最后一行</li>
+<li><code>w</code>: 光标跳到下一个单词的开头</li>
+<li><code>e</code>: 光标跳到当前单词的结尾</li>
+<li><code>%</code>: 跳转到匹配的括号处（大括号、中括号）</li>
+<li><code>*</code>:
+高亮显示所有与当前光标所在单词<strong>相同的单词处</strong>
+<ul>
+<li>按 <code>n</code> 跳转到下一个匹配处</li>
+<li>按 <code>N</code> 跳转到上一个匹配处</li>
+</ul></li>
+</ul>
+<p>组合命令：</p>
+<p><start position> <end position> <command></end></start></p>
+<p>example:</p>
+<ul>
+<li><code>0y$</code>: 复制从行首到行尾的内容
+<ul>
+<li><code>0</code>: 行首</li>
+<li><code>y</code>: 复制</li>
+<li><code>$</code>: 行尾</li>
+</ul></li>
+</ul>
+<p>其他高级组合用法符号说明：</p>
+<ul>
+<li><code>0</code>: 行首</li>
+<li><code>^</code>: 到本行<strong>第一个</strong>非空字符</li>
+<li><code>$</code>: 行尾</li>
+<li><code>g</code>: 到本行<strong>最后一个</strong>非空字符</li>
+<li><code>fa</code>: 到下一个匹配的字符 a 处（可以改变 a
+为其他字符）</li>
+<li><code>t,</code>: 到逗号前的第一个字符（逗号可以改变为其他字符）</li>
+</ul>
 <h1 id="terminal-操作">2. terminal 操作</h1>
 <h2 id="内核相关路径查找">内核相关路径查找</h2>
 <p><code>uname -a</code>: 显示当前内核信息</p>
@@ -10256,6 +10302,97 @@ branch、是否有需要 commit 的</li>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/bin</span><br></pre></td></tr></table></figure>
 <p>配置变量：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export $VAR=value</span><br><span class="line">echo $VAR # 验证环境变量是否正确设置到系统中</span><br></pre></td></tr></table></figure>
+]]></content>
+  </entry>
+  <entry>
+    <title>虚拟化：CPU虚拟化</title>
+    <url>/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/</url>
+    <content><![CDATA[<h1 id="一虚拟化类型介绍">一、虚拟化类型介绍</h1>
+<p>Hypervisor：虚拟机管理程序，也叫做 VMM（Virtual Machine
+Manager），Hypervisor 位
+于计算机硬件和虚拟机之间，负责管理和分配计算机资源给各个虚拟机。 -
+Type1：第一类虚拟机管理程序就像<strong>小型操作系统</strong>，目的就是管理所有的虚拟机，常见的虚
+拟化软件有Xen、ACRN等。</p>
+<pre><code>&lt;img src=&quot;type1_hypervisor.png&quot;&gt;    </code></pre>
+<ul>
+<li><p>Type2：第二类虚拟机管理程序依赖于Windows、Linux等主机操作系统来分配和管理调度资源，常见的虚拟化软件有VMware
+Player、KVM以及Virtual
+Box等。也就是说这一类必须有一个<strong>宿主操作系统</strong></p>
+<p><img src="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/type2_hypervisor.png"></p></li>
+</ul>
+<figure>
+<img src="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/2025-09-14-14-55-33.png" alt="vcpu">
+<figcaption aria-hidden="true">vcpu</figcaption>
+</figure>
+]]></content>
+      <categories>
+        <category>虚拟化</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>驱动原理学习1：字符设备驱动</title>
+    <url>/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/</url>
+    <content><![CDATA[<h1 id="一字符设备驱动">一、字符设备驱动</h1>
+<h2 id="ioctl">1.1 ioctl</h2>
+<p><code>ioctl</code>是用于设备控制的公共接口，可以实现用户态<strong>系统调用</strong>、<strong>设备驱动程序</strong>进行通信。<code>ioctl</code>在<strong>字符设备、块设备、网络设备</strong>等设备驱动程序中广泛使用。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">+---------------+          +---------------+       +---------------+       +---------------------------+</span><br><span class="line">|  用户态ioctl   +---------&gt;| 陷入内核传递   +------&gt;| 内核查找       +------&gt;| sys_ioctl()根据文件操作集 |</span><br><span class="line">|               |          | 系统调用号54   |       | 系统调用号54   |       | 找到驱动程序mydev_ioctl   |</span><br><span class="line">+---------------+          +---------------+       +---------------+       +------------+--------------+</span><br><span class="line">        ^                                                                               |</span><br><span class="line">        |                                                                               |</span><br><span class="line">        |                                                                               |</span><br><span class="line">        |                                                                               v</span><br><span class="line">        |                                                                  +---------------------------+</span><br><span class="line">        +------------------------------------------------------------------+                           |</span><br><span class="line">                                                                           | 执行驱动程序mydev_ioctl    |</span><br><span class="line">                                                                           +---------------------------+</span><br></pre></td></tr></table></figure>
+<h2 id="用户态ioctl和驱动ioctl">1.2 用户态ioctl和驱动ioctl</h2>
+<p>系统调用过程中，实际上就是<strong>处于用户空间的用户态ioctl</strong>对应上特定<strong>内核空间中ioctl</strong>的过程</p>
+<p>但是用户态没有访问内核空间的权限，因此需要系统先通过<code>SWI(Software Interrupt)</code>的方式从用户态陷入内核态，并利用<code>sys_ioctl</code>通过<strong>文件操作集</strong>找到对应的驱动ioctl，三者共同构成了Linux
+I/O控制的核心机制。</p>
+<h3 id="用户态ioctl">1）用户态ioctl</h3>
+<p>在Linux中，glibc/标准库中（<code>/usr/include/sys</code>）封装着为用户程序提供的统一<code>ioctl</code>接口，在&lt;sys/ioctl.h&gt;中定义了ioctl函数：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">ioctl</span> <span class="params">(<span class="keyword">int</span> __fd, <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">int</span> __request, ...)</span> __THROW</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>fd</code>：设备文件描述符。表示要操作的设备对象。</li>
+<li><code>request</code>：也常将该参数写作<code>cmd</code>，表示对设备进行控制的命令，设备驱动将根据cmd参数执行对应的操作
+<ul>
+<li>该参数定义了<strong>用户与驱动的“协议”</strong>，虽然可以是任意值，但是Linux中还是提供了统一格式，将32位的int型数据划分成4个位段，来保证参数的唯一性。</li>
+</ul></li>
+<li><code>...</code>：可选参数，表示对设备进行控制的命令参数，可以是整数、指针等类型，用于传递给驱动程序。</li>
+</ul>
+<p>下面讲解一下
+<code>request</code>/<code>cmd</code>参数中的4个位段信息： -
+<code>dir</code>-2bit：表示数据传输方向（四种） -
+<code>_IOC_NONE</code>：无数据传输 -
+<code>_IOC_READ</code>：数据从内核空间（设备）读取到用户空间 -
+<code>_IOC_WRITE</code>：数据从用户空间写入到内核空间（设备） -
+<code>_IOC_READ|_IOC_WRITE</code>：数据在用户空间和内核空间之间双向传输
+-
+<code>type</code>-8bit：设备类型标识符，用于区分不同设备。也成为<strong>幻数/魔数</strong>
+-
+<code>nr(number)</code>-8bit：命令序号，用于区分同一设备的不同命令，可以从0~255之间进行编号
+-
+<code>size</code>-14bit：表示用户传入的用户数据<code>...</code>部分参数的数据类型和长度，单位是字节
+- 系统并不强制使用这个位字段，因此内核不会检查该字段。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> 31             30           16 15            8 7             0</span><br><span class="line">+---------------+--------------+---------------+---------------+</span><br><span class="line">|     dir       |     size     |    type       |    nr         |</span><br><span class="line">+---------------+--------------+---------------+---------------+</span><br></pre></td></tr></table></figure>
+<p>假设按照这4个字段来划分<code>cmd</code>参数，在宏定义时会定义<code>_IOC_DIRSHIFT</code>、<code>_IOC_TYPESHIFT</code>、<code>_IOC_NRSHIFT</code>、<code>_IOC_SIZESHIFT</code>这4个移位值，然后通过移位操作来获取这4个字段的值。</p>
+<p>通常，我们不直接使用<code>ioctl</code>函数，而是使用一些宏定义，如<code>_IOC</code>：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _IOC(dir,type,nr,size) \</span></span><br><span class="line"><span class="meta">    (((dir)  &lt;&lt; _IOC_DIRSHIFT) | \</span></span><br><span class="line"><span class="meta">     ((type) &lt;&lt; _IOC_TYPESHIFT) | \</span></span><br><span class="line"><span class="meta">     ((nr)   &lt;&lt; _IOC_NRSHIFT) | \</span></span><br><span class="line"><span class="meta">     ((size) &lt;&lt; _IOC_SIZESHIFT))</span></span><br></pre></td></tr></table></figure>
+<p>并利用<code>_IOC</code>衍生的接口<code>_IO</code> <code>_IOR</code>
+<code>_IOW</code> <code>_IOWR</code> 等来生成指定的ioctl命令：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _IO(type,nr)        _IOC(_IOC_NONE,(type),(nr),0)	<span class="comment">//定义不带参数的 ioctl 命令</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _IOR(type,nr,size)  _IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))	<span class="comment">//定义											带写参数的 ioctl 命令（copy_from_user）</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _IOW(type,nr,size)  _IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))	<span class="comment">//定义											带读参数的ioctl命令（copy_to_user）</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _IOWR(type,nr,size) _IOC(_IOC_READ|_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))		<span class="comment">//定义带读写参数的 ioctl 命令</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="sys_ioctl">2）sys_ioctl</h3>
+<p><code>ioctl</code>会让用户态触发中断陷入内核，所以<code>ioctl</code>本身也有一个<strong>系统调用号</strong><code>__NR_ioctl</code>，在&lt;arch/arm64/include/asm/unistd32.h&gt;中定义：</p>
+<p>中断陷入内核态之后，会根据寄存器传递过来的系统调用号(54)，执行系统调用表中的(54)操作，就是调用sys_ioctl()函数。</p>
+<p><img src="/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/ioctl的系统调用号.png"></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __NR_ioctl 54</span></span><br><span class="line">__SYSCALL(__NR_ioctl, compat_sys_ioctl)</span><br></pre></td></tr></table></figure>
+<p>这里<code>sys_ioctl</code>函数的声明为：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">asmlinkage <span class="keyword">long</span> <span class="title">sys_ioctl</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> fd, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>实际上我们使用的时候用的是<code>SYSCALL_DEFINE3</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">SYSCALL_DEFINE3(ioctl, <span class="keyword">unsigned</span> <span class="keyword">int</span>, fd, <span class="keyword">unsigned</span> <span class="keyword">int</span>, cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span>, arg)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 1. 根据fd找到对应的file结构体</span></span><br><span class="line">    <span class="comment">// 2. 检查权限和参数有效性</span></span><br><span class="line">    <span class="comment">// 3. 调用具体设备的ioctl操作方法</span></span><br><span class="line">    <span class="keyword">return</span> do_vfs_ioctl(file, fd, cmd, arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在<code>SYSCALL_DEFINE3</code>中执行<code>do_vfs_ioctl</code>，深挖到该接口里面会发现它将<strong>对应的驱动程序的ioctl加入到了文件操作集</strong>中，由此路由到对应的<strong>驱动ioctl</strong>函数中执行对应的操作</p>
+<h3 id="驱动ioctl">3）驱动ioctl</h3>
+<p>假设我们某个中断的目标是路由到<code>led_ioctl</code>驱动程序中，定义该驱动函数为：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">led_ioctl</span><span class="params">(struct file *file, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br></pre></td></tr></table></figure>
+<p>在驱动程序中用switch对该设备的<code>cmd</code>号进行解析，并执行对应的操作</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字符设备驱动示例</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">mydev_ioctl</span><span class="params">(struct file *filp, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (cmd) &#123;</span><br><span class="line">    <span class="keyword">case</span> MYDEV_CMD_READ:</span><br><span class="line">        <span class="comment">// 处理读取请求</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> MYDEV_CMD_WRITE:</span><br><span class="line">        <span class="comment">// 处理写入请求</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">return</span> -ENOTTY; <span class="comment">// 不支持的命令</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在file_operations中注册(注册到文件操作集中，供给sys_ioctl路由到这（通过`unlocked_ioctl`）)</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">mydev_fops</span> =</span> &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .unlocked_ioctl = mydev_ioctl,</span><br><span class="line">    <span class="comment">// 其他操作方法...</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>执行里面的驱动函数就能实现完整的系统调用，最后再将结果返回给用户态。</p>
+<h1 id="二">二、</h1>
+<h1 id="参考">参考</h1>
+<blockquote>
+<p>[1] <a href="https://blog.csdn.net/weixin_71478434/article/details/126551082">一文搞懂内核块设备操作之ioctl系统调用过程</a></p>
+</blockquote>
 ]]></content>
   </entry>
 </search>
