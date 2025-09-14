@@ -4,7 +4,7 @@ date: 2025-09-14 17:21:03
 tags:
 ---
 
-> 项目仓库：[git@github.com:AkiraZheng/BenOS_ARM.git][git@github.com:AkiraZheng/BenOS_ARM.git]
+> 项目仓库：[git@github.com:AkiraZheng/BenOS_ARM.git](git@github.com:AkiraZheng/BenOS_ARM.git)
 
 # 一、安装QEMU环境
 
