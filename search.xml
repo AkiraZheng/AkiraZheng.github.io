@@ -10307,6 +10307,8 @@ branch、是否有需要 commit 的</li>
 host 用以下方法暂时关闭，这样开启 guest
 虚机的时候就不会将内核信息打印到主机中，影响性能：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo 0 &gt; /proc/sys/kernel/printk</span><br></pre></td></tr></table></figure>
+<h2 id="修改-linux-密码">修改 linux 密码</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo passwd root</span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证sudo的密码后，输入新密码</span></span><br></pre></td></tr></table></figure>
 <h1 id="gdb-调试">3. gdb 调试</h1>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">(gdb) target remote localhost:1234</span><br><span class="line">(gdb) b _start</span><br><span class="line">(gdb) c</span><br><span class="line">(gdb) layout regs # 查看寄存器</span><br><span class="line">(gdb) s # 运行下一条指令</span><br><span class="line"><span class="meta">#</span><span class="bash"> (gdb) n <span class="comment"># 跳过当前函数</span></span></span><br><span class="line">(gdb) x/x $pc # 查看当前pc地址的值</span><br><span class="line">(gdb) q # 退出</span><br></pre></td></tr></table></figure>
 ]]></content>
