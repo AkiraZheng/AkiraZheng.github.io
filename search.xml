@@ -10295,13 +10295,18 @@ branch、是否有需要 commit 的</li>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18G     /home</span><br><span class="line">7.5G    /usr</span><br><span class="line">348M    /root</span><br><span class="line">277M    /boot</span><br><span class="line">166M    /var</span><br><span class="line">35M     /etc</span><br><span class="line">12M     /run</span><br><span class="line">40K     /opt</span><br><span class="line">16K     /lost+found</span><br><span class="line">4.0K    /srv</span><br></pre></td></tr></table></figure>
 <p>假设逐层检查发现是 <code>/var/crash</code>
 占用最高，如果确认占用最高的目录删除后没有影响，那么就删除该目录：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /var/crash/ *</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /var/crash/*</span><br></pre></td></tr></table></figure>
 <h2 id="设置环境变量">设置环境变量</h2>
 <p>用 <code>export</code> 命令设置环境变量，例如：</p>
 <p>配置路径：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/bin</span><br></pre></td></tr></table></figure>
 <p>配置变量：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export $VAR=value</span><br><span class="line">echo $VAR # 验证环境变量是否正确设置到系统中</span><br></pre></td></tr></table></figure>
+<h2 id="关闭内核打印">关闭内核打印</h2>
+<p>有时候我们在应用层调试程序的时候想暂时屏蔽掉内核的无用打印，可以在
+host 用以下方法暂时关闭，这样开启 guest
+虚机的时候就不会将内核信息打印到主机中，影响性能：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo 0 &gt; /proc/sys/kernel/printk</span><br></pre></td></tr></table></figure>
 <h1 id="gdb-调试">3. gdb 调试</h1>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">(gdb) target remote localhost:1234</span><br><span class="line">(gdb) b _start</span><br><span class="line">(gdb) c</span><br><span class="line">(gdb) layout regs # 查看寄存器</span><br><span class="line">(gdb) s # 运行下一条指令</span><br><span class="line"><span class="meta">#</span><span class="bash"> (gdb) n <span class="comment"># 跳过当前函数</span></span></span><br><span class="line">(gdb) x/x $pc # 查看当前pc地址的值</span><br><span class="line">(gdb) q # 退出</span><br></pre></td></tr></table></figure>
 ]]></content>
