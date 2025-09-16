@@ -10224,7 +10224,7 @@ branch、是否有需要 commit 的</li>
 <ul>
 <li><code>.</code>:小数点，重复上一次的命令</li>
 </ul>
-<h1 id="vim-中进行查找">vim 中进行查找</h1>
+<h2 id="vim-中进行查找">vim 中进行查找</h2>
 <p>1）基本查找命令</p>
 <p>查找下一个匹配项：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/&lt;搜索内容&gt;</span><br></pre></td></tr></table></figure>
@@ -10238,7 +10238,7 @@ branch、是否有需要 commit 的</li>
 <li>跳转到上一个匹配项：按<code>N</code>键</li>
 </ul>
 <p>3）<a href="https://www.cnblogs.com/imzhi/p/vim-drawit.html">vim-drawit操作指南</a></p>
-<h1 id="vim-中复制粘贴">vim 中复制粘贴</h1>
+<h2 id="vim-中复制粘贴">vim 中复制粘贴</h2>
 <p>复制：</p>
 <ul>
 <li><code>yy</code>: 复制当前行</li>
