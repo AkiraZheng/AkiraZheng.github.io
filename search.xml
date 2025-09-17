@@ -8640,6 +8640,17 @@ themes是clone的导致push时文件夹出现箭头（丢失）</h2>
 <li>参考文章<a href="https://www.jianshu.com/p/28e61a24d847">Git
 解决github文件夹有向右的白色箭头并且不能打开</a></li>
 </ul>
+<h2 id="在vscode中配置paste-image">8.
+在<code>vscode</code>中配置<code>paste image</code></h2>
+<p>在 vscode 中配置 paste
+image，实现用<code>Ctrl+Alt+V</code>(win)、<code>opt+cmd+V</code>(mac)粘贴图片</p>
+<p>首先安装<code>paste image</code>插件</p>
+<p>然后<code>ctrl+shift+p</code>打开命令面板，输入<code>settings</code>，选择<code>paste image: path</code></p>
+<p>配置内容：</p>
+<p>对于<code>paste image: path</code>，配置为<code>$&#123;currentFileNameWithoutExt&#125;</code>，hexo中new一个md文件时，会自动生成同名文件夹存放图片，因此这里设置将图片存放在md文件同目录下</p>
+<p><img src="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/2025-09-17-14-05-32.png"></p>
+<p>对于<code>Paste Image: Insert Pattern</code>，配置为<code>&lt;img src=$&#123;imageFileName&#125;&gt;</code></p>
+<p><img src="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/2025-09-17-14-07-17.png"></p>
 ]]></content>
       <categories>
         <category>重装-环境配置-计算机</category>
@@ -10287,7 +10298,10 @@ branch、是否有需要 commit 的</li>
 <li><code>t,</code>: 到逗号前的第一个字符（逗号可以改变为其他字符）</li>
 </ul>
 <h1 id="terminal-操作">2. terminal 操作</h1>
-<h2 id="内核相关路径查找">内核相关路径查找</h2>
+<h2 id="find"><code>find</code></h2>
+<p>查找并忽略没有权限的文件的报错信息：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">find / -name &quot;文件名.c&quot; 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+<h2 id="查找内核的路径">查找内核的路径</h2>
 <p><code>uname -a</code>: 显示当前内核信息</p>
 <p><code>ls -l /usr/src</code>: 找到 uname -r 显示的版本的内核路径</p>
 <h2 id="查看磁盘哪个占用最高">查看磁盘哪个占用最高</h2>
