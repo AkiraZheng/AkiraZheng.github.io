@@ -1714,6 +1714,7 @@ https://zhuanlan.zhihu.com/p/188416607</p>
 <li>参考：(VS Code编写Keil uVison
 5工程)[https://blog.csdn.net/weixin_43576926/article/details/107736692]</li>
 </ul>
+<h2 id="配置-paste-image-插件">5.3 配置 paste image 插件</h2>
 <h1 id="六jetbrains全家桶">六、JetBrains全家桶</h1>
 <h2 id="clion配置c">6.1 CLion配置C++</h2>
 <blockquote>
@@ -10327,11 +10328,31 @@ host 用以下方法暂时关闭，这样开启 guest
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo 0 &gt; /proc/sys/kernel/printk</span><br></pre></td></tr></table></figure>
 <h2 id="修改-linux-密码">修改 linux 密码</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo passwd root</span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证sudo的密码后，输入新密码</span></span><br></pre></td></tr></table></figure>
+<h2 id="设置维持-ssh-连接不断连">设置维持 ssh 连接不断连</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mkdir -p /root/.ssh        # 创建目录</span><br><span class="line">sudo chmod 700 /root/.ssh       # 权限必须 700</span><br><span class="line">sudo vi /root/.ssh/config       # 现在可以正常保存</span><br></pre></td></tr></table></figure>
+<p>然后在文件中写入如下内容： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ServerAliveInterval 60</span><br></pre></td></tr></table></figure></p>
 <h1 id="gdb-调试">3. gdb 调试</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">(gdb) target remote localhost:1234</span><br><span class="line">(gdb) b _start</span><br><span class="line">(gdb) c</span><br><span class="line">(gdb) layout regs # 查看寄存器</span><br><span class="line">(gdb) s # 运行下一条指令</span><br><span class="line"><span class="meta">#</span><span class="bash"> (gdb) n <span class="comment"># 跳过当前函数</span></span></span><br><span class="line">(gdb) x/x $pc # 查看当前pc地址的值</span><br><span class="line">(gdb) q # 退出</span><br></pre></td></tr></table></figure>
+<h2 id="常用指令">常用指令</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">target remote localhost:1234</span><br><span class="line">b _start</span><br><span class="line">c</span><br><span class="line">layout regs # 查看寄存器</span><br><span class="line">s # 运行下一条指令</span><br><span class="line"><span class="meta">#</span><span class="bash"> n <span class="comment"># 跳过当前函数</span></span></span><br><span class="line">x/x $pc # 查看当前pc地址的值</span><br><span class="line">q # 退出</span><br></pre></td></tr></table></figure>
+<h2 id="查看某个地址处内存的值">查看某个地址处内存的值：</h2>
+<p>按当前寄存器值查看</p>
+<p>看 x1 指向的同一块目的地址<code>x/4xg 0x200000</code></p>
+<blockquote>
+<p><a href="https://blog.csdn.net/u014470361/article/details/102230583">gdb查看内存的值</a></p>
+</blockquote>
 <h1 id="qemu-使用">4. qemu 使用</h1>
 <h2 id="qemu-指令">qemu 指令</h2>
 <h2 id="virsh-指令">virsh 指令</h2>
+<h1 id="linux-中对工程代码的跳转函数查找">5. Linux
+中对工程代码的跳转、函数查找</h1>
+<h2 id="vim-中函数跳转">vim 中函数跳转</h2>
+<p>安装 ctags</p>
+<p>在工程源目录下为所有文件生成 ctags：<code>ctags -R *</code></p>
+<p>在 vim 中使用 ctags 跳转：<code>:tag 函数名</code></p>
+<p>在 vim 中使用<code>ctrl+]</code> 跳转到<strong>函数定义</strong></p>
+<p>看完后使用<code>ctrl+t</code>返回到函数调用（跳回）</p>
+<h2 id="shell-中查找整个哪个文件包含某个函数名">shell
+中查找整个哪个文件包含某个函数名</h2>
 ]]></content>
   </entry>
   <entry>
@@ -10573,12 +10594,92 @@ LTS上安装定制的QEMU环境，需要两个文件<code>openocd-benos_1.0-3_am
     <title>ARM64结构与编程:加载和存储指令</title>
     <url>/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/</url>
     <content><![CDATA[<h1 id="一加载和存储指令">一、加载和存储指令</h1>
-<p>ARM64指令集提供了很多加载和存储指令，比如： -
-<code>ldr</code>：加载指令，从内存中加载数据到寄存器 -
-<code>str</code>：存储指令，将寄存器中的数据存储到内存中 -
-<code>ldrb</code>：加载指令，从内存中加载一个字节数据到寄存器 -
-<code>strb</code>：存储指令，将寄存器中的字节数据存储到内存中</p>
-<h1 id="二代码实践">二、代码实践</h1>
+<p>ARM64指令集提供了很多加载和存储指令，比如：</p>
+<p>寄存器与物理内存数据之间的加载与存储： -
+<code>ldr</code>：加载指令，从寄存器B存储的地址内存中加载数据到寄存器 -
+<code>ldr &lt;A&gt;, [&lt;B&gt;]</code> - 寄存器A &lt;---
+寄存器B存储的地址中内存的数据 -
+<code>str</code>：存储指令，将寄存器A中的数据存储到寄存器B存储的
+地址内存中 - <code>str &lt;A&gt;, [&lt;B&gt;]</code> - 寄存器 A 中的数据
+---&gt; 寄存器 B 存储的 地址内存中 -
+<code>ldp</code>：加载指令，<code>ldp</code>指令可以加载 16 个字节 -
+<code>ldp &lt;A&gt;, &lt;B&gt;, [&lt;C&gt;]</code> - 以 C
+的值为起始地址，加载这个地址的数据到 A 中，然后 C+8
+作为新的起始地址，加载这个地址的数据到 B 中 - <code>stp</code>：存储指令
+- <code>stp &lt;A&gt;, &lt;B&gt;, [&lt;C&gt;]</code> - 存储 A 的数据到 C
+地址中，然后存储 B 的数据到 C+8 地址中</p>
+<p>值域复制指令 - <code>mov</code>：移动指令 -
+<code>mov &lt;A&gt; , value</code></p>
+<p>比较指令：</p>
+<ul>
+<li><code>cmp</code>：比较指令
+<ul>
+<li><code>cmp &lt;目标操作数&gt;, &lt;源操作数&gt;</code></li>
+<li>比较的结果会修改标志位</li>
+</ul></li>
+</ul>
+<p><code>cmp</code>指令可以根据比较符号来进行跳转：</p>
+<table>
+<colgroup>
+<col style="width: 22%">
+<col style="width: 27%">
+<col style="width: 36%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr>
+<th>条件描述</th>
+<th>x86 标志位</th>
+<th>AArch64 条件码</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ax = bx</code></td>
+<td><code>ZF = 1</code></td>
+<td><code>eq</code> (Z=1)</td>
+<td>相等</td>
+</tr>
+<tr>
+<td><code>ax != bx</code></td>
+<td><code>ZF = 0</code></td>
+<td><code>ne</code> (Z=0)</td>
+<td>不相等</td>
+</tr>
+<tr>
+<td><code>ax &lt; bx</code></td>
+<td><code>CF = 1</code></td>
+<td><code>lo</code> / <code>cc</code> (C=0) 无符号<br><code>lt</code>
+(N≠V) 有符号</td>
+<td>小于</td>
+</tr>
+<tr>
+<td><code>ax &gt;= bx</code></td>
+<td><code>CF = 0</code></td>
+<td><code>hs</code> / <code>cs</code> (C=1) 无符号<br><code>ge</code>
+(N=V) 有符号</td>
+<td>大于等于</td>
+</tr>
+<tr>
+<td><code>ax &gt; bx</code></td>
+<td><code>CF = 0 且 ZF = 0</code></td>
+<td><code>hi</code> (C=1 ∧ Z=0) 无符号<br><code>gt</code> (Z=0 ∧ N=V)
+有符号</td>
+<td>大于</td>
+</tr>
+<tr>
+<td><code>ax &lt;= bx</code></td>
+<td><code>CF = 1 或 ZF = 1</code></td>
+<td><code>ls</code> (C=0 ∨ Z=1) 无符号<br><code>le</code> (Z=1 ∨ N≠V)
+有符号</td>
+<td>小于等于</td>
+</tr>
+</tbody>
+</table>
+<p>使用实例：</p>
+<figure class="highlight armasm"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmp</span>     x0, x2          <span class="comment">; 设置标志</span></span><br><span class="line"><span class="symbol">b.eq</span>    label           <span class="comment">; x0 == x2</span></span><br><span class="line"><span class="symbol">b.lt</span>    label           <span class="comment">; 有符号 x0 &lt; x2</span></span><br><span class="line"><span class="symbol">b.lo</span>    label           <span class="comment">; 无符号 x0 &lt; x2</span></span><br></pre></td></tr></table></figure>
+<h1 id="二简单地址偏移代码实践">二、简单地址偏移代码实践</h1>
 <p>在<code>kernel.c</code>中 extern
 实现加载和存储指令的汇编代码函数：</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">ldr_test</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_ldr_test</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	ldr_test(); <span class="comment">// Call the external assembly function</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -10586,6 +10687,18 @@ LTS上安装定制的QEMU环境，需要两个文件<code>openocd-benos_1.0-3_am
 <figure class="highlight armasm"><table><tr><td class="code"><pre><span class="line"><span class="symbol">.global</span> ldr_test</span><br><span class="line"><span class="symbol">ldr_test:</span></span><br><span class="line">    <span class="keyword">mov</span> x1, <span class="number">0x80000</span> <span class="comment">// address 0x80000 in x1</span></span><br><span class="line">    <span class="keyword">mov</span> x3, <span class="number">16</span> <span class="comment">// Load immediate decimal value 16 into x3</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">ldr</span> x0, [x1] <span class="comment">// Load the value from memory address in x1 (0x80000) into x0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">ldr</span> x2, [x1, <span class="number">#8</span>] <span class="comment">// Load the value from memory address (x1 + 8) into x2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">ldr</span> x4, [x1, x3] <span class="comment">// Load the value from memory address (x1 + x3) into x4, it&#x27;s 0x80010</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">ldr</span> x5, [x1, x3, <span class="keyword">LSL</span> <span class="number">#3</span>] <span class="comment">// Load the value from memory address (x1 + (x3 &lt;&lt; 2)) into x5, it&#x27;s 0x80040</span></span><br><span class="line"></span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
 <p>然后就能编译运行。</p>
 <p><img src="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/2025-09-14-19-33-07.png"></p>
+<h1 id="三实现memcpy汇编函数">三、实现<code>memcpy</code>汇编函数</h1>
+<p>从 0x80000 地址拷贝 32 个字节到 0x200000 地址。</p>
+<p>用<code>cmp</code>指令辅助判断是否已经copy了32个字节。 -
+一个地址索引对应的存储单元 1 Byte（8 bit） -
+每次<code>ldr</code>指令只能 copy 8 个字节，因此 32 个字节需要 4
+次<code>ldr</code>指令</p>
+<p><img src="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/2025-09-17-23-57-59.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//memcpy: copy 32 bytes from 0x80000 to 0x200000</span><br><span class="line">.global my_memcpy_test</span><br><span class="line">my_memcpy_test:</span><br><span class="line">    mov x0, 0x80000 // source address</span><br><span class="line">    mov x1, 0x200000 // destination address</span><br><span class="line">    add x2, x0, 32 // number of bytes to copy</span><br><span class="line">// loop to copy each byte</span><br><span class="line">1:</span><br><span class="line">    ldr x4, [x0], #8 //ldr then add 8 to x0</span><br><span class="line">    str x4, [x1], #8</span><br><span class="line">    cmp x0, x2</span><br><span class="line">    b.cc 1b // if not done, repeat</span><br><span class="line"></span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<p>以读第一次为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">地址      内容（十六进制）</span><br><span class="line">0x80000   0xA0</span><br><span class="line">0x80001   0x00</span><br><span class="line">0x80002   0x38</span><br><span class="line">0x80003   0xD5</span><br><span class="line">0x80004   0x1F</span><br><span class="line">0x80005   0x20</span><br><span class="line">0x80006   0x03</span><br><span class="line">0x80007   0xD5</span><br></pre></td></tr></table></figure>
+<p>读 <code>ldr x4, [x0]</code> 后
+<code>x4 = 0xD50320D53800A0</code></p>
 ]]></content>
   </entry>
 </search>
