@@ -10297,6 +10297,10 @@ branch、是否有需要 commit 的</li>
 为其他字符）</li>
 <li><code>t,</code>: 到逗号前的第一个字符（逗号可以改变为其他字符）</li>
 </ul>
+<h2 id="配置vim显示行号">配置vim显示行号</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 打开vimrc配置文件</span></span><br><span class="line">vim ~/.vimrc</span><br></pre></td></tr></table></figure>
+<p>在vimrc配置文件中添加如下内容：</p>
+<figure class="highlight vim"><table><tr><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">number</span></span><br></pre></td></tr></table></figure>
 <h1 id="terminal-操作">2. terminal 操作</h1>
 <h2 id="find"><code>find</code></h2>
 <p>查找并忽略没有权限的文件的报错信息：</p>
