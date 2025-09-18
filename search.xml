@@ -10329,8 +10329,13 @@ host 用以下方法暂时关闭，这样开启 guest
 <h2 id="修改-linux-密码">修改 linux 密码</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo passwd root</span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证sudo的密码后，输入新密码</span></span><br></pre></td></tr></table></figure>
 <h2 id="设置维持-ssh-连接不断连">设置维持 ssh 连接不断连</h2>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mkdir -p /root/.ssh        # 创建目录</span><br><span class="line">sudo chmod 700 /root/.ssh       # 权限必须 700</span><br><span class="line">sudo vi /root/.ssh/config       # 现在可以正常保存</span><br></pre></td></tr></table></figure>
-<p>然后在文件中写入如下内容： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ServerAliveInterval 60</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
+<p>然后在文件中写入如下内容： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ClientAliveInterval 60</span><br><span class="line">ClientAliveCountMax 5</span><br></pre></td></tr></table></figure></p>
+<p>最后，记得重启sshd服务：<code>service sshd restart</code></p>
+<blockquote>
+<p><a href="https://ngwind.github.io/2019/01/25/%E4%BF%9D%E6%8C%81ssh%E6%9C%8D%E5%8A%A1%E8%BF%9E%E6%8E%A5%E4%B8%8D%E6%96%AD%E5%BC%80%E7%9A%84%E6%96%B9%E6%B3%95/">设置维持
+ssh 连接不断连</a></p>
+</blockquote>
 <h1 id="gdb-调试">3. gdb 调试</h1>
 <h2 id="常用指令">常用指令</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">target remote localhost:1234</span><br><span class="line">b _start</span><br><span class="line">c</span><br><span class="line">layout regs # 查看寄存器</span><br><span class="line">s # 运行下一条指令</span><br><span class="line"><span class="meta">#</span><span class="bash"> n <span class="comment"># 跳过当前函数</span></span></span><br><span class="line">x/x $pc # 查看当前pc地址的值</span><br><span class="line">q # 退出</span><br></pre></td></tr></table></figure>
