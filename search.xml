@@ -10355,6 +10355,24 @@ ssh 连接不断连</a></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">p s</span><br><span class="line">$1 = 0x555555559260 &quot;hello world&quot;</span><br><span class="line">p *s</span><br><span class="line">$2 = 104 &#x27;h&#x27;       # 打印第一个字符</span><br></pre></td></tr></table></figure>
 <p>print 数组</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">p arr        # 打印数组指针</span><br><span class="line">p *arr@10    # 打印 arr 数组的前10个元素</span><br></pre></td></tr></table></figure>
+<h2 id="设置断点">设置断点</h2>
+<p>函数断点</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">break main          # 在 main 函数处断点</span><br><span class="line">break my_func       # 在 my_func 函数入口断点</span><br></pre></td></tr></table></figure>
+<p>行号断点</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">break main.cpp:25    # 在 main.cpp 第25行设置断点</span><br></pre></td></tr></table></figure>
+<p>条件断点</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">break main.cpp:30 if i==5  # 仅当 i==5 时停下</span><br></pre></td></tr></table></figure>
+<h2 id="运行与继续执行">运行与继续执行</h2>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">run                 # 从头开始运行</span><br><span class="line">continue / c        # 继续执行到下一个断点</span><br><span class="line">finish              # 执行当前函数并返回</span><br></pre></td></tr></table></figure>
+<h2 id="单步调试">单步调试</h2>
+<p>step / s：进入函数内部执行</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">step</span><br></pre></td></tr></table></figure>
+<p>next / n：执行下一行，但不进入函数内部</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">next</span><br></pre></td></tr></table></figure>
+<p>stepi / si：按 CPU 指令单步执行</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">stepi</span><br></pre></td></tr></table></figure>
+<p>nexti / ni：按指令单步，但不进入函数</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nexti</span><br></pre></td></tr></table></figure>
 <h1 id="qemu-使用">4. qemu 使用</h1>
 <h2 id="qemu-指令">qemu 指令</h2>
 <h2 id="virsh-指令">virsh 指令</h2>
