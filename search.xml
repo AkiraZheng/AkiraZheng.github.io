@@ -10329,8 +10329,8 @@ host 用以下方法暂时关闭，这样开启 guest
 <h2 id="修改-linux-密码">修改 linux 密码</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo passwd root</span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证sudo的密码后，输入新密码</span></span><br></pre></td></tr></table></figure>
 <h2 id="设置维持-ssh-连接不断连">设置维持 ssh 连接不断连</h2>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
-<p>然后在文件中写入如下内容： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ClientAliveInterval 60</span><br><span class="line">ClientAliveCountMax 5</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> sudo vim /etc/ssh/sshd_config</span></span><br><span class="line">sudo vim ~/.ssh/config</span><br></pre></td></tr></table></figure>
+<p>然后在文件中写入如下内容： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Host *</span><br><span class="line">    ServerAliveInterval 60</span><br></pre></td></tr></table></figure></p>
 <p>最后，记得重启sshd服务：<code>service sshd restart</code></p>
 <blockquote>
 <p><a href="https://ngwind.github.io/2019/01/25/%E4%BF%9D%E6%8C%81ssh%E6%9C%8D%E5%8A%A1%E8%BF%9E%E6%8E%A5%E4%B8%8D%E6%96%AD%E5%BC%80%E7%9A%84%E6%96%B9%E6%B3%95/">设置维持
@@ -10345,6 +10345,16 @@ ssh 连接不断连</a></p>
 <blockquote>
 <p><a href="https://blog.csdn.net/u014470361/article/details/102230583">gdb查看内存的值</a></p>
 </blockquote>
+<h2 id="查看变量值">查看变量值</h2>
+<ol start="2" type="1">
+<li>查看变量值</li>
+</ol>
+<p>print / p</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">p var        # 打印变量值</span><br><span class="line">p i          # 打印整数 i 的值</span><br><span class="line">p/x i        # 以十六进制打印 i</span><br><span class="line">p/d i        # 以十进制打印 i</span><br><span class="line">p/t i        # 以二进制打印 i</span><br><span class="line">p/f fval     # 打印浮点数</span><br></pre></td></tr></table></figure>
+<p>print string 指针</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">p s</span><br><span class="line">$1 = 0x555555559260 &quot;hello world&quot;</span><br><span class="line">p *s</span><br><span class="line">$2 = 104 &#x27;h&#x27;       # 打印第一个字符</span><br></pre></td></tr></table></figure>
+<p>print 数组</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">p arr        # 打印数组指针</span><br><span class="line">p *arr@10    # 打印 arr 数组的前10个元素</span><br></pre></td></tr></table></figure>
 <h1 id="qemu-使用">4. qemu 使用</h1>
 <h2 id="qemu-指令">qemu 指令</h2>
 <h2 id="virsh-指令">virsh 指令</h2>
@@ -10590,7 +10600,7 @@ LTS上安装定制的QEMU环境，需要两个文件<code>openocd-benos_1.0-3_am
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">make debug</span><br></pre></td></tr></table></figure>
 <p>在另一个终端中输入</p>
 <!-- gdb的使用方法后面挪到linux技巧中 -->
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">gdb-multiarch --tui ./build/benos.elf</span><br><span class="line">(gdb) target remote localhost:1234</span><br><span class="line">(gdb) b _start</span><br><span class="line">(gdb) c</span><br><span class="line">(gdb) layout regs <span class="comment"># 查看寄存器</span></span><br><span class="line">(gdb) s <span class="comment"># 运行下一条指令</span></span><br><span class="line"><span class="comment"># (gdb) n # 跳过当前函数</span></span><br><span class="line">(gdb) x/x <span class="variable">$pc</span> <span class="comment"># 查看当前pc地址的值</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">gdb-multiarch --tui ./build/benos.elf</span><br><span class="line">(gdb) target remote localhost:1234t</span><br><span class="line">(gdb) b _start</span><br><span class="line">(gdb) c</span><br><span class="line">(gdb) layout regs <span class="comment"># 查看寄存器</span></span><br><span class="line">(gdb) s <span class="comment"># 运行下一条指令</span></span><br><span class="line"><span class="comment"># (gdb) n # 跳过当前函数</span></span><br><span class="line">(gdb) x/x <span class="variable">$pc</span> <span class="comment"># 查看当前pc地址的值</span></span><br></pre></td></tr></table></figure>
 <p>退出：</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">(gdb) q</span><br></pre></td></tr></table></figure>
 ]]></content>
@@ -10600,21 +10610,38 @@ LTS上安装定制的QEMU环境，需要两个文件<code>openocd-benos_1.0-3_am
     <url>/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/</url>
     <content><![CDATA[<h1 id="一加载和存储指令">一、加载和存储指令</h1>
 <p>ARM64指令集提供了很多加载和存储指令，比如：</p>
-<p>寄存器与物理内存数据之间的加载与存储： -
-<code>ldr</code>：加载指令，从寄存器B存储的地址内存中加载数据到寄存器 -
-<code>ldr &lt;A&gt;, [&lt;B&gt;]</code> - 寄存器A &lt;---
-寄存器B存储的地址中内存的数据 -
-<code>str</code>：存储指令，将寄存器A中的数据存储到寄存器B存储的
-地址内存中 - <code>str &lt;A&gt;, [&lt;B&gt;]</code> - 寄存器 A 中的数据
----&gt; 寄存器 B 存储的 地址内存中 -
-<code>ldp</code>：加载指令，<code>ldp</code>指令可以加载 16 个字节 -
-<code>ldp &lt;A&gt;, &lt;B&gt;, [&lt;C&gt;]</code> - 以 C
-的值为起始地址，加载这个地址的数据到 A 中，然后 C+8
-作为新的起始地址，加载这个地址的数据到 B 中 - <code>stp</code>：存储指令
-- <code>stp &lt;A&gt;, &lt;B&gt;, [&lt;C&gt;]</code> - 存储 A 的数据到 C
-地址中，然后存储 B 的数据到 C+8 地址中</p>
-<p>值域复制指令 - <code>mov</code>：移动指令 -
-<code>mov &lt;A&gt; , value</code></p>
+<p>寄存器与物理内存数据之间的加载与存储：</p>
+<ul>
+<li><code>ldr</code>：加载指令，从寄存器B存储的地址内存中加载数据到寄存器
+<ul>
+<li><code>ldr &lt;A&gt;, [&lt;B&gt;]</code></li>
+<li>寄存器A &lt;--- 寄存器B存储的地址中内存的数据</li>
+</ul></li>
+<li><code>str</code>：存储指令，将寄存器A中的数据存储到寄存器B存储的
+地址内存中
+<ul>
+<li><code>str &lt;A&gt;, [&lt;B&gt;]</code></li>
+<li>寄存器 A 中的数据 ---&gt; 寄存器 B 存储的 地址内存中</li>
+</ul></li>
+<li><code>ldp</code>：加载指令，<code>ldp</code>指令可以加载 16 个字节
+<ul>
+<li><code>ldp &lt;A&gt;, &lt;B&gt;, [&lt;C&gt;]</code></li>
+<li>以 C 的值为起始地址，加载这个地址的数据到 A 中，然后 C+8
+作为新的起始地址，加载这个地址的数据到 B 中</li>
+</ul></li>
+<li><code>stp</code>：存储指令
+<ul>
+<li><code>stp &lt;A&gt;, &lt;B&gt;, [&lt;C&gt;]</code></li>
+<li>存储 A 的数据到 C 地址中，然后存储 B 的数据到 C+8 地址中</li>
+</ul></li>
+</ul>
+<p>值域复制指令</p>
+<ul>
+<li><code>mov</code>：移动指令
+<ul>
+<li><code>mov &lt;A&gt; , value</code></li>
+</ul></li>
+</ul>
 <p>比较指令：</p>
 <ul>
 <li><code>cmp</code>：比较指令
@@ -10704,6 +10731,36 @@ LTS上安装定制的QEMU环境，需要两个文件<code>openocd-benos_1.0-3_am
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">地址      内容（十六进制）</span><br><span class="line">0x80000   0xA0</span><br><span class="line">0x80001   0x00</span><br><span class="line">0x80002   0x38</span><br><span class="line">0x80003   0xD5</span><br><span class="line">0x80004   0x1F</span><br><span class="line">0x80005   0x20</span><br><span class="line">0x80006   0x03</span><br><span class="line">0x80007   0xD5</span><br></pre></td></tr></table></figure>
 <p>读 <code>ldr x4, [x0]</code> 后
 <code>x4 = 0xD50320D53800A0</code></p>
+<h1 id="四实现memset函数">四、实现<code>memset</code>函数</h1>
+<p><code>memset</code>函数的功能是把一个内存块的每个字节都设置为某个值。其
+c 语言实现原型如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> *__memset_1bytes(<span class="keyword">void</span> *s, <span class="keyword">int</span> num, <span class="keyword">size_t</span> n)&#123;</span><br><span class="line">    <span class="keyword">char</span> *p = s;</span><br><span class="line">    <span class="keyword">while</span>(n--)&#123;</span><br><span class="line">        *p++ = c;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> s;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<!-- 在进行汇编实现时，我们假设内存地址 `s` 和 `count` 不是 16 字节对齐的，需要我们先对齐到 16 字节，然后再进行操作。 -->
+<p>这里保证传入的参数地址 s 和 n 是 16 的倍数（按16对齐），num 是 8
+字节的。由于 n 的对齐要求是
+16，因此我们可以使用<code>ldp</code>和<code>stp</code>指令进行内存操作，相比
+8 字节 8 字节地写入而言，速度会快些。（支持 16 字节对齐）</p>
+<p>同时，汇编中的函数允许传参，传参时会用 <code>x0 ~ x7</code>
+寄存器传递参数，因此，函数的参数个数不能超过 8 个。</p>
+<p>在汇编中，我们定义的方法为<code>__memset_16bytes</code>，调用这个
+memset
+函数的语法例子为<code>__memset_16bytes(0x200000, 0x5555555555555555, 128)</code>，表示往地址
+0x200000 的起始地址中写入 128 个 0x55。</p>
+<p>我们先实现一个假设传参对齐的汇编函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//memset(void *s, int c, size_t n): set n bytes to 0x55</span><br><span class="line">// 0x55 is 1 byte</span><br><span class="line">.global __memset_16bytes</span><br><span class="line">__memset_16bytes:</span><br><span class="line">    // x4 跟第三个传参（x2）的 n 进行对别，作为判断条件</span><br><span class="line">    mov x4, #0</span><br><span class="line"></span><br><span class="line">//loop: 一次设置 16 bytes</span><br><span class="line">1:</span><br><span class="line">    stp x1, x1, [x0], #16 //一次写入 16 bytes 到内存</span><br><span class="line">    add x4, x4, #16 //每次增加 16 bytes</span><br><span class="line">    cmp x4, x2 //判断是否达到 n bytes</span><br><span class="line">    b.ne 1b</span><br><span class="line">    </span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<p>并用规范的声明和调用来进行测试：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//kernel.c</span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">void</span> __memset_16bytes(<span class="keyword">void</span> *dest, <span class="keyword">unsigned</span> <span class="keyword">long</span> data, <span class="keyword">int</span> n);</span><br><span class="line">__memset_16bytes((<span class="keyword">void</span>*)<span class="number">0x200000</span>, <span class="number">0x5555555555555555</span>, <span class="number">128</span>);<span class="comment">//memset test</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/2025-09-21-19-47-12.png"></p>
+<p>实际上我们在c语言调用时一般会<code>memset(0x200004, 0x55, 102)</code>，也就是不一定保证
+16 位对齐，且传入的 data 是单字节的，需要我们在封装的 c
+函数中实现对齐判断、自动对齐、填充 data
+为8字节的操作。（也就是传入0x55，填充为汇编函数__memset_16bytes可以用的0x5555555555555555）。</p>
+<p>对齐到 16 的倍数就是要求地址的 低 4 位必须是
+0。因此用<code>if(addr &amp; (align - 1))</code>来判断低4位是否为0。</p>
+<p>下面在这个汇编函数的基础上，假设内存地址 s 和 n 都不是保证 16
+字节对齐的，那么此时，我们在调用所写的汇编函数之前，应该先用 c
+语言代码实现对齐：</p>
+<p>```c</p>
 ]]></content>
   </entry>
 </search>
