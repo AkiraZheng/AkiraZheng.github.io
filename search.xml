@@ -10309,6 +10309,8 @@ branch、是否有需要 commit 的</li>
 <h2 id="查找内核的路径">查找内核的路径</h2>
 <p><code>uname -a</code>: 显示当前内核信息</p>
 <p><code>ls -l /usr/src</code>: 找到 uname -r 显示的版本的内核路径</p>
+<h2 id="查看bios版本">查看bios版本</h2>
+<p><code>sudo dmidecode -t bios</code></p>
 <h2 id="查看磁盘哪个占用最高">查看磁盘哪个占用最高</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">df -h</span><br><span class="line">sudo du -sh /* 2&gt;/dev/null | sort -hr | head -n 10</span><br><span class="line"><span class="meta">#</span><span class="bash"> 2&gt;/dev/null: 忽略没有权限访问的目录产生的错误信息</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> du 指令按查询结果逐层筛查</span></span><br></pre></td></tr></table></figure>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18G     /home</span><br><span class="line">7.5G    /usr</span><br><span class="line">348M    /root</span><br><span class="line">277M    /boot</span><br><span class="line">166M    /var</span><br><span class="line">35M     /etc</span><br><span class="line">12M     /run</span><br><span class="line">40K     /opt</span><br><span class="line">16K     /lost+found</span><br><span class="line">4.0K    /srv</span><br></pre></td></tr></table></figure>
@@ -10376,6 +10378,9 @@ ssh 连接不断连</a></p>
 <h1 id="qemu-使用">4. qemu 使用</h1>
 <h2 id="qemu-指令">qemu 指令</h2>
 <h2 id="virsh-指令">virsh 指令</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 安装相关依赖和启动服务</span></span><br><span class="line">yum install -y libvirt sshpass</span><br><span class="line">systemctl start libvirtd</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 创建共享目录</span></span><br><span class="line">mkdir -p /tmp/shared_host</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> virsh 启动虚机</span></span><br><span class="line"></span><br><span class="line">virsh define file_name.xml</span><br><span class="line">virsh start file_name --console</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 退出虚机</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ctrl+] 退出</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看虚机绑核状态</span></span><br><span class="line">virsh vcpupin file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看全局虚机数量状态</span></span><br><span class="line">virsh list</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除销毁虚机</span></span><br><span class="line">virsh destroy file_name</span><br><span class="line">virsh undefine file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看分配的 DHCP 租约</span></span><br><span class="line">virsh net-dhcp-leases default</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 检查默认网络状态</span></span><br><span class="line">virsh net-list --all</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 销毁默认网络</span></span><br><span class="line">virsh net-destroy default</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动默认网络</span></span><br><span class="line">virsh net-start default</span><br></pre></td></tr></table></figure>
+<h2 id="查看用qemu起的虚机-pid">查看用qemu起的虚机 pid</h2>
+<p><code>ps aux | grep qemu</code></p>
 <h1 id="linux-中对工程代码的跳转函数查找">5. Linux
 中对工程代码的跳转、函数查找</h1>
 <h2 id="vim-中函数跳转">vim 中函数跳转</h2>
@@ -10782,5 +10787,14 @@ memset
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//memset.h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> __MEMSET_H__</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __MEMSET_H__</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="keyword">size_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> *__memset_16bytes(<span class="keyword">void</span> *s, <span class="keyword">unsigned</span> <span class="keyword">long</span> val, <span class="keyword">unsigned</span> <span class="keyword">long</span> count);</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">my_memset</span><span class="params">(<span class="keyword">void</span> *s, <span class="keyword">int</span> c, <span class="keyword">size_t</span> count)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//kernel.c</span></span><br><span class="line">my_memset((<span class="keyword">void</span>*)<span class="number">0x200000</span>, <span class="number">0x55</span>, <span class="number">128</span>);<span class="comment">//memset test</span></span><br><span class="line">my_memset((<span class="keyword">void</span>*)<span class="number">0x200004</span>, <span class="number">0xAA</span>, <span class="number">102</span>);</span><br></pre></td></tr></table></figure>
 ]]></content>
+  </entry>
+  <entry>
+    <title>Linux:early_param参数</title>
+    <url>/2025/09/22/Linux-early-param%E5%8F%82%E6%95%B0/</url>
+    <content><![CDATA[
+]]></content>
+      <categories>
+        <category>Linux基础</category>
+      </categories>
   </entry>
 </search>
