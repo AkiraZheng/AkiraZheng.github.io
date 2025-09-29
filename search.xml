@@ -10334,6 +10334,8 @@ host 用以下方法暂时关闭，这样开启 guest
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> sudo vim /etc/ssh/sshd_config</span></span><br><span class="line">sudo vim ~/.ssh/config</span><br></pre></td></tr></table></figure>
 <p>然后在文件中写入如下内容： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Host *</span><br><span class="line">    ServerAliveInterval 60</span><br></pre></td></tr></table></figure></p>
 <p>最后，记得重启sshd服务：<code>service sshd restart</code></p>
+<h2 id="scp">scp</h2>
+<p><code>scp user1@ip1:/home/user1/file1.txt user2@ip2:/home/user2/file2.txt</code></p>
 <blockquote>
 <p><a href="https://ngwind.github.io/2019/01/25/%E4%BF%9D%E6%8C%81ssh%E6%9C%8D%E5%8A%A1%E8%BF%9E%E6%8E%A5%E4%B8%8D%E6%96%AD%E5%BC%80%E7%9A%84%E6%96%B9%E6%B3%95/">设置维持
 ssh 连接不断连</a></p>
@@ -10378,7 +10380,7 @@ ssh 连接不断连</a></p>
 <h1 id="qemu-使用">4. qemu 使用</h1>
 <h2 id="qemu-指令">qemu 指令</h2>
 <h2 id="virsh-指令">virsh 指令</h2>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 安装相关依赖和启动服务</span></span><br><span class="line">yum install -y libvirt sshpass</span><br><span class="line">systemctl start libvirtd</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 创建共享目录</span></span><br><span class="line">mkdir -p /tmp/shared_host</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> virsh 启动虚机</span></span><br><span class="line"></span><br><span class="line">virsh define file_name.xml</span><br><span class="line">virsh start file_name --console</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 退出虚机</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ctrl+] 退出</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看虚机绑核状态</span></span><br><span class="line">virsh vcpupin file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看全局虚机数量状态</span></span><br><span class="line">virsh list</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除销毁虚机</span></span><br><span class="line">virsh destroy file_name</span><br><span class="line">virsh undefine file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看分配的 DHCP 租约</span></span><br><span class="line">virsh net-dhcp-leases default</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 检查默认网络状态</span></span><br><span class="line">virsh net-list --all</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 销毁默认网络</span></span><br><span class="line">virsh net-destroy default</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动默认网络</span></span><br><span class="line">virsh net-start default</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 安装相关依赖和启动服务</span></span><br><span class="line">yum install -y libvirt sshpass</span><br><span class="line">systemctl start libvirtd</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 创建共享目录</span></span><br><span class="line">mkdir -p /tmp/shared_host</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> virsh 启动虚机</span></span><br><span class="line"></span><br><span class="line">virsh define file_name.xml</span><br><span class="line">virsh start file_name --console</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 重新进入虚机</span></span><br><span class="line">virsh console file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 退出虚机</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ctrl+] 退出</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看虚机绑核状态</span></span><br><span class="line">virsh vcpupin file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看全局虚机数量状态</span></span><br><span class="line">virsh list</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除销毁虚机</span></span><br><span class="line">virsh destroy file_name</span><br><span class="line">virsh undefine file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看分配的 DHCP 租约</span></span><br><span class="line">virsh net-dhcp-leases default</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 检查默认网络状态</span></span><br><span class="line">virsh net-list --all</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 销毁默认网络</span></span><br><span class="line">virsh net-destroy default</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动默认网络</span></span><br><span class="line">virsh net-start default</span><br></pre></td></tr></table></figure>
 <h2 id="查看用qemu起的虚机-pid">查看用qemu起的虚机 pid</h2>
 <p><code>ps aux | grep qemu</code></p>
 <h1 id="linux-中对工程代码的跳转函数查找">5. Linux
@@ -10794,7 +10796,26 @@ memset
     <content><![CDATA[
 ]]></content>
       <categories>
-        <category>Linux基础</category>
+        <category>Linux内核基础</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Linux:内核通知机制</title>
+    <url>/2025/09/29/Linux-%E5%86%85%E6%A0%B8%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6-1/</url>
+    <content><![CDATA[
+]]></content>
+  </entry>
+  <entry>
+    <title>Linux:内核通知机制</title>
+    <url>/2025/09/25/Linux-%E5%86%85%E6%A0%B8%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<blockquote>
+<p>参考：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/651211513">linux kernel
+一文总结linux内核通知链</a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Linux内核基础</category>
       </categories>
   </entry>
 </search>
