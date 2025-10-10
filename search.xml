@@ -10311,6 +10311,8 @@ branch、是否有需要 commit 的</li>
 <p><code>ls -l /usr/src</code>: 找到 uname -r 显示的版本的内核路径</p>
 <h2 id="查看bios版本">查看bios版本</h2>
 <p><code>sudo dmidecode -t bios</code></p>
+<h2 id="查看操作系统版本">查看操作系统版本</h2>
+<p><code>cat /etc/os-release</code></p>
 <h2 id="查看磁盘哪个占用最高">查看磁盘哪个占用最高</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">df -h</span><br><span class="line">sudo du -sh /* 2&gt;/dev/null | sort -hr | head -n 10</span><br><span class="line"><span class="meta">#</span><span class="bash"> 2&gt;/dev/null: 忽略没有权限访问的目录产生的错误信息</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> du 指令按查询结果逐层筛查</span></span><br></pre></td></tr></table></figure>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18G     /home</span><br><span class="line">7.5G    /usr</span><br><span class="line">348M    /root</span><br><span class="line">277M    /boot</span><br><span class="line">166M    /var</span><br><span class="line">35M     /etc</span><br><span class="line">12M     /run</span><br><span class="line">40K     /opt</span><br><span class="line">16K     /lost+found</span><br><span class="line">4.0K    /srv</span><br></pre></td></tr></table></figure>
@@ -10391,8 +10393,7 @@ ssh 连接不断连</a></p>
 <p>在 vim 中使用 ctags 跳转：<code>:tag 函数名</code></p>
 <p>在 vim 中使用<code>ctrl+]</code> 跳转到<strong>函数定义</strong></p>
 <p>看完后使用<code>ctrl+t</code>返回到函数调用（跳回）</p>
-<h2 id="shell-中查找整个哪个文件包含某个函数名">shell
-中查找整个哪个文件包含某个函数名</h2>
+<!-- ## shell 中查找整个哪个文件包含某个函数名 -->
 ]]></content>
   </entry>
   <entry>
