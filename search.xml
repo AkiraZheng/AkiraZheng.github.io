@@ -10174,7 +10174,7 @@ Linux 页表体系 —— 详解虚拟内存如何与物理内存进行映射</a
   <entry>
     <title>git常用技巧</title>
     <url>/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</url>
-    <content><![CDATA[<h1 id="状态类指令">1. 状态类指令</h1>
+    <content><![CDATA[<h1 id="状态类指令">状态类指令</h1>
 <ul>
 <li><code>git branch</code>: 查看当前本地所处的
 branch、本地中拉的所有的branch</li>
@@ -10196,12 +10196,11 @@ branch、是否有需要 commit 的</li>
 <ul>
 <li><code>git mm sync -j64</code>: 64线程同步远程代码</li>
 </ul>
-<h1 id="代码提交合并push到远程仓库">2.
-代码提交、合并、push到远程仓库</h1>
+<h1 id="代码提交合并push到远程仓库">代码提交、合并、push到远程仓库</h1>
 <h2 id="代码提交暂时不推到远程仓中">1）代码提交：暂时不推到远程仓中</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git add . # 添加所有文件</span><br><span class="line">git commit -m &quot;xxx&quot; # 本地提交</span><br></pre></td></tr></table></figure>
 <h2 id="拉取代码">2）拉取代码</h2>
-<h1 id="切换分支">3. 切换分支</h1>
+<h1 id="切换分支">切换分支</h1>
 <p>切换前最好先暂存一下当前的代码修改内容：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 暂存当前修改，需要切到修改的子仓库下</span></span><br><span class="line">git stash -m &quot;message&quot;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 此时会显示clean</span></span><br><span class="line">git status</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看缓存的东西</span></span><br><span class="line">git stash list</span><br></pre></td></tr></table></figure>
 <p>然后再切换到分支中：</p>
@@ -10210,19 +10209,27 @@ branch、是否有需要 commit 的</li>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 恢复特定的 stash （例如：stash@&#123;2&#125;）</span></span><br><span class="line">git stash apply stash@&#123;2&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash pop <span class="comment"># 恢复并删除栈顶的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 恢复所有 stash</span></span><br><span class="line"><span class="meta">#</span><span class="bash">git stash apply</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash drop <span class="comment"># 删除栈顶的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash drop stash@&#123;2&#125; <span class="comment"># 删除特定的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash">git stash clear <span class="comment"># 清空所有 stash</span></span></span><br></pre></td></tr></table></figure>
 <p>修改完代码也可以取消修改：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git restore ./* # 取消当前目录下所有修改</span><br><span class="line"><span class="meta">#</span><span class="bash">git restore ./&lt;path&gt;</span></span><br></pre></td></tr></table></figure>
-<h1 id="diff-查看修改内容">4. diff 查看修改内容</h1>
+<h1 id="删除分支">删除分支</h1>
+<p>删除分支前需查看分支是否已经合并：</p>
+<p><code>git branch --merged</code></p>
+<p>删除分支前先切换到其他分支中：</p>
+<p><code>git checkout master</code></p>
+<p>删除某个已经被合并的分支：</p>
+<p><code>git branch -d &lt;branch_name&gt;</code></p>
+<p>删除未合并的分支（强制删除）：</p>
+<p><code>git branch -D &lt;branch_name&gt;</code></p>
+<h1 id="diff-查看修改内容">diff 查看修改内容</h1>
 <ul>
 <li><code>git diff &lt;filrname.c&gt;</code></li>
 <li><code>git status</code></li>
 </ul>
-<h1 id="撤销修改">5. 撤销修改</h1>
+<h1 id="撤销修改">撤销修改</h1>
 <ul>
 <li><code>git stash -m "message"</code>:
 会暂存修改并恢复到未修改状态</li>
 <li><code>git restore .</code>: 取消当前目录下所有修改，且不会暂存</li>
 </ul>
-<h1 id="在一个已有内容的文件夹下将该内容同步到新的仓库中">6.
-在一个已有内容的文件夹下将该内容同步到新的仓库中</h1>
+<h1 id="在一个已有内容的文件夹下将该内容同步到新的仓库中">在一个已有内容的文件夹下将该内容同步到新的仓库中</h1>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git init # 初始化一个git仓库</span><br><span class="line">git remote -v # 验证当前仓库是否已经关联了远程仓库</span><br><span class="line"><span class="meta">#</span><span class="bash"> 逐个尝试下面的指令添加远程仓库</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git remote set-url origin &lt;url&gt; <span class="comment"># 在当前已经关联了一个其他仓库的情况下，更改远程仓库</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git remote add origin &lt;url&gt; <span class="comment"># 添加远程仓库</span></span></span><br><span class="line">add .</span><br><span class="line">commit -m &quot;xxx&quot;</span><br></pre></td></tr></table></figure>
 <p>如果原先没有关联过其他仓库，那么还得进行一些分支的操作，如果之前已经有分支，那么可以直接<code>push</code>到新仓库中</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git branch --set-upstream-to=origin/master  master # 设置当前分支的远程分支</span><br><span class="line">git pull origin master --allow-unrelated-histories # 拉取远程仓库的分支, 允许不相关的历史</span><br><span class="line">git push origin master # 推送到远程仓库</span><br><span class="line"><span class="meta">#</span><span class="bash"> git push -u origin master <span class="comment"># 推到远程仓库的同时，设置当前分支的远程分支</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git push -u origin my_lab <span class="comment"># 把本地 my_lab 直接推到远程（远程没有会自动创建）</span></span></span><br></pre></td></tr></table></figure>
@@ -10325,12 +10332,14 @@ branch、是否有需要 commit 的</li>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/bin</span><br></pre></td></tr></table></figure>
 <p>配置变量：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export $VAR=value</span><br><span class="line">echo $VAR # 验证环境变量是否正确设置到系统中</span><br></pre></td></tr></table></figure>
-<h2 id="关闭内核打印">关闭内核打印</h2>
+<h2 id="开关内核打印">开关内核打印</h2>
 <p>有时候我们在应用层调试程序的时候想暂时屏蔽掉内核的无用打印，可以在
 host 用以下方法暂时关闭，这样开启 guest
 虚机的时候就不会将内核信息打印到主机中，影响性能：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo 0 &gt; /proc/sys/kernel/printk</span><br></pre></td></tr></table></figure>
-<h2 id="修改-linux-密码">修改 linux 密码</h2>
+<p>打开内核打印：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo 7 &gt; /proc/sys/kernel/printk</span><br></pre></td></tr></table></figure>
+<h2 id="修改-linux-root-密码">修改 linux-root 密码</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo passwd root</span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证sudo的密码后，输入新密码</span></span><br></pre></td></tr></table></figure>
 <h2 id="设置维持-ssh-连接不断连">设置维持 ssh 连接不断连</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> sudo vim /etc/ssh/sshd_config</span></span><br><span class="line">sudo vim ~/.ssh/config</span><br></pre></td></tr></table></figure>
