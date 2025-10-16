@@ -10274,6 +10274,7 @@ id="方法从主线上一个一个patch进行rebase">方法：从主线上一个
 <p>如果<code>git am</code>直接报error的话，是不给我们 merge
 的机会的，此时先<code>git am --abort</code>然后<code>git am --3way</code>，用这种方式来添加patch，然后手动
 rebase</p>
+<p><code>git am --3way xxx.patch</code></p>
 <p>此时就能看到需要我们手动 rebase 的文件：</p>
 <!-- ![](picture/2025-10-15-17-49-27.png) -->
 <p><code>git status</code>查看<code>Umerged</code>的文件，然后手动修改<code>Unmerged</code>的文件</p>
@@ -10286,16 +10287,18 @@ rebase</p>
 git am --3way 依然解决不了的问题，通过 .rej 手动解决</h3>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[shell]git am --3way v1-4-5-arm64-kvm-support-to-handle-the-HDBSSF-event.patch</span><br><span class="line">Applying: arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">error: sha1 information is lacking or useless (arch/arm64/kvm/arm.c).</span><br><span class="line">error: could not build fake ancestor</span><br><span class="line">Patch failed at 0001 arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">hint: Use &#x27;git am --show-current-patch=diff&#x27; to see the failed patch</span><br><span class="line">When you have resolved this problem, run &quot;git am --continue&quot;.</span><br><span class="line">If you prefer to skip this patch, run &quot;git am --skip&quot; instead.</span><br><span class="line">To restore the original branch and stop patching, run &quot;git am --abort&quot;.</span><br></pre></td></tr></table></figure>
 <p>用git bash强制应用补丁，再手动处理问题文件。具体步骤如下：</p>
-<p>1） 执行git am --3way --ignore-space-change --keep-cr --reject
-xxx.patch。其中--reject指示工具将patch不可应用的部分保存为*.rej文件。 -
-如果补丁缺少 index
-信息用<code>git apply --reject --ignore-space-change</code>，但是这种方式需要自己重新commit，不推荐</p>
+<p>1）
+执行<code>git am --3way --ignore-space-change --keep-cr --reject xxx.patch</code>。其中--reject指示工具将patch不可应用的部分保存为*.rej文件。</p>
+<ul>
+<li>如果补丁缺少 index
+信息用<code>git apply --reject --ignore-space-change</code>，但是这种方式需要自己重新commit，不推荐</li>
+</ul>
 <p>2）打开*.rej会有没添加的patch相关代码内容，手动修改相应未生效patch的文件。然后删除.rej文件。</p>
 <p>3）执行git
 add。将所有需要提交的文件添加到缓存区。因为应用失败，所以应用patch过程停在了修改文件的流程，需要我们手动修改和提交，完成工具无法自动完成的流程。</p>
 <p>4）执行git am
 --continue。继续完成补丁的应用，成功即表示应用patch生效。</p>
-<p>步骤 1 执行后的结果：</p>
+<p>步骤 1） 执行后的结果：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[zhengtian@localhost linux]$ git am --3way --ignore-space-change --keep-cr --reject v1-4-5-arm64-kvm-support-to-handle-the-HDBSSF-event.patch</span><br><span class="line">Applying: arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">error: sha1 information is lacking or useless (arch/arm64/kvm/arm.c).</span><br><span class="line">error: could not build fake ancestor</span><br><span class="line">Patch failed at 0001 arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">hint: Use &#x27;git am --show-current-patch=diff&#x27; to see the failed patch</span><br><span class="line">When you have resolved this problem, run &quot;git am --continue&quot;.</span><br><span class="line">If you prefer to skip this patch, run &quot;git am --skip&quot; instead.</span><br><span class="line">To restore the original branch and stop patching, run &quot;git am --abort&quot;.</span><br><span class="line">[zhengtian@localhost linux]$ git status</span><br><span class="line">On branch feat-hdbss</span><br><span class="line">You are in the middle of an am session.</span><br><span class="line">  (fix conflicts and then run &quot;git am --continue&quot;)</span><br><span class="line">  (use &quot;git am --skip&quot; to skip this patch)</span><br><span class="line">  (use &quot;git am --abort&quot; to restore the original branch)</span><br><span class="line"></span><br><span class="line">Changes not staged for commit:</span><br><span class="line">  (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)</span><br><span class="line">  (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)</span><br><span class="line">        modified:   arch/arm64/kvm/arm.c</span><br><span class="line">        modified:   arch/arm64/kvm/handle_exit.c</span><br><span class="line"></span><br><span class="line">Untracked files:</span><br><span class="line">  (use &quot;git add &lt;file&gt;...&quot; to include in what will be committed)</span><br><span class="line">        arch/arm64/kvm/mmu.c.rej</span><br><span class="line"></span><br><span class="line">no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</span><br></pre></td></tr></table></figure>
 ]]></content>
   </entry>
