@@ -10252,7 +10252,7 @@ KVM - Patchwork</a>中找到对应的patch，逐个点击保存所有的子patch
 <p>当然 patch 有可能是很久以前写的，跟当前最新 master
 分支的代码不兼容，导致 <code>git am</code>
 命令失败。此时需要更换为<code>git am --3way</code>命令，并手动解决冲突rebase。</p>
-<h1 id="patch合入失败时rebase">patch合入失败时rebase</h1>
+<h2 id="patch合入失败时rebase">patch合入失败时rebase</h2>
 <!-- `git am --show-current-patch=diff`查看补丁中添加了哪些代码 -->
 <!-- ## 方法一：先切回提交patch的基线版本处，然后再rebase
 
@@ -10269,8 +10269,8 @@ KVM - Patchwork</a>中找到对应的patch，逐个点击保存所有的子patch
 <p><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git am /path/to/v1-*.patch</span><br></pre></td></tr></table></figure> 如果补丁和基线匹配，这里应该能干净地应用成功。</p></li>
 </ol>
 <p><img src="picture/2025-10-15-17-07-23.png" /> --&gt;</p>
-<h2
-id="方法从主线上一个一个patch进行rebase">方法：从主线上一个一个patch进行rebase</h2>
+<h3
+id="方法从主线上一个一个patch进行rebase">方法：从主线上一个一个patch进行rebase</h3>
 <p>如果<code>git am</code>直接报error的话，是不给我们 merge
 的机会的，此时先<code>git am --abort</code>然后<code>git am --3way</code>，用这种方式来添加patch，然后手动
 rebase</p>
@@ -10282,8 +10282,8 @@ rebase</p>
 <p>冲突全部解决的情况如下：</p>
 <!-- ![](picture/2025-10-16-09-11-06.png) -->
 <p>然后重复上面所有步骤，直到所有patch全部被添加进来</p>
-<h2 id="对于-git-am---3way-依然解决不了的问题通过-.rej-手动解决">对于
-git am --3way 依然解决不了的问题，通过 .rej 手动解决</h2>
+<h3 id="对于-git-am---3way-依然解决不了的问题通过-.rej-手动解决">对于
+git am --3way 依然解决不了的问题，通过 .rej 手动解决</h3>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[shell]git am --3way v1-4-5-arm64-kvm-support-to-handle-the-HDBSSF-event.patch</span><br><span class="line">Applying: arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">error: sha1 information is lacking or useless (arch/arm64/kvm/arm.c).</span><br><span class="line">error: could not build fake ancestor</span><br><span class="line">Patch failed at 0001 arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">hint: Use &#x27;git am --show-current-patch=diff&#x27; to see the failed patch</span><br><span class="line">When you have resolved this problem, run &quot;git am --continue&quot;.</span><br><span class="line">If you prefer to skip this patch, run &quot;git am --skip&quot; instead.</span><br><span class="line">To restore the original branch and stop patching, run &quot;git am --abort&quot;.</span><br></pre></td></tr></table></figure>
 <p>用git bash强制应用补丁，再手动处理问题文件。具体步骤如下：</p>
 <p>1） 执行git am --3way --ignore-space-change --keep-cr --reject
