@@ -10209,6 +10209,8 @@ branch、是否有需要 commit 的</li>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 恢复特定的 stash （例如：stash@&#123;2&#125;）</span></span><br><span class="line">git stash apply stash@&#123;2&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash pop <span class="comment"># 恢复并删除栈顶的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 恢复所有 stash</span></span><br><span class="line"><span class="meta">#</span><span class="bash">git stash apply</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash drop <span class="comment"># 删除栈顶的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git stash drop stash@&#123;2&#125; <span class="comment"># 删除特定的 stash</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash">git stash clear <span class="comment"># 清空所有 stash</span></span></span><br></pre></td></tr></table></figure>
 <p>修改完代码也可以取消修改：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git restore ./* # 取消当前目录下所有修改</span><br><span class="line"><span class="meta">#</span><span class="bash">git restore ./&lt;path&gt;</span></span><br></pre></td></tr></table></figure>
+<h1 id="查看分支领先落后提交数">查看分支领先/落后提交数</h1>
+<p><code>git branch -v --abbrev=0</code></p>
 <h1 id="删除分支">删除分支</h1>
 <p>删除分支前需查看分支是否已经合并：</p>
 <p><code>git branch --merged</code></p>
@@ -10234,6 +10236,67 @@ branch、是否有需要 commit 的</li>
 <p>如果原先没有关联过其他仓库，那么还得进行一些分支的操作，如果之前已经有分支，那么可以直接<code>push</code>到新仓库中</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git branch --set-upstream-to=origin/master  master # 设置当前分支的远程分支</span><br><span class="line">git pull origin master --allow-unrelated-histories # 拉取远程仓库的分支, 允许不相关的历史</span><br><span class="line">git push origin master # 推送到远程仓库</span><br><span class="line"><span class="meta">#</span><span class="bash"> git push -u origin master <span class="comment"># 推到远程仓库的同时，设置当前分支的远程分支</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> git push -u origin my_lab <span class="comment"># 把本地 my_lab 直接推到远程（远程没有会自动创建）</span></span></span><br></pre></td></tr></table></figure>
 <p>然后就可以观察远程仓库上是不是已经被 push 上去了</p>
+<h1 id="git-am-拉取邮件补丁">git am 拉取邮件补丁</h1>
+<h2 id="下载并添加补丁能丝滑成功的话">下载并添加补丁（能丝滑成功的话）</h2>
+<p>从所订阅的 Linux 模块中拼凑下面的链接，并找到相应的补丁进行下载：</p>
+<ol type="1">
+<li><p>从<a href="https://patchwork.kernel.org/project/kvm/list/?state=%20*&amp;archive=both&amp;series=&amp;submitter=&amp;delegate=">Linux
+KVM - Patchwork</a>中找到对应的patch，逐个点击保存所有的子patch</p>
+<ul>
+<li>下载后得到的文件为：<code>v1-1-5-arm64-sysreg-add-HDBSS-related-register-information.patch</code></li>
+</ul></li>
+<li><p>在 Linux 源码仓库根目录下应用（推荐）：</p>
+<p><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/linux   <span class="comment"># 这里是你 clone 下来的主线源码目录</span></span><br><span class="line">git checkout -b feat-hdbss  <span class="comment"># 建议新建一个分支，避免污染主线代码</span></span><br><span class="line">git am /path/to/*.patch</span><br></pre></td></tr></table></figure></p>
+<p>这样就会把整个 patch 系列应用到当前分支。</p></li>
+</ol>
+<p>当然 patch 有可能是很久以前写的，跟当前最新 master
+分支的代码不兼容，导致 <code>git am</code>
+命令失败。此时需要更换为<code>git am --3way</code>命令，并手动解决冲突rebase。</p>
+<h1 id="patch合入失败时rebase">patch合入失败时rebase</h1>
+<!-- `git am --show-current-patch=diff`查看补丁中添加了哪些代码 -->
+<!-- ## 方法一：先切回提交patch的基线版本处，然后再rebase
+
+已知补丁作者当时的基线commit为`848e076317446f9c663771ddec142d7c2eb4cb43`
+
+1. 切换到基线 commit
+    
+    在你的 Linux 源码仓库里执行：
+
+    <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git fetch origin</span><br><span class="line">git checkout -b hdbss-base 848e076317446f9c663771ddec142d7c2eb4cb43</span><br></pre></td></tr></table></figure>
+<pre><code>这样就切到了补丁作者当时的基线版本。</code></pre>
+<ol start="2" type="1">
+<li><p>应用补丁 在这个分支上应用补丁：</p>
+<p><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git am /path/to/v1-*.patch</span><br></pre></td></tr></table></figure> 如果补丁和基线匹配，这里应该能干净地应用成功。</p></li>
+</ol>
+<p><img src="picture/2025-10-15-17-07-23.png" /> --&gt;</p>
+<h2
+id="方法从主线上一个一个patch进行rebase">方法：从主线上一个一个patch进行rebase</h2>
+<p>如果<code>git am</code>直接报error的话，是不给我们 merge
+的机会的，此时先<code>git am --abort</code>然后<code>git am --3way</code>，用这种方式来添加patch，然后手动
+rebase</p>
+<p>此时就能看到需要我们手动 rebase 的文件：</p>
+<!-- ![](picture/2025-10-15-17-49-27.png) -->
+<p>然后手动修改<code>Unmerged</code>的文件</p>
+<p>修改完后执行以下语句:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git add &lt;修改的文件名&gt;</span><br><span class="line">git status <span class="comment">#查看冲突是不是全部解决了</span></span><br><span class="line"><span class="comment"># git add arch/arm64/include/asm/sysreg.h tools/arch/arm64/include/asm/sysreg.h</span></span><br><span class="line">git am --<span class="built_in">continue</span></span><br></pre></td></tr></table></figure>
+<p>冲突全部解决的情况如下：</p>
+<!-- ![](picture/2025-10-16-09-11-06.png) -->
+<p>然后重复上面所有步骤，直到所有patch全部被添加进来</p>
+<h2 id="对于-git-am---3way-依然解决不了的问题通过-.rej-手动解决">对于
+git am --3way 依然解决不了的问题，通过 .rej 手动解决</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[shell]git am --3way v1-4-5-arm64-kvm-support-to-handle-the-HDBSSF-event.patch</span><br><span class="line">Applying: arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">error: sha1 information is lacking or useless (arch/arm64/kvm/arm.c).</span><br><span class="line">error: could not build fake ancestor</span><br><span class="line">Patch failed at 0001 arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">hint: Use &#x27;git am --show-current-patch=diff&#x27; to see the failed patch</span><br><span class="line">When you have resolved this problem, run &quot;git am --continue&quot;.</span><br><span class="line">If you prefer to skip this patch, run &quot;git am --skip&quot; instead.</span><br><span class="line">To restore the original branch and stop patching, run &quot;git am --abort&quot;.</span><br></pre></td></tr></table></figure>
+<p>用git bash强制应用补丁，再手动处理问题文件。具体步骤如下：</p>
+<p>1） 执行git am --3way --ignore-space-change --keep-cr --reject
+xxx.patch。其中--reject指示工具将patch不可应用的部分保存为*.rej文件。 -
+如果补丁缺少 index
+信息用<code>git apply --reject --ignore-space-change</code>，但是这种方式需要自己重新commit，不推荐</p>
+<p>2）打开*.rej会有没添加的patch相关代码内容，手动修改相应未生效patch的文件。然后删除.rej文件。</p>
+<p>3）执行git
+add。将所有需要提交的文件添加到缓存区。因为应用失败，所以应用patch过程停在了修改文件的流程，需要我们手动修改和提交，完成工具无法自动完成的流程。</p>
+<p>4）执行git am
+--continue。继续完成补丁的应用，成功即表示应用patch生效。</p>
+<p>步骤 1 执行后的结果：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[zhengtian@localhost linux]$ git am --3way --ignore-space-change --keep-cr --reject v1-4-5-arm64-kvm-support-to-handle-the-HDBSSF-event.patch</span><br><span class="line">Applying: arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">error: sha1 information is lacking or useless (arch/arm64/kvm/arm.c).</span><br><span class="line">error: could not build fake ancestor</span><br><span class="line">Patch failed at 0001 arm64/kvm: support to handle the HDBSSF event</span><br><span class="line">hint: Use &#x27;git am --show-current-patch=diff&#x27; to see the failed patch</span><br><span class="line">When you have resolved this problem, run &quot;git am --continue&quot;.</span><br><span class="line">If you prefer to skip this patch, run &quot;git am --skip&quot; instead.</span><br><span class="line">To restore the original branch and stop patching, run &quot;git am --abort&quot;.</span><br><span class="line">[zhengtian@localhost linux]$ git status</span><br><span class="line">On branch feat-hdbss</span><br><span class="line">You are in the middle of an am session.</span><br><span class="line">  (fix conflicts and then run &quot;git am --continue&quot;)</span><br><span class="line">  (use &quot;git am --skip&quot; to skip this patch)</span><br><span class="line">  (use &quot;git am --abort&quot; to restore the original branch)</span><br><span class="line"></span><br><span class="line">Changes not staged for commit:</span><br><span class="line">  (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)</span><br><span class="line">  (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)</span><br><span class="line">        modified:   arch/arm64/kvm/arm.c</span><br><span class="line">        modified:   arch/arm64/kvm/handle_exit.c</span><br><span class="line"></span><br><span class="line">Untracked files:</span><br><span class="line">  (use &quot;git add &lt;file&gt;...&quot; to include in what will be committed)</span><br><span class="line">        arch/arm64/kvm/mmu.c.rej</span><br><span class="line"></span><br><span class="line">no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</span><br></pre></td></tr></table></figure>
 ]]></content>
   </entry>
   <entry>
@@ -10620,7 +10683,7 @@ LTS上安装定制的QEMU环境，需要两个文件<code>openocd-benos_1.0-3_am
 </ul>
 <p><img src="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/2025-09-15-00-06-15.png"></p>
 <p>我们切换到<code>my_labs</code>分支进行实验：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git branch my_lab</span><br><span class="line">git checkout my_lab</span><br><span class="line">git reset 3262911 --hard</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git branch my_lab</span><br><span class="line">git checkout my_lab</span><br><span class="line">git checkout -b my_lab 3262911</span><br><span class="line"><span class="comment"># git reset 3262911 --hard</span></span><br></pre></td></tr></table></figure>
 <p>当需要提交代码时，可以提交到</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh://akira@ubuntu/home/akira/BenOS_Learn/BenOS_code/armv8_trainning.git</span><br></pre></td></tr></table></figure>
 <h1 id="三qemu运行benos">三、QEMU运行BenOS</h1>
