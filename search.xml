@@ -10276,10 +10276,10 @@ id="方法从主线上一个一个patch进行rebase">方法：从主线上一个
 rebase</p>
 <p>此时就能看到需要我们手动 rebase 的文件：</p>
 <!-- ![](picture/2025-10-15-17-49-27.png) -->
-<p>然后手动修改<code>Unmerged</code>的文件</p>
+<p><code>git status</code>查看<code>Umerged</code>的文件，然后手动修改<code>Unmerged</code>的文件</p>
 <p>修改完后执行以下语句:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git add &lt;修改的文件名&gt;</span><br><span class="line">git status <span class="comment">#查看冲突是不是全部解决了</span></span><br><span class="line"><span class="comment"># git add arch/arm64/include/asm/sysreg.h tools/arch/arm64/include/asm/sysreg.h</span></span><br><span class="line">git am --<span class="built_in">continue</span></span><br></pre></td></tr></table></figure>
-<p>冲突全部解决的情况如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git add &lt;修改的文件名&gt;</span><br><span class="line">git status <span class="comment">#查看冲突是不是全部解决了，确保没哟unmerged的文件</span></span><br><span class="line">git add arch/arm64/include/asm/sysreg.h tools/arch/arm64/include/asm/sysreg.h</span><br><span class="line">git am --<span class="built_in">continue</span></span><br></pre></td></tr></table></figure>
+<!-- 冲突全部解决的情况如下： -->
 <!-- ![](picture/2025-10-16-09-11-06.png) -->
 <p>然后重复上面所有步骤，直到所有patch全部被添加进来</p>
 <h3 id="对于-git-am---3way-依然解决不了的问题通过-.rej-手动解决">对于
