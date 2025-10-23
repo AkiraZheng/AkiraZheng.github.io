@@ -93,6 +93,8 @@ categories:
 
 - 参考：(VS Code编写Keil uVison 5工程)[https://blog.csdn.net/weixin_43576926/article/details/107736692]
 
+## 5.3 配置 paste image 插件
+
 # 六、JetBrains全家桶
 ## 6.1 CLion配置C++
 

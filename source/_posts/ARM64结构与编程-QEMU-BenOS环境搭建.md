@@ -63,7 +63,8 @@ git clone ssh://akira@ubuntu/home/akira/BenOS_Learn/BenOS_code/armv8_trainning.g
 ```bash
 git branch my_lab
 git checkout my_lab
-git reset 3262911 --hard
+git checkout -b my_lab 3262911
+# git reset 3262911 --hard
 ```
 
 当需要提交代码时，可以提交到
@@ -116,7 +117,7 @@ make debug
 ```bash
 
 gdb-multiarch --tui ./build/benos.elf
-(gdb) target remote localhost:1234
+(gdb) target remote localhost:1234t
 (gdb) b _start
 (gdb) c
 (gdb) layout regs # 查看寄存器

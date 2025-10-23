@@ -320,4 +320,21 @@ Sublime实现Markdown实时更新参考文章：[Sublime Text3 的 Markdown 实�
 
 - 参考文章[Git 解决github文件夹有向右的白色箭头并且不能打开](https://www.jianshu.com/p/28e61a24d847)
 
+## 8. 在`vscode`中配置`paste image`
+
+在 vscode 中配置 paste image，实现用`Ctrl+Alt+V`(win)、`opt+cmd+V`(mac)粘贴图片
+
+首先安装`paste image`插件
+
+然后`ctrl+shift+p`打开命令面板，输入`settings`，选择`paste image: path`
+
+配置内容：
+
+对于`paste image: path`，配置为`${currentFileNameWithoutExt}`，hexo中new一个md文件时，会自动生成同名文件夹存放图片，因此这里设置将图片存放在md文件同目录下
+
+<img src=2025-09-17-14-05-32.png>
+
+对于`Paste Image: Insert Pattern`，配置为`<img src=${imageFileName}>`
+
+<img src=2025-09-17-14-07-17.png>
 
