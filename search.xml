@@ -10340,7 +10340,7 @@ commit info，否则保持原来的信息即可。</p>
 <p>在 git commit --amend 后在 commit 信息中添加自己的邮箱：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> git commit --amend 后在commit 信息中添加自己的邮箱</span></span><br><span class="line">Signed-off-by: eillon &lt;yezhenyu2@huawei.com&gt;</span><br><span class="line">Signed-off-by: Tian Zheng &lt;zhengtian10@huawei.com&gt;</span><br></pre></td></tr></table></figure>
 <p>然后就可以保存一下当前的新patch</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git foemat-patch -v2</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git foemat-patch -1</span><br></pre></td></tr></table></figure>
 <p>最后继续 rebase：</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git rebase --<span class="built_in">continue</span></span><br></pre></td></tr></table></figure>
 <p>如果重复上面的修改步骤，把所有patch都修改完了的话，可以制作该serial的所有patch，在最后一个patch
