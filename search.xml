@@ -10338,7 +10338,7 @@ Git 会停在那个 commit：</p>
 <p>如果 patch 做了大修改，已经跟原来的 commit info 不一样了，就必须修改
 commit info，否则保持原来的信息即可。</p>
 <p>在 git commit --amend 后在 commit 信息中添加自己的邮箱：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> git commit --amend 后在commit 信息中添加自己的邮箱</span></span><br><span class="line">Signed-off-by: eillon &lt;yezhenyu2@huawei.com&gt;</span><br><span class="line">Signed-off-by: Tian Zheng &lt;zhengtian10@huawei.com&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> git commit --amend 后在commit 信息中添加自己的邮箱</span></span><br><span class="line">Signed-off-by: 原作者 &lt;原作者邮箱&gt;</span><br><span class="line">Signed-off-by: Tian Zheng &lt;zhengtian10@huawei.com&gt;</span><br></pre></td></tr></table></figure>
 <p>然后就可以保存一下当前的新patch</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git foemat-patch -1</span><br></pre></td></tr></table></figure>
 <p>最后继续 rebase：</p>
