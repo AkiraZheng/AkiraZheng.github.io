@@ -19,24 +19,24 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="一、字符设备驱动 1.1 ioctl ioctl是用于设备控制的公共接口，可以实现用户态系统调用、设备驱动程序进行通信。ioctl在字符设备、块设备、网络设备等设备驱动程序中广泛使用。 12345678910111213+---------------+          +---------------+       +---------------+       +--------------">
+    <meta name="description" content="1. ioctl ioctl是用于设备控制的公共接口，可以实现用户态系统调用、设备驱动程序进行通信。ioctl在字符设备、块设备、网络设备等设备驱动程序中广泛使用。 12345678910111213+---------------+          +---------------+       +---------------+       +------------------------">
 <meta property="og:type" content="article">
-<meta property="og:title" content="驱动原理学习1：字符设备驱动">
-<meta property="og:url" content="https://akirazheng.github.io/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/index.html">
+<meta property="og:title" content="驱动学习2：字符设备驱动(fd,ioctl)">
+<meta property="og:url" content="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一、字符设备驱动 1.1 ioctl ioctl是用于设备控制的公共接口，可以实现用户态系统调用、设备驱动程序进行通信。ioctl在字符设备、块设备、网络设备等设备驱动程序中广泛使用。 12345678910111213+---------------+          +---------------+       +---------------+       +--------------">
+<meta property="og:description" content="1. ioctl ioctl是用于设备控制的公共接口，可以实现用户态系统调用、设备驱动程序进行通信。ioctl在字符设备、块设备、网络设备等设备驱动程序中广泛使用。 12345678910111213+---------------+          +---------------+       +---------------+       +------------------------">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://akirazheng.github.io/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/ioctl的系统调用号.png">
-<meta property="article:published_time" content="2025-09-08T09:09:48.000Z">
-<meta property="article:modified_time" content="2025-09-10T02:31:17.226Z">
+<meta property="og:image" content="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/picture/ioctl的系统调用号.png">
+<meta property="article:published_time" content="2025-10-27T07:16:40.000Z">
+<meta property="article:modified_time" content="2025-10-27T07:19:48.803Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://akirazheng.github.io/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/ioctl的系统调用号.png">
+<meta name="twitter:image" content="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/picture/ioctl的系统调用号.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>驱动原理学习1：字符设备驱动 · AkiraZheng&#39;s Time</title>
+    <title>驱动学习2：字符设备驱动(fd,ioctl) · AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -261,7 +261,7 @@
                 <a href="/">AkiraZheng&#39;s Time.</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">驱动原理学习1：字符设备驱动</a>
+                <a href="#" class="post-name">驱动学习2：字符设备驱动(fd,ioctl)</a>
             </div>
         </div>
     
@@ -307,7 +307,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                驱动原理学习1：字符设备驱动
+                驱动学习2：字符设备驱动(fd,ioctl)
             <!-- 404 -->
             
         </h1>
@@ -326,13 +326,13 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">1.3k</span>Reading time: <span class="post-count reading-time">5 min</span></span>
+                        <span>Word count: <span class="post-count word-count">2.4k</span>Reading time: <span class="post-count reading-time">9 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
                     <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2025/09/08</span>
+                    <span class="post-intro-time">2025/10/27</span>
                     <!-- busuanzi -->
                     
                         <span id="busuanzi_container_page_pv" class="busuanzi-pv">
@@ -487,11 +487,10 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="一字符设备驱动">一、字符设备驱动</h1>
-<h2 id="ioctl">1.1 ioctl</h2>
+        <h1 id="ioctl">1. ioctl</h1>
 <p><code>ioctl</code>是用于设备控制的公共接口，可以实现用户态<strong>系统调用</strong>、<strong>设备驱动程序</strong>进行通信。<code>ioctl</code>在<strong>字符设备、块设备、网络设备</strong>等设备驱动程序中广泛使用。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">+---------------+          +---------------+       +---------------+       +---------------------------+</span><br><span class="line">|  用户态ioctl   +---------&gt;| 陷入内核传递   +------&gt;| 内核查找       +------&gt;| sys_ioctl()根据文件操作集 |</span><br><span class="line">|               |          | 系统调用号54   |       | 系统调用号54   |       | 找到驱动程序mydev_ioctl   |</span><br><span class="line">+---------------+          +---------------+       +---------------+       +------------+--------------+</span><br><span class="line">        ^                                                                               |</span><br><span class="line">        |                                                                               |</span><br><span class="line">        |                                                                               |</span><br><span class="line">        |                                                                               v</span><br><span class="line">        |                                                                  +---------------------------+</span><br><span class="line">        +------------------------------------------------------------------+                           |</span><br><span class="line">                                                                           | 执行驱动程序mydev_ioctl    |</span><br><span class="line">                                                                           +---------------------------+</span><br></pre></td></tr></table></figure>
-<h2 id="用户态ioctl和驱动ioctl">1.2 用户态ioctl和驱动ioctl</h2>
+<h2 id="用户态ioctl和驱动ioctl">1.1 用户态ioctl和驱动ioctl</h2>
 <p>系统调用过程中，实际上就是<strong>处于用户空间的用户态ioctl</strong>对应上特定<strong>内核空间中ioctl</strong>的过程</p>
 <p>但是用户态没有访问内核空间的权限，因此需要系统先通过<code>SWI(Software Interrupt)</code>的方式从用户态陷入内核态，并利用<code>sys_ioctl</code>通过<strong>文件操作集</strong>找到对应的驱动ioctl，三者共同构成了Linux
 I/O控制的核心机制。</p>
@@ -529,34 +528,95 @@ I/O控制的核心机制。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _IO(type,nr)        _IOC(_IOC_NONE,(type),(nr),0)	<span class="comment">//定义不带参数的 ioctl 命令</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _IOR(type,nr,size)  _IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))	<span class="comment">//定义											带写参数的 ioctl 命令（copy_from_user）</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _IOW(type,nr,size)  _IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))	<span class="comment">//定义											带读参数的ioctl命令（copy_to_user）</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _IOWR(type,nr,size) _IOC(_IOC_READ|_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))		<span class="comment">//定义带读写参数的 ioctl 命令</span></span></span><br></pre></td></tr></table></figure>
 <h3 id="sys_ioctl">2）sys_ioctl</h3>
 <p><code>ioctl</code>会让用户态触发中断陷入内核，所以<code>ioctl</code>本身也有一个<strong>系统调用号</strong><code>__NR_ioctl</code>，在&lt;arch/arm64/include/asm/unistd32.h&gt;中定义：</p>
-<p>中断陷入内核态之后，会根据寄存器传递过来的系统调用号(54)，执行系统调用表中的(54)操作，就是调用sys_ioctl()函数。</p>
-<p><img src="/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/ioctl的系统调用号.png"></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __NR_ioctl 54</span></span><br><span class="line">__SYSCALL(__NR_ioctl, compat_sys_ioctl)</span><br></pre></td></tr></table></figure>
-<p>这里<code>sys_ioctl</code>函数的声明为：</p>
+<p>中断陷入内核态之后，会根据寄存器传递过来的系统调用号(ARM64中是29)，执行系统调用表中的(29)操作，也就是就是调用<code>sys_ioctl()</code>函数。</p>
+<!-- <img src="./picture/ioctl的系统调用号.png"> -->
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __NR_ioctl 29       <span class="comment">//ioctl 的系统调用号</span></span></span><br></pre></td></tr></table></figure>
+<p>并在<code>arch/arm64/kernel/sys.c</code>中构建系统调用表（也就是<strong>构建系统调用号所映射的系统调用函数</strong>）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 第一步：定义系统调用函数原型 */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> __SYSCALL</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __SYSCALL(nr, sym)	asmlinkage long __arm64_##sym(const struct pt_regs *);</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;asm/syscall_table_64.h&gt;</span></span></span><br><span class="line"><span class="comment">/* 第二步：构建系统调用表 */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> __SYSCALL</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __SYSCALL(nr, sym)	[nr] = __arm64_##sym,</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">syscall_fn_t</span> sys_call_table[__NR_syscalls] = &#123;</span><br><span class="line">	[<span class="number">0</span> ... __NR_syscalls - <span class="number">1</span>] = __arm64_sys_ni_syscall,</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;asm/syscall_table_64.h&gt;</span></span></span><br></pre></td></tr></table></figure>
+<p>上述系统调用表是基于<code>syscall_table_64.h</code>中定义的<code>__SYSCALL</code>映射关系来构建的，ioctl
+在<code>syscall_table_64.h</code>中定义的映射关系为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__SYSCALL_WITH_COMPAT(<span class="number">29</span>, sys_ioctl, compat_sys_ioctl)</span><br></pre></td></tr></table></figure>
+<p>也就是系统调用会调用以下函数来处理：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> __attribute__((unused))</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">sys_ioctl</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> fd, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> my_syscall3(__NR_ioctl, fd, cmd, arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里<code>sys_ioctl</code>函数的为：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">asmlinkage <span class="keyword">long</span> <span class="title">sys_ioctl</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> fd, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>实际上我们使用的时候用的是<code>SYSCALL_DEFINE3</code></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE3(ioctl, <span class="keyword">unsigned</span> <span class="keyword">int</span>, fd, <span class="keyword">unsigned</span> <span class="keyword">int</span>, cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span>, arg)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 1. 根据fd找到对应的file结构体</span></span><br><span class="line">    <span class="comment">// 2. 检查权限和参数有效性</span></span><br><span class="line">    <span class="comment">// 3. 调用具体设备的ioctl操作方法</span></span><br><span class="line">    <span class="keyword">return</span> do_vfs_ioctl(file, fd, cmd, arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在<code>SYSCALL_DEFINE3</code>中执行<code>do_vfs_ioctl</code>，深挖到该接口里面会发现它将<strong>对应的驱动程序的ioctl加入到了文件操作集</strong>中，由此路由到对应的<strong>驱动ioctl</strong>函数中执行对应的操作</p>
-<h3 id="驱动ioctl">3）驱动ioctl</h3>
-<p>假设我们某个中断的目标是路由到<code>led_ioctl</code>驱动程序中，定义该驱动函数为：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">led_ioctl</span><span class="params">(struct file *file, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br></pre></td></tr></table></figure>
-<p>在驱动程序中用switch对该设备的<code>cmd</code>号进行解析，并执行对应的操作</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 字符设备驱动示例</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">mydev_ioctl</span><span class="params">(struct file *filp, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (cmd) &#123;</span><br><span class="line">    <span class="keyword">case</span> MYDEV_CMD_READ:</span><br><span class="line">        <span class="comment">// 处理读取请求</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> MYDEV_CMD_WRITE:</span><br><span class="line">        <span class="comment">// 处理写入请求</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">return</span> -ENOTTY; <span class="comment">// 不支持的命令</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在file_operations中注册(注册到文件操作集中，供给sys_ioctl路由到这（通过`unlocked_ioctl`）)</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">mydev_fops</span> =</span> &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .unlocked_ioctl = mydev_ioctl,</span><br><span class="line">    <span class="comment">// 其他操作方法...</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>执行里面的驱动函数就能实现完整的系统调用，最后再将结果返回给用户态。</p>
-<h1 id="二">二、</h1>
-<h1 id="参考">参考</h1>
+<!-- todo：打个点，这里怎么从sys_ioctl到SYSCALL_DEFINE3的过程还没理清楚 -->
+<p>直接通过系统调用表跳转到<code>SYSCALL_DEFINE3</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE3(ioctl, <span class="keyword">unsigned</span> <span class="keyword">int</span>, fd, <span class="keyword">unsigned</span> <span class="keyword">int</span>, cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span>, arg)</span><br><span class="line">&#123;</span><br><span class="line">	CLASS(fd, f)(fd);</span><br><span class="line">	<span class="keyword">int</span> error;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1. 根据fd找到对应的file结构体</span></span><br><span class="line">	<span class="keyword">if</span> (fd_empty(f))</span><br><span class="line">		<span class="keyword">return</span> -EBADF;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 检查权限和参数有效性</span></span><br><span class="line">	error = security_file_ioctl(fd_file(f), cmd, arg);</span><br><span class="line">	<span class="keyword">if</span> (error)</span><br><span class="line">		<span class="keyword">return</span> error;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 调用具体设备的ioctl操作方法：do_vfs_ioctl</span></span><br><span class="line">	error = do_vfs_ioctl(fd_file(f), fd, cmd, arg);</span><br><span class="line">	<span class="keyword">if</span> (error == -ENOIOCTLCMD)</span><br><span class="line">		error = vfs_ioctl(fd_file(f), cmd, arg);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> error;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在<code>SYSCALL_DEFINE3</code>中执行<code>fd_file(f)</code>，深挖到该接口里面会发现它将<strong>对应的驱动程序的ioctl加入到了文件操作集</strong>中，由此路由到对应的<strong>驱动ioctl</strong>函数中执行对应的操作。</p>
 <blockquote>
-<p>[1] <a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_71478434/article/details/126551082">一文搞懂内核块设备操作之ioctl系统调用过程</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/694376875">【Linux内核|系统调用】深度分析系统调用从用户程序到内核的流程</a></p>
 </blockquote>
+<h3 id="驱动ioctl">3）驱动ioctl</h3>
+<p>内核通过前面的<code>fd_file(f)</code>以及所带的命令号<code>cmd</code>路由到指定的驱动程序中。根据文件描述符
+<code>fd</code> 找到对应的文件对象
+<code>struct file *filp</code>，然后通过这个文件对象的操作集
+<code>file_operations</code> 中的 <code>unlocked_ioctl</code>
+成员，最终调用设备驱动中你自己实现的 <code>mydev_ioctl()</code>
+函数。</p>
+<p>假设我们某个中断的目标是路由到<code>led_ioctl</code>驱动程序中，该<code>fd</code>注册的</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在file_operations中注册(注册到文件操作集中，供给sys_ioctl路由到这（通过`unlocked_ioctl`）)</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">mydev_fops</span> =</span> &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .unlocked_ioctl = mydev_ioctl, <span class="comment">//mydev_ioctl()为目标驱动函数</span></span><br><span class="line">    <span class="comment">// 其他操作方法...</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在驱动程序中用switch对该设备的<code>cmd</code>号进行解析，并执行对应的操作</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 字符设备驱动示例</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">mydev_ioctl</span><span class="params">(struct file *filp, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (cmd) &#123;</span><br><span class="line">    <span class="keyword">case</span> MYDEV_CMD_READ:</span><br><span class="line">        <span class="comment">// 处理读取请求</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> MYDEV_CMD_WRITE:</span><br><span class="line">        <span class="comment">// 处理写入请求</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">return</span> -ENOTTY; <span class="comment">// 不支持的命令</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行里面的驱动函数就能实现完整的系统调用，最后再将结果返回给用户态。</p>
+<h2 id="完整调用链">1.2 完整调用链</h2>
+<p>从用户态到驱动层的完整调用链为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">ioctl(fd, cmd, arg)                 <span class="comment">// 用户空间调用 ioctl()</span></span><br><span class="line">    ↓</span><br><span class="line">svc #<span class="number">0</span>                              <span class="comment">// 触发系统调用陷入内核态（ARM64架构）</span></span><br><span class="line">    ↓</span><br><span class="line">x8 = <span class="number">29</span>                             <span class="comment">// 系统调用号 __NR_ioctl</span></span><br><span class="line">    ↓</span><br><span class="line">sys_call_table[<span class="number">29</span>]                  <span class="comment">// 查表，找到 __arm64_sys_ioctl</span></span><br><span class="line">    ↓</span><br><span class="line">__arm64_sys_ioctl(pt_regs *)        <span class="comment">// 架构包装函数，从寄存器提取参数</span></span><br><span class="line">    ↓</span><br><span class="line">sys_ioctl(fd, cmd, arg)             <span class="comment">// SYSCALL_DEFINE3(ioctl, ...) 展开的函数</span></span><br><span class="line">    ↓</span><br><span class="line">fdget(fd)                           <span class="comment">// 获取内核文件描述符结构 struct fd</span></span><br><span class="line">    ↓</span><br><span class="line">fd_file(f)                          <span class="comment">// 提取 struct file *file</span></span><br><span class="line">    ↓</span><br><span class="line">file-&gt;f_op                          <span class="comment">// 获取文件操作集 struct file_operations</span></span><br><span class="line">    ↓</span><br><span class="line">f_op-&gt;unlocked_ioctl                <span class="comment">// 获取驱动注册的 ioctl 函数指针</span></span><br><span class="line">    ↓</span><br><span class="line">mydev_ioctl(file, cmd, arg)         <span class="comment">// 驱动程序中实现的 ioctl 处理函数</span></span><br><span class="line">    <span class="keyword">switch</span>(cmd)                     <span class="comment">// 根据cmd处理具体操作（cmd由类似_IO(type,nr)的格式生成）</span></span><br></pre></td></tr></table></figure>
+<h1 id="驱动ioctl实现例子kvm">2. 驱动ioctl实现例子：KVM</h1>
+<h2 id="用户态qemu">用户态：qemu</h2>
+<p>以 KVM 中的 migration 热迁移中需要确定虚机中 KVM
+的扩展能力为例子，在用户态 qemu
+中会通过下面的函数来发起<strong>系统调用请求</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用户态：qemu 中</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">kvm_dirty_ring_supported</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(__linux__) &amp;&amp; defined(HOST_X86_64)</span></span><br><span class="line">    <span class="keyword">int</span> ret, kvm_fd = open(<span class="string">&quot;/dev/kvm&quot;</span>, O_RDONLY);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (kvm_fd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ret = ioctl(kvm_fd, KVM_CHECK_EXTENSION, KVM_CAP_DIRTY_LOG_RING); <span class="comment">//发起系统调用</span></span><br><span class="line">    close(kvm_fd);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* We test with 4096 slots */</span></span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">4096</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中用户态通过句柄<code>kvm_fd</code>，也就是
+<code>"/dev/kvm"</code>来让内核识别出当前是要链路到 kvm
+的系统调用中。</p>
+<p>通过执行<code>ioctl(kvm_fd, KVM_CHECK_EXTENSION, KVM_CAP_DIRTY_LOG_RING)</code>发起系统调用，其中我们关注的
+KVM
+的扩展能力的<code>cmd</code>就是<code>KVM_CHECK_EXTENSION</code>。</p>
+<ul>
+<li><p><code>kvm_fd</code> 是 /dev/kvm 的文件描述符。</p></li>
+<li><p><code>cmd</code> = KVM_CHECK_EXTENSION → 实际值是 _IO(KVMIO,
+0x03)。</p></li>
+<li><p><code>arg</code> = KVM_CAP_DIRTY_LOG_RING →
+查询的扩展能力编号。</p></li>
+</ul>
+<p>在 qemu 中<code>KVM_CHECK_EXTENSION</code>定义为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Check if a kvm extension is available.  Argument is extension number,</span></span><br><span class="line"><span class="comment"> * return is 1 (yes) or 0 (no, sorry).</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> KVM_CHECK_EXTENSION       _IO(KVMIO,   0x03)</span></span><br></pre></td></tr></table></figure>
+<h2 id="内核驱动层kvm-的驱动代码">内核驱动层：kvm 的驱动代码</h2>
+<p>KVM 驱动在初始化时注册了 <code>/dev/kvm</code> 的
+<code>file_operations</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">kvm_chardev_ops</span> =</span> &#123;</span><br><span class="line">	.unlocked_ioctl = kvm_dev_ioctl,</span><br><span class="line">	.llseek		= noop_llseek,</span><br><span class="line">	KVM_COMPAT(kvm_dev_ioctl),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>意味着该系统调用最终在内核中会调用<code>kvm_dev_ioctl</code>函数来处理指令：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">kvm_dev_ioctl</span><span class="params">(struct file *filp,</span></span></span><br><span class="line"><span class="params"><span class="function">			  <span class="keyword">unsigned</span> <span class="keyword">int</span> ioctl, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">switch</span> (ioctl) &#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">case</span> KVM_CHECK_EXTENSION:</span><br><span class="line">		r = kvm_vm_ioctl_check_extension_generic(<span class="literal">NULL</span>, arg);</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时：</p>
+<ul>
+<li><p>ioctl = KVM_CHECK_EXTENSION</p></li>
+<li><p>arg = KVM_CAP_DIRTY_LOG_RING</p></li>
+</ul>
+<p>在<code>kvm_vm_ioctl_check_extension_generic</code>中我们就可以看到所有可以查询的
+KVM 扩展功能，当前我们要查的是 KVM
+是否支持<code>KVM_CAP_DIRTY_LOG_RING</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">kvm_vm_ioctl_check_extension_generic</span><span class="params">(struct kvm *kvm, <span class="keyword">long</span> arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (arg) &#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">case</span> KVM_CAP_DIRTY_LOG_RING:</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_HAVE_KVM_DIRTY_RING_TSO</span></span><br><span class="line">		<span class="keyword">return</span> KVM_DIRTY_RING_MAX_ENTRIES * <span class="keyword">sizeof</span>(struct kvm_dirty_gfn);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>KVM
+中某些扩展能力的使能和关闭也是按照上面的路径来的，根据不同的<code>ioctl</code>来选择干不同的事。</p>
+<p>其中，关于设备<code>/dev/kvm</code>与<code>file_operations kvm_chardev_ops</code>的映射关系是通过
+<code>misc device</code>（杂项设备）机制注册给内核的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">kvm_init</span><br><span class="line">    +-&gt;misc_register(&amp;kvm_dev);</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">miscdevice</span> <span class="title">kvm_dev</span> =</span> &#123;</span><br><span class="line">	KVM_MINOR,</span><br><span class="line">	<span class="string">&quot;kvm&quot;</span>,</span><br><span class="line">	&amp;kvm_chardev_ops,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>执行<code>misc_register(&amp;kvm_dev)</code> 时，内核会自动在
+<code>/dev/</code>
+目录下创建一个设备节点，根据<code>kvm_dev</code>的定义，这里的设备名就是
+<code>"kvm"</code>。所以最终 qemu
+中需要使用的句柄路径就是：<code>/dev/kvm</code>。</p>
 
     </article>
     <!-- license -->
     
         <div class="license-wrapper">
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
-            <p>Link：<a href="https://akirazheng.github.io/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/">https://akirazheng.github.io/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/</a>
-            <p>Publish date：<a href="https://akirazheng.github.io/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/">September 8th 2025, 5:09:48 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/">September 10th 2025, 10:31:17 am</a>
+            <p>Link：<a href="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">October 27th 2025, 3:16:40 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">October 27th 2025, 3:19:48 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -564,17 +624,12 @@ I/O控制的核心机制。</p>
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/" title="虚拟化：CPU虚拟化">
-                    <div class="nextTitle">虚拟化：CPU虚拟化</div>
-                </a>
-            
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/" title="linux常用技巧">
-                    <div class="prevTitle">linux常用技巧</div>
+                <a href="/2025/09/29/Linux-%E5%86%85%E6%A0%B8%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6/" title="Linux:内核通知机制">
+                    <div class="prevTitle">Linux:内核通知机制</div>
                 </a>
             
         </li>
@@ -722,7 +777,7 @@ I/O控制的核心机制。</p>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8"><span class="toc-text">一、字符设备驱动</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ioctl"><span class="toc-text">1.1 ioctl</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%80%81ioctl%E5%92%8C%E9%A9%B1%E5%8A%A8ioctl"><span class="toc-text">1.2 用户态ioctl和驱动ioctl</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%80%81ioctl"><span class="toc-text">1）用户态ioctl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sys_ioctl"><span class="toc-text">2）sys_ioctl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A9%B1%E5%8A%A8ioctl"><span class="toc-text">3）驱动ioctl</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C"><span class="toc-text">二、</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ioctl"><span class="toc-text">1. ioctl</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%80%81ioctl%E5%92%8C%E9%A9%B1%E5%8A%A8ioctl"><span class="toc-text">1.1 用户态ioctl和驱动ioctl</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%80%81ioctl"><span class="toc-text">1）用户态ioctl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sys_ioctl"><span class="toc-text">2）sys_ioctl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A9%B1%E5%8A%A8ioctl"><span class="toc-text">3）驱动ioctl</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E9%93%BE"><span class="toc-text">1.2 完整调用链</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A9%B1%E5%8A%A8ioctl%E5%AE%9E%E7%8E%B0%E4%BE%8B%E5%AD%90kvm"><span class="toc-text">2. 驱动ioctl实现例子：KVM</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%80%81qemu"><span class="toc-text">用户态：qemu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8%E5%B1%82kvm-%E7%9A%84%E9%A9%B1%E5%8A%A8%E4%BB%A3%E7%A0%81"><span class="toc-text">内核驱动层：kvm 的驱动代码</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1865,6 +1920,12 @@ I/O控制的核心机制。</p>
             
         
         <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">驱动学习2：字符设备驱动(fd,ioctl)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
             <span class="archive-post-date">09/29</span>
             <a class="archive-post-title" href="/2025/09/29/Linux-%E5%86%85%E6%A0%B8%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6/">Linux:内核通知机制</a>
         </li>
@@ -1903,12 +1964,6 @@ I/O控制的核心机制。</p>
         <li class="archive-post-item">
             <span class="archive-post-date">09/14</span>
             <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：CPU虚拟化</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">09/08</span>
-            <a class="archive-post-title" href="/2025/09/08/%E9%A9%B1%E5%8A%A8%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A01%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/">驱动原理学习1：字符设备驱动</a>
         </li>
     
         
