@@ -28,7 +28,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/picture/ioctl的系统调用号.png">
 <meta property="article:published_time" content="2025-10-27T07:16:40.000Z">
-<meta property="article:modified_time" content="2025-10-27T07:22:22.826Z">
+<meta property="article:modified_time" content="2025-10-27T07:24:20.478Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/picture/ioctl的系统调用号.png">
@@ -509,19 +509,22 @@ I/O控制的核心机制。</p>
 <li><code>...</code>：可选参数，表示对设备进行控制的命令参数，可以是整数、指针等类型，用于传递给驱动程序。</li>
 </ul>
 <p>下面讲解一下
-<code>request</code>/<code>cmd</code>参数中的4个位段信息： -
-<code>dir</code>-2bit：表示数据传输方向（四种） -
-<code>_IOC_NONE</code>：无数据传输 -
-<code>_IOC_READ</code>：数据从内核空间（设备）读取到用户空间 -
-<code>_IOC_WRITE</code>：数据从用户空间写入到内核空间（设备） -
-<code>_IOC_READ|_IOC_WRITE</code>：数据在用户空间和内核空间之间双向传输
--
-<code>type</code>-8bit：设备类型标识符，用于区分不同设备。也成为<strong>幻数/魔数</strong>
--
-<code>nr(number)</code>-8bit：命令序号，用于区分同一设备的不同命令，可以从0~255之间进行编号
--
-<code>size</code>-14bit：表示用户传入的用户数据<code>...</code>部分参数的数据类型和长度，单位是字节
-- 系统并不强制使用这个位字段，因此内核不会检查该字段。</p>
+<code>request</code>/<code>cmd</code>参数中的4个位段信息：</p>
+<ul>
+<li><p><code>dir</code>-2bit：表示数据传输方向（四种）</p>
+<ul>
+<li><code>_IOC_NONE</code>：无数据传输</li>
+<li><code>_IOC_READ</code>：数据从内核空间（设备）读取到用户空间</li>
+<li><code>_IOC_WRITE</code>：数据从用户空间写入到内核空间（设备）</li>
+<li><code>_IOC_READ|_IOC_WRITE</code>：数据在用户空间和内核空间之间双向传输</li>
+</ul></li>
+<li><p><code>type</code>-8bit：设备类型标识符，用于区分不同设备。也成为<strong>幻数/魔数</strong></p></li>
+<li><p><code>nr(number)</code>-8bit：命令序号，用于区分同一设备的不同命令，可以从0~255之间进行编号</p></li>
+<li><p><code>size</code>-14bit：表示用户传入的用户数据<code>...</code>部分参数的数据类型和长度，单位是字节</p>
+<ul>
+<li>系统并不强制使用这个位字段，因此内核不会检查该字段。</li>
+</ul></li>
+</ul>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> 31             30           16 15            8 7             0</span><br><span class="line">+---------------+--------------+---------------+---------------+</span><br><span class="line">|     dir       |     size     |    type       |    nr         |</span><br><span class="line">+---------------+--------------+---------------+---------------+</span><br></pre></td></tr></table></figure>
 <p>假设按照这4个字段来划分<code>cmd</code>参数，在宏定义时会定义<code>_IOC_DIRSHIFT</code>、<code>_IOC_TYPESHIFT</code>、<code>_IOC_NRSHIFT</code>、<code>_IOC_SIZESHIFT</code>这4个移位值，然后通过移位操作来获取这4个字段的值。</p>
 <p>通常，我们不直接使用<code>ioctl</code>函数，而是使用一些宏定义，如<code>_IOC</code>：</p>
@@ -619,7 +622,7 @@ KVM 扩展功能，当前我们要查的是 KVM
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">October 27th 2025, 3:16:40 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">October 27th 2025, 3:22:22 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">October 27th 2025, 3:24:20 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
