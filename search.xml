@@ -10245,8 +10245,12 @@ id了，所以最好是创建一个分支，或者先把最新的commit id记下
 <li><code>git diff &lt;old_commit_id&gt; &lt;new_commit_id&gt;</code>：顺序很重要，git
 diff A B 表示从 A 提交到 B 的修改，B 一般是比较新的提交，A
 一般是比比较旧的提交</li>
+<li><code>git diff --numstat &lt;commit id&gt;</code>:
+显示每个文件修改的行数(添加、删除、修改)</li>
+<li><code>git show --stat &lt;commit id&gt;</code>:
+统计修改的行数(添加、删除、修改) #
+制作.patch文件存储当前工作夹的修改</li>
 </ul>
-<h1 id="制作.patch文件存储当前工作夹的修改">制作.patch文件存储当前工作夹的修改</h1>
 <h2 id="针对某个文件">针对某个文件</h2>
 <ul>
 <li><p>导出未commit提交的patch：<code>git diff &gt; xxx.patch</code>，可以指定文件名
@@ -10484,6 +10488,11 @@ ssh 连接不断连</a></p>
 <p><code>cp file1.txt file2.txt</code></p>
 <p><code>cp -r /home/dir1 /home/dir2</code>
 在源目录下有子目录时，用-r参数，表示递归复制</p>
+<h2 id="修改默认内核选项">修改默认内核选项</h2>
+<p>先查看你要改为默认选项的内核的编号</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">awk -F\&#x27; &#x27;/menuentry / &#123; print i++ &quot; : &quot; $2 &#125;&#x27; /boot/efi/EFI/openEuler/grub.cfg</span><br></pre></td></tr></table></figure>
+<p>然后修改grub配置文件，将<code>GRUB_DEFAULT</code>的值改为目标内核编号：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta">#</span><span class="bash"> GRUB_DEFAULT=5</span></span><br></pre></td></tr></table></figure>
 <h1 id="gdb-调试">3. gdb 调试</h1>
 <h2 id="常用指令">常用指令</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">target remote localhost:1234</span><br><span class="line">b _start</span><br><span class="line">c</span><br><span class="line">layout regs # 查看寄存器</span><br><span class="line">s # 运行下一条指令</span><br><span class="line"><span class="meta">#</span><span class="bash"> n <span class="comment"># 跳过当前函数</span></span></span><br><span class="line">x/x $pc # 查看当前pc地址的值</span><br><span class="line">q # 退出</span><br></pre></td></tr></table></figure>
@@ -10526,6 +10535,7 @@ ssh 连接不断连</a></p>
 <h2 id="virsh-指令">virsh 指令</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 安装相关依赖和启动服务</span></span><br><span class="line">yum install -y libvirt sshpass</span><br><span class="line">systemctl start libvirtd</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 创建共享目录</span></span><br><span class="line">mkdir -p /tmp/shared_host</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> virsh 启动虚机</span></span><br><span class="line"></span><br><span class="line">virsh define file_name.xml</span><br><span class="line">virsh start file_name --console</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 重新进入虚机</span></span><br><span class="line">virsh console file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 退出虚机</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ctrl+] 退出</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看虚机绑核状态</span></span><br><span class="line">virsh vcpupin file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看全局虚机数量状态</span></span><br><span class="line">virsh list</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除销毁虚机</span></span><br><span class="line">virsh destroy file_name</span><br><span class="line">virsh undefine file_name</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看分配的 DHCP 租约</span></span><br><span class="line">virsh net-dhcp-leases default</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 检查默认网络状态</span></span><br><span class="line">virsh net-list --all</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 销毁默认网络</span></span><br><span class="line">virsh net-destroy default</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动默认网络</span></span><br><span class="line">virsh net-start default</span><br></pre></td></tr></table></figure>
 <h2 id="查看用qemu起的虚机-pid">查看用qemu起的虚机 pid</h2>
+<p><code>ps -ef | grep qemu</code></p>
 <p><code>ps aux | grep qemu</code></p>
 <h1 id="linux-中对工程代码的跳转函数查找">5. Linux
 中对工程代码的跳转、函数查找</h1>
@@ -11063,5 +11073,24 @@ KVM 扩展功能，当前我们要查的是 KVM
       <categories>
         <category>Linux内核驱动</category>
       </categories>
+  </entry>
+  <entry>
+    <title>ARM64基础知识</title>
+    <url>/2025/11/04/ARM64%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</url>
+    <content><![CDATA[<blockquote>
+<p><a href="https://www.cnblogs.com/LoyenWang/p/13584020.html">ARM64内存虚拟化</a></p>
+</blockquote>
+<blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/601037646">ARM内存屏障
+DMB</a></p>
+</blockquote>
+<p>DSB
+SY：数据屏障指令，多核数据同步问题，主要解决内存数据还未写入，就被乱序的指令读取的问题。
+- dsb(sy) 会等待其他核的广播应答后，才算完成</p>
+<p>ISB：指令屏障，清空 ISB
+后面的指令，并把还没执行的指令丢掉，重新取值（比如让CPU重新读取寄存器状态）。ISB
+不会管TLB缓存是否一致，只管指令状态，所以只用 ISB 会存在缓存一致性问题。
+- ISB不会等广播应答</p>
+]]></content>
   </entry>
 </search>
