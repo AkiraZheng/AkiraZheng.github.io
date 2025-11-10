@@ -10354,8 +10354,11 @@ commit中，执行以下指令：</p>
 <li>HEAD~5：表示从当前分支的最近 5 个提交中，生成一个 v2 版本的 patch
 系列，每个提交对应一个 .patch 文件。</li>
 <li>-v2：表示这是 patch 的第 2 个版本，Git 会在每个 patch
-的标题中自动加上 [v2,1/5]、[v2,2/5] 等前缀 这个流程正确吗</li>
+的标题中自动加上 [v2,1/5]、[v2,2/5] 等前缀</li>
 </ul>
+<p>如果是多个 patch，在发送邮件前，可以用下面的指令生成一些列带
+序号、封面的patches:</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git format-patch --numbered --cover-letter --subject-prefix=&#x27;PATCH&#x27; -o patches/ HEAD~5</span><br></pre></td></tr></table></figure>
 <h1 id="git-中对-commit-的坏点二分法查找">git 中对 commit
 的坏点二分法查找</h1>
 <ol type="1">
@@ -10492,7 +10495,7 @@ ssh 连接不断连</a></p>
 <p>先查看你要改为默认选项的内核的编号</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">awk -F\&#x27; &#x27;/menuentry / &#123; print i++ &quot; : &quot; $2 &#125;&#x27; /boot/efi/EFI/openEuler/grub.cfg</span><br></pre></td></tr></table></figure>
 <p>然后修改grub配置文件，将<code>GRUB_DEFAULT</code>的值改为目标内核编号：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cp /etc/default/grub /etc/default/grub.bak</span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta">#</span><span class="bash"> GRUB_DEFAULT=5</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cp /etc/default/grub /etc/default/grub.bak</span><br><span class="line">vim /etc/default/grub</span><br><span class="line"><span class="meta">#</span><span class="bash"> GRUB_DEFAULT=5</span></span><br><span class="line">grub2-mkconfig -o /boot/efi/EFI/openEuler/grub.cfg</span><br></pre></td></tr></table></figure>
 <h1 id="gdb-调试">3. gdb 调试</h1>
 <h2 id="常用指令">常用指令</h2>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">target remote localhost:1234</span><br><span class="line">b _start</span><br><span class="line">c</span><br><span class="line">layout regs # 查看寄存器</span><br><span class="line">s # 运行下一条指令</span><br><span class="line"><span class="meta">#</span><span class="bash"> n <span class="comment"># 跳过当前函数</span></span></span><br><span class="line">x/x $pc # 查看当前pc地址的值</span><br><span class="line">q # 退出</span><br></pre></td></tr></table></figure>
