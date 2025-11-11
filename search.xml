@@ -10248,9 +10248,10 @@ diff A B 表示从 A 提交到 B 的修改，B 一般是比较新的提交，A
 <li><code>git diff --numstat &lt;commit id&gt;</code>:
 显示每个文件修改的行数(添加、删除、修改)</li>
 <li><code>git show --stat &lt;commit id&gt;</code>:
-统计修改的行数(添加、删除、修改) #
-制作.patch文件存储当前工作夹的修改</li>
+统计修改的行数(添加、删除、修改)</li>
+<li><code>git stash show -p stash@&#123;0&#125;</code>:显示当前stash某个暂存内容的diff情况</li>
 </ul>
+<h1 id="制作.patch文件存储当前工作夹的修改">制作.patch文件存储当前工作夹的修改</h1>
 <h2 id="针对某个文件">针对某个文件</h2>
 <ul>
 <li><p>导出未commit提交的patch：<code>git diff &gt; xxx.patch</code>，可以指定文件名
@@ -10358,7 +10359,8 @@ commit中，执行以下指令：</p>
 </ul>
 <p>如果是多个 patch，在发送邮件前，可以用下面的指令生成一些列带
 序号、封面的patches:</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git format-patch --numbered --cover-letter --subject-prefix=&#x27;PATCH&#x27; -o patches/ HEAD~5</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git format-patch --numbered -n --cover-letter --subject-prefix=&#x27;PATCH&#x27; -v2</span><br></pre></td></tr></table></figure>
+<p>其中的 <code>n</code> 是提交个数</p>
 <h1 id="git-中对-commit-的坏点二分法查找">git 中对 commit
 的坏点二分法查找</h1>
 <ol type="1">
