@@ -20,6 +20,13 @@ git mm 特有的指令：
 
 - `git mm sync -j64`: 64线程同步远程代码
 
+查看本地 git 分支的状态树：
+
+- `git log --graph --oneline --decorate --all`: 显示当前分支的提交记录树状图
+  - `--oneline`: 显示每行只显示 commit id、commit message
+  - `--decorate`: 显示分支、tag、commit id
+  - `--all`: 显示所有分支
+
 # 代码提交、合并、push到远程仓库
 
 ## 1）代码提交：暂时不推到远程仓中
@@ -55,9 +62,21 @@ git checkout old_branch # 切换到旧分支old_branch中
     # 这种方式类似于 git reset --hard 3262911
 ```
 
-切换到某次提交中（注意，切换到后面的提交后就看不到最新的commit id了，所以最好是创建一个分支，或者先把最新的commit id记下）
+有两种方法可以切换到某次提交中：`git checkout <commit-hash>` 或者 `git reset --hard <commit-hash>`
 
-`git reset --hard <commit id>`
+（其中要注意，切换到后面的提交后`git log`就看不到最新的commit id了，所以最好是创建一个分支，或者先把最新的commit id记下，可以通过`git tag`给commit打标签）
+
+```shell
+# git checkout <commit id> # 此时会切到 HEAD detached 状态，不属于任何分支，所以需要切回某个分支
+git checkout -b <debug branch name> <commit id>
+
+git checkout master
+git tag <tag name> <commit id>
+git checkout -b <debug branch name>
+git reset --hard <commit id>
+git checkout master
+git tag -d <tag name>
+```
 
 后面有需要的话还要恢复到暂存状态（恢复暂存代码）：
 
@@ -106,14 +125,17 @@ git restore ./* # 取消当前目录下所有修改
 - `git diff <filrname.c>`
 - `git status`
 - `git diff <old_commit_id> <new_commit_id>`：顺序很重要，git diff A B 表示从 A 提交到 B 的修改，B 一般是比较新的提交，A 一般是比比较旧的提交
+- `git diff --numstat <commit id>`: 显示每个文件修改的行数(添加、删除、修改)
+- `git show --stat <commit id>`: 统计修改的行数(添加、删除、修改)
+- `git stash show -p stash@{0}`:显示当前stash某个暂存内容的diff情况
 
 # 制作.patch文件存储当前工作夹的修改
 
 ## 针对某个文件
 
-`git diff > xxx.patch`，可以指定文件名 `xxx.patch`
+- 导出未commit提交的patch：`git diff > xxx.patch`，可以指定文件名 `xxx.patch`
 
-`git format-patch -1`
+- 导出最近 n 次提交：`git format-patch -n`，生成 n 个独立的 patch 文件
 
 记事本打开这个文件就能看到你的修改内容
 
@@ -264,10 +286,153 @@ no changes added to commit (use "git add" and/or "git commit -a")
 
 ```shell
 git log --oneline
-# 记下添加进来的patch的commit id
+# 记下添加进来的patchcommit id
 git checkout master
 git cherry-pick <patch-commit-id>
 # 确保你不在要删除的分支中
 git branch -d <branch-name>
 # git branch -D <branch-name> # 强制删除分支
 ```
+
+## 在 v1 作者 patch 的基础上作为新的 v2 作者制作 patch：rebase 方法
+
+如果在处理后面几个patch时，发现前面的patch又需要修改，此时可以用rebase指令暂时停在之前的patch中，修改完再返回：
+
+
+```shell
+git rebase -i 438883838b9e^
+```
+
+- `^`：该提交的父提交（即它的前一个提交），加上`^`后的 edit 选择才能包含 438883838b9e
+
+然后在交互式界面中，初始显示全是 `pick`，把你要修改的那一条标记为 `edit`，保存后 Git 会停在那个 commit：
+
+```bash
+edit 438883838b9e arm64/sysreg: add HDBSS related register information
+pick 828629c91dfc arm64/kvm: support set the DBM attr during memory abort
+```
+
+注意：上面的显示内容是从 `旧提交->最新提交` 的顺序进行显示的。
+
+然后会暂时回到 438883838b9e 处，给一个修改之前的commit的机会，修改完可以先编译运行一下：
+
+```bash
+# 修改代码
+# make clean # 在开始编译之前，通常需要先清理之前的构建结果
+# make defconfig
+# make -j64
+git add <相关文件>
+git commit --amend
+```
+
+如果 patch 做了大修改，已经跟原来的 commit info 不一样了，就必须修改 commit info，否则保持原来的信息即可。
+
+在 git commit --amend 后在 commit 信息中添加自己的邮箱：
+
+```shell
+# git commit --amend 后在commit 信息中添加自己的邮箱
+Signed-off-by: 原作者 <原作者邮箱>
+Signed-off-by: Tian Zheng <zhengtian10@huawei.com>
+```
+
+然后就可以保存一下当前的新patch
+
+```shell
+git format-patch -1
+```
+
+最后继续 rebase：
+
+```bash
+git rebase --continue
+```
+
+如果重复上面的修改步骤，把所有patch都修改完了的话，可以制作该serial的所有patch，在最后一个patch commit中，执行以下指令：
+
+```shell
+git format-patch -v2 HEAD~5
+```
+
+- HEAD~5：表示从当前分支的最近 5 个提交中，生成一个 v2 版本的 patch 系列，每个提交对应一个 .patch 文件。
+- -v2：表示这是 patch 的第 2 个版本，Git 会在每个 patch 的标题中自动加上 [v2,1/5]、[v2,2/5] 等前缀
+
+如果是多个 patch，在发送邮件前，可以用下面的指令生成一些列带 序号、封面的patches:
+
+```shell
+git format-patch --numbered -n --cover-letter --subject-prefix='PATCH' -v2
+```
+
+其中的 `n` 是提交个数
+
+生成patches后打开 0/5 这个 patch 修改里面的信息。
+
+# 用 linux 工具检查 patch 是否符合内核编码风格（如缩进、注释、空行、函数命名等）
+
+`scripts/checkpatch.pl --strict --file xxx.patch`
+
+查出问题可以手动修复，也可以尝试用 linux 自带的工具进行修复：
+
+`scripts/checkpatch.pl --fix-inplace xxx.patch`
+
+经常会出现末尾带一个空格的问题，所以可以通过下面的指令删除：
+
+`sed -i 's/[[:space:]]*$//' xxx.patch`
+
+## 回合同步主线
+
+将分支切到`master`中，然后拉取最新代码：
+
+```shell
+git checkout master
+git pull
+```
+
+然后回到我们当前coding的分支，merge master 的最新代码：
+
+```shell
+git checkout <branch-name>
+git merge master
+```
+
+此时可能会有一些冲突，需要手动解决就行。
+
+```
+<<<<<<< HEAD
+//当前分支的代码
+=======
+//master的代码
+>>>>>>> <first_bad_commit_id>
+```
+
+然后`git add`标记为已解决
+
+```shell
+git add .
+# git add <file>
+```
+
+```shell
+git commit # 完成合并
+```
+
+# git 中对 commit 的坏点二分法查找
+
+
+1. 找到一个好点 commit id：<commit_id_good>
+2. 找到一个坏点 commit id：<commit_id_bad>
+
+在`<commit_id_good> ~ <commit_id_bad>`区间内，肯定能找到因为引入了某个<first_bad_commit_id>而导致出现坏点问题，我们通过以下步骤来二分排查：
+
+```shell
+git bisect start
+git bisect bad <commit_id_bad>
+git bisect good <commit_id_good>
+# 此时执行完首尾的good 和 bad commit id，会自动跳转到一个中间的commit id，我们需要手动编译测试这个提交下，是否存在问题
+# 测试完将结果告知给git：
+git bisect good
+# or 
+# git bisect bad
+# 执行完后依然会自动根据你手动告知的结果自动二分到下一个需要确认的commit 点
+```
+
+重复完上面的二分步骤后，最终会找到一个首次引入该问题的<first_bad_commit_id>，针对这个commit 内容进行问题分析和修复即可。

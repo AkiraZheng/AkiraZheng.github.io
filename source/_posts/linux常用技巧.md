@@ -22,6 +22,8 @@ tags:
 
 2）跳转到另一个查找结果
 
+`/hello`查找后，要先按 enter 键，然后按 `n` 键才能跳转到下一个匹配项。
+
 - 跳转到下一个匹配项：按`n`键
 - 跳转到上一个匹配项：按`N`键
 
@@ -60,10 +62,11 @@ example:
 - `0y$`: 复制从行首到行尾的内容
   - `0`: 行首
   - `y`: 复制
+  - `+y`：复制选中的内容到系统剪贴板。(需要安装 xclip,通过`:version`查看当前是否支持与系统剪贴板交互，`-clipboard`为不支持)
   - `$`: 行尾
 
 其他高级组合用法符号说明：
-
+- `viw`：选择当前单词（包括单词的前后空格）
 - `0`: 行首
 - `^`: 到本行**第一个**非空字符
 - `$`: 行尾
@@ -84,7 +87,16 @@ vim ~/.vimrc
 set number
 ```
 
+## vim 双屏
 
+vim 查看一个文件后，用`:vsp`来跟另一个文件进行比较（双屏）
+
+```shell
+vim ./file1.c
+:vsp ./file2.c
+```
+
+然后如果要切到第二个屏进行查找的话，可以用快捷键`CTRL+ww`切过去
 
 # 2. terminal 操作
 
@@ -205,6 +217,23 @@ Host *
 
 `cp -r /home/dir1 /home/dir2` 在源目录下有子目录时，用-r参数，表示递归复制
 
+## 修改默认内核选项
+
+先查看你要改为默认选项的内核的编号
+
+```shell
+awk -F\' '/menuentry / { print i++ " : " $2 }' /boot/efi/EFI/openEuler/grub.cfg
+```
+
+然后修改grub配置文件，将`GRUB_DEFAULT`的值改为目标内核编号：
+
+```shell
+cp /etc/default/grub /etc/default/grub.bak
+vim /etc/default/grub
+# GRUB_DEFAULT=5
+grub2-mkconfig -o /boot/efi/EFI/openEuler/grub.cfg
+```
+
 # 3. gdb 调试
 
 ## 常用指令
@@ -231,6 +260,18 @@ q # 退出
 ## 查看变量值
 
 2. 查看变量值
+
+你可以在调试过程中查看变量的值。例如，要查看 index 的值：
+
+```shell
+(gdb) print index
+```
+
+查看 data 数组的某个元素：
+
+```shell
+(gdb) print data[0]
+```
 
 print / p
 
@@ -307,6 +348,17 @@ next / n：执行下一行，但不进入函数内部
 next
 ```
 
+跳到下一个断点：
+
+```gdb
+# 设置多个断点后，连续执行到下一个断点
+(gdb) break function1
+(gdb) break function2
+(gdb) run # 运行程序
+(gdb) continue  # 从当前位置执行到function1
+(gdb) continue  # 从function1执行到function2
+```
+
 stepi / si：按 CPU 指令单步执行
 
 ```gdb
@@ -317,6 +369,67 @@ nexti / ni：按指令单步，但不进入函数
 
 ```gdb
 nexti
+```
+
+## 调试线程
+
+如果你的程序使用了多线程，gdb 会处理每个线程。你可以使用以下命令查看线程：
+
+```shell
+(gdb) info threads
+```
+
+这个命令会列出所有线程及其状态。你可以使用以下命令切换到某个特定线程：
+
+```shell
+(gdb) thread <thread_number>
+```
+
+例如，如果你想切换到线程 2：
+
+```shell
+(gdb) thread 2
+(gdb) continue
+```
+
+## 普通可执行文件调试
+
+**1. 添加编译参数**
+
+首先确保编译可执行文件的`Makefile`中添加了`-g`参数：
+
+```Makefile
+gcc -g ......
+```
+
+**2. 启动调试器**
+
+在编译完成后，启动 gdb 调试器：
+
+```shell
+gdb ./my_program
+```
+
+这将启动 gdb 并加载你的程序 my_program
+
+**3. 设置断点**
+
+你可以在你想要的地方设置断点。例如，要在 access_data_array 函数的开头设置断点，可以使用以下命令：
+
+```shell
+(gdb) break access_data_array
+```
+
+或者，你也可以在特定的行号处设置断点。例如，设置在第 18 行 处：
+
+```shell
+(gdb) break 18
+```
+
+**4. 运行程序**
+
+```shell
+(gdb) run
 ```
 
 # 4. qemu 使用
@@ -369,21 +482,114 @@ virsh net-start default
 
 ## 查看用qemu起的虚机 pid
 
+`ps -ef | grep qemu`
+
 `ps aux | grep qemu`
 
 # 5. Linux 中对工程代码的跳转、函数查找
 
 ## vim 中函数跳转
 
-安装 ctags
+### 使用 cscope 实现函数跳转
+
+如果你的 Vim 配置了 `+cscope` 支持（可以通过 `:version` 命令查看），你可以使用 cscope 来进行函数跳转。
+
+<!-- 安装 ctags
 
 在工程源目录下为所有文件生成 ctags：`ctags -R *`
 
-在 vim 中使用 ctags 跳转：`:tag 函数名`
+在 vim 中使用 ctags 跳转：`:tag 函数名` -->
 
-在 vim 中使用`ctrl+]` 跳转到**函数定义**
+**1.** 生成 cscope 数据库：
 
-看完后使用`ctrl+t`返回到函数调用（跳回）
+在你的项目目录中，生成 cscope 数据库文件。打开终端，进入项目目录，执行：
+```shell
+cscope -Rbq
+```
+- R：递归查找源代码。
+
+- b：生成数据库文件。
+
+- q：启用快速查询。
+
+**2.** 在 Vim 中启动 cscope：
+
+启动 Vim 后，使用以下命令打开 cscope 数据库：
+
+```shell
+:cs add cscope.out
+```
+
+这将加载刚才生成的 cscope 数据库。
+
+**3.** 进行函数跳转：
+
+- 使用 `:cs find c <function_name>` 查找并跳转到某个函数的定义位置。
+
+- 使用 `Ctrl-]` 跳转到光标所在函数的定义。
+
+- 使用 `Ctrl-T` 返回到跳转之前的位置。
+
+### 使用 tag 文件实现函数跳转（基于 ctags）
+
+另一个常用的跳转方式是使用 ctags 来生成标签文件，这可以在 Vim 中实现函数的跳转。
+
+**1.** 安装 ctags：
+
+如果你没有安装 ctags，可以通过包管理器安装：
+
+```shell
+sudo apt-get install exuberant-ctags
+```
+
+**2.** 生成标签文件：
+
+在项目根目录下运行以下命令来生成标签文件：
+
+```shell
+ctags -R .
+ls
+```
+
+- R：递归生成所有源代码文件的标签。
+
+**3.** 在 Vim 中启用 tag 文件：
+
+打开项目后，Vim 会自动加载当前目录下的 tags 文件。你可以使用以下命令手动加载：
+
+在项目根目录启动 Vim：
+
+```shell
+vim
+```
+
+```shell
+:set tags=./tags;
+```
+
+**4.** 跳转到函数定义：
+
+将光标移动到你想跳转的函数名上，然后按 `Ctrl-]` 跳转到该函数的定义。
+
+如果要返回到之前的位置，按 `Ctrl-T`。
+
+你还可以使用 `:tag <function_name>` 跳转到函数定义。
 
 <!-- ## shell 中查找整个哪个文件包含某个函数名 -->
 
+## 工程目录下查找某个函数名
+
+`grep -r "函数名" path`
+
+`grep -rn "函数名" path # n: 显示行号`
+
+
+# 6. 编译
+
+## 反汇编
+
+编译完二进制文件`.o`等二进制可执行文件后，可以使用 `objdump -d` 反汇编查看函数的汇编代码。
+
+```shell
+objdump -D myfile.o > myfile.s
+```
