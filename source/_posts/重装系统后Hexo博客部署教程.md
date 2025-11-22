@@ -94,10 +94,9 @@ categories:
 先将远程仓库拉到本地，然后切换到 dev 分支：
 
 ```shell
-git clone git@github.com:AkiraZheng/AkiraZheng.github.io.git
+git clone -b dev git@github.com:AkiraZheng/AkiraZheng.github.io.git # 这里的分支名要跟远程的一样，git 会自动给你切到远程的 dev 分支
 cd ./AkiraZheng.github.io
 git remote -v
-git checkout -b dev # 这里的分支名要跟远程的一样，git 会自动给你切到远程的 dev 分支
 ```
 
 然后就可以在`AkiraZheng.github.io`下通过`npm`重建起新电脑的本地博客：
@@ -106,7 +105,6 @@ git checkout -b dev # 这里的分支名要跟远程的一样，git 会自动给
 # 在 AkiraZheng.github.io 下（Mac 用户要加上 sudo）（记得，这种不需要hexo init这条指令）
 npm install hexo
 npm install
-npm install hexo-deployer-git --save
 ```
 
 然后一般来说，博客源码根目录下的`./AkiraZheng.github.io/_config.yml`存着我们的github token，出于安全考虑是不能 push 到 github 的public 仓库的。
