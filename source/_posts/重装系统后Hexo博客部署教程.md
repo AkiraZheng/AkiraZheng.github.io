@@ -117,7 +117,42 @@ npm install hexo-deployer-git --save
 
 如果不正常的话，比如缺少加密插件、缺少公式插件、缺少algolia搜索插件等的话，单独`sudo npm`安装一下。
 
-## 四、部署博客到github上
+## 四、需要的 npm 插件
+
+```shell
+npm install hexo-deployer-git --save
+npm install hexo-blog-encrypt
+
+npm uninstall hexo-renderer-marked --save
+pandoc -v
+# brew install pandoc  # MacOS
+# sudo apt install pandoc  # Linux
+npm install hexo-renderer-pandoc --save
+
+npm install hexo-algolia --save
+```
+
+由于 algolia 需要经常`hexo algolia`更新远程的 index 数据库，所以本地是需要安装的
+
+- 启用全局搜索功能-Algolia 搜索（在Archer官方文档中有）
+
+	- hexo目录下安装`hexo-algolia`插件（注意，不要跟着官网安装hexo-algolia，因为安装这个的话只支持标题搜索，不支持文章内容搜索）更正：目前archer不支持algoliasearch，只支持algolia，所以只能搜索标题了
+
+		`npm install hexo-algolia --save`
+
+	上传数据
+	```shell
+	export HEXO_ALGOLIA_INDEXING_KEY='您的AdminAPIKey'
+	# 生成并上传
+	hexo g
+	hexo algolia
+	```
+
+	> [algolia搜索功能配置1](https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8-Algolia-%E6%90%9C%E7%B4%A2)
+	>
+	> [algolia搜索功能配置2](https://www.chipmunk.top/posts/algolia%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD%E9%85%8D%E7%BD%AE/)
+
+## 五、部署博客到github上
 
 -  记得操作时用`hexo clean`清理环境，如果出现问题也可以重新打开cmd
 
@@ -141,31 +176,8 @@ npm install hexo-deployer-git --save
 
 至此，博客已经重搭好了，可以将博客放到`sourcetree`中，方便管理仓库。
 
-## 五、需要的 npm 插件
-
-由于 algolia 需要经常`hexo algolia`更新远程的 index 数据库，所以本地是需要安装的
-
-- 启用全局搜索功能-Algolia 搜索（在Archer官方文档中有）
-
-	- hexo目录下安装`hexo-algolia`插件（注意，不要跟着官网安装hexo-algolia，因为安装这个的话只支持标题搜索，不支持文章内容搜索）更正：目前archer不支持algoliasearch，只支持algolia，所以只能搜索标题了
-
-		`npm install hexo-algolia --save`
-
-	上传数据
-	```shell
-	export HEXO_ALGOLIA_INDEXING_KEY='您的AdminAPIKey'
-	# 生成并上传
-	hexo g
-	hexo algolia
-	```
-
-	> [algolia搜索功能配置1](https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8-Algolia-%E6%90%9C%E7%B4%A2)
-	>
-	> [algolia搜索功能配置2](https://www.chipmunk.top/posts/algolia%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD%E9%85%8D%E7%BD%AE/)
-
 # way 2: 博客重新搭载操作
 
- 
 ## 一、软件下载
 
 -  到[nodejs官网](https://nodejs.org/en/)下载**nodejs**软件并安装
