@@ -199,9 +199,20 @@ npm uninstall hexo-renderer-marked --save
 
 - 启用全局搜索功能-Algolia 搜索（在Archer官方文档中有）
 
-	- hexo目录下安装`hexo-generator-searchdb`插件
+	- hexo目录下安装`hexo-algolia`插件（注意，不要跟着官网安装hexo-algolia，因为安装这个的话只支持标题搜索，不支持文章内容搜索）更正：目前archer不支持algoliasearch，只支持algolia，所以只能搜索标题了
 
-		`npm install hexo-generator-searchdb --save`
+		`npm install hexo-algolia --save`
+
+	> [algolia搜索功能配置](https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8-Algolia-%E6%90%9C%E7%B4%A2)
+	> 参考[algolia搜索功能配置](https://www.chipmunk.top/posts/algolia%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD%E9%85%8D%E7%BD%AE/)
+
+	上传数据
+	```shell
+	export HEXO_ALGOLIA_INDEXING_KEY='您的AdminAPIKey'
+	# 生成并上传
+	hexo g
+	hexo algolia
+	```
 
 - 关闭目录自动编号
 
