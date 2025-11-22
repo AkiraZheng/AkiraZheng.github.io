@@ -32,9 +32,138 @@ categories:
 
 > 注意：若是在**Git Bash here**中输入hexo执行指令，则不需要输入**hexo -s**，直接输入**hexo s**即可 
 
+# way1: 从已有的github仓库中重搭博客
 
+如果还没将自己的博客源码 push 到自己的`dev`分支，请跳转到**博客重新搭载操作**中。
 
-# 博客重新搭载操作
+如果在之前搭建完自己的博客，且已经将博客源码push到自己的`dev`分支，那么在新电脑上重新搭建博客的步骤就很简单了。直接按下面进行操作就行。
+
+## 一、软件下载
+
+- 对于 Mac 用户，先安装 `Homebrew`
+
+	```shell
+	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	
+	# 安装完成后，根据提示将Homebrew添加到环境变量
+	echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
+	source ~/.zshrc
+	```
+
+-  到[nodejs官网](https://nodejs.org/en/)下载**nodejs**软件并安装
+
+	cmd中输入`node -v`确认版本及确认已安装完毕
+
+	对于 Mac 用户而言，进入官网后选择`macOS->Brew->npm`的方式，执行官方在该方式下的所有命令即可（注意要加上`sudo`，且前提是先安装了 `brew`）。
+
+-  下载[**Git**](https://gitforwindows.org/)软件并安装
+
+	cmd中输入`git`确认版本及确认已安装完毕
+
+	Mac 用户用 `brew` 安装git：
+
+	```shell
+	brew install git
+	git --version
+	```
+
+## 二、建立本机与github的联系
+
+-  Git下载完后，双击安装Git目录下的**git-bash.exe**，输入`ssh-keygen -t rsa -C "github对应的邮箱账号"`，然后直接回车3次（无脑回车即可），将会生产本机对应的SSH号存于C盘Users上的**id_rsa.pub**文件中（如果找不到该文件，可以下载Everything软件直接搜索文件名，可以快速找到文件的位置）
+
+-  用记事本打开id_rsa.pub文件，Ctrl+A全选复制文件的全部内容
+
+-  重新建立github与本机的联系
+
+	- 打开github的**settings**，点击**SSH and GPG keys**，点击**New SSH key**创建github与新系统的联系
+
+	- 其中**title**填写github的用户名即可，**key**填写在id_rsa.pub中复制的文件内容，也就是SSH号，完成后点击**Add SSH key**即可
+
+-  打开cmd输入`npm install hexo-cli -g`安装hexo
+	- mac先通过sudo su进入root用户，再全局安装hexo
+	- mac用sudo指令，否则会有权限问题`sudo npm install -g hexo-cli`安装hexo
+	- [npm安装hexo时更换镜像源](https://blog.csdn.net/laosao_66/article/details/135880270)
+      - `npm config set registry http://registry.npm.taobao.org`
+
+- 创建全局 git config
+	- `git config --global user.email "github对应的邮箱账号"`
+	- `git config --global user.name "github用户名"`
+
+## 三、通过 git clone 的方式重建博客
+
+先将远程仓库拉到本地，然后切换到 dev 分支：
+
+```shell
+git clone git@github.com:AkiraZheng/AkiraZheng.github.io.git
+cd ./AkiraZheng.github.io
+git remote -v
+git checkout -b dev # 这里的分支名要跟远程的一样，git 会自动给你切到远程的 dev 分支
+```
+
+然后就可以在`AkiraZheng.github.io`下通过`npm`重建起新电脑的本地博客：
+
+```shell
+# 在 AkiraZheng.github.io 下（Mac 用户要加上 sudo）（记得，这种不需要hexo init这条指令）
+npm install hexo
+npm install
+npm install hexo-deployer-git --save
+```
+
+然后一般来说，博客源码根目录下的`./AkiraZheng.github.io/_config.yml`存着我们的github token，出于安全考虑是不能 push 到 github 的public 仓库的。
+
+由于这个文件并不经常更新，因此我将这个文件单独存在 github 的 private 仓库 `blog_config_yml_file` 中，可以先用`sourcetree`将这个仓库的代码拉到本地中，然后将里面的`_config.yml`文件复制粘贴到`AkiraZheng.github.io`路径下。
+
+此时就可以先用`hexo clean && hexo g && hexo s`本地预览一下看网页是否正常。
+
+如果不正常的话，比如缺少加密插件、缺少公式插件、缺少algolia搜索插件等的话，单独`sudo npm`安装一下。
+
+## 四、部署博客到github上
+
+-  记得操作时用`hexo clean`清理环境，如果出现问题也可以重新打开cmd
+
+	- cmd中进入对应的盘(如`D:`)，进而进入新建的blog文件夹（如`cd AkiraZheng.github.io`）
+
+	- 输入`hexo g`生成博客
+
+	- 输入`hexo d`提交博客部署到github中
+
+		- `hexo d`这个过程可能会出现各种错误，如果git config类型的提示则在博客路径的cmd中输入`git config --global user.email "github对应的邮箱账号"`、回车后继续输入`git config --global user.name "github用户名"`，之后再次`hexo d`部署博客，在弹窗中输入github账号密码搭建联系即可（注意，密码不能填入github的密码，而是填入Token，否则会报错）
+			- Token的位置：`Setting`->`Devloper Settting`->`Personal access tokens`
+			- 创建Token的方式：
+				
+				<img src='creat_token.png' width='%50' height='%50'>
+
+				<img src='creat_token2.png' width='%50' height='%50'>
+			- 在博客的`_config.yml`文件中修改`repo`项为`https://AkiraZheng:拿到的token@github.com/AkiraZheng/AkiraZheng.github.io.git`
+
+		- `hexo d`这个过程可能会出现各种错误，FATAL中如果出现code: 128错误，很可能是网络问题无法打开github仓库，这是可以关闭cmd挂个梯子后再进行部署
+	- 提交后若出现"Please tell me who you are"，则根据提示输入`git config --global user.email "you@example.com"`和`git config --global user.name "Your Name"`(如"1428384878@qq.com"和"AkiraZheng")
+
+至此，博客已经重搭好了，可以将博客放到`sourcetree`中，方便管理仓库。
+
+## 五、需要的 npm 插件
+
+由于 algolia 需要经常`hexo algolia`更新远程的 index 数据库，所以本地是需要安装的
+
+- 启用全局搜索功能-Algolia 搜索（在Archer官方文档中有）
+
+	- hexo目录下安装`hexo-algolia`插件（注意，不要跟着官网安装hexo-algolia，因为安装这个的话只支持标题搜索，不支持文章内容搜索）更正：目前archer不支持algoliasearch，只支持algolia，所以只能搜索标题了
+
+		`npm install hexo-algolia --save`
+
+	上传数据
+	```shell
+	export HEXO_ALGOLIA_INDEXING_KEY='您的AdminAPIKey'
+	# 生成并上传
+	hexo g
+	hexo algolia
+	```
+
+	> [algolia搜索功能配置1](https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8-Algolia-%E6%90%9C%E7%B4%A2)
+	>
+	> [algolia搜索功能配置2](https://www.chipmunk.top/posts/algolia%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD%E9%85%8D%E7%BD%AE/)
+
+# way 2: 博客重新搭载操作
 
  
 ## 一、软件下载
@@ -203,8 +332,9 @@ npm uninstall hexo-renderer-marked --save
 
 		`npm install hexo-algolia --save`
 
-	> [algolia搜索功能配置](https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8-Algolia-%E6%90%9C%E7%B4%A2)
-	> 参考[algolia搜索功能配置](https://www.chipmunk.top/posts/algolia%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD%E9%85%8D%E7%BD%AE/)
+	> [algolia搜索功能配置1](https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8-Algolia-%E6%90%9C%E7%B4%A2)
+	>
+	> [algolia搜索功能配置2](https://www.chipmunk.top/posts/algolia%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD%E9%85%8D%E7%BD%AE/)
 
 	上传数据
 	```shell
