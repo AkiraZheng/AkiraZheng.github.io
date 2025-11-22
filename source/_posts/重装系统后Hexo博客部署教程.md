@@ -49,15 +49,15 @@ categories:
 
 ## 二、建立本机与github的联系
 	
--  Git下载完后，双击安装Git目录下的**git-bash.exe**，输入`ssh-keygen -t rsa -C "github对应的邮箱账号"`，然后直接回车3次（无脑回车即可），将会生产本机对应的SSH号存于C盘Users上的**id_rsa**文件中（如果找不到该文件，可以下载Everything软件直接搜索文件名，可以快速找到文件的位置）
+-  Git下载完后，双击安装Git目录下的**git-bash.exe**，输入`ssh-keygen -t rsa -C "github对应的邮箱账号"`，然后直接回车3次（无脑回车即可），将会生产本机对应的SSH号存于C盘Users上的**id_rsa.pub**文件中（如果找不到该文件，可以下载Everything软件直接搜索文件名，可以快速找到文件的位置）
 
--  用记事本打开id_rsa文件，Ctrl+A全选复制文件的全部内容
+-  用记事本打开id_rsa.pub文件，Ctrl+A全选复制文件的全部内容
 
 -  重新建立github与本机的联系
 
 	- 打开github的**settings**，点击**SSH and GPG keys**，点击**New SSH key**创建github与新系统的联系
 
-	- 其中**title**填写github的用户名即可，**key**填写在id_rsa中复制的文件内容，也就是SSH号，完成后点击**Add SSH key**即可
+	- 其中**title**填写github的用户名即可，**key**填写在id_rsa.pub中复制的文件内容，也就是SSH号，完成后点击**Add SSH key**即可
 
 -  打开cmd输入`npm install hexo-cli -g`安装hexo
 	- mac先通过sudo su进入root用户，再全局安装hexo
