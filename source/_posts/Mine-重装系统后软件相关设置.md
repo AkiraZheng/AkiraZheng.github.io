@@ -81,6 +81,14 @@ categories:
 
 # 五、Vscode相关编译器配置
 
+<img src=2025-11-23-00-36-18.png>
+
+<img src=2025-11-23-00-36-40.png>
+
+<img src=2025-11-23-00-36-59.png>
+
+
+
 ## 5.1 C/C++配置
 
 - 参考：[用vscode优雅配置c/c++环境！](https://zhuanlan.zhihu.com/p/610895870)
