@@ -1,0 +1,3520 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="AkiraZheng">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="AkiraZheng">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta name="description" content="一、海量数据 1.1 处理海量数据 在需要对海量数据进行处理时，常常会有时间上的需求、内存空间不足等问题，  时间上：加快处理速度 时间上可以通过算法 &amp; 数据结构来提高处理速度，如哈希、Trie树等 空间上：打破内存限制 采用分而治之的思想，分批处理  一般提高海量数据系统性能（时间、空间）的框架为：  1.2 分而治之：解决分割数据问题 一般解决的场景是，比如海量日志查找、海量数据求T">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高并发系统设计">
+<meta property="og:url" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="一、海量数据 1.1 处理海量数据 在需要对海量数据进行处理时，常常会有时间上的需求、内存空间不足等问题，  时间上：加快处理速度 时间上可以通过算法 &amp; 数据结构来提高处理速度，如哈希、Trie树等 空间上：打破内存限制 采用分而治之的思想，分批处理  一般提高海量数据系统性能（时间、空间）的框架为：  1.2 分而治之：解决分割数据问题 一般解决的场景是，比如海量日志查找、海量数据求T">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/time_storage_xmind.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/split_bigData.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/hash_collision.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/hash_collision2.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/consistent_hash.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/consistent_hash2.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/merge_bigData1.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/merge_bigData2.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/merge_bigData3.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/concurrent_architecture.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/CAP.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/QPS_TPS.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/LB2.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/LB.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Cache-type.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Cache-problem.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/HTTP_cache_2.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/MessageQueue.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/message_queue1.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/message_queue2.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/liuliang.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/multiConsumers.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/multiTopic.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/multiPartition.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/multiBroker.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/leader-follower.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/savetodisk.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/RabbitMQDesign.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/RabbitMQ.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/KafkaStruct.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/KafkaDesign.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/avoidProblem.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/readSlaveWriteMaster.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/dataAll.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/deleteUpdate.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/updateDelete.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/DistributedTransaction.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/RedisLock.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Redisson.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/DistributedTransaction2.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/LimitFlow.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Counter.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/SlidingWindow.jpg">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/LeakyBucket.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/TokenBucket.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/CircuitBreakerAndDegrade.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/CircuitBreaker.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/SecondKillStruct.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/SecondKill.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/scanLogin.png">
+<meta property="article:published_time" content="2024-05-01T04:56:18.000Z">
+<meta property="article:modified_time" content="2025-11-22T18:47:28.290Z">
+<meta property="article:author" content="AkiraZheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/time_storage_xmind.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/yueyue.jpg">
+    
+    <title>高并发系统设计 · AkiraZheng&#39;s Time</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+        <script>
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"We did not find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'OG7KZ1ED66',
+                apiKey: '8daa81c36784d89945ec12e46f72de54',
+                indexName: 'hexo_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>AkiraZheng's Time.</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">AkiraZheng&#39;s Time.</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">高并发系统设计</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                高并发系统设计
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">12.7k</span>Reading time: <span class="post-count reading-time">44 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/05/01</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="一海量数据">一、海量数据</h1>
+<h2 id="处理海量数据">1.1 处理海量数据</h2>
+<p>在需要对海量数据进行处理时，常常会有<strong>时间</strong>上的需求、<strong>内存空间不足</strong>等问题，</p>
+<ul>
+<li><p>时间上：加快处理速度</p>
+<p>时间上可以通过<strong>算法</strong> &amp;
+<strong>数据结构</strong>来提高处理速度，如<strong>哈希、Trie树</strong>等</p></li>
+<li><p>空间上：打破内存限制</p>
+<p>采用<strong>分而治之</strong>的思想，分批处理</p></li>
+</ul>
+<p>一般提高海量数据系统性能（时间、空间）的框架为：</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/time_storage_xmind.png"></p>
+<h2 id="分而治之解决分割数据问题">1.2 分而治之：解决分割数据问题</h2>
+<p>一般解决的场景是，比如<strong>海量日志查找</strong>、<strong>海量数据求TopK</strong>、<strong>海量数据频次统计</strong>、<strong>大文件排序存储</strong>等问题。</p>
+<p>一般这种问题有大差不差的解决思路（<strong>分而治之</strong>），即将数据分割成小块，然后分别处理，最后合并结果。</p>
+<ul>
+<li>分：<code>hash</code>映射</li>
+<li>各分块处理：<code>hash-map</code>统计、排序、求TopK
+<ul>
+<li>统计频次：<code>hash-map</code>统计</li>
+<li>各块单独排序：堆/快排/归并</li>
+<li>TopK：从各块中选取每个模块的TopK</li>
+</ul></li>
+<li>合并：归并</li>
+</ul>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/split_bigData.png" width="80%"></p>
+<h3 id="怎么分--哈希计算">1.2.1 怎么分？- 哈希计算</h3>
+<p>一般对于海量数据排序、求频次tok等问题，内存无法一次性装入所有数据进行处理，所以我们选择将数据分成N部分，保证每一部分都可以单独在内存中处理。</p>
+<p>由于数据是<strong>无序</strong>的，所以如果采用简单的分割，可能会导致<strong>相同的数据不在同一部分</strong>，从而导致<strong>分块数据的统计结果并不正确</strong></p>
+<p>举个例子，我们要对海量数据求TopK，如果我们采用简单的分割，从各个部分中求TopK，最后合并求最终实际的TopK，可能会导致当前这部分数据的非TopK数据跟其他部分的数据合并后可以成为TopK数据的情况，从而导致统计结果不正确。</p>
+<p>所以我们需要<strong>哈希计算</strong>，将相同的数据哈希到同一部分，这样就可以保证相同的数据在同一部分，从而保证统计结果的正确性。</p>
+<h4 id="分布式负载均衡">分布式负载均衡</h4>
+<p>在分布式系统中，我们需要将数据分布到不同的服务器上，这样可以<strong>保证每台服务器的负载均衡</strong>，提高系统的性能。</p>
+<p>一般在实现分布式<strong>负载均衡</strong>时，我们首选会采用<strong>一致性哈希</strong>算法，这样可以保证当服务器数量发生变化时，数据的分布变化较小，从而保证系统的稳定性。（避免缓存雪崩现象）</p>
+<h4 id="哈希计算">哈希计算</h4>
+<p>哈希计算是将数据映射到一个固定的范围内，这样可以保证相同的数据映射到同一部分，从而保证数据的正确性。</p>
+<h4 id="哈希碰撞">哈希碰撞</h4>
+<p>因为哈希结果是有值域范围（有限的），所以哈希碰撞是<strong>不可避免</strong>的，但是我们可以通过<strong>哈希冲突解决</strong>的方法来解决这个问题。</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/hash_collision.png" width="80%"></p>
+<p>解决哈希碰撞的方法一般有两种：</p>
+<ul>
+<li><p><strong>开放地址法--不常用</strong>：当哈希值发生冲突时，会继续寻找下一个空位置，直到找到空位置为止</p></li>
+<li><p><strong>拉链法</strong>：将哈希值相同的数据放在同一个链表中，这样可以保证相同的数据在同一部分</p>
+<p>拉链法如下所示：</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/hash_collision2.png" width="80%"></p></li>
+</ul>
+<h4 id="哈希查找的时间复杂度">哈希查找的时间复杂度</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">描述</th>
+<th style="text-align: center;">查找时间复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">哈希表</td>
+<td style="text-align: center;"><code>O(1)</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">哈希碰撞严重</td>
+<td style="text-align: center;">退化为<code>O(n)</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="a.-普通哈希计算hashdatan">a. 普通哈希计算hash(data)%N</h4>
+<p>哈希计算的特点是<strong>相同的数据哈希值相同</strong>，所以当我们进行<code>hash(data)</code>时，相同的数据会有相同的计算结果，我们再确保这些相同计算结果的数据都放在同一部分即可。</p>
+<p>之后怎么进行数据划分呢？</p>
+<p>如果我们有N台服务器/需要将数据分出N部分，普通哈希计算会将<strong>哈希值通过取模（求对N的余数）</strong>分布在<code>0-N</code>之间，余数为<code>n</code>的数据就放在第<code>n</code>部分，这样通过哈希计算保证相同的数据取余后结果相同，也就是在同一部分。</p>
+<h4 id="b.-一致性哈希hashdata232">b. 一致性哈希hash(data)%(2^32)</h4>
+<p>按照普通哈希计算，如果我们有N台服务器，当<strong>服务器数量发生变化</strong>时，数据的分布会发生变化，所有数据都要<strong>重新计算哈希值</strong>，然后进行<strong>数据迁移</strong>。</p>
+<p>而解决这个问题的最好方法就是<strong>一致性哈希</strong></p>
+<p><strong>1）实现-哈希环</strong></p>
+<p>一致性哈希将<strong>数据hash(data)</strong>、<strong>服务器hash(IP or
+Mac)</strong>都映射到一个<strong>哈希环</strong>上，通过对<strong>2^32</strong>取模，将数据映射到特定哈希环上。</p>
+<p>通过顺时针查找，找到第一个大于等于<strong>该数据data哈希值</strong>的服务器，将数据放在这台服务器上。也就是环中某个区间的数据存在于某台服务器上。</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/consistent_hash.png" width="60%"></p>
+<p>当服务器数量发生变化时，只需要对<strong>部分数据</strong>进行迁移，而不是全部数据。</p>
+<p>如当删除一台服务器时，只需要将该服务器的数据迁移到下一台服务器即可，不需要进行大量数据的迁移。</p>
+<p><strong>2）实现-虚拟节点</strong></p>
+<p>在前面的一致性哈希中还存在一个问题，即<strong>数据分布不均匀</strong>，因为服务器的数量有限，如果两个服务器的哈希值在环中很靠近，那么会有一台服务器的数据很多，另一台服务器的数据很少，导致数据分布不均匀。</p>
+<p>一致性哈希的实现中，为了保证数据的均匀分布，我们会采用<strong>虚拟节点</strong>的方式，将每台服务器映射到多个虚拟节点上，这样可以保证数据的均匀分布。</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/consistent_hash2.png" width="60%"></p>
+<h3 id="各分块怎么处理">1.2.2 各分块怎么处理？</h3>
+<p>根据不同需求，我们可以采用不同的处理方式，如<strong>求频次</strong>-&gt;<strong>排序</strong>-&gt;<strong>求TopK</strong>、<strong>海量数据去重</strong>等。</p>
+<h4 id="求频次hash-map统计">求频次：hash-map统计</h4>
+<p>求频次的问题，我们可以采用<strong>hash-map</strong>的方式，将数据映射到哈希表(<code>key:data,value:count</code>)中，然后统计频次。</p>
+<p><strong>时间复杂度</strong>：</p>
+<p><strong>有序hash-map</strong>的底层实现是<strong>红黑树</strong>，时间复杂度为<code>n*O(logn)</code></p>
+<p><strong>无序hash-map、set</strong>的底层实现是<strong>拉链法</strong>，时间复杂度为<code>O(1)</code>、<code>O(n)</code></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">描述</th>
+<th style="text-align: center;">时间复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">有序hash-map</td>
+<td style="text-align: center;"><code>n*O(logn)</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">无序hash-map</td>
+<td style="text-align: center;"><code>O(1)</code>、<code>O(n)</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="排序堆快排归并">排序：堆/快排/归并</h4>
+<p>排序的问题，我们可以采用<strong>堆排序</strong>、<strong>快排</strong>、<strong>归并</strong>等方式时间复杂度较小的算法，将数据进行排序。</p>
+<p>一般采用<strong>堆排序</strong>维护一个<strong>大小为K的小根堆</strong>，然后将数据插入堆中，当堆的大小超过K时，将堆顶元素删除，这样可以保证堆中的元素是TopK。</p>
+<p><strong>时间复杂度</strong>：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">描述</th>
+<th style="text-align: center;">时间复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">堆排序</td>
+<td style="text-align: center;"><code>O(nlogk)</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">快速排序</td>
+<td style="text-align: center;"><code>O(nlogn)</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">归并排序</td>
+<td style="text-align: center;"><code>O(nlogn)</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="求topk从各块中选取topk">求TopK：从各块中选取TopK</h4>
+<p>对于最经典的从海量数据中求TopK的问题，我们可以从各分块中排序后先<strong>分别求TopK</strong>，最后<strong>合并求最终的TopK</strong>。</p>
+<h4 id="海量数据去重">海量数据去重</h4>
+<p>海量数据去重主要有两种方法：</p>
+<ul>
+<li><strong>hash-set</strong>
+<ul>
+<li>将数据映射到哈希表中，经计算后只有唯一值</li>
+<li>可以快速定位数据是否存在，时间复杂度为<code>O(1)</code></li>
+<li>缺点是需要<strong>额外的空间</strong>来存储数据（空间换时间）</li>
+</ul></li>
+<li><strong>Trie树</strong>
+<ul>
+<li>将数据映射到Trie树中，相同前缀的数据只存储一次，通过共享前缀来节省空间</li>
+<li>定位时需要遍历Trie树，时间复杂度为<code>max(O(n*len),O(n*lgk))</code>（len为字符串长度，k为需要求的最频繁前k位）</li>
+<li>缺点是<strong>空间复杂度</strong>较高，但是可以<strong>压缩存储</strong>，节省空间</li>
+</ul></li>
+</ul>
+<h3 id="怎么合并--归并">1.2.3 怎么合并？- 归并</h3>
+<p>合并还有个问题，就是如果<strong>大文件</strong>本身就不能一次性读入内存，那么对于<strong>多个分块</strong>的数据肯定也不能一次性读入内存。这里还是采用<strong>归并</strong>的方法，但是在进行两两归并时，我们需要<strong>将内存划分成3个缓冲区</strong>来动态实现归并。</p>
+<ul>
+<li>将内存分为<strong>3</strong>块，2块用来存放<strong>需要归并的分块</strong>的数据，1块用来存放<strong>合并后的数据</strong></li>
+<li>从分块中读取数据，然后<strong>归并</strong>到<strong>合并块</strong>中</li>
+<li>当<strong>合并块满</strong>时，将数据写入磁盘，然后继续读取数据</li>
+<li>当<strong>分块空</strong>时，继续读取分块下一部分的数据</li>
+</ul>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/merge_bigData1.jpg" width="60%"></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/merge_bigData2.jpg" width="60%"></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/merge_bigData3.jpg" width="60%"></p>
+<h3 id="举例">1.2.4 举例</h3>
+<p><strong>1）有一个1G大小的一个文件，里面每一行是一个词，词的大小不超过16字节内存限制大小是1M。返回频数最高的100个词</strong></p>
+<p>由于内存限制，我们依然无法直接将大文件的所有词一次读到内存中。因此，同样可以采用<strong>分治策略</strong>，把一个大文件分解成多个小文件，<strong>保证每个文件的大小小于
+1MB（需要分成大约5000个）</strong>，求各个小文件的Top100，进而直接将单个小文件读取到内存中进行处理。</p>
+<ul>
+<li>分：分而治之/hash映射
+<ul>
+<li>顺序读取文件，对于每个词x，取<code>hash(x)%5000</code></li>
+<li>然后把该值存到5000个小文件(记为x0,x1…...x4999)中。这样每个文件大概是200k左右。</li>
+<li>如果其中有的小文件超过了1M大小，还可以按照类似的方法继续往下分，直到分解得到的小文件的大小都不超过1M。</li>
+</ul></li>
+<li>处理：hash_map统计
+<ul>
+<li>对每个小文件，采用<code>trie树/hash_map</code>等统计每个文件中出现的词以及相应的频率。</li>
+<li>堆/归并排序</li>
+<li>取出出现频率最大的<code>100</code>个词(可以用含100个结点的最小堆)后</li>
+<li>再把100个词及相应的频率存入文件，这样又得到了5000个文件</li>
+</ul></li>
+<li>合：归并
+<ul>
+<li>最后就是把这5000个文件进行<strong>归并</strong>(类似于归并排序)的过程了</li>
+</ul></li>
+</ul>
+<p><strong>2）海量日志数据，提取出某日访问百度次数最多的那个IP</strong></p>
+<p>百度作为国内第一大搜索引擎，每天访问它的<strong>IP数量巨大</strong>，如果想一次性把所有IP数据装进内存处理，则内存容量明显不够，故针对数据太大，内存受限的情况，可以<strong>把大文件转化成(取模映射)小文件</strong>，从而大而化小，逐个处理。
+换言之，先映射，而后统计，最后排序。</p>
+<ul>
+<li>分：分而治之/hash映射
+<ul>
+<li>首先把这一天访问百度日志的所有IP提取出来</li>
+<li>然后逐个写入到一个大文件中</li>
+<li>接着采用映射的方法，比如<code>%1000</code>，把整个大文件映射为1000个小文件</li>
+</ul></li>
+<li>处理：hash_map统计
+<ul>
+<li>当大文件转化成了小文件，那么我们便可以采用<code>hash_map(ip, value)</code>来分别对1000个小文件中的IP进行频率统计，再找出每个小文件中出现频率最大的IP</li>
+<li>堆/快速排序</li>
+<li>找出那个频率最大的IP</li>
+</ul></li>
+<li>合：归并
+<ul>
+<li>最后，再对这1000个频率最大的IP进行归并排序，找出那个频率最大的IP</li>
+</ul></li>
+</ul>
+<p>Hash取模是一种<strong>等价映射</strong>，不会存在同一个元素分散到不同小文件中去的情况，即这里采用的是<code>%1000</code>算法，那么<strong>同一个IP在hash后，只可能落在同一个文件中</strong>，不可能被分散的。</p>
+<p><strong>3）给定a、b两个文件，各存放50亿个ur，每个url各占64字节，内存限制是4G，让你找出a、b文件共同的ur?</strong></p>
+<p>可以估计每个文件大小为<code>5Gx64=320G</code>，远远大于内存限制的4G。所以不可能将其完全加载到内存中处理。考虑采取分而治之的方法。</p>
+<ul>
+<li>分：分而治之/hash映射
+<ul>
+<li><strong>遍历文件a</strong>，对每个url求取
+<code>hash(URL)% 1000</code>，然后根据所取得的值将url分别存储到1000个小文件(记为a1-a999)中。这样每个小文件的大约为300M</li>
+<li><strong>遍历文件b</strong>，同样对每个url求取
+<code>hash(URL)% 1000</code>，然后根据所取得的值将url分别存储到1000个小文件(记为b1-b999)中</li>
+<li>这样处理后，所有可能相同的url都在对应的小文件(即<strong>a1 对应
+b1</strong>，a2 对应b2..，a999 对应
+b999)中，<strong>不对应的小文件不可能有相同的url</strong></li>
+</ul></li>
+<li>处理+合并：hash_map统计
+<ul>
+<li>首先对A的小文件在<code>hash_set</code>中进行去重操作</li>
+<li>然后查找B的小文件是否有url在刚才构建的<code>hash_set</code>中</li>
+<li>如果是，那么就是共同的url，存到文件里面就可以了</li>
+</ul></li>
+</ul>
+<blockquote>
+<p>参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_45683778/article/details/136694740">何为一致性哈希</a></p>
+</blockquote>
+<h1 id="二高并发分布式系统设计基础">二、高并发分布式系统设计基础</h1>
+<p>面对高并发场景，我们通常有两种大解决方向：</p>
+<ul>
+<li>垂直方向：提升单机能力
+<ul>
+<li>这种方式主要是通过<strong>硬件升级</strong>，如<strong>购买多核高频机器，大内存，大容量磁盘</strong>等</li>
+<li><strong>软件优化</strong>，如<strong>多线程</strong>、<strong>异步</strong>、<strong>缓存</strong>等</li>
+<li>但是这种方式有<strong>瓶颈</strong>，即<strong>硬件成本高</strong>，以及当硬件达到一定程度时，提升单机性能的效果会<strong>递减</strong>。</li>
+</ul></li>
+<li>水平方向：分布式集群
+<ul>
+<li>这种方式主要是通过<strong>多台机器</strong>，通过<strong>微服务解耦</strong>将数据分布到不同的机器上，从而提升系统的性能
+<ul>
+<li>架构层次分层</li>
+<li>业务服务划分</li>
+</ul></li>
+<li>这种方式<strong>成本低</strong>，<strong>可扩展性强</strong>，但是<strong>复杂度高</strong>，需要考虑<strong>数据一致性</strong>、<strong>负载均衡</strong>等问题</li>
+</ul></li>
+</ul>
+<p>当前最常见的高并发系统设计是<strong>分布式系统设计</strong>，即将数据分布到不同的机器上，通过<strong>负载均衡</strong>、<strong>一致性哈希</strong>等技术来提升系统的性能。因此后面我们主要讲的就是<strong>水平方向分布式</strong>场景下的设计理念和框架。</p>
+<p>一般我们在分布式系统设计中，主要关注以下几个方面：</p>
+<ul>
+<li><strong>池化技术：内存池、线程池、连接池</strong></li>
+<li><strong>负载均衡：保证用户分流</strong></li>
+<li><strong>缓存：提高响应速度</strong>
+<ul>
+<li><strong>分布式锁</strong></li>
+</ul></li>
+<li><strong>数据库存储</strong>
+<ul>
+<li><strong>分布式事务</strong></li>
+</ul></li>
+<li><strong>消息队列</strong></li>
+<li><strong>限流：控制并发访问量，避免过载</strong></li>
+<li><strong>熔断</strong></li>
+<li><strong>降级：保证核心功能</strong></li>
+</ul>
+<p>整体并发架构如下：</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/concurrent_architecture.jpg" width="80%"></p>
+<h2 id="分布式cap理论">2.1 分布式CAP理论</h2>
+<p>CAP理论是分布式系统设计中的一个重要理论，它指出在分布式系统中，<strong>一致性（Consistency）、可用性（Availability）、分区容错性（Partition
+tolerance）</strong>三者不可兼得，<strong>只能同时满足其中两个</strong>。</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/CAP.png" width="50%"></p>
+<ul>
+<li><strong>一致性C</strong>
+<strong>所有节点</strong>在同一时间的数据是<strong>一致</strong>的，即<strong>等同于所有节点访问同一份最新的数据副本</strong></li>
+<li><strong>可用性A</strong>
+<strong>客户的每个请求</strong>都能够得到<strong>非错响应</strong>，但是但是不保证获取的数据为最新数据</li>
+<li><strong>分区容错性P</strong>
+<ul>
+<li><strong>系统</strong>能够<strong>容忍网络分区</strong></li>
+<li>针对<strong>一致性的容错性</strong>：当不要求保证<strong>一致性</strong>时，每个节点使用<strong>本地数据</strong>，在同一时间内可能出现<strong>全局不一致</strong>，但是一段时间后<strong>最终一致</strong></li>
+<li>针对<strong>可用性的容错性</strong>：必须保证<strong>一致性</strong>，但是<strong>不保证可用性</strong>，即<strong>允许部分服务停止</strong>，直到<strong>网络分区</strong>解决</li>
+</ul></li>
+</ul>
+<p><strong>1）CA系统：单点集群</strong></p>
+<p>对于业务扩展性不强、并发性要求不高的系统，我们可以采用<strong>单点集群</strong>的方式同时保证<strong>一致性</strong>和<strong>可用性</strong></p>
+<p>场景：<strong>银行系统</strong>、<strong>图书馆管理系统</strong></p>
+<p><strong>2）CP系统：放弃高可用性（高性能）</strong></p>
+<p>对于对<strong>一致性</strong>要求较高的系统，我们可以采用<strong>放弃可用性</strong>的方式来保证<strong>一致性</strong></p>
+<p>一旦遇到<strong>分区故障</strong>，就要允许放弃<strong>一部分业务</strong>，通常性能不高</p>
+<p>场景：火车票售票系统、redis</p>
+<p><strong>3）AP系统：最终一致性</strong></p>
+<p>某些场景下对<strong>一致性</strong>要求不高，我们可以采用<strong>最终一致性</strong>的方式来保证<strong>绝对可用性</strong></p>
+<p>通常很多分布式系统都是采用<strong>AP</strong>来实现的（买票时看到有几张余票，但是买的时候告诉你没有了，当再次刷新发现确实没票）</p>
+<p>场景：<strong>电商系统</strong>、<strong>社交系统（博客，微博）</strong>、<strong>搜索引擎</strong></p>
+<h2 id="系统并发指标">2.2 系统并发指标</h2>
+<ul>
+<li><strong>TPS</strong>：一台服务器每秒能处理的<strong>事务数</strong>
+<ul>
+<li>一个客户端请求就是一个事务</li>
+</ul></li>
+<li><strong>QPS</strong>：一台服务器每秒能响应的<strong>查询次数</strong>
+<ul>
+<li>一个客户端请求可能有多个查询，所以<strong>QPS</strong>是<strong>TPS</strong>的<strong>倍数</strong>，QPS&gt;=TPS</li>
+</ul></li>
+</ul>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/QPS_TPS.png" width="30%"></p>
+<ul>
+<li><p><strong>并发数</strong>：系统<strong>同时</strong>承载的并发用户数</p></li>
+<li><p><strong>响应时间</strong>：系统<strong>响应一个请求</strong>的时间</p></li>
+</ul>
+<h2 id="分布式负载均衡-1">2.3 分布式负载均衡</h2>
+<p>负载均衡是为了满足多台服务器情况下的<strong>高可用</strong>需求，通过<strong>负载均衡（）</strong>可以将<strong>请求分发到不同的服务器实例上</strong>，从而提高系统的性能。</p>
+<p>负载均衡通过不断向<strong>后端服务器</strong>发送<strong>心跳检测</strong>，来检测服务器的<strong>健康状态</strong>，从而保证<strong>负载均衡的准确性</strong>。</p>
+<p>负载均衡有<strong>硬件负载均衡</strong>和<strong>软件负载均衡</strong>两种方式：</p>
+<ul>
+<li><strong>硬件负载均衡</strong>性能好，但是可扩展性差，成本高</li>
+<li><strong>软件负载均衡</strong>性能一般，但是可扩展性强，成本低</li>
+</ul>
+<p>目前常见的三种软件负载均衡：</p>
+<ul>
+<li><strong>基于DNS负载均衡</strong>：通过<strong>地理位置</strong>or加权，根据IP映射到不同服务器</li>
+<li><strong>基于网络层负载均衡</strong>：基于<strong>IP地址和端口号</strong>来分发流量</li>
+<li><strong>基于应用层负载均衡</strong>：解包HTTP请求的特性（如请求头、URL、主机名等）来分发<strong>不同业务请求</strong>到<strong>不同后端服务器</strong></li>
+</ul>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/LB2.png" width="80%"></p>
+<p>一般大型服务器系统中，会同时包含这三种均衡方式</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/LB.png" width="50%"></p>
+<h3 id="dns负载均衡">2.3.1 DNS负载均衡</h3>
+<p>DNS对某个域名进行<strong>IP映射</strong>，DNS负载均衡通过<strong>DNS解析</strong>将<strong>域名解析</strong>到<strong>多个不同的IP地址</strong>，然后将解析后的IP地址返回给客户端，从而实现<strong>负载均衡</strong>。能够对网站加载进行加速</p>
+<p>做为第一层的负载均衡，它能根据不同地理位置的用户返回<strong>离用户最近的服务器</strong>，减少中间的网络传输延迟和丢包率</p>
+<p>但是由于DNS解析是<strong>有缓存</strong>的（包括本地DNS缓存、客户端缓存等），所以<strong>DNS负载均衡</strong>无法确保各地服务器<strong>负载均匀</strong></p>
+<p><strong>DNS负载均衡的实现策略</strong></p>
+<p><strong>1）轮询策略</strong></p>
+<p>DNS服务器中维护一个<strong>服务器列表</strong>，每次请求时按照<strong>轮询</strong>的方式返回<strong>服务器列表</strong>中的<strong>下一个服务器IP</strong>，也就是N台服务器的IP按照顺序返回给不同的客户端</p>
+<p>缺点：无法根据各个服务器的<strong>负载情况</strong>和<strong>地理位置</strong>来返回服务器IP</p>
+<p><strong>2）地理位置策略</strong></p>
+<p>DNS服务器通过<strong>解析</strong>判断客户端请求的<strong>来源IP地址</strong>，然后将请求解析到<strong>地理位置最近</strong>的或者<strong>网络延迟最低</strong>的服务器</p>
+<p><strong>3）权重策略</strong></p>
+<p>每个服务器IP都有一个<strong>权重值</strong>，根据<strong>权重值</strong>来返回<strong>服务器IP</strong></p>
+<p>权重值可以根据<strong>服务器负载情况</strong>、<strong>地理位置</strong>等来设置</p>
+<p><strong>4）智能DNS</strong></p>
+<p>DNS可以通过：</p>
+<ul>
+<li><strong>心跳</strong>监测服务器是否故障（定期向注册的服务器发送探测请求HTTP、TCP、ICMP等）</li>
+<li>通过<strong>服务器监测工具</strong>定期收集注册服务器的<strong>性能数据</strong></li>
+<li>根据<strong>性能数据</strong>来<strong>动态调整</strong>服务器的<strong>权重值</strong></li>
+<li>结合<strong>地理位置</strong>和<strong>动态权重值</strong>返回<strong>最优服务器IP</strong></li>
+</ul>
+<h3 id="网络层应用层负载均衡nginx">2.3.2
+网络层&amp;应用层负载均衡：Nginx</h3>
+<p><strong>Nginx</strong>具有<strong>web服务器</strong>、<strong>负载均衡</strong>、<strong>反向代理</strong>等功能，是一个<strong>高性能</strong>的<strong>HTTP</strong>和<strong>反向代理</strong>服务器。</p>
+<p><strong>Nginx</strong>是一种基于应用层的<strong>软件负载均衡</strong>，通常根据解析的<strong>URL</strong>来<strong>反向代理转发请求</strong></p>
+<p><strong>Nginx</strong>的<strong>负载均衡</strong>有<strong>轮询</strong>、<strong>加权轮询</strong>、<strong>IP哈希</strong>、<strong>最少连接</strong>等策略</p>
+<p><strong>1）IP哈希</strong></p>
+<p>根据<strong>客户端IP地址</strong>的<strong>哈希值</strong>来<strong>分配</strong>请求，这样可以保证<strong>同一个IP</strong>的请求<strong>始终</strong>分配到<strong>同一个服务器</strong>上</p>
+<p><strong>2）最少连接</strong></p>
+<p>将请求分配到<strong>连接数最少</strong>的服务器上，这样可以保证<strong>负载均衡</strong>，但是<strong>性能</strong>可能会受到<strong>影响</strong></p>
+<h2 id="分布式缓存">2.4 分布式缓存</h2>
+<p>在高并发场景下，缓存机制可以<strong>有效缓解实例服务器和数据库压力</strong>、<strong>提高网页访问速度</strong></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Cache-type.png" width="80%"></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Cache-problem.png" width="80%"></p>
+<h3 id="本地客户端缓存">2.4.1 本地客户端缓存</h3>
+<p>常用于缓存<strong>实时性不敏感</strong>、<strong>静态网页</strong>，如在大促期间提前将一些<strong>js/css/image</strong>文件缓存至本地，避免在大促期间再次请求</p>
+<p>本地客户端缓存可以通过<strong>HTTP缓存机制</strong>来实现</p>
+<ul>
+<li>强制缓存
+<ul>
+<li><code>Expires</code>字段：绝对时间</li>
+<li><code>Cache-Control</code>字段：倒计时时间</li>
+</ul></li>
+<li>协商缓存
+<ul>
+<li><code>Last-Modified</code>字段：当前缓存对应的最后修改时间</li>
+<li><code>E-tag</code>字段：当前缓存资源的<strong>哈希值</strong></li>
+</ul></li>
+<li>混合缓存</li>
+</ul>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/HTTP_cache_2.jpg" width="70%"></p>
+<h3 id="cdn-内容分发网络">2.4.2 CDN-内容分发网络</h3>
+<p>CDN是由专门的机构在世界各地建立<strong>边缘服务器</strong>，用户通过DNS域名解析获取<strong>最近的CDN服务器</strong>，从该CDN服务器上获取资源而不是直接从实例服务器获取，大大加快了请求响应速度。</p>
+<p>同时由于CDN替实例服务器分流了，所以还可以大大<strong>减少带宽</strong>（虽然还需要向CDN服务商付费）</p>
+<p>CDN中的缓存内容：</p>
+<ul>
+<li>静态网页资源</li>
+<li>动态网页API接口</li>
+</ul>
+<p>CDN缓存机制主要有两种：</p>
+<ul>
+<li><strong>主动推送</strong>（push）：服务器主动将缓存push给CDN</li>
+<li><strong>拉去机制</strong>（pull）：客户端首次访问CDN中不存在的资源，CDN主动从源服务器中获取数据并存储在CDN节点上</li>
+</ul>
+<h3 id="反向代理缓存">2.4.3 反向代理缓存</h3>
+<p>反向代理服务器如<code>Nginx</code>除了上面提到的负载均衡外，还可以通过<strong>配置</strong>具有<strong>缓存</strong>功能，也是存储<strong>静态资源</strong>，返回给用户时从缓存中拿，不再向源服务器请求</p>
+<h3 id="redis缓存">2.4.4 redis缓存</h3>
+<p>Redis缓存是指分散存储在服务器上，在<strong>内存中进行计算的缓存</strong>，相比磁盘中的数据库具有<strong>更快的响应速度</strong></p>
+<p>Redis是一种高性能的<strong>键值key-value存储</strong>系统，用其<strong>快速的读写能力</strong>和<strong>一致性哈希算法</strong>实现数据分片和<strong>负载均衡</strong>（通过一致性哈希算法分配给集群中的某个缓存）</p>
+<p><strong>redis集群缓存带来的问题</strong></p>
+<p>1）缓存穿透</p>
+<p>问题：</p>
+<ul>
+<li>请求<strong>缓存和数据库都没有</strong>的数据 都去访问数据库 -&gt;
+数据库崩溃、服务器宕机</li>
+</ul>
+<p>解决：</p>
+<ul>
+<li><strong>布隆过滤器</strong>：将数据库中的数据映射到布隆过滤器中，当请求来临时，先通过布隆过滤器判断是否存在，不存在则直接返回</li>
+<li><strong>空值缓存</strong>：将数据库中不存在的数据也存入缓存(设为空值)</li>
+</ul>
+<p>2）缓存击穿</p>
+<p>问题：</p>
+<ul>
+<li><strong>单个热点key失效</strong> 都去访问数据库 -&gt;
+数据库崩溃、服务器宕机</li>
+</ul>
+<p>解决：</p>
+<ul>
+<li><strong>热点数据永不过期</strong>：将热点数据设置为永不过期，当失效时，立即更新</li>
+<li><strong>互斥锁</strong>：当热点数据失效时，通过互斥锁来保证只有一个线程去访问数据库，其他线程等待</li>
+<li><strong>多级缓存</strong></li>
+</ul>
+<p>3）缓存雪崩</p>
+<p>问题：</p>
+<ul>
+<li><strong>大量key同时失效</strong> 都去访问数据库 -&gt;
+数据库崩溃、服务器宕机</li>
+<li>服务器宕机： 采用普通哈希算法导致所有Key同时失效 -&gt;
+都去访问数据库 -&gt; 数据库崩溃</li>
+</ul>
+<p>解决：</p>
+<ul>
+<li><strong>缓存失效时间随机</strong>：将缓存失效时间设置为随机时间，<strong>避免同时失效</strong></li>
+<li><strong>多级缓存</strong></li>
+</ul>
+<p>4）数据一致性</p>
+<p>缓存一致性指的是<strong>缓存与DB</strong>之间的数据一致性</p>
+<p>需要保证<strong>始终一直</strong>或<strong>最终一致</strong></p>
+<p>常用的解决方法是</p>
+<ul>
+<li>缓存的分布式锁</li>
+<li>DB数据库的分布式事务</li>
+</ul>
+<p>数据一致性的两种方法将在后面详细介绍</p>
+<h2 id="分布式消息队列">2.5 分布式消息队列</h2>
+<p>在高并发场景下，<strong>同步</strong>的请求处理方式往往会导致系统<strong>响应时间变长</strong>和<strong>资源消耗增加</strong>。</p>
+<p>因此我们可以采用<strong>异步</strong>的方式，将<strong>耗时的操作</strong>或<strong>复杂的业务逻辑</strong>异步化处理，并将<strong>结果通过消息队列传递</strong>，可以实现<strong>解耦</strong>和异步化处理，在只需要<strong>最终一致性</strong>的场景下，很适合用来配合做流控。</p>
+<p><strong>分布式缓存</strong>在<strong>读多写少</strong>的场景性能优异，对于<strong>写操作较多</strong>的场景可以采用<strong>消息队列</strong>集群，它可以很好地做写请求异步化处理，实现<strong>削峰填谷</strong>的效果。</p>
+<p>业界有很多著名的消息中间件，比如ZeroMQ，rabbitMQ，kafka等。</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/MessageQueue.png"></p>
+<h3 id="消息队列的优点">2.5.1 消息队列的优点</h3>
+<p><strong>1）异步</strong></p>
+<p>如果我们按照同步的处理方式来设计，比如设计一个<strong>用户注册</strong>功能，会经过<strong>用户注册-&gt;短信通知-&gt;增加积分</strong>三个串行同步步骤，这种方式的话，总耗时是<strong>三个步骤的总和</strong>。</p>
+<p>总耗时：10ms+100ms+100ms=210ms</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/message_queue1.png" width="60%"></p>
+<p>而如果在中间加上一层<strong>消息队列</strong>实现异步并行处理，那么总耗时将只剩下<strong>用户注册</strong>这一步，因为通过异步方式，用户注册后消息队列就可以返回，后面的<strong>两个耗时步骤</strong>直接与消息队列通信拉取信息。用户不需要阻塞在那等待耗时步骤完成。</p>
+<p>总耗时：10ms</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/message_queue2.png" width="60%"></p>
+<p><strong>2）业务解耦</strong></p>
+<p>业务解耦是在<strong>异步</strong>的基础上实现的，如果是同步的话，<strong>用户注册</strong>和<strong>短信通知</strong>是<strong>紧耦合</strong>的，如果<strong>短信通知</strong>出现问题，那么<strong>用户注册</strong>也会受到影响。</p>
+<p>而使用了<strong>消息队列</strong>实现异步后，消息发送方和接收方不直接联系，各个业务之间也相对独立，不会因为<strong>某个业务</strong>的<strong>宕机</strong>影响到<strong>其他业务</strong></p>
+<p><strong>3）削峰填谷</strong></p>
+<p>举个例子，在高并发场景下，假设1min内有30W个请求（<code>30W/min</code>），而后端业务服务器只能处理<code>1W/min</code>，那么超量的请求可能会导致服务器宕机。</p>
+<p>加入我们在请求和处理方中间加上一层<strong>消息队列</strong>，消息队列只做简单的数据接收任务，能处理<code>100W/min</code>，此时由后端服务器主动向消息队列拉去任务就可以控制后端服务器不过载，达到控制流量的作用。</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/liuliang.png" width="70%"></p>
+<h3 id="消息队列优化设计">2.5.2 消息队列优化设计</h3>
+<p>根据简陋版本消息队列的各种问题，可以进行优化来提高可用性及性能</p>
+<p>根据Kafka的设计理念来剖析优化方向</p>
+<p><strong>1）MQ数据堆积</strong></p>
+<p>MQ中数据堆积本质是消费者消费能力差，可以通过<strong>增加消费者线程</strong>，也就是多消费者模式，同理也可以添加多生产者提高吞吐量</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/multiConsumers.jpg" width="60%"></p>
+<p><strong>2）多生产者和多消费者竞争MQ</strong></p>
+<p><strong>分Topic</strong></p>
+<p>将消息队列根据<strong>不同主题Topic</strong>分为<strong>多个MQ</strong>减少冲突等待</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/multiTopic.jpg" width="60%"></p>
+<p><strong>Topic的Partition分区</strong></p>
+<p>单个Topic中还可以再细分成<strong>多个Partition分区</strong>，每个消费者对应一个Partition分区，从而<strong>降低多线程竞争</strong></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/multiPartition.jpg" width="60%"></p>
+<p><strong>3）高性能</strong></p>
+<p>将多个Partition分布在不同机器上，每个机器称为<strong>broker</strong></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/multiBroker.jpg" width="60%"></p>
+<p><strong>4）高可用</strong></p>
+<p>单个broker如果宕机了，该部分的功能将无法继续进行，因此可以设计<strong>leader-follower</strong>的集群方式</p>
+<p><strong>leader</strong>负责读写数据，<strong>follower</strong>负责复制数据，当<strong>leader</strong>宕机时可以从<strong>follower</strong>中选举出新的<strong>leader</strong></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/leader-follower.jpg" width="60%"></p>
+<p><strong>5）持久化</strong></p>
+<p>数据放在内存中有宕机丢失的风险，因此数据还应该具备<strong>持久化到磁盘</strong>的能力</p>
+<p>同时为了防止磁盘溢出，还应该设置<strong>过期时间</strong></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/savetodisk.jpg" width="60%"></p>
+<p>根据不同的优化策略，形成了不同的<strong>消息队列中间件</strong>，可以根据需求和中间件的优缺点选择合适的方案：</p>
+<table>
+<tr>
+<th style="text-align: center;">
+中间件
+</th>
+<th style="text-align: center;">
+RabbitMQ
+</th>
+<th style="text-align: center;">
+RocketMQ
+</th>
+<th style="text-align: center;">
+Kafka
+</th>
+</tr>
+<tr>
+<th style="text-align: center;">
+性能
+</th>
+<td style="text-align: center;">
+6000/单机
+</td>
+<td style="text-align: center;">
+12000/单机
+</td>
+<td style="text-align: center;">
+100W/单机
+</td>
+</tr>
+<tr>
+<th style="text-align: center;">
+持久化
+</th>
+<td style="text-align: center;">
+都支持（性能下降）
+</td>
+<td style="text-align: center;">
+天生支持
+</td>
+<td style="text-align: center;">
+天生支持
+</td>
+</tr>
+<tr>
+<th style="text-align: center;">
+多语言
+</th>
+<td style="text-align: center;">
+主流都
+</td>
+<td style="text-align: center;">
+Java
+</td>
+<td style="text-align: center;">
+主流都
+</td>
+</tr>
+<tr>
+<th style="text-align: center;">
+综合
+</th>
+<td style="text-align: center;">
+高可用、管理界面、集群不支持动态扩展
+</td>
+<td style="text-align: center;">
+简单易用、适合大规模，但只支持Java
+</td>
+<td style="text-align: center;">
+天生分布式、性能最好，但运维困难、带宽要求大
+</td>
+</tr>
+</table>
+<h3 id="rabbitmq设计">2.5.3 RabbitMQ设计</h3>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/RabbitMQDesign.png"></p>
+<p>RabbitMQ中主要涉及的模块元素有：</p>
+<ul>
+<li><strong>Producer生产者</strong>：负责<strong>生产和发送消息</strong>，一般是直接与<strong>交换机</strong>连接</li>
+<li><strong>Connection连接</strong>：生产者与Broker的连接、Broker与消费者的连接</li>
+<li><strong>virtual
+Host虚拟机</strong>：一个Broker可以有多个虚拟机，每个虚拟机实现一种业务，虚拟机之间数据互相隔离</li>
+<li><strong>Exchange交换机</strong>：生产者将消息发送到交换机，交换机根据<strong>路由规则</strong>将消息发送到<strong>某个队列</strong></li>
+<li><strong>Queue队列</strong>：存储消息的<strong>缓冲区</strong></li>
+<li><strong>Comsumer消费者</strong>：负责<strong>接收和处理消息</strong>
+<ul>
+<li>多个消费者绑定同一个队列可以通过<strong>消息轮询</strong>的方式进行分发</li>
+</ul></li>
+</ul>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/RabbitMQ.jpg"></p>
+<p><strong>1）消息丢失</strong></p>
+<p>RabbitMQ的消息丢失主要有三种情况：</p>
+<ul>
+<li><strong>生产者丢失</strong>：发送者发送失败，可能是<strong>网络</strong>原因
+<ul>
+<li>通过<strong>消息确认机制Comfirm</strong>接收<strong>ACK或NACK</strong>以及重传来实现，确保消息投递到了queue中</li>
+</ul></li>
+<li><strong>Broker丢失</strong>：消息未发送存储到queue中可能就出现<strong>Broker宕机</strong>等原因丢失
+<ul>
+<li>通过<strong>持久化</strong>来实现</li>
+</ul></li>
+<li><strong>消费者丢失</strong>：消息接收也可能因为<strong>网络或者处理失败</strong>等原因丢失
+<ul>
+<li>通过<strong>ACK事务机制</strong>来实现。消费者成功处理完后才会发送<strong>ACK</strong>告知Broker可以删除该条消息</li>
+</ul></li>
+</ul>
+<p><strong>2）消息重复</strong></p>
+<p>消息可能出现重复消费的原因：</p>
+<ul>
+<li><strong>生产者重复推送</strong></li>
+<li><strong>Broker收到ACK后还未删除就宕机</strong>：重启后会再次发送该消息给消费者</li>
+<li><strong>消费者处理完后未发送ACK就宕机</strong>：重启后MQ超时没收到ACK会重新推送该条消息给消费者处理</li>
+</ul>
+<p>解决方法：</p>
+<p><strong>插入去重表</strong>：消费去重表可以是MySQL存储，也可以是Redis存储</p>
+<ul>
+<li>收到消息后先查询去重表，如果存在则不处理，否则将该消息插入去重表再进行处理</li>
+<li>处理完再将该消息状态更改为已处理</li>
+</ul>
+<p><strong>3）消息顺序</strong></p>
+<p>除非采用单线程消费，否则<strong>消息顺序</strong>无法保证，但是可以尽量保证消息顺序</p>
+<ul>
+<li>同一个<strong>queue</strong>中的消息是顺序的</li>
+<li>Exchange路由器指定分发同样的key到某个queue中</li>
+<li><strong>queue</strong>中增加一些机制，只有某个操作收到ACK后才分发下一个</li>
+</ul>
+<h3 id="kafka设计">2.5.4 Kafka设计</h3>
+<p>Kafkade的设计架构在前面<strong>优化</strong>部分已经有大致提及了</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/KafkaStruct.jpg"></p>
+<p>所以接下来还是将重心放在<strong>Kafka</strong>怎么解决<strong>消息丢失</strong>、<strong>消息重复</strong>、<strong>消息顺序</strong>三大问题</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/KafkaDesign.png"></p>
+<p><strong>1）消息丢失</strong></p>
+<ul>
+<li><strong>生产者丢失</strong>：发送者发送失败，可能是<strong>网络</strong>原因
+<ul>
+<li>通过<strong>消息确认机制Comfirm</strong>接收<strong>ACK或NACK</strong>以及回调重传来实现，确保消息投递到了queue中</li>
+</ul></li>
+<li><strong>Broker丢失</strong>：消息未发送存储到queue中可能就出现<strong>Broker宕机</strong>等原因丢失
+<ul>
+<li>通过<strong>持久化</strong>来实现</li>
+<li>Kafka对每个<strong>Partition</strong>提供了<strong>leader-follower</strong>的副本机制方式，当<strong>leader</strong>宕机时可以从<strong>follower</strong>中选举出新的<strong>leader</strong></li>
+</ul></li>
+<li><strong>消费者丢失</strong>：消息接收也可能因为<strong>网络或者处理失败</strong>等原因丢失
+<ul>
+<li>通过<strong>ACK事务机制</strong>来实现。消费者成功处理完后才会发送<strong>ACK</strong>告知Broker可以删除该条消息</li>
+</ul></li>
+</ul>
+<p><strong>2）消息重复</strong></p>
+<p>Kafka的消息队列中通过<strong>offset</strong>来标记消息的位置，消费者消费完后会自动提交<strong>offset</strong>来避免重复消费，但是依然这也导致了如果<strong>消费者宕机</strong>，重启后消息队列可能触发了超时重传导致重复消费。</p>
+<p>在这个背景下，避免消息重复处理的方式跟RabbitMQ一样，可以通过<strong>插入去重表</strong>来实现：</p>
+<p>解决方法：</p>
+<p><strong>插入去重表</strong>：消费去重表可以是MySQL存储，也可以是Redis存储</p>
+<ul>
+<li>收到消息后先查询去重表，如果存在则不处理，否则将该消息插入去重表再进行处理</li>
+<li>处理完再将该消息状态更改为已处理</li>
+</ul>
+<p><strong>3）消息顺序</strong></p>
+<p><strong>为什么会出现消息顺序问题呢？</strong></p>
+<p>Kafka的消息队列中，<strong>同一个Partition</strong>中的消息是有序的，但是<strong>不同Partition</strong>中的消息是<strong>无序</strong>的，因此如果<strong>同一个业务</strong>的消息被<strong>路由分发到不同Partition</strong>中，那么就会出现<strong>消息消费顺序不是消息发送顺序</strong>的问题。</p>
+<p>解决方法：</p>
+<p>基于这个背景，可以采用<strong>自定义路由</strong>的方式，将<strong>同一个业务（指定的key）</strong>的消息<strong>路由到同一个Partition</strong>中，再指定某个消费者线程去<strong>定向取</strong>某个Patition分区的消息，从而保证消息的顺序性。</p>
+<ul>
+<li><strong>自定义路由</strong>：通过<strong>自定义路由</strong>将<strong>同一个业务（按照key取模）</strong>的消息<strong>路由到同一个Partition</strong>中</li>
+<li><strong>指定消费者</strong>：指定某个消费者线程去<strong>定向取某个Patition分区</strong>的消息</li>
+</ul>
+<p><strong>6）主从数据一致性</strong></p>
+<p>前面提到Kafka会通过<strong>leader-follower</strong>的副本机制来减少数据丢失，这里的数据存储涉及<strong>MySQL</strong>或<strong>Redis</strong>数据库</p>
+<ul>
+<li>MySQL下的数据一致性：通过<strong>Follower</strong>节点拉取<strong>Leader</strong>的<strong>binlog</strong>日志，然后<strong>同步</strong>到<strong>Follower</strong>节点</li>
+<li>Redis下的数据一致性：主-从-从方式，主节点写入数据后，从节点同步数据，再从从节点同步到其他从节点</li>
+</ul>
+<p><strong>5）leader-follower下的选举问题：ISR</strong></p>
+<p>Kafka中的<strong>leader-follower</strong>机制是指<strong>leader</strong>负责读写数据，<strong>follower</strong>负责复制数据，当<strong>leader</strong>宕机时可以从<strong>follower</strong>中选举出新的<strong>leader</strong></p>
+<p>但是在<strong>leader-follower</strong>机制下，<strong>follower</strong>可能会出现<strong>数据同步滞后</strong>的问题，导致<strong>数据不一致</strong>。</p>
+<p>为了解决这个问题，Kafka中引入了<strong>ISR</strong>机制，在<strong>ISR</strong>中维护一个集合，该集合是代表<strong>存储最新数据离leader最近的follower</strong>，只有<strong>ISR</strong>中的<strong>follower</strong>才能被选举为<strong>leader</strong></p>
+<p>因此采用ISR的好处主要有两个：</p>
+<ul>
+<li><strong>提高宕机后重选leader的效率</strong>：只有ISR中的follower才能被选举为leader，提高了选举效率</li>
+<li><strong>避免数据丢失</strong>：因为ISR中节点的数据和leader节点的数据是最接近的</li>
+</ul>
+<h2 id="分布式数据库">2.6 分布式数据库</h2>
+<p>传统的数据库系统是<strong>单机数据库</strong>，在高并发场景下，单机数据库可能会出现<strong>性能瓶颈</strong>，面对这种需求，我们一般有<strong>纵向扩展</strong>和<strong>横向扩展</strong>两种方式。</p>
+<ul>
+<li><strong>纵向扩展</strong>：提高单机数据库的性能，如<strong>增加CPU</strong>、<strong>增加内存</strong>、<strong>增加硬盘</strong>等
+<ul>
+<li>成本过高，不适合现在海量数据的场景</li>
+</ul></li>
+<li><strong>横向扩展</strong>：通过<strong>分布式数据库</strong>来实现，将数据分布在多个节点上，从而提高系统的性能
+<ul>
+<li>适合海量数据的场景，需要考虑<strong>数据库容灾</strong>、<strong>数据一致性</strong>等问题</li>
+</ul></li>
+</ul>
+<p>这里主要讨论怎么解决<strong>数据库容灾</strong>问题</p>
+<p>数据库容灾是指在<strong>数据库宕机</strong>或<strong>数据丢失</strong>时，能够<strong>快速恢复</strong>数据，保证系统的<strong>高可用性</strong></p>
+<p>一般出现故障的原因主要有三大类：</p>
+<ul>
+<li><strong>服务器主机故障</strong>：服务器过载宕机、网络故障等</li>
+<li><strong>机房故障</strong>：机房电力系统出现问题、火灾等</li>
+<li><strong>地域故障</strong>：发生地震、火灾等</li>
+</ul>
+<p>出现这些问题最需要解决的就是<strong>系统恢复</strong>、<strong>保证数据不丢失</strong></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/avoidProblem.png" width="60%"></p>
+<p><strong>1）主从数据库备份</strong></p>
+<p>通过<strong>主从复制技术</strong>、<strong>binglog</strong>等技术实现同步</p>
+<p><strong>2）数据分片</strong></p>
+<p>将数据根据<strong>业务需求</strong>，通过分片键如<strong>用户ID</strong>、<strong>订单ID</strong>等决定哪个数据库集群存储特定数据</p>
+<p><strong>3）数据一致性</strong></p>
+<p>通过<strong>分布式事务</strong>、<strong>分布式锁</strong>等技术来保证数据一致性</p>
+<p><strong>4）防止过载</strong></p>
+<p>通过前面讲到的<strong>负载均衡</strong>、<strong>限流</strong>等技术来保证系统不会因为过载而宕机</p>
+<p><strong>5）读写分离</strong></p>
+<p>应用中的<strong>读操作</strong>远远多于<strong>写操作</strong>，可以通过<strong>读写分离</strong>来减轻数据库的压力</p>
+<p>写操作：主数据库</p>
+<p>读操作：从数据库</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/readSlaveWriteMaster.jpg"></p>
+<h2 id="分布式事务和分布式锁">2.7 分布式事务和分布式锁</h2>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/dataAll.png" width="80%"></p>
+<p>这两种方式都是为了保证<strong>MySQL</strong>和<strong>Redis</strong>数据一致性的</p>
+<p>服务器在响应读数据请求时，会先从<strong>Redis</strong>中读取数据，如果<strong>Redis</strong>中没有数据，再从<strong>MySQL</strong>中读取数据，然后将数据返回给客户端。</p>
+<p>而对于<strong>写数据</strong>则有多种更新方式（建议采用删除Redis而不是更新修改Redis）：</p>
+<ul>
+<li><p><strong>先更新Redis再更新MySQL</strong>：如果先更新Redis，那么如果MySQL更新失败回滚，还要再次回滚Redis</p></li>
+<li><p><strong>先更新MySQL再更新Redis</strong>：如果先更新MySQL，那么当<strong>线程1</strong>被最新的<strong>线程2</strong>抢占CPU资源后，会出现线程2的数据先写入缓存，线程2的数据后写入数据库，导致缓存存的不是最新数据</p></li>
+<li><p><strong>先删除Redis再更新MySQL</strong>：也会有数据不一致问题（通过<strong>延迟双删</strong>来解决）
+<img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/deleteUpdate.png" width="60%"></p></li>
+<li><p><strong>先更新MySQL再删除Redis</strong>：目前比较有效的方式
+<img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/updateDelete.png" width="60%"></p></li>
+</ul>
+<p>而由于分布式数据库有<strong>读写分离</strong>的设计，所以会有概率出现从数据库还没来得及更新，就被请求读取了，导致缓存与数据库数据不一致的问题</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/DistributedTransaction.jpg" width="60%"></p>
+<p>这里的解决办法是加上一层消息队列保证顺序性。</p>
+<h3 id="分布式锁">2.7.1 分布式锁</h3>
+<p>传统的<strong>同步锁</strong>是<strong>单机锁</strong>，只能保证在单机下多线程的同步</p>
+<p>而在<strong>分布式</strong>场景下，多个服务器之间的<strong>同步</strong>就需要<strong>分布式锁</strong>来实现，否则还会出现类似<strong>超卖</strong>现象</p>
+<p>主流分布式锁有：</p>
+<ul>
+<li>Redis：通过<strong>setnx</strong>设置键值对，如果返回1则表示加锁成功，否则设置失败
+<ul>
+<li>要记得加上锁过期时间，避免造成死锁
+<img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/RedisLock.jpg" width="60%"></li>
+<li>过期时业务还没执行完怎么办？---<strong>添加一个线程每n秒判断服务器是否在线</strong>、<strong>给锁加一个唯一ID（UUID）</strong></li>
+<li>以上设计方式实际上可以通过<strong>Redisson</strong>来一步实现(lua脚本)
+<img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Redisson.jpg" width="60%"></li>
+</ul></li>
+<li>Zookeeper：通过<strong>临时节点</strong>来实现分布式锁
+<ul>
+<li>通过<strong>创建临时节点</strong>来实现分布式锁，如果<strong>创建成功</strong>则表示加锁成功，否则加锁失败</li>
+<li>通过<strong>监听节点</strong>来实现<strong>锁释放</strong>，当节点被删除时，其他节点可以重新加锁</li>
+</ul></li>
+</ul>
+<h3 id="分布式事务">2.7.2 分布式事务</h3>
+<p><strong>事务</strong>是为了保证一组操作<strong>要么全部成功，要么全部失败</strong>，保证数据的<strong>原子性</strong>、<strong>一致性</strong>、<strong>隔离性</strong>和<strong>持久性</strong></p>
+<p>而在分布式场景下，多个不同业务是异步的，怎么保证一个业务失败后，其它业务也回滚呢？</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/DistributedTransaction2.jpg" width="60%"></p>
+<p><strong>1）两阶段提交2PC</strong></p>
+<p><strong>事务参与者</strong>：多种业务的事务执行者</p>
+<p><strong>事务协调者</strong>：负责协调各个事务参与者的事务执行</p>
+<p>2PC两个阶段是由<strong>事务协调者</strong>来协调的：</p>
+<ul>
+<li><strong>准备阶段</strong>：
+<ul>
+<li>事务协调者向所有事务参与者发送<strong>prepare准备</strong>请求</li>
+<li>各个事务参与者执行事务操作</li>
+<li>如果事务参与者执行成功，则返回<strong>ACK</strong>，否则返回<strong>NACK</strong></li>
+</ul></li>
+<li><strong>提交阶段</strong>：
+<ul>
+<li>若正常收到所有<strong>事务参与者</strong>的<strong>ACK</strong>，则事务协调者向所有事务参与者发送<strong>commit提交</strong>请求</li>
+<li>某个事务迟迟没有返回<strong>ACK</strong>，则事务协调者会<strong>回滚</strong>所有事务参与者的事务</li>
+</ul></li>
+</ul>
+<p>缺点：造成所有事务参与者<strong>阻塞</strong>，<strong>性能</strong>较差</p>
+<p><strong>2）三阶段提交3PC</strong></p>
+<p>相比2PC，3PC在<strong>准备阶段</strong>前多了一个<strong>可否提交询问CanCommit</strong>阶段，也就是先判断<strong>事务服务器是否存活</strong>，避免资源浪费</p>
+<ul>
+<li><strong>可否提交询问CanCommit</strong>：
+<ul>
+<li>事务协调者向所有事务参与者发送<strong>CanCommit询问</strong>请求</li>
+<li>事务参与者执行事务操作</li>
+<li>如果事务参与者执行成功，则返回<strong>ACK</strong>，否则返回<strong>NACK</strong></li>
+</ul></li>
+<li><strong>准备阶段</strong></li>
+<li><strong>提交阶段</strong></li>
+</ul>
+<p>缺点：依然存在事务进行时的全局阻塞</p>
+<h2 id="分布式限流">2.8 分布式限流</h2>
+<p>在<strong>秒杀</strong>等超高并发场景下，为了保证系统的<strong>稳定性</strong>，需要适当降低<strong>用户体验</strong>来平衡系统的<strong>压力</strong></p>
+<p>一般可以通过<strong>拒绝服务</strong>、<strong>服务降级</strong>、<strong>特权VIP处理</strong>、<strong>限流</strong>等方式来实现</p>
+<p>经典的限流算法有4种：<strong>计数器方式</strong>、<strong>滑动窗口</strong>、<strong>漏桶</strong>、<strong>令牌桶</strong></p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/LimitFlow.png" width="60%"></p>
+<h3 id="计数器方式">2.8.1 计数器方式</h3>
+<p>计数器方式是最简单的限流算法，通过<strong>固定一个计数器阈值</strong>来记录<strong>单位时间</strong>内允许的<strong>请求次数</strong></p>
+<p>当在这段时间内某一刻总请求次数超过<strong>阈值</strong>时，则后面这段时间内将就拒绝服务</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/Counter.png" width="60%"></p>
+<p>缺点：在两个相隔时间段内可能瞬间请求次数过多，导致<strong>瞬间流量</strong>过大</p>
+<h3 id="滑动窗口">2.8.2 滑动窗口</h3>
+<p>在<strong>计数器方式</strong>的基础上，将大时间段再细分为<strong>小时间段</strong>，通过<strong>滑动窗口</strong>来动态累计请求次数</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/SlidingWindow.jpg" width="60%"></p>
+<h3 id="漏桶">2.8.3 漏桶</h3>
+<p>漏桶算法是一种<strong>固定容量</strong>的<strong>漏桶</strong>缓存消息，消费者对桶的消费速率相对固定，而生产者的生产速率不固定，但是有容量限制，当桶满时，生产者将拒绝请求，从而实现限流</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/LeakyBucket.png" width="60%"></p>
+<h3 id="令牌桶">2.8.4 令牌桶</h3>
+<p>令牌桶的<strong>容量不固定</strong>，而是通过<strong>中间人</strong>按照一定速率往桶中<strong>放入令牌token</strong>，有点类似于空闲时段<strong>攒钱</strong>，在<strong>繁忙时段</strong>可以<strong>花钱</strong>，所以相比<strong>漏桶</strong>算法，在面对大流量时可以快速处理</p>
+<p>当请求来临时，先从桶中<strong>取出令牌</strong>，如果<strong>有令牌</strong>则处理请求，否则拒绝请求</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/TokenBucket.png" width="60%"></p>
+<h2 id="分布式熔断和降级">2.9 分布式熔断和降级</h2>
+<p>熔断与降级的区别：熔断可能会调用降级机制，但是降级不会调用熔断机制</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/CircuitBreakerAndDegrade.png" width="60%"></p>
+<h3 id="熔断">2.9.1 熔断</h3>
+<p>在某些情况下，系统<strong>大量下游节点出现异常</strong>，那么会影响整个系统的<strong>稳定性</strong></p>
+<p>而熔断（Circuit
+Breaking）是面向不稳定服务场景设计的，它能最大限度避免下游服务不稳定对上游服务带来的影响。</p>
+<p>当<strong>某个下游业务不稳定时</strong>，可以通过<strong>熔断</strong>机制先把不稳定的服务<strong>熔断</strong>，然后<strong>降级</strong>处理</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/CircuitBreaker.png" width="60%"></p>
+<p>熔断判断方法：</p>
+<ul>
+<li><strong>异常率</strong>：当<strong>异常率</strong>超过一定阈值时，就会触发熔断</li>
+<li><strong>响应超时率</strong>：当<strong>响应超时率</strong>超过一定阈值时，就会触发熔断</li>
+</ul>
+<h2 id="降级">2.9.2 降级</h2>
+<p>降级是为了解决<strong>资源不足</strong>和<strong>访问量过大</strong>的问题，通过<strong>降低牺牲一些业务（停某些业务）或流程（强一致性变最终一致）</strong>来保证系统的<strong>稳定性</strong></p>
+<p>降级的方式有：</p>
+<ul>
+<li><strong>停止某些业务</strong>：比如在<strong>秒杀</strong>高并发场景下，可以<strong>停止注册</strong>业务</li>
+<li><strong>强一致性变最终一致性</strong>：比如在<strong>秒杀</strong>高并发场景下，可以<strong>降级</strong>为<strong>最终一致性</strong></li>
+</ul>
+<h2 id="uuid-雪花算法">2.10 UUID-雪花算法</h2>
+<p>UUID是由<strong>32个16进制</strong>数字，也就是<strong>16<sup>32=2</sup>128</strong>128位组成的，一般是<strong>全球唯一</strong>，是通过<strong>雪花算法（生成分布式全局唯一ID的算法）</strong>生成的</p>
+<p>UUID的产生一般与<strong>时间戳</strong>、<strong>网卡MAC地址</strong>、<strong>随机数</strong>等有关</p>
+<p>优点：<strong>全球唯一</strong>、<strong>不重复</strong></p>
+<p>缺点：<strong>无序</strong>、<strong>存储空间大</strong>、<strong>字符串存储，查询效率低</strong></p>
+<blockquote>
+<p>参考：<a target="_blank" rel="noopener" href="https://mbd.baidu.com/newspage/data/landingsuper?rs=3122157695&amp;ruk=qiRiJMGafDiNgx10N6x2lQ&amp;urlext=%7B%22cuid%22%3A%22luHda_icH8_KPHtLYaSIflaqBil6uBuCluvsalixS8_v8SiE_aSau08sHaJUfQulE6HmA%22%7D&amp;isBdboxFrom=1&amp;pageType=1&amp;sid_for_share=&amp;context=%7B%22nid%22%3A%22news_9293703006842681579%22,%22sourceFrom%22%3A%22search%22%7D">架构设计之道：高并发架构设计</a></p>
+<p>参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lixinkuan328/article/details/95535691">分布式之CAP原则详解</a></p>
+<p>参考：<a target="_blank" rel="noopener" href="https://mbd.baidu.com/ug_share/mbox/4a83aa9e65/share?product=smartapp&amp;tk=3fdf4dfbc1f1d088d6a696bbd8b2aa5a&amp;share_url=https%3A%2F%2Fyebd1h.smartapps.cn%2Fpages%2Fblog%2Findex%3FblogId%3D128606461%26_swebfr%3D1%26_swebFromHost%3Dbaiduboxapp&amp;domain=mbd.baidu.com">面试场景题积累汇总</a></p>
+<p>参考：<a target="_blank" rel="noopener" href="https://blog.itpub.net/70024922/viewspace-3005053/">高并发架构设计（三大利器：缓存、限流和降级）</a></p>
+<p>参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/431149128">深入消息队列MQ，看这篇就够了！</a></p>
+</blockquote>
+<h1 id="三常见的分布式系统设计场景">三、常见的分布式系统设计场景</h1>
+<h2 id="秒杀系统设计">3.1 秒杀系统设计</h2>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/SecondKillStruct.png" width="80%"></p>
+<p>整体架构主要包括<strong>Redis预扣库存</strong>、<strong>Kafka异步下单</strong>、<strong>MySQL扣除实际库存</strong>、<strong>前端跳转支付</strong>等步骤，一般的流程为<strong>请求-&gt;限流组件-&gt;Redis预扣-&gt;库存服务</strong></p>
+<p>具体流程如下：</p>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/SecondKill.png" width="80%"></p>
+<h3 id="限流">3.1.1 限流</h3>
+<p>限流一般是在接入系统前进行的预处理，一般由专门的<strong>限流组件</strong>在<strong>网关</strong>端实现，通过<strong>令牌桶</strong>、<strong>漏桶</strong>等算法来实现</p>
+<p>当请求超过一定阈值时，就会触发<strong>限流</strong>，返回<strong>请求太多</strong>的提示来拒绝请求服务</p>
+<h3 id="redis预扣库存">3.1.2 Redis预扣库存</h3>
+<p>Redis预扣库存主要有以下的步骤：</p>
+<ul>
+<li><strong>预扣库存（管理订单名额）+限额</strong>：用户请求到达后，先从<strong>Redis</strong>中<strong>预扣库存</strong>，如果<strong>库存不足</strong>则返回<strong>库存不足</strong>的提示</li>
+<li><strong>LUA保证原子性</strong>：通过<strong>LUA脚本</strong>来保证<strong>预扣库存</strong>的<strong>原子性</strong>，避免<strong>超卖</strong>的问题</li>
+<li><strong>状态记录逻辑</strong>：secNum（uuid）做为key来存储状态信息</li>
+</ul>
+<h3 id="kafka异步下单">3.1.3 Kafka异步下单</h3>
+<p>Redis预扣除后，怎么把实际的订单消息传给<strong>MySQL</strong>进行<strong>实际订单生成</strong>和<strong>库存扣除</strong>呢？</p>
+<p><strong>1）直接打到MySQL</strong></p>
+<p>由于Redis已经进行预扣除，只有拿到<strong>入场券</strong>的订单才能交给MySQL，如果此时<strong>商品秒杀库存总额</strong>只有几百或者几千，那么直接打到MySQL也是可以的</p>
+<p>但是如果<strong>商品秒杀库存总额</strong>有几十万、几百万，那么直接打到MySQL就会导致<strong>MySQL</strong>的<strong>压力</strong>过大，因此需要<strong>异步下单</strong></p>
+<p><strong>2）Kafka异步下单</strong></p>
+<p>Kafka中存储<strong>订单消息</strong>交给MySQL消费，通过同一商品在<strong>同一分区</strong>中，保证<strong>订单生成</strong>的<strong>顺序性</strong></p>
+<p>消费队列的数据主要包括：<strong>订单ID</strong>、<strong>用户ID</strong>、<strong>商品ID</strong>、<strong>商品数量</strong>、<strong>商品价格</strong>等信息</p>
+<h3 id="mysql扣除实际库存">3.1.4 MySQL扣除实际库存</h3>
+<p><strong>1）扣除库存</strong></p>
+<p>MySQL中的<strong>商品库存</strong>是<strong>实际库存</strong>，通过<strong>商品ID</strong>来<strong>扣除库存</strong></p>
+<p><strong>2）订单生成</strong></p>
+<p>通过<strong>订单ID</strong>、<strong>用户ID</strong>、<strong>商品ID</strong>、<strong>商品数量</strong>、<strong>商品价格</strong>等信息来生成<strong>订单</strong></p>
+<p><strong>3）订单状态</strong></p>
+<p>订单生成后，需要<strong>更新订单状态</strong>，比如<strong>已支付</strong>、<strong>未支付</strong>等状态</p>
+<h3 id="前端跳转支付">3.1.5 前端跳转支付</h3>
+<p>订单生成后，需要<strong>跳转支付</strong>，通过<strong>支付宝</strong>、<strong>微信</strong>等支付方式来完成支付</p>
+<p>支付完成后，需要<strong>更新订单状态</strong>为<strong>已支付</strong>，同时<strong>扣除用户余额</strong>等操作</p>
+<h3 id="更新redis库存">3.1.6 更新Redis库存</h3>
+<p>支付完成后，需要<strong>更新Redis库存</strong>，将<strong>预扣库存</strong>更新为<strong>实际库存</strong></p>
+<h2 id="扫码登录设计">3.2 扫码登录设计</h2>
+<h3 id="token">3.2.1 token</h3>
+<p><strong>token</strong>是指<strong>令牌</strong>，是一种<strong>身份验证</strong>的方式，通过<strong>token</strong>来<strong>验证用户身份</strong>，<strong>保护用户隐私</strong></p>
+<p>我们通常在网页中登陆一次后，下次访问不需要再次登陆，就是通过<strong>token</strong>来实现的：</p>
+<ul>
+<li><strong>token生成</strong>：通过<strong>用户ID</strong>、<strong>时间戳</strong>、<strong>密钥</strong>等信息生成<strong>token</strong></li>
+<li><strong>token验证</strong>：
+<ul>
+<li>通过<strong>token</strong>来验证用户身份，如果<strong>token</strong>过期或者不正确则需要重新登陆</li>
+<li>由于token中的value包含设备信息，所以就算被窃取也很难保证设备信息一致</li>
+</ul></li>
+</ul>
+<h3 id="扫码登录设计思路">3.2.2 扫码登录设计思路</h3>
+<p><img src="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/scanLogin.png" width="80%"></p>
+<ul>
+<li>获取二维码
+<ul>
+<li>PC端：携带设备信息-&gt;请求后端二维码ID</li>
+<li>后端Redis：产生二维码ID（状态为：待扫码）-&gt;关联二维码ID和设备信息-&gt;返回二维码ID</li>
+</ul></li>
+<li>显示二维码
+<ul>
+<li>PC端：前端展示二维码</li>
+<li>PC端：开始不断轮询后端二维码ID状态</li>
+</ul></li>
+<li>登录扫码
+<ul>
+<li>移动端：扫码获得二维码ID-&gt;发起扫码请求</li>
+<li>后端Redis：根据二维码ID关联用户ID（状态改为：待确认）-&gt;生成临时token-&gt;返回临时token</li>
+<li>PC端：轮询到状态改变，显示用户对应头像（等待移动端确认）</li>
+</ul></li>
+<li>确认登录
+<ul>
+<li>移动端：确认登录-&gt;携带临时token-&gt;请求后端</li>
+<li>后端Redis：删除临时token-&gt;根据用户ID生成token-&gt;二维码关联用户ID（状态改为：已激活）</li>
+<li>PC端：轮询到状态改变，获取token并登录</li>
+</ul></li>
+</ul>
+<h3 id="扫码登录设计-1">3.2.3 扫码登录设计</h3>
+<h4 id="数据结构">3.2.3.1 数据结构</h4>
+<p>采用Redis做为存储，为了保证原子性，需要通过<strong>Lua</strong>来操作</p>
+<p>以<code>key-value</code>的形式存储数据：</p>
+<table>
+<tr>
+<th style="text-align: center; font-weight: bold;">
+key
+</th>
+<td>
+二维码ID
+</td>
+</tr>
+<tr>
+<th rowspan="4" style="text-align: center; font-weight: bold;">
+value(Json)
+</th>
+<td>
+accountID
+</td>
+</tr>
+<tr>
+<td>
+deviceInfo(设备ID、设备MAC、地理位置...)
+</td>
+</tr>
+<tr>
+<td>
+status(待扫码、待确认、待激活)
+</td>
+</tr>
+<tr>
+<td>
+pctoken
+</td>
+</tr>
+</table>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="comment">//qrID</span></span><br><span class="line">    <span class="attr">&quot;qrIDxxx&quot;</span>:&#123;</span><br><span class="line">        <span class="attr">&quot;accountID&quot;</span>:<span class="string">&quot;dsfsd1231321f&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;deviceInfo&quot;</span>:&#123;</span><br><span class="line">            <span class="attr">&quot;deviceID&quot;</span>:<span class="string">&quot;sdfsfaldfhfshlfhds&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;deviceType&quot;</span>:<span class="string">&quot;mac&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;position&quot;</span>:<span class="string">&quot;shenzhen&quot;</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">&quot;status&quot;</span>: <span class="number">3</span>,<span class="comment">//激活</span></span><br><span class="line">        <span class="attr">&quot;pcToken&quot;</span>:<span class="string">&quot;xxxxxxxx&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="临时token作用安全性">3.2.3.1 临时token作用（安全性）</h4>
+<p>临时token是为了绑定扫码的<strong>移动端设备</strong>，这样就算<strong>token</strong>被<strong>截获</strong>，也无法<strong>登录</strong>，因为<strong>token</strong>是<strong>绑定设备</strong>的</p>
+
+    </article>
+    <!-- license -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
+            <p>Link：<a href="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">May 1st 2024, 12:56:18 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">November 23rd 2025, 2:47:28 am</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2024/05/15/%E5%A4%A7%E9%A1%B6%E5%A0%86-%E5%B0%8F%E9%A1%B6%E5%A0%86%EF%BC%88CPP%EF%BC%89/" title="大顶堆/小顶堆（CPP）">
+                    <div class="nextTitle">大顶堆/小顶堆（CPP）</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/04/29/KMP%E7%AE%97%E6%B3%95/" title="KMP算法">
+                    <div class="prevTitle">KMP算法</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC81NjEyMS8zMjU4NA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活 JavaScript</noscript>
+    </div>
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:tianzheng_edu@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="https://github.com/akirazheng" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E6%B5%B7%E9%87%8F%E6%95%B0%E6%8D%AE"><span class="toc-text">一、海量数据</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E6%B5%B7%E9%87%8F%E6%95%B0%E6%8D%AE"><span class="toc-text">1.1 处理海量数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E8%80%8C%E6%B2%BB%E4%B9%8B%E8%A7%A3%E5%86%B3%E5%88%86%E5%89%B2%E6%95%B0%E6%8D%AE%E9%97%AE%E9%A2%98"><span class="toc-text">1.2 分而治之：解决分割数据问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%88%86--%E5%93%88%E5%B8%8C%E8%AE%A1%E7%AE%97"><span class="toc-text">1.2.1 怎么分？- 哈希计算</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc-text">分布式负载均衡</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%93%88%E5%B8%8C%E8%AE%A1%E7%AE%97"><span class="toc-text">哈希计算</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%93%88%E5%B8%8C%E7%A2%B0%E6%92%9E"><span class="toc-text">哈希碰撞</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%93%88%E5%B8%8C%E6%9F%A5%E6%89%BE%E7%9A%84%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-text">哈希查找的时间复杂度</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#a.-%E6%99%AE%E9%80%9A%E5%93%88%E5%B8%8C%E8%AE%A1%E7%AE%97hashdatan"><span class="toc-text">a. 普通哈希计算hash(data)%N</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#b.-%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8Chashdata232"><span class="toc-text">b. 一致性哈希hash(data)%(2^32)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%84%E5%88%86%E5%9D%97%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86"><span class="toc-text">1.2.2 各分块怎么处理？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B1%82%E9%A2%91%E6%AC%A1hash-map%E7%BB%9F%E8%AE%A1"><span class="toc-text">求频次：hash-map统计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%92%E5%BA%8F%E5%A0%86%E5%BF%AB%E6%8E%92%E5%BD%92%E5%B9%B6"><span class="toc-text">排序：堆&#x2F;快排&#x2F;归并</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B1%82topk%E4%BB%8E%E5%90%84%E5%9D%97%E4%B8%AD%E9%80%89%E5%8F%96topk"><span class="toc-text">求TopK：从各块中选取TopK</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%B7%E9%87%8F%E6%95%B0%E6%8D%AE%E5%8E%BB%E9%87%8D"><span class="toc-text">海量数据去重</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%90%88%E5%B9%B6--%E5%BD%92%E5%B9%B6"><span class="toc-text">1.2.3 怎么合并？- 归并</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BE%E4%BE%8B"><span class="toc-text">1.2.4 举例</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E9%AB%98%E5%B9%B6%E5%8F%91%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E5%9F%BA%E7%A1%80"><span class="toc-text">二、高并发分布式系统设计基础</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8Fcap%E7%90%86%E8%AE%BA"><span class="toc-text">2.1 分布式CAP理论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%B9%B6%E5%8F%91%E6%8C%87%E6%A0%87"><span class="toc-text">2.2 系统并发指标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1-1"><span class="toc-text">2.3 分布式负载均衡</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#dns%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc-text">2.3.1 DNS负载均衡</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%B1%82%E5%BA%94%E7%94%A8%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1nginx"><span class="toc-text">2.3.2
+网络层&amp;应用层负载均衡：Nginx</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98"><span class="toc-text">2.4 分布式缓存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%BC%93%E5%AD%98"><span class="toc-text">2.4.1 本地客户端缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cdn-%E5%86%85%E5%AE%B9%E5%88%86%E5%8F%91%E7%BD%91%E7%BB%9C"><span class="toc-text">2.4.2 CDN-内容分发网络</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98"><span class="toc-text">2.4.3 反向代理缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E7%BC%93%E5%AD%98"><span class="toc-text">2.4.4 redis缓存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97"><span class="toc-text">2.5 分布式消息队列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E4%BC%98%E7%82%B9"><span class="toc-text">2.5.1 消息队列的优点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E4%BC%98%E5%8C%96%E8%AE%BE%E8%AE%A1"><span class="toc-text">2.5.2 消息队列优化设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rabbitmq%E8%AE%BE%E8%AE%A1"><span class="toc-text">2.5.3 RabbitMQ设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kafka%E8%AE%BE%E8%AE%A1"><span class="toc-text">2.5.4 Kafka设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-text">2.6 分布式数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E5%92%8C%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="toc-text">2.7 分布式事务和分布式锁</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="toc-text">2.7.1 分布式锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="toc-text">2.7.2 分布式事务</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%99%90%E6%B5%81"><span class="toc-text">2.8 分布式限流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E6%95%B0%E5%99%A8%E6%96%B9%E5%BC%8F"><span class="toc-text">2.8.1 计数器方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3"><span class="toc-text">2.8.2 滑动窗口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%A1%B6"><span class="toc-text">2.8.3 漏桶</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A4%E7%89%8C%E6%A1%B6"><span class="toc-text">2.8.4 令牌桶</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%86%94%E6%96%AD%E5%92%8C%E9%99%8D%E7%BA%A7"><span class="toc-text">2.9 分布式熔断和降级</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%86%94%E6%96%AD"><span class="toc-text">2.9.1 熔断</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%8D%E7%BA%A7"><span class="toc-text">2.9.2 降级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#uuid-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95"><span class="toc-text">2.10 UUID-雪花算法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E5%B8%B8%E8%A7%81%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E5%9C%BA%E6%99%AF"><span class="toc-text">三、常见的分布式系统设计场景</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1"><span class="toc-text">3.1 秒杀系统设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%90%E6%B5%81"><span class="toc-text">3.1.1 限流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E9%A2%84%E6%89%A3%E5%BA%93%E5%AD%98"><span class="toc-text">3.1.2 Redis预扣库存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kafka%E5%BC%82%E6%AD%A5%E4%B8%8B%E5%8D%95"><span class="toc-text">3.1.3 Kafka异步下单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysql%E6%89%A3%E9%99%A4%E5%AE%9E%E9%99%85%E5%BA%93%E5%AD%98"><span class="toc-text">3.1.4 MySQL扣除实际库存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF%E8%B7%B3%E8%BD%AC%E6%94%AF%E4%BB%98"><span class="toc-text">3.1.5 前端跳转支付</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0redis%E5%BA%93%E5%AD%98"><span class="toc-text">3.1.6 更新Redis库存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%AB%E7%A0%81%E7%99%BB%E5%BD%95%E8%AE%BE%E8%AE%A1"><span class="toc-text">3.2 扫码登录设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#token"><span class="toc-text">3.2.1 token</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%AB%E7%A0%81%E7%99%BB%E5%BD%95%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="toc-text">3.2.2 扫码登录设计思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%AB%E7%A0%81%E7%99%BB%E5%BD%95%E8%AE%BE%E8%AE%A1-1"><span class="toc-text">3.2.3 扫码登录设计</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">3.2.3.1 数据结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%B4%E6%97%B6token%E4%BD%9C%E7%94%A8%E5%AE%89%E5%85%A8%E6%80%A7"><span class="toc-text">3.2.3.1 临时token作用（安全性）</span></a></li></ol></li></ol></li></ol></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 77
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search site-search-loading popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span>
+            <a class="archive-post-title" href="/2025/11/22/cacheLine%E7%AB%9E%E4%BA%89%E5%AF%B9%E6%80%A7%E8%83%BD%E7%9A%84%E5%BD%B1%E5%93%8D/">cacheLine竞争对性能的影响</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span>
+            <a class="archive-post-title" href="/2025/11/20/FIELD-PREP%E5%92%8CFIELD-GET%E6%9B%BF%E4%BB%A3%E6%89%8B%E5%8A%A8%E4%BD%8D%E7%A7%BB/">FIELD_PREP和FIELD_GET替代手动位移</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span>
+            <a class="archive-post-title" href="/2025/11/04/ARM64%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">ARM64基础知识</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">驱动学习2：字符设备驱动(fd,ioctl)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/Linux-%E5%86%85%E6%A0%B8%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6/">Linux:内核通知机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span>
+            <a class="archive-post-title" href="/2025/09/22/Linux-early-param%E5%8F%82%E6%95%B0/">Linux:early_param参数</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/">ARM64结构与编程:加载和存储指令</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">ARM64结构与编程:QEMU_BenOS环境搭建</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：CPU虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">git常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">linux常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span>
+            <a class="archive-post-title" href="/2025/09/02/TLB%E7%89%B9%E6%80%A7%E5%AD%A6%E4%B9%A0/">TLB特性学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span>
+            <a class="archive-post-title" href="/2025/08/23/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F2%EF%BC%9A%E7%BC%96%E5%86%99MBR%E4%B8%BB%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA/">手写操作系统2：编写MBR主引导扇区</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span>
+            <a class="archive-post-title" href="/2025/08/22/%E8%BF%9B%E5%88%B6%E8%BD%AC%E6%8D%A2CPP%E7%89%88/">进制转换CPP版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/21</span>
+            <a class="archive-post-title" href="/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/">驱动学习1：驱动demo练习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span>
+            <a class="archive-post-title" href="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/">openeluer安装与内核替换</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/">推广搜6：传统推荐模型之阿里LS-PLM模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/">推广搜5：传统推荐模型之GBDT+LR模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span>
+            <a class="archive-post-title" href="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C4%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">推广搜4：传统推荐模型之FM模型</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C3%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜3：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span>
+            <a class="archive-post-title" href="/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C2%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/">推广搜2：传统推荐模型之协同过滤算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span>
+            <a class="archive-post-title" href="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C1%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/">推广搜1：基础知识及学习路线篇</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span>
+            <a class="archive-post-title" href="/2024/12/18/%E7%88%AC%E8%99%AB%E5%AE%9E%E7%8E%B0QQ%E7%BE%A4%E4%BD%9C%E4%B8%9A%E7%9A%84%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD/">爬虫实现QQ群作业的批量下载</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">手写操作系统1：项目环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/23</span>
+            <a class="archive-post-title" href="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/">计算机网络层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span>
+            <a class="archive-post-title" href="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">计算机网络传输层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span>
+            <a class="archive-post-title" href="/2024/09/21/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Redis数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">调度项目6：worker开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2024/09/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE5%EF%BC%9Aflowsvr%E5%BC%80%E5%8F%91/">调度项目5：flowsvr开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/18</span>
+            <a class="archive-post-title" href="/2024/08/18/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE4%EF%BC%9AWorker%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目4：Worker的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/">分布式Kafka学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span>
+            <a class="archive-post-title" href="/2024/06/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">调度项目1：环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3%E7%9A%84Linux%E6%93%8D%E4%BD%9C/">操作系统相关的Linux操作</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">文件描述符</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span>
+            <a class="archive-post-title" href="/2024/05/17/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">操作系统内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/15</span>
+            <a class="archive-post-title" href="/2024/05/15/%E5%A4%A7%E9%A1%B6%E5%A0%86-%E5%B0%8F%E9%A1%B6%E5%A0%86%EF%BC%88CPP%EF%BC%89/">大顶堆/小顶堆（CPP）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/01</span>
+            <a class="archive-post-title" href="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">高并发系统设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span>
+            <a class="archive-post-title" href="/2024/04/29/KMP%E7%AE%97%E6%B3%95/">KMP算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span>
+            <a class="archive-post-title" href="/2024/04/26/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/">动态规划-背包问题</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/25</span>
+            <a class="archive-post-title" href="/2024/04/25/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">操作系统结构及进程管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span>
+            <a class="archive-post-title" href="/2024/04/20/C-%E5%BA%95%E5%B1%82%E5%AD%A6%E4%B9%A0/">C++底层学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Mysql数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span>
+            <a class="archive-post-title" href="/2024/04/03/%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0/">排序实现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">WebServer学习9：WebBench压力测试</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A08%EF%BC%9A%E9%80%9A%E7%94%A8%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1/">WebServer学习8：通用日志系统的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span>
+            <a class="archive-post-title" href="/2024/03/26/WebServer%E5%AD%A6%E4%B9%A07%EF%BC%9A%E5%AE%9A%E6%97%B6%E5%99%A8%E6%8E%A7%E5%88%B6%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4/">WebServer学习7：定时器控制客户端存活时间</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2024/03/11/WebServer%E5%AD%A6%E4%B9%A06%EF%BC%9AHTTP%E8%BF%9E%E6%8E%A5%E5%A4%84%E7%90%86%E5%8F%8A%E6%8A%A5%E6%96%87%E6%9C%BA%E5%88%B6/">WebServer学习6：HTTP连接处理及报文机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/">HTTP协议的迭代（HTTP：应用层）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%AD%A6%E4%B9%A0/">C++基础知识学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/WebServer%E5%AD%A6%E4%B9%A05%EF%BC%9A%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%AE%BE%E8%AE%A1/">WebServer学习5：线程池与数据库连接池设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/05</span>
+            <a class="archive-post-title" href="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/">WebServer学习4：并发事件驱动模式Reactor和Proactor</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span>
+            <a class="archive-post-title" href="/2024/03/04/WebServer%E5%AD%A6%E4%B9%A03%EF%BC%9Asocket%E7%BC%96%E7%A8%8B%E4%B8%8Eepoll%E5%AE%9E%E7%8E%B0I-O%E5%A4%8D%E7%94%A8/">WebServer学习3：socket编程与epoll实现I/O复用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/03</span>
+            <a class="archive-post-title" href="/2024/03/03/WebServer%E5%AD%A6%E4%B9%A02%EF%BC%9A%E4%BB%8EConfig%E6%96%87%E4%BB%B6%E4%BA%86%E8%A7%A3Makefile%E7%BC%96%E8%AF%91/">WebServer学习2：从Config文件了解Makefile编译</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span>
+            <a class="archive-post-title" href="/2024/02/28/WebServer%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C/">WebServer学习1：部署运行</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F6%EF%BC%9A%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/">设计模式6：策略模式</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F5%EF%BC%9A%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95/">设计模式5：模板方法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/08</span>
+            <a class="archive-post-title" href="/2024/02/08/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F0%EF%BC%9A%E9%9D%A2%E5%AF%B9%E5%AF%B9%E8%B1%A1%E7%9A%848%E5%A4%A7%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86/">设计模式0：面对对象的8大设计原理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/07</span>
+            <a class="archive-post-title" href="/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/">从0开始实现线程池(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F4%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">设计模式4：代理模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F3%EF%BC%9A%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/">设计模式3：抽象工厂模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">设计模式2：工厂方法模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span>
+            <a class="archive-post-title" href="/2024/01/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F1%EF%BC%9A%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">设计模式1：单例模式(C++)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span>
+            <a class="archive-post-title" href="/2023/03/18/QT%E7%BC%96%E7%A8%8B%E7%BB%8F%E9%AA%8C/">QT编程经验</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span>
+            <a class="archive-post-title" href="/2022/12/08/SolveProgramLearningProblem/">SolveProgramLearningProblem</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/04</span>
+            <a class="archive-post-title" href="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/">Mine-重装系统后软件相关设置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/24</span>
+            <a class="archive-post-title" href="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/">快捷键方式整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/15</span>
+            <a class="archive-post-title" href="/2022/11/15/LOVE/">LOVE_打火机与公主裙</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2022/04/17/%E5%8A%A8%E6%89%8B%E5%AD%A6%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A001/">动手学深度学习01</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/">搭建Conda虚拟环境</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/13</span>
+            <a class="archive-post-title" href="/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">部署colab利用GPU资源训练深度学习模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">重装系统后Hexo博客部署教程</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/">DELL系统重装教程</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="计算机">
+                <span class="iconfont-archer">&#xe606;</span>
+                计算机
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="杂货铺-休闲">
+                <span class="iconfont-archer">&#xe606;</span>
+                杂货铺-休闲
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="环境配置">
+                <span class="iconfont-archer">&#xe606;</span>
+                环境配置
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="深度学习">
+                <span class="iconfont-archer">&#xe606;</span>
+                深度学习
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="任务调度项目">
+                <span class="iconfont-archer">&#xe606;</span>
+                任务调度项目
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据结构与算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核基础">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核基础
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据库">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据库
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络">
+            <span class="iconfont-archer">&#xe60a;</span>
+            计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="WebServer项目（C++）">
+            <span class="iconfont-archer">&#xe60a;</span>
+            WebServer项目（C++）
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="系统设计">
+            <span class="iconfont-archer">&#xe60a;</span>
+            系统设计
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="深度学习算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            深度学习算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统">
+            <span class="iconfont-archer">&#xe60a;</span>
+            操作系统
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="虚拟化">
+            <span class="iconfont-archer">&#xe60a;</span>
+            虚拟化
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="设计模式">
+            <span class="iconfont-archer">&#xe60a;</span>
+            设计模式
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="任务调度项目">
+            <span class="iconfont-archer">&#xe60a;</span>
+            任务调度项目
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核驱动">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核驱动
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://AkiraZheng.github.io",
+        root: siteMetaRoot,
+        author: "AkiraZheng"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+            <div class="site-search site-search-loading">
+    <div class="algolia-popup popup">
+        <div class="algolia-search">
+            <div class="algolia-search-input-icon">
+                <i class="fa fa-search"></i>
+            </div>
+            <div class="algolia-search-input" id="algolia-search-input"></div>
+            <div class="popup-btn-close">
+                <i class="iconfont-archer">&#xe609;</i>
+            </div>
+        </div>
+
+        <div class="algolia-results">
+            <div id="algolia-stats" class="algolia-stats"></div>
+            <div id="algolia-hits"></div>
+            <div id="algolia-pagination" class="algolia-pagination"></div>
+        </div>
+    </div>
+</div>
+            <script src="/scripts/search.js?v=20211217" defer></script>
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>

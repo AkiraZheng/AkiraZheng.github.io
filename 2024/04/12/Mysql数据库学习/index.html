@@ -1,0 +1,3444 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="AkiraZheng">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="AkiraZheng">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta name="description" content="一、Mysql数据库在Linux中的使用方法 1.1 修改密码 进入mysql前终端指令：  查看mysql服务状态：systemctl status mysql.service 查看mysql密码：sudo cat &#x2F;etc&#x2F;mysql&#x2F;debian.cnf  根据查到的账号密码进入mysql：  mysql -u debian-sys-maint -p 输入密码：（输入debian-sys-m">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mysql数据库学习">
+<meta property="og:url" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="一、Mysql数据库在Linux中的使用方法 1.1 修改密码 进入mysql前终端指令：  查看mysql服务状态：systemctl status mysql.service 查看mysql密码：sudo cat &#x2F;etc&#x2F;mysql&#x2F;debian.cnf  根据查到的账号密码进入mysql：  mysql -u debian-sys-maint -p 输入密码：（输入debian-sys-m">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/err1.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/install.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/matchTips.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/aggregate.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/innerJoin.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/innerJoin2.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/leftJoin.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/rightJoin.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/dirty_read.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/non-repeating0.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/non-repeating.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/phantom-reads.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/repeatable-read.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/two-hidden-columns.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/trx-id.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/deadlock.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/2NF.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/3NF.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/3NF_2.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/B+tree.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/clustered-index.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/secondary-index.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/union-index.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/left-match.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/undo-log.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/redo-log-buffer.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/redo-log.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/binlog.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/two-phase-commit.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/log.png">
+<meta property="og:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/sharding.png">
+<meta property="article:published_time" content="2024-04-12T13:48:23.000Z">
+<meta property="article:modified_time" content="2025-11-22T18:47:28.191Z">
+<meta property="article:author" content="AkiraZheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/err1.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/yueyue.jpg">
+    
+    <title>Mysql数据库学习 · AkiraZheng&#39;s Time</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+        <script>
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"We did not find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'OG7KZ1ED66',
+                apiKey: '8daa81c36784d89945ec12e46f72de54',
+                indexName: 'hexo_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>AkiraZheng's Time.</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">AkiraZheng&#39;s Time.</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">Mysql数据库学习</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                Mysql数据库学习
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">11.1k</span>Reading time: <span class="post-count reading-time">42 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/04/12</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="一mysql数据库在linux中的使用方法">一、Mysql数据库在Linux中的使用方法</h2>
+<h3 id="修改密码">1.1 修改密码</h3>
+<p>进入mysql前终端指令：</p>
+<ul>
+<li>查看mysql服务状态：<code>systemctl status mysql.service</code></li>
+<li>查看mysql密码：<code>sudo cat /etc/mysql/debian.cnf</code></li>
+</ul>
+<p>根据查到的账号密码进入mysql：</p>
+<ul>
+<li><code>mysql -u debian-sys-maint -p</code></li>
+<li>输入密码：（输入<code>debian-sys-maint</code>对应的密码即可）</li>
+</ul>
+<p>进入mysql后终端指令（指令以<code>;</code>结尾）：</p>
+<ul>
+<li>查看数据库：<code>show databases;</code></li>
+<li>选择数据库：<code>use 数据库名;</code></li>
+<li>查看表：<code>show tables;</code></li>
+<li>查询表：<code>select * from 表名;</code></li>
+<li>查看当前mysql用户：
+<ul>
+<li>先进入mysql数据库：<code>use mysql;</code></li>
+<li>查看用户：<code>select user,host from user;</code></li>
+<li>修改密码：<code>ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';</code>后刷新权限：<code>flush privileges;</code></li>
+<li>修改完密码后退出mysql：<code>exit;</code></li>
+</ul></li>
+</ul>
+<p>修改完密码后，可以用新密码进入mysql：<code>mysql -u root -p</code></p>
+<p>输入密码：<code>root</code>就可以进入</p>
+<h3 id="终端使用mysqlsh来操作数据库">1.2
+终端使用mysqlsh来操作数据库</h3>
+<ul>
+<li>下载mysql-shell：<code>sudo apt-get install mysql-shell</code></li>
+<li>启动mysql-shell：<code>mysqlsh</code></li>
+<li>连接数据库：<code>\connect root@localhost</code></li>
+<li>输入上面修改后的密码：<code>root</code></li>
+<li>查看数据库：<code>\sql show databases;</code></li>
+</ul>
+<h3 id="vscode中使用mysqlsh">1.3 vscode中使用mysqlsh</h3>
+<ul>
+<li>安装插件：<code>Mysql Shell for VS Code</code></li>
+</ul>
+<p>可能会出现错误：</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/err1.png"></p>
+<p>根据错误提示在终端安装即可：</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/install.png"></p>
+<p>然后<code>restart</code>即可</p>
+<ul>
+<li><p>重启后点击<code>New Connection</code>，输入连接信息(用户名、密码、端口等)，点击<code>OK</code>即可</p></li>
+<li><p>配置完成后就可以在vscode中使用mysqlsh了，需要注意的是输入语句后需要按<code>ctrl+enter</code>才能执行</p></li>
+</ul>
+<h2 id="二mysql数据库基础操作">二、Mysql数据库基础操作</h2>
+<h3 id="数据库的数据库表创建表格增删改查">2.1
+数据库的数据库&amp;表创建、表格增删改查</h3>
+<ul>
+<li>创建数据库：<code>create database 数据库名;</code></li>
+<li>删除数据库：<code>drop database 数据库名;</code></li>
+<li>选择数据库：<code>use 数据库名;</code></li>
+<li>创建表格：<code>create table 表名(字段名1 类型1, 字段名2 类型2, ...);</code></li>
+<li>删除表格：<code>drop table 表名;</code></li>
+<li>查看表格：<code>show tables;</code></li>
+<li>查看表格结构：<code>desc 表名;</code></li>
+<li>插入数据：<code>insert into 表名(字段1, 字段2, ...) values(值1, 值2, ...);</code></li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> DATABASE IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> game;</span><br><span class="line">USE game;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> player (</span><br><span class="line">	id <span class="type">INT</span>,</span><br><span class="line">	name <span class="type">VARCHAR</span>(<span class="number">100</span>),</span><br><span class="line">	level <span class="type">INT</span>,</span><br><span class="line">	exp <span class="type">INT</span>,</span><br><span class="line">	gold <span class="type">DECIMAL</span>(<span class="number">10</span>,<span class="number">2</span>)</span><br><span class="line">)</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">DESC</span> player;</span><br><span class="line"></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">table</span> player MODIFY <span class="keyword">COLUMN</span> name <span class="type">VARCHAR</span>(<span class="number">200</span>);</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> player <span class="keyword">Add</span> <span class="keyword">COLUMN</span> last_login DATETIME;</span><br><span class="line"><span class="keyword">DROP</span> <span class="keyword">TABLE</span> player;</span><br><span class="line"><span class="keyword">SHOW</span> TABLES;</span><br><span class="line"></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> player (id, name, level, exp, gold) <span class="keyword">VALUES</span> (<span class="number">1</span>, &quot;王五&quot;, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> player (id, name) <span class="keyword">VALUES</span> (<span class="number">2</span>, &quot;狂徒&quot;);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> player <span class="keyword">VALUES</span> (<span class="number">3</span>, &quot;某某&quot;, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> player MODIFY level <span class="type">INT</span> <span class="keyword">DEFAULT</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> player (id, name) <span class="keyword">VALUES</span> (<span class="number">4</span>, &quot;张三&quot;), (<span class="number">5</span>, &quot;李四&quot;);</span><br><span class="line">UPDATE player <span class="keyword">set</span> level <span class="operator">=</span> <span class="number">1</span> <span class="keyword">WHERE</span> name <span class="operator">=</span> &quot;狂徒&quot;;</span><br><span class="line">UPDATE player <span class="keyword">set</span> exp <span class="operator">=</span> <span class="number">1</span> <span class="keyword">WHERE</span> exp <span class="keyword">IS</span> <span class="keyword">NULL</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player;</span><br></pre></td></tr></table></figure>
+<h3 id="数据库的导入导出">2.2 数据库的导入导出</h3>
+<ul>
+<li>导出数据库：<code>mysqldump -u root -p 数据库名 &gt; 导出文件名.sql</code>
+<ul>
+<li>eg：<code>mysqldump -u root -p game &gt; game.sql</code></li>
+</ul></li>
+<li>导入数据库：<code>mysql -u root -p 数据库名 &lt; 导入文件名.sql</code>
+<ul>
+<li>eg：<code>mysql -u root -p game &lt; game.sql</code></li>
+<li>然后按照提示输入密码，完成后刷新<code>navicate</code>的mysql数据库即可看到导入的数据库</li>
+</ul></li>
+</ul>
+<p>b站一个up主提供的数据库练习资源文件： 百度网盘：
+https://pan.baidu.com/s/1shKNzVv0KViftFx51KATnw?pwd=qgpv 提取码:
+qgpv</p>
+<h3 id="数据库的常用语句">2.3 数据库的常用语句</h3>
+<h4 id="范围查询">2.3.1 范围查询</h4>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="operator">&gt;</span> <span class="number">1</span> <span class="keyword">AND</span> level <span class="operator">&lt;</span> <span class="number">5</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="operator">&gt;</span> <span class="number">1</span> <span class="keyword">AND</span> exp <span class="operator">&lt;</span> <span class="number">5</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="operator">&gt;</span> <span class="number">1</span> <span class="keyword">AND</span> level <span class="operator">&lt;</span> <span class="number">5</span> <span class="keyword">OR</span> exp <span class="operator">&gt;</span> <span class="number">1</span> <span class="keyword">AND</span> exp <span class="operator">&lt;</span> <span class="number">5</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="keyword">IN</span> (<span class="number">1</span>,<span class="number">3</span>,<span class="number">5</span>);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">10</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="keyword">NOT</span> <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">10</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="模糊查询">2.3.2 模糊查询</h4>
+<p>模糊查询通过通配符<code>LIKE</code>关键字实现，<code>%</code>表示任意多个字符，<code>_</code>表示一个字符（<code>_</code>的个数和字符个数相同）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> name <span class="keyword">LIKE</span> <span class="string">&#x27;王%&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> name <span class="keyword">LIKE</span> <span class="string">&#x27;%王%&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> name <span class="keyword">LIKE</span> <span class="string">&#x27;王_&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> name <span class="keyword">LIKE</span> <span class="string">&#x27;王__&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="通配符匹配正则表达式">2.3.3 通配符匹配正则表达式</h4>
+<p>这里的通配符是<code>REGEXP</code>，<code>^</code>表示开头，<code>$</code>表示结尾，<code>.</code>表示任意一个字符，<code>*</code>表示0个或多个，<code>+</code>表示1个或多个，<code>?</code>表示0个或1个，<code>[]</code>表示匹配其中任意一个字符，<code>[^]</code>表示不匹配其中任意一个字符</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/matchTips.png" width="50%" height="50%"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> name REGEXP <span class="string">&#x27;^王.$&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> name REGEXP <span class="string">&#x27;王&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> name REGEXP <span class="string">&#x27;[王张]&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> name REGEXP <span class="string">&#x27;王|张&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>练习题：</p>
+<h4 id="排序查询">2.3.4 排序查询</h4>
+<p>使用<code>ORDER BY</code>关键字，默认或者<code>ASC</code>表示升序，<code>DESC</code>表示降序</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">ORDER</span> <span class="keyword">BY</span> level;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">ORDER</span> <span class="keyword">BY</span> level <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+<p>练习题：</p>
+<ul>
+<li>按照等级降序排列后，再根据经验升序排序：
+<ul>
+<li><code>SELECT * FROM player ORDER BY level DESC, exp;</code></li>
+</ul></li>
+<li>按照第五列降序排列：
+<ul>
+<li><code>SELECT * FROM player ORDER BY 5 DESC;</code></li>
+</ul></li>
+</ul>
+<h4 id="聚合函数">2.3.5 聚合函数</h4>
+<p>聚合函数是对一组<strong>数据进行计算</strong>的函数，常用的聚合函数有<code>COUNT</code>、<code>SUM</code>、<code>AVG</code>、<code>MAX</code>、<code>MIN</code></p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/aggregate.png" width="50%" height="50%"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> player;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="built_in">AVG</span>(level) <span class="keyword">FROM</span> player;</span><br></pre></td></tr></table></figure>
+<p>**count (*)、count(1)、count(字段名)的区别**：</p>
+<p>在索引下count都不用回表</p>
+<ul>
+<li><code>count(*)</code>：
+<ul>
+<li>count的值：相当于<code>count(0)</code>，会统计所有行数，包括<code>null</code>值</li>
+<li>性能：性能跟<code>count(1)</code>一样，都会优先len最短的二级索引，Ali要求尽量用<code>count(*)</code></li>
+</ul></li>
+<li><code>count(1)</code>：
+<ul>
+<li>count的值：会统计所有行数，包括<code>null</code>值</li>
+<li>性能：性能跟<code>count(*)</code>一样，都会优先len最短的二级索引，Ali要求尽量用<code>count(*)</code></li>
+</ul></li>
+<li><code>count(字段名)</code>：count的是该字段下非NULL的行数
+<ul>
+<li><code>count (主键)</code>：由于主键都是非NULL的，所以<code>count(主键)</code>不用额外判断，性能比<code>count(其他字段)</code>好</li>
+<li><code>count(字段名)</code>：需要进行非NULL判断，性能最差</li>
+</ul></li>
+</ul>
+<p>性能比较：**count(*) = count(1) &gt; count(主键) &gt;
+count(字段名)**</p>
+<h4 id="分组查询">2.3.6 分组查询</h4>
+<p>使用<code>GROUP BY</code>关键字对查询结果进行分组，<code>HAVING</code>关键字对分组后的结果进行过滤</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> sex, <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> player <span class="keyword">GROUP</span> <span class="keyword">BY</span> sex;</span><br><span class="line"><span class="keyword">SELECT</span> level, <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> player <span class="keyword">GROUP</span> <span class="keyword">BY</span> level;</span><br><span class="line"><span class="keyword">SELECT</span> level, <span class="built_in">COUNT</span>(level) <span class="keyword">FROM</span> player <span class="keyword">GROUP</span> <span class="keyword">BY</span> level <span class="keyword">HAVING</span> <span class="built_in">COUNT</span>(level)<span class="operator">&gt;</span><span class="number">4</span>;</span><br><span class="line"><span class="keyword">SELECT</span> level, <span class="built_in">COUNT</span>(level) <span class="keyword">FROM</span> player <span class="keyword">GROUP</span> <span class="keyword">BY</span> level <span class="keyword">HAVING</span> <span class="built_in">COUNT</span>(level) <span class="operator">&gt;</span> <span class="number">4</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> level;</span><br></pre></td></tr></table></figure>
+<h4 id="去重查询">2.3.7 去重查询</h4>
+<p>使用<code>DISTINCT</code>关键字对查询结果进行去重</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">DISTINCT</span> sex <span class="keyword">FROM</span> player;</span><br></pre></td></tr></table></figure>
+<h4 id="并集">2.3.8 并集</h4>
+<p>使用<code>UNION</code>关键字对两个查询结果进行合并（UNION会默认去重，如果不想去重可以使用<code>UNION ALL</code>）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> exp <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">3</span></span><br><span class="line"><span class="keyword">UNION</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> exp <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">3</span></span><br><span class="line"><span class="keyword">UNION</span> <span class="keyword">ALL</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="交集">2.3.9 交集</h4>
+<p>使用<code>INTERSECT</code>关键字对两个查询结果进行交集运算</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> exp <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">3</span></span><br><span class="line"><span class="keyword">INTERSECT</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="差集">2.3.10 差集</h4>
+<p>使用<code>EXCEPT</code>关键字对两个查询结果进行差集运算</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> exp <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">3</span></span><br><span class="line"><span class="keyword">EXCEPT</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="keyword">BETWEEN</span> <span class="number">1</span> <span class="keyword">AND</span> <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="子查询">2.4 子查询</h3>
+<p>子查询是指在<strong>查询语句中嵌套查询语句</strong>，子查询可以嵌套多层，子查询的结果可以是单行单列，也可以是多行多列</p>
+<p>比如，我们需要查找表格中等级大于平均等级的玩家，那么我们可以根据下面的步骤进行：</p>
+<ul>
+<li>先计算平均等级
+<ul>
+<li><code>SELECT AVG(level) FROM player;</code></li>
+</ul></li>
+<li>然后再查询大于平均等级的玩家
+<ul>
+<li><code>SELECT * FROM player WHERE level &gt; (SELECT AVG(level) FROM player);</code></li>
+</ul></li>
+</ul>
+<p>接着，我们还想单独取出表格中<code>level</code>一列，并列出<code>每个玩家的等级-平均等级</code>的值作为单独一列，并给这一列取个别名为<code>diff</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> level, </span><br><span class="line">level<span class="operator">-</span>ROUND((<span class="keyword">SELECT</span> <span class="built_in">AVG</span>(level) <span class="keyword">FROM</span> player)) <span class="keyword">AS</span> diff</span><br><span class="line"><span class="keyword">FROM</span> player;</span><br></pre></td></tr></table></figure>
+<p>可以根据查询结果，将查询结果作为新表格（创建一个新表格或插入其它表格中）：</p>
+<ul>
+<li>创建新表格：
+<ul>
+<li><code>CREATE TABLE new_player (SELECT * FROM player WHERE level &lt; 5);</code></li>
+</ul></li>
+<li>插入其它表格：
+<ul>
+<li><code>INSERT INTO new_player (SELECT * FROM player WHERE level BETWEEN 7 AND 10);</code></li>
+</ul></li>
+</ul>
+<p>用<code>exists</code>关键字来判断<strong>子查询结果</strong>是否存在：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">EXISTS</span> (<span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="operator">&gt;</span> <span class="number">100</span>);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">EXISTS</span> (<span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> level <span class="operator">&gt;</span> <span class="number">20</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="表关联">2.5 表关联</h3>
+<p>表关联是指<strong>将多个表格的数据进行关联</strong>，主要的关键词是<code>JOIN</code>，常用的关联方式有<code>INNER JOIN</code>、<code>LEFT JOIN</code>、<code>RIGHT JOIN</code>、<code>FULL JOIN</code></p>
+<h4 id="内连接">2.5.1 内连接</h4>
+<p><strong>内连接</strong>（<code>INNER JOIN</code>）：只返回两个表格中满足条件的数据（只会显示匹配的数据）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player</span><br><span class="line"><span class="keyword">INNER</span> <span class="keyword">JOIN</span> equip</span><br><span class="line"><span class="keyword">ON</span> player.id <span class="operator">=</span> equip.player_id;</span><br></pre></td></tr></table></figure>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/innerJoin.png"></p>
+<p>内连接方式可以用<code>WHERE</code>关键字来等同实现：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player p, equip e</span><br><span class="line"><span class="keyword">WHERE</span> p.id <span class="operator">=</span> e.player_id;</span><br></pre></td></tr></table></figure>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/innerJoin2.png"></p>
+<h4 id="左连接">2.5.2 左连接</h4>
+<p><strong>左连接</strong>（<code>LEFT JOIN</code>）：返回<strong>左表格</strong>中<strong>所有数据</strong>+右表格中满足条件的数据（会返回左表所有的数据，右表中无匹配的数据则显示<code>NULL</code>）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player</span><br><span class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> equip</span><br><span class="line"><span class="keyword">ON</span> player.id <span class="operator">=</span> equip.player_id;</span><br></pre></td></tr></table></figure>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/leftJoin.png"></p>
+<h4 id="右连接">2.5.3 右连接</h4>
+<p><strong>右连接</strong>（<code>RIGHT JOIN</code>）：返回<strong>右表格</strong>中<strong>所有数据</strong>，左表格中满足条件的数据（会返回右表所有的数据，左表中无匹配的数据则显示<code>NULL</code>）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player</span><br><span class="line"><span class="keyword">RIGHT</span> <span class="keyword">JOIN</span> equip</span><br><span class="line"><span class="keyword">ON</span> player.id <span class="operator">=</span> equip.player_id;</span><br></pre></td></tr></table></figure>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/rightJoin.png"></p>
+<h3 id="索引">2.6 索引</h3>
+<p>索引是对数据库表格中<strong>某列或多列的值进行排序</strong>的一种结构，索引可以大大提高查询效率，如果没有索引，数据库会进行<strong>全表扫描</strong>，效率会很低（创建索引可以提高效率）</p>
+<p>常用的索引有<code>UNIQUE</code>（唯一索引）、<code>FULLTEXT</code>（全文索引）、<code>SPATIAL</code>（空间索引）</p>
+<p>创建索引的通用语法：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> [<span class="keyword">UNIQUE</span><span class="operator">|</span>FULLTEXT<span class="operator">|</span>SPATIAL] INDEX 索引名 <span class="keyword">ON</span> 表名(列名);</span><br></pre></td></tr></table></figure>
+<p>一般会对<strong>主键字段</strong>或者<strong>常用于查询的字段</strong>创建索引</p>
+<ul>
+<li>查看表格当前含有的索引：<code>SHOW INDEX FROM 表名;</code>
+<ul>
+<li><code>SHOW INDEX FROM npc;</code></li>
+<li>可以看到主键<code>id</code>已经有了一个索引</li>
+</ul></li>
+<li>创建索引：<code>CREATE INDEX 索引名 ON 表名(字段名);</code>
+<ul>
+<li><code>CREATE INDEX name_index ON npc(name);</code></li>
+<li>此时再查看索引，可以多了一个<code>name</code>字段的索引</li>
+</ul></li>
+</ul>
+<p>比较有查询和无查询的效率：</p>
+<p>将<code>npc</code>表格copy一份到<code>npc_slow</code>表格中：</p>
+<ul>
+<li><code>CREATE TABLE npc_slow (SELECT * FROM npc);</code></li>
+<li>查询<code>npc_slow</code>表格中是没有任何索引的</li>
+</ul>
+<p>此时对<code>npc</code>表格和<code>npc_slow</code>表格中的<code>id</code>字段进行查询观察区别</p>
+<p>删除索引：<code>DROP INDEX 索引名 ON 表名;</code></p>
+<h3 id="视图">2.7 视图</h3>
+<p>视图是<strong>虚拟的表格</strong>，是一个<strong>查询结果</strong>的存储，包含了<strong>行和列</strong>。（视图不包含数据，只包含查询语句）。由于视图只包含查询语句，因此视图是<strong>动态的</strong>，会随着数据的改变而改变查询结果，每次查询视图时都会执行查询语句。</p>
+<p>创建视图的通用语法：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> 视图名 <span class="keyword">AS</span> 查询语句;</span><br></pre></td></tr></table></figure>
+<p>比如我们想存一个<code>level</code>为top10的玩家视图：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> top10</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">ORDER</span> <span class="keyword">BY</span> level <span class="keyword">DESC</span> LIMIT <span class="number">10</span>;</span><br></pre></td></tr></table></figure>
+<p>然后就可以使用正常的查询语句来查询视图：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> top10;</span><br></pre></td></tr></table></figure>
+<p>修改视图：<code>ALTER VIEW 视图名 AS 查询语句;</code></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">VIEW</span> top10</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">ORDER</span> <span class="keyword">BY</span> level LIMIT <span class="number">10</span>;</span><br></pre></td></tr></table></figure>
+<p>查看已有的视图：<code>SHOW TABLES;</code></p>
+<p>删除视图：<code>DROP VIEW 视图名;</code></p>
+<h2 id="三mysql原理">三、MySQL原理</h2>
+<h3 id="事务">3.1 事务</h3>
+<h4 id="事务的基础概念">3.1.1 事务的基础概念</h4>
+<p>事务是指<strong>一组SQL语句</strong>组成的<strong>操作序列</strong>，这组操作要么全部成功，要么全部失败，事务是数据库管理系统执行的<strong>最小工作单位</strong>。</p>
+<ul>
+<li>如在银行操作中，A转账给B，要经过两个步骤：1. A账户减少金额；2.
+B账户增加金额。这两个步骤要么同时成功(commit)，要么同时失败(rollback全部回滚)。</li>
+</ul>
+<p>事务的四个特性是ACID：<strong>原子性</strong>、<strong>一致性</strong>、<strong>隔离性</strong>、<strong>持久性</strong></p>
+<p><strong>1）原子性（atomicity）-基础</strong>：事务是一个不可分割的工作单位（整体性），要么全部成功，要么全部失败，用<strong>commit</strong>来结束一个事务，由<strong>事务回滚undo日志</strong>来实现</p>
+<p><strong>2）一致性（consistency）-约束条件</strong>：事务执行前后，数据会从一个<strong>语义合法状态</strong>转换到另一个<strong>语义合法状态</strong>，即事务执行前后数据的<strong>完整性约束</strong>没有被破坏（满足现实中的约束）</p>
+<ul>
+<li>如：A有200元（合法），转帐300元出去变成-100元（不合法），这就是不一致的状态，所以必须定义约束就是余额大于等于0</li>
+<li>如：表中把name设置成唯一约束，但是由于事务提交或者回滚导致了重复的name，破坏了约束</li>
+<li>如：A转账100w给B，A扣除100w成功后，服务器宕机了，B没有收到100w，也破坏了完整性约束</li>
+</ul>
+<p><strong>3）隔离性（isolation）-手段</strong>：多个事务之间是相互隔离的，一个事务的执行不会影响其它事务，能够处理并发情况</p>
+<p>隔离性四个级别：<strong>读未提交</strong>、<strong>读已提交</strong>、<strong>可重复读（InnoDB默认的）</strong>、<strong>串行化</strong></p>
+<ul>
+<li><p><strong>脏读</strong>：一个事务读取到另一个事务未提交的数据</p>
+<ul>
+<li>解决：通过<strong>读已提交</strong>级别来解决，保证一个事务内读到的数据起码是已经提交的数据
+<img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/dirty_read.png" width="50%"></li>
+</ul></li>
+<li><p><strong>不可重复读</strong>：一个事务多次读取同一数据，得到两次读取的数据不一致（其他事务更改了该数据）</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/non-repeating0.png" width="50%"></p>
+<ul>
+<li>解决：通过<strong>可重复读</strong>级别来解决，保证一个事务内多次读的数据都是初始读的数据的<strong>快照</strong>
+<img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/non-repeating.png" width="50%"></li>
+</ul></li>
+<li><p><strong>幻读</strong>：幻读是一个事务内多次查询某个符合查询条件的<strong>记录数量</strong>时会出现前后不一样的情况</p>
+<ul>
+<li>解决：通过<strong>串行化</strong>级别来解决，保证事务执行时不会有其他事务的干扰，但是并行能力会降低
+<img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/phantom-reads.png" width="50%"></li>
+</ul></li>
+<li><p><strong>串行化</strong>：最高级别，事务串行执行，通过<strong>锁</strong>来实现</p>
+<ul>
+<li>如：当事务A对某一行数据进行操作且未提交时，事务B想查询该行数据时会<strong>被阻塞</strong>，直到事务A提交或回滚</li>
+</ul></li>
+</ul>
+<p><strong>4）持久性</strong>：事务一旦提交，对数据库的改变是永久性的，通过<strong>日志（redo重做日志-系统崩溃后重做提交的事务，undo回滚日志）</strong>来实现</p>
+<p>四个特性的总结：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">特性</th>
+<th style="text-align: center;">特性得以保证的技术</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">原子性</td>
+<td style="text-align: center;">undo回滚日志</td>
+</tr>
+<tr>
+<td style="text-align: center;">一致性</td>
+<td style="text-align: center;">原子+隔离+持久</td>
+</tr>
+<tr>
+<td style="text-align: center;">隔离性</td>
+<td style="text-align: center;">MVCC多版本并发控制、加锁机制</td>
+</tr>
+<tr>
+<td style="text-align: center;">持久性</td>
+<td style="text-align: center;">redo重做日志</td>
+</tr>
+</tbody>
+</table>
+<p>四个事务隔离级别的总结：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">隔离级别</th>
+<th style="text-align: center;">无脏读</th>
+<th style="text-align: center;">无不可重复读</th>
+<th style="text-align: center;">无幻读</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">读未提交</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">读已提交</td>
+<td style="text-align: center;">√</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">可重复读</td>
+<td style="text-align: center;">√</td>
+<td style="text-align: center;">√</td>
+<td style="text-align: center;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">串行化</td>
+<td style="text-align: center;">√</td>
+<td style="text-align: center;">√</td>
+<td style="text-align: center;">√</td>
+</tr>
+</tbody>
+</table>
+<p><strong>可重复读真的完全可重复读吗？</strong></p>
+<p>由于存在<strong>快照读</strong>和<strong>当前读</strong>，如果前后全部是<strong>快照读</strong>是可以保证<strong>可重复读</strong>的</p>
+<p>但是如果有<strong>当前读</strong>的话，也就是事务中出现了<strong>update、for
+update的写操作</strong>，那么就会出现<strong>不可重复读</strong>的情况</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/repeatable-read.png" width="50%"></p>
+<h4 id="事务的隔离级别">3.1.2 事务的隔离级别</h4>
+<p>上面提到，事务在并发时有<strong>脏读</strong>、<strong>不可重复读</strong>、<strong>幻读</strong>的问题：</p>
+<table>
+<colgroup>
+<col style="width: 5%">
+<col style="width: 22%">
+<col style="width: 72%">
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: center;">并发问题</th>
+<th style="text-align: center;">说明</th>
+<th style="text-align: center;">解决方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">脏读</td>
+<td style="text-align: center;">读到其他事务<strong>未提交的数据</strong></td>
+<td style="text-align: center;">读已提交：每条语句前创建一个<strong>快照</strong></td>
+</tr>
+<tr>
+<td style="text-align: center;">不可重复读</td>
+<td style="text-align: center;">一个事务内前后读的<strong>数据</strong>内容不一样</td>
+<td style="text-align: center;">可重复读：每个事务读到的数据都是初始读的数据的<strong>快照</strong>（MVCC）</td>
+</tr>
+<tr>
+<td style="text-align: center;">幻读</td>
+<td style="text-align: center;">一个事务内前后读的<strong>记录数量</strong>不一样</td>
+<td style="text-align: center;">串行化：事务串行执行，通过<strong>select
+for update的next-key
+lock（行级锁+间隙锁）</strong>来实现（读写冲突时锁住）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Read View在MVCC中的工作原理</strong></p>
+<p>Read View快照中有四个字段：</p>
+<ul>
+<li><code>creator_trx_id</code>：创建该快照的事务ID</li>
+<li><code>m_ids</code>：创建快照时，所有<strong>活跃且未提交的事务</strong>ID</li>
+<li><code>min_trx_id</code>：创建快照时，<strong>活跃且未提交事务中的最小<code>m_ids</code></strong>，<code>trx_id&lt;=min_trx_id</code>的事务都是当前快照可见的</li>
+<li><code>max_trx_id</code>：创建快照时，当前数据库应该<strong>给下一个事</strong>务的ID</li>
+</ul>
+<p>当对某种表进行操作时，会有两个隐藏列，字段为<code>trx_id</code>和<code>roll_pointer</code>
+- <code>trx_id</code>是执行当前事务的事务ID -
+<code>roll_pointer</code>是当前事务的回滚指针，指向一个<strong>undo日志中的旧版本</strong></p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/two-hidden-columns.png" width="50%"></p>
+<p>结合上面快照的几个字段，可以将事务id区分为如下图所示：</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/trx-id.png" width="50%"></p>
+<p>这种就是通过<code>trx_id</code>构成<strong>版本链</strong>控制并发事务对同一个记录的行为，这种叫做<strong>多版本并发控制（MVCC）</strong></p>
+<h4 id="事务的sql举例">3.1.3 事务的sql举例</h4>
+<ul>
+<li>开始事务：<code>START TRANSACTION;</code> 或
+<code>BEGIN;</code></li>
+<li>提交事务：<code>COMMIT;</code></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">USE sqlTest;</span><br><span class="line"></span><br><span class="line">CREATE TABLE user(</span><br><span class="line">name VARCHAR(15) PRIMARY KEY,</span><br><span class="line">age INT</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">BEGIN;</span><br><span class="line"></span><br><span class="line">SELECT COUNT(*) FROM user;</span><br><span class="line"></span><br><span class="line">INSERT INTO user VALUES(&#x27;akira&#x27;, 19);</span><br><span class="line">INSERT INTO user VALUES(&#x27;yangnan&#x27;, 18);</span><br><span class="line"></span><br><span class="line">SELECT * FROM user WHERE name=&#x27;akira&#x27;;# 同一事务内可以查询到更改</span><br><span class="line"></span><br><span class="line">SELECT COUNT(*)FROM user;</span><br><span class="line"></span><br><span class="line">COMMIT;</span><br></pre></td></tr></table></figure>
+<h3 id="锁">3.2 锁</h3>
+<p><strong>全表扫描</strong>时会对表中<strong>每一条数据加锁</strong></p>
+<h4 id="锁的基础概念">3.2.1 锁的基础概念</h4>
+<p>并发情况下的加锁方案：</p>
+<ul>
+<li>方案一：<strong>读用MVCC，写用加锁</strong>，读的可能是旧版本，但是性能更高</li>
+<li>方案二：<strong>读写都用加锁</strong>，读写都是最新版本</li>
+</ul>
+<h5 id="全局锁read-lock">1）全局锁<code>READ LOCK</code></h5>
+<p>整个数据库处于<strong>只读</strong>状态，适用于做<strong>全库备份</strong></p>
+<ul>
+<li>失效的操作：<code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code>、<code>ALTER</code>、<code>DROP</code>等(数据增删改、表结构变更)</li>
+<li>加锁：<code>FLUSH TABLES WITH READ LOCK;</code></li>
+<li>解锁：<code>UNLOCK TABLES;</code></li>
+</ul>
+<h5 id="表级锁">2）表级锁</h5>
+<p>读写锁：</p>
+<ul>
+<li><strong>表级读锁-读共享锁-S锁</strong>：<code>LOCK TABLES table_name READ;</code>
+<ul>
+<li>加读锁的作用是<strong>防止其他事务对表进行写操作</strong>，但是不阻止其他事务对表进行读操作</li>
+</ul></li>
+<li><strong>表级写锁-写独占锁-X锁</strong>：<code>LOCK TABLES table_name WRITE;</code>
+<ul>
+<li>加写锁的作用是防止其他事务对表进行<strong>读写操作</strong></li>
+</ul></li>
+</ul>
+<p>意向锁：意向锁与<strong>行级锁</strong>不冲突，表示有意向对表中的某些行加锁。正因为如此，意向锁并<strong>不会影响到多个事务对不同数据行加排他锁时的并发性</strong></p>
+<p>作用：意向锁的目的是为了快速判断表里是否有记录被加锁，从而避免了直接对表加锁，提高了并发性</p>
+<ul>
+<li><strong>意向共享锁-IS</strong>：<code>select ... lock in share mode;</code>
+<ul>
+<li>用于<strong>表级锁</strong>，表示<strong>准备对表进行读操作</strong>，但是不会立即加锁，只是表示<strong>准备加锁</strong>，如果有<strong>写锁</strong>则会等待</li>
+</ul></li>
+<li><strong>意向独占锁-IX</strong>：<code>select ... for update;</code>
+<ul>
+<li>用于<strong>表级锁</strong>，表示<strong>准备对表进行写操作</strong>，但是不会立即加锁，只是表示<strong>准备加锁</strong></li>
+</ul></li>
+</ul>
+<h5 id="行级锁">3）行级锁</h5>
+<p>普通的<code>select</code>语句属于快照读，不会加锁，因此需要在查询语句中手动进行加锁</p>
+<p>行级锁的实现语句也是<code>select ... for update;</code>，表示<strong>对查询到的行加锁</strong>，加完锁后其他事务就无法对加锁的行进行<strong>更新/删除/插入</strong>操作了</p>
+<p>行级锁一般有三种，行级锁的加锁对象一般是<strong>索引</strong>：</p>
+<ul>
+<li><code>Record Lock</code>：记录锁，锁住某一行（一条）数据
+<ul>
+<li><code>select * from user where id=1 for update;</code>，其中id为主键</li>
+</ul></li>
+<li><code>Gap Lock</code>：间隙锁，锁住某一行数据之间的间隙，区间是<strong>前开后开</strong>
+<ul>
+<li>假设有一个范围为(3,5)的间隙锁区间，其他事务无法插入id=4的记录，可以有效<strong>防止幻读</strong></li>
+</ul></li>
+<li><code>Next-Key Lock</code>：行锁+间隙锁，锁住某一行数据和其之间的间隙，区间是<strong>前开后闭</strong>，在一些情况下会退化成<strong>记录锁/间隙锁</strong>
+<ul>
+<li>假设有一个范围为(3,5]的间隙锁区间，其他事务无法插入id=4的记录，也无法修改id=5的记录</li>
+<li>假设<code>select * from user where id &gt;= 15</code>则会锁住(15,+∞]的区间</li>
+</ul></li>
+</ul>
+<h4 id="死锁的出现与解决">3.2.2 死锁的出现与解决</h4>
+<p>出现死锁的四个条件：<strong>互斥、占有并等待、不可抢占、循环等待</strong></p>
+<p>死锁的出现：事务1和事务2都在等对方释放锁</p>
+<p>死锁的排查：<code>SHOW ENGINE INNODB STATUS;</code>，查看死锁日志</p>
+<p>死锁的解决：</p>
+<ul>
+<li><strong>超时机制</strong>：设置一个超时时间，如果超过这个时间还没有解锁，则自动解锁</li>
+<li><strong>死锁检测</strong>：检测到死锁后，自动回滚一方的事务</li>
+<li><strong>尽量不要逆序加锁</strong></li>
+</ul>
+<p>下面举一个逆序加锁的例子：</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/deadlock.png" width="80%"></p>
+<h3 id="约束">3.3 约束</h3>
+<h4 id="主键约束primary-key">1）主键约束：<code>PRIMARY KEY</code></h4>
+<ul>
+<li>可以有一列或者多列组合但是必须是唯一组合，主键是表格中的<strong>唯一标识</strong></li>
+<li>一个表格只能有<strong>一个主键</strong></li>
+<li>主键<strong>不能为<code>NULL</code></strong></li>
+</ul>
+<p>单一主键可以在创建该列时添加，也可以在<code>CREATE TABLE</code>的末尾添加：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> users(</span><br><span class="line">   user_id <span class="type">INT</span> AUTO_INCREMENT <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">   username <span class="type">VARCHAR</span>(<span class="number">40</span>),</span><br><span class="line">   password <span class="type">VARCHAR</span>(<span class="number">255</span>),</span><br><span class="line">   email <span class="type">VARCHAR</span>(<span class="number">255</span>)</span><br><span class="line">); </span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> users(</span><br><span class="line">   user_id <span class="type">INT</span> AUTO_INCREMENT,</span><br><span class="line">   username <span class="type">VARCHAR</span>(<span class="number">40</span>),</span><br><span class="line">   password <span class="type">VARCHAR</span>(<span class="number">255</span>),</span><br><span class="line">   email <span class="type">VARCHAR</span>(<span class="number">255</span>),</span><br><span class="line">   <span class="keyword">PRIMARY</span> KEY(user_id)</span><br><span class="line">); </span><br></pre></td></tr></table></figure>
+<p>而多列主键只能在<code>CREATE TABLE</code>的末尾添加：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> user_roles(</span><br><span class="line">   user_id <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">   role_id <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">   <span class="keyword">PRIMARY</span> KEY(user_id,role_id),</span><br><span class="line">   <span class="keyword">FOREIGN</span> KEY(user_id) <span class="keyword">REFERENCES</span> users(user_id),</span><br><span class="line">   <span class="keyword">FOREIGN</span> KEY(role_id) <span class="keyword">REFERENCES</span> roles(role_id)</span><br><span class="line">); </span><br></pre></td></tr></table></figure>
+<h4 id="外键约束foreign-key">2）外键约束：<code>FOREIGN KEY</code></h4>
+<p>MySQL的外键约束用来在两个表数据之间建立链接，其中一张表的一个字段被另一张表中对应的字段约束。也就是说，设置外键约束至少要有两种表，被约束的表叫做从表（子表），另一张叫做主表（父表），属于主从关系。</p>
+<p>关于保证表的完整性可以用以下例子说明：</p>
+<p>假如有两种表，一张用户账户表（用于存储用户账户），一张是账户信息表（用于存储账户中的信息）。</p>
+<p>1）我不小心将用户账户表中的某个用户删除了，那么账户信息表中与这个用户有关的数据就变成无源数据了，找不到其属于哪个用户账户，导致用户信息不完整。</p>
+<p>2）我在账户信息表中随便添加了一条数据，而其在用户账户表中没有对应的用户，这样用户信息也是不完整的。</p>
+<p>为了解决这个问题，我们可以在账户信息表中添加一个外键约束，这个外键约束指向用户账户表中的用户ID，这样就可以保证账户信息表中的数据是完整的。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> users(</span><br><span class="line">   user_id <span class="type">INT</span> AUTO_INCREMENT <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">   username <span class="type">VARCHAR</span>(<span class="number">40</span>),</span><br><span class="line">   password <span class="type">VARCHAR</span>(<span class="number">255</span>),</span><br><span class="line">   email <span class="type">VARCHAR</span>(<span class="number">255</span>)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> user_roles(</span><br><span class="line">   user_id <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">   role_id <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">   <span class="keyword">PRIMARY</span> KEY(user_id,role_id),</span><br><span class="line">   <span class="keyword">FOREIGN</span> KEY(user_id) <span class="keyword">REFERENCES</span> users(user_id),</span><br><span class="line">   <span class="keyword">FOREIGN</span> KEY(role_id) <span class="keyword">REFERENCES</span> roles(role_id)</span><br><span class="line">); </span><br></pre></td></tr></table></figure>
+<h4 id="唯一约束unique">3）唯一约束：<code>UNIQUE</code></h4>
+<p>唯一约束保证了列中的所有数据是唯一的，但是可以有<code>NULL</code>值</p>
+<p>唯一性约束同样可以对单列或者多列进行约束：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> table_1(</span><br><span class="line">   ...</span><br><span class="line">   column_name_1 data_type,</span><br><span class="line">   ...</span><br><span class="line">   <span class="keyword">UNIQUE</span>(column_name_1)</span><br><span class="line">); </span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> table_1(</span><br><span class="line">   ...</span><br><span class="line">   column_name_1 data_type,</span><br><span class="line">   column_name_2 data_type,</span><br><span class="line">   ...</span><br><span class="line">   <span class="keyword">UNIQUE</span>(column_name_1,column_name_2)</span><br><span class="line">); </span><br></pre></td></tr></table></figure>
+<h3 id="三大范式">3.4 三大范式</h3>
+<p><strong>1）第一范式</strong>：每一列都是不可再分的最小单元，即每一列都是原子的，不可再分</p>
+<p>比如，我们在课程表中有一个<code>tags</code>字段，但是tags是多个标签组成的，不符合第一范式</p>
+<p>解决：我们可以将<code>tags</code>字段拆分成多个字段，比如<code>tag1</code>、<code>tag2</code>、<code>tag3</code>等存在一个<code>tags</code>表中</p>
+<p>这里就涉及表之间的<strong>链接表</strong>来实现，链接表通常是一个<strong>多对多</strong>的关系，包含两个表的<code>id</code>字段，比如<code>course_id</code>和<code>tag_id</code></p>
+<p><strong>2）第二范式</strong>：表中的每一列都与主键相关，即表中的每一列都是完全依赖于主键的，而不是依赖于主键的一部分</p>
+<p>第二范式要求如果某一列数据表示的内容不属于这个表的实体，那么这个列就应该独立出来，成为一个新的表，然后通过关联来连接这两个表</p>
+<p>以下面的例子为例，如果name不单独作为一张表记录，那么当用户名更改时，所有name的记录都需要更改；且重复存储char会浪费空间</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/2NF.png" width="80%"></p>
+<p><strong>3）第三范式</strong>：表中的每一列都与主键直接相关，而不是间接相关</p>
+<p>如一个表中有<code>invoice_total</code>、<code>payment_total</code>、<code>balance</code>三个字段</p>
+<p>其中<code>balance</code>字段是通过<code>invoice_total</code>和<code>payment_total</code>计算得到的</p>
+<p>那么<code>balance</code>字段就不符合第三范式，如果修改了<code>invoice_total</code>或者<code>payment_total</code>，那么<code>balance</code>字段忘记修改就会出现问题</p>
+<p>解决：删掉<code>balance</code>字段</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/3NF.png" width="80%"></p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/3NF_2.png" width="80%"></p>
+<h3 id="索引ologn">3.5 索引：O(logn)</h3>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ADD</span> INDEX index_name (`age`);# 单一索引</span><br><span class="line"><span class="keyword">ADD</span> INDEX index_name (`age`, `name`);# 联合索引</span><br></pre></td></tr></table></figure>
+<p><strong>为什么要建立索引？</strong></p>
+<p>如果没建立索引，那么查询数据时聚簇索引只有主键，因此其他字段的查询是<strong>全表扫描</strong>，时间复杂度是<code>O(n)</code></p>
+<p>而建立索引后，可以通过索引进行<strong>二分查找</strong>，时间复杂度是<code>O(logn)</code></p>
+<h4 id="b树索引">3.5.1 B+树索引</h4>
+<p><strong>1）比较使用其他数据结构</strong></p>
+<ul>
+<li>二叉查找树：解决了<strong>插入和查找</strong>问题，但是当所有插入的值都是最大值时会退化成<strong>链表</strong>，查询效率又退化成<code>O(n)</code>而非<code>O(logn)</code>;树的高度高，磁盘I/O次数多</li>
+<li>平衡二叉树（如红黑树）：控制<strong>左子树和右子树的高度差不能超过1</strong>，解决链表退化问题，但是依然是二叉树（二叉树每个节点只能有左右两个子节点），高度依然很高</li>
+<li>B树：<strong>每个子节点可以有M个节点</strong>，降低了树的高度，但是每个节点<strong>都会存所有数据</strong>（不仅存索引值），浪费空间（B树查询时间比B+树短一些）</li>
+<li>B+树：<strong>非叶子节点只存索引</strong>，<strong>叶子节点存所有数据，以有序链表的形式构成（InnoDB用双向链表）</strong>，<strong>叶子节点之间有指针相连</strong>，降低了树的高度，减少了磁盘I/O次数；且相比B树，B+树有很多冗余节点，<strong>插入、删除和范围查询（因为有有序的叶子节点链表）</strong>更简单</li>
+</ul>
+<p><strong>2）B+树的特点</strong></p>
+<p>MySQL的数据（索引+记录）的存储是持久化在磁盘的，所以如果单纯靠磁盘读取查询的话速度很慢，通常需要将磁盘中的数据先读取到内存中，所以要求数据结构的树高度尽量低，这样可以减少磁盘I/O次数</p>
+<p>索引通过<strong>B+树</strong>作为数据结构存储数据，能够快速定位到数据，<strong>提高查询效率</strong>。索引的原理是在<strong>插入和更新</strong>时会先对数据进行排序，因此会影响插入和更新的效率</p>
+<p>B+树的特点：B+树比红黑树的排序效率高，他是<strong>基于磁盘（磁盘页16K）的平衡树</strong>，具有<strong>通过增加宽度减少高度</strong>的特点，减少磁盘I/O次数。且排序后的数据全部放在<strong>叶子节点</strong>上，非叶子节点只存储索引。</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/B+tree.png" width="80%"></p>
+<p><strong>3）优化B+树的插入速度</strong></p>
+<p>如果插入是<strong>顺序插入</strong>的话，B+树的插入速度会很高，因为顺序插入不会导致树的平衡性被破坏，只需要在叶子节点上插入即可（如果非顺序需要经历<strong>分裂</strong>、<strong>旋转</strong>等操作）</p>
+<p>所以一般会用<strong>自增id</strong>等有顺序的值作为主键。</p>
+<h4 id="索引的类型">3.5.2 索引的类型</h4>
+<h5 id="聚簇索引只有一个">1）聚簇索引：只有一个</h5>
+<p>聚簇索引是一种<strong>数据存储方式，是针对主键搭建的B+树</strong>，中间节点存<strong>主键值和页码</strong>，叶子节点存<strong>主键值+所有完整数据本身</strong>，在InnoDB中不需要显示用<code>INDEX</code>创建索引，天然在创建含主键的表时就会生成，要求尽量用<strong>自增id</strong>作为主键</p>
+<p>由于聚餐索引也是数据物理存储的方式，因此<strong>一个表只有一个聚簇索引（这里也对应了一个表只能有一个主键）</strong>，如果没有主键也没有唯一索引，Innodb会自动隐式定义一个</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/clustered-index.png" width="80%"></p>
+<h5 id="二级索引非聚簇索引可以有多个">2）二级索引（非聚簇索引）：可以有多个</h5>
+<p>二级索引的叶子节点存数据时只存储<strong>索引值和主键值，而不是表中的所有数据，并按照索引值作为排序</strong>，因此在查询时需要先通过二级索引找到主键值，再通过主键值找到数据（也就是<strong>回表</strong>），所以二级索引的查询效率比聚簇索引低</p>
+<p>聚簇索引与二级索引的比较：聚簇索引查询速度更快（不用回表），但是插入、更新、删除速度慢（因为任何字段的更改都会影响到聚簇索引）</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/secondary-index.png" width="80%"></p>
+<h5 id="联合索引多个字段组合可以有多个">3）联合索引：多个字段组合，可以有多个</h5>
+<p>联合索引根据从左到右的顺序建立，左边字段的排序优先于右边字段，联合索引的叶子节点存储的是<strong>联合索引字段的值+主键值</strong>，依然需要回表</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/union-index.png" width="80%"></p>
+<p><strong>索引覆盖：</strong></p>
+<p>如果<strong>查询的字段在全部在联合索引叶子结点</strong>中，那么可以直接通过索引找到数据，不需要回表，这种情况叫做<strong>索引覆盖</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># 假设表中有字段：name、age、sex，联合索引为(age,sex)</span><br><span class="line"></span><br><span class="line"># <span class="number">1.</span> 回表索引：选择的列联合索引不能完全包含，需要回表</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> age <span class="operator">=</span> <span class="number">12</span>;</span><br><span class="line"><span class="keyword">SELECT</span> name <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> age <span class="operator">=</span> <span class="number">12</span>;</span><br><span class="line"></span><br><span class="line"># <span class="number">2.</span> 索引覆盖：选择的列联合索引完全包含，不需要回表</span><br><span class="line"><span class="keyword">SELECT</span> age <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> age <span class="operator">=</span> <span class="number">12</span>;</span><br><span class="line"><span class="keyword">SELECT</span> age <span class="keyword">FROM</span> player <span class="keyword">WHERE</span> age <span class="operator">=</span> <span class="number">12</span> <span class="keyword">AND</span> sex <span class="operator">=</span> <span class="string">&#x27;男&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><strong>最左匹配原则：</strong></p>
+<p>如果查询条件中包含了<strong>联合索引的前缀</strong>，那么可以使用联合索引，否则无法使用</p>
+<p>联合索引启用的时机：比如有字段<code>(name,age,sex)</code>组成的联合索引，最左的原则就是<code>name-&gt;age-&gt;sex</code>，当查询条件中包含<code>name</code>和<code>age</code>时（允许<code>name</code>和<code>age</code>的顺序可以颠倒），可以使用联合索引，但是如果只包含<code>age</code>和<code>sex</code>时，因为缺少最左的<code>name</code>字段，无法使用联合索引</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/left-match.png" width="80%"></p>
+<h5 id="三种索引总结">4）三种索引总结</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">索引类型</th>
+<th style="text-align: center;">叶子节点存数据</th>
+<th style="text-align: center;">查询效率</th>
+<th style="text-align: center;">插删改效率</th>
+<th style="text-align: center;">回表</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">聚簇索引</td>
+<td style="text-align: center;">主键值+所有数据</td>
+<td style="text-align: center;">高</td>
+<td style="text-align: center;">较低</td>
+<td style="text-align: center;">无</td>
+</tr>
+<tr>
+<td style="text-align: center;">二级索引</td>
+<td style="text-align: center;">索引值+主键值</td>
+<td style="text-align: center;">较低</td>
+<td style="text-align: center;">高</td>
+<td style="text-align: center;">覆盖查询无，否则有</td>
+</tr>
+<tr>
+<td style="text-align: center;">联合索引</td>
+<td style="text-align: center;">索引值+主键值</td>
+<td style="text-align: center;">较低</td>
+<td style="text-align: center;">高</td>
+<td style="text-align: center;">覆盖查询无，否则有</td>
+</tr>
+</tbody>
+</table>
+<h4 id="索引失效">3.5.3 索引失效</h4>
+<p>当索引失效时会采用全表扫描，效率会降低</p>
+<p><strong>1）模糊查询</strong></p>
+<p>当使用模糊查询模糊查找后面的字符，如<code>like %xx</code>或者<code>like %xx%</code>而不是从开头第一个字符开始查询时，索引会失效</p>
+<p><strong>2）表达式计算</strong></p>
+<p>当查询条件中有表达式计算时，如<code>where age+1=12</code>，索引会失效</p>
+<p><strong>3）数据类型隐式转换</strong></p>
+<p>如<code>phoneNum</code>在表中用<code>varchar</code>存储，但是查询时用<code>int</code>类型，会导致索引失效</p>
+<p><strong>4）联合索引非最左匹配</strong></p>
+<h4 id="索引设计原则用还是不用">3.5.4 索引设计原则：用还是不用？</h4>
+<p><strong>1）什么情况下适合加索引</strong></p>
+<ul>
+<li><strong>主键</strong>：主键是表的唯一标识，必须加索引</li>
+<li><strong>唯一性约束（区分度高的列）</strong>：如学号具有唯一性，必须加索引来加快查询</li>
+<li><strong>频繁用于WHERE查询（特别是update、delete的WHERE查询）</strong>：如果某个字段经常用于查询，可以加索引</li>
+<li><strong>经常用DISTINCT（去重）、GROUP
+BY</strong>：相同的组成一组（相同的自然就排序会排一起）</li>
+<li><strong>经常用ORDER BY</strong>：索引天生适合order排序</li>
+<li><strong>经常用于多表JOIN连接查询</strong>：如外键<code>ON a.id=b.id</code>，可以对<code>id</code>加索引，这里跟<code>WHERE</code>的原因类似</li>
+<li><strong>字符串前缀创建索引</strong>：如使用模糊查询<code>like 'xx%'</code>时，可以截取前面一段<code>xx</code>作为索引，加快查询
+<ul>
+<li><code>ALTER table shop ADD INDEX address_index (address(10));</code></li>
+<li>区分度原则：<code>select count(distinct a)/count(*) from shop;</code>计算区分度，一般超过30%就算比较高效的索引</li>
+</ul></li>
+</ul>
+<p><strong>2）什么情况下不适合加索引</strong></p>
+<ul>
+<li><strong>在WHERE中使用不到的不用创造索引</strong></li>
+<li><strong>数据量小的表不需要加索引</strong>：少于1000行的表不需要加索引（回表、索引占用磁盘等问题都会影响性能）</li>
+<li><strong>有大量数据重复的列，区分度不高的列不适合加索引</strong>：如性别、是否等等</li>
+<li><strong>频繁更新的字段不适合加索引</strong>：因为每次更新都会更新索引，影响性能(如用户余额不适合加索引)</li>
+<li><strong>经常更新的表不适合加索引</strong>：因为每次更新都会更新索引，影响更新速度</li>
+<li><strong>不建议用无序的值作为索引</strong>：因为B+树更适合升序排列，插入无序的值会破坏平衡，需要经常进行<strong>分裂</strong>、<strong>旋转</strong>等操作</li>
+</ul>
+<h4 id="两千万数据需要多高的树">3.5.5 两千万数据需要多高的树</h4>
+<p>记：MySQL中，<strong>1页=16KB；主键为bigint类型一般占8Bytes；页号一般为4Bytes</strong></p>
+<p><strong>1）计算索引层两层存多少个索引</strong></p>
+<ul>
+<li>第一层：
+<ul>
+<li>每个索引包括：<strong>索引值+页号</strong>，即8+4=12Bytes</li>
+<li>一页可以存储：16KB/12Bytes=1333个索引</li>
+</ul></li>
+<li>第二层：
+<ul>
+<li>第一层中每个索引可以对应第二层的一页数据，即1333个索引对应1333个页</li>
+<li>1333个页可以存储：1333*1333=1776889个索引</li>
+</ul></li>
+</ul>
+<p><strong>2）计算叶子节点层可以存储多少个实际数据</strong></p>
+<p>叶子节点中，每个节点存储的数据为<strong>一行数据</strong>，假设一行数据为<strong>1KB</strong>，则一页可以存储<strong>16KB/1KB=16行数据</strong></p>
+<p>在第二层中的1776889个索引对应1776889个页，而每个索引对应一页叶子结点，也就是每个索引对应16行数据</p>
+<p>所以总共可以存储**1776889*16=28430224行数据**</p>
+<p><strong>3）总结</strong></p>
+<p>因此两千万级别的数据需要树的高度为<strong>3层</strong></p>
+<h4 id="索引优化">3.5.6 索引优化</h4>
+<p><strong>1）索引覆盖</strong></p>
+<p>尽量通过<strong>联合索引</strong>覆盖所有要查询的字段，减少回表</p>
+<p><strong>2）主键自增</strong></p>
+<p>主键索引采用自增字段可以减少<strong>页分裂，提高插入效率</strong></p>
+<p><strong>3）删除不常用的索引</strong></p>
+<p>通过<code>show index from table_name;</code>查看索引，删除不常用的索引</p>
+<p><strong>4）减少索引失效</strong></p>
+<p>在MySQL中，如果遇到字符串跟数字比较，<strong>会把字符串自动转换成数字</strong>再比较</p>
+<ul>
+<li>情况一：索引的字段是字符串，查询条件误写成数字
+<ul>
+<li>分析：由于触发<strong>字符串自动转换成数字</strong>，在该案例上<strong>索引的值正好是字符串</strong>，所以相当于该字段进行函数操作了，导致<strong>索引失效</strong></li>
+</ul></li>
+<li>情况二：索引的字段是数字，查询条件误写成字符串
+<ul>
+<li>分析：由于触发<strong>字符串自动转换成数字</strong>，也就是将查询条件转换成数字，不影响索引字段，因此<strong>索引有效</strong></li>
+</ul></li>
+</ul>
+<h3 id="日志">3.6 日志</h3>
+<p>MySQL的操作是先写<strong>日志</strong>，再写<strong>磁盘</strong>，这样可以保证数据的<strong>持久性</strong>，即使数据库崩溃，也可以通过日志来恢复数据</p>
+<ul>
+<li><code>undo log</code>记录的是<strong>此次事务执行前</strong>的数据状态</li>
+<li><code>redo log</code>记录的是<strong>此次事务执行后</strong>的数据状态，用于重启后的回滚</li>
+</ul>
+<h4 id="慢查询日志用于优化">3.6.1 慢查询日志：用于优化</h4>
+<p>可以用于SQL语句优化的</p>
+<p><strong>定位慢查询语句</strong></p>
+<p>用于找到执行较慢的sql语句，在调优时手动打开慢查询日志（平时默认关闭，可以减少存慢查询日志的操作）</p>
+<p>查看是否开启慢查询日志：<code>show variables like '%long_query_time%';</code></p>
+<p>开启慢查询日志：<code>set global long_query_time=1;</code></p>
+<p>查看慢查询日志的路径：<code>show variables like '%Slow_queries%';</code></p>
+<p>慢查询分析工具：<code>mysqldumpslow -a -s t -t 10 /var/log/mysql/mysql-slow.log</code>定位具体的查询语句，然后用<code>explain</code>和<code>show profile</code>查看执行计划并优化</p>
+<p><strong>1）SQL语句优化</strong></p>
+<ul>
+<li><strong>减少磁盘I/O</strong>：
+<ul>
+<li>尽量<strong>使用索引</strong>，减少全表扫描</li>
+<li>通过二级索引查询时尽量使用<strong>索引覆盖，也就是只查询索引包含的字段</strong>，也可以给经常查询的字段添加<strong>联合索引</strong>增加字段，减少回表</li>
+</ul></li>
+<li><strong>减少内存消耗</strong>：
+<ul>
+<li><strong>减少排序、分组等操作</strong>，尽量<strong>使用索引排序</strong></li>
+<li><strong>减少事务持有锁的时间</strong>（如先执行不加锁的查询语句，再执行加锁的更新语句）</li>
+</ul></li>
+<li><strong>分批处理、增加redis热词缓存、主从复制从库负责读（分担主库压力）</strong></li>
+</ul>
+<p><strong>2）多表关联查询的优化：小表驱动大表</strong></p>
+<p>左连接：</p>
+<ul>
+<li>在<code>SELECT * FROM a LEFT JOIN b ON a.id=b.id</code>中的<strong>被驱动表</strong><code>b</code>上的字段<code>id</code>加索引，可以加快查询速度
+<ul>
+<li><code>CREATE INDEX idx_b_id ON b(id);</code></li>
+</ul></li>
+<li>设计多表连接时<strong>ON</strong>连接的两个<strong>字段类型需要设计成相同</strong>，否则会导致<strong>索引失效</strong></li>
+</ul>
+<p>内连接：只会返回两个表中<strong>交集</strong>的数据，随便哪个字段做索引都可以，有索引的表会自动成为<strong>被驱动表</strong></p>
+<p><strong>3）子查询优化：避免子查询</strong></p>
+<p>子查询会建立<strong>临时表</strong>，而临时表<strong>无法建立索引</strong>，且<strong>创建和销毁</strong>临时表会消耗资源(CPU、IO)，所以尽量<strong>避免子查询</strong></p>
+<ul>
+<li>用<strong>JOIN</strong>代替子查询</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># 任务：查询所有班长</span><br><span class="line"># 子查询</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> FORM student stu1</span><br><span class="line"><span class="keyword">WHERE</span> stu1.stuID <span class="keyword">IN</span> (</span><br><span class="line">    <span class="keyword">SELECT</span> monitorID <span class="keyword">FROM</span> class</span><br><span class="line">    <span class="keyword">WHERE</span> monitorID <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"># <span class="keyword">JOIN</span></span><br><span class="line"><span class="keyword">SELECT</span> stu.<span class="operator">*</span> <span class="keyword">FROM</span> student stu <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> class c</span><br><span class="line"><span class="keyword">ON</span> stu.stuID <span class="operator">=</span> c.monitorID</span><br><span class="line"><span class="keyword">WHERE</span> c.monitorID <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>;</span><br></pre></td></tr></table></figure>
+<p><strong>4）排序优化：加索引(分组也类似)</strong></p>
+<ul>
+<li>在<strong>ORDER
+BY</strong>的字段上加<strong>索引</strong>，索引本身就是有序的</li>
+<li>尽量增加<strong>limit</strong>限制，减少排序的数据量</li>
+<li><code>ORDER BY</code>的顺序满足<strong>联合索引的最左匹配原则</strong>，否则联合索引会失效</li>
+</ul>
+<p>GROUP
+BY的优化：where效率高于having，所以尽量在where中过滤数据不用分组语句</p>
+<p><strong>5）分页优化</strong></p>
+<p>在执行<code>SELECT * FROM student LIMIT 2000000,10</code>时，会先查询出2000010条数据，然后再取出10条，这样会消耗大量的资源</p>
+<p>解决思路：尽量往主键索引靠，减少回表浪费前面查询的资源</p>
+<ul>
+<li><code>student</code>表中的<code>id</code>字段作为自增主键，然后<code>SELECT * FROM student WHERE id &gt; 2000000 LIMIT 10</code>就不用再回表</li>
+</ul>
+<p><strong>6）sql和索引都没问题：分批查询、分库分表、主从读写分离、缓存</strong></p>
+<h4 id="undolog回滚日志">3.6.2 undolog回滚日志</h4>
+<p>undolog存在<strong>Buffer
+Pool</strong>中，也就是内存中，属于脏页数据，它的持久化是通过<strong>redo
+log</strong>来保证的</p>
+<p>回滚日志是用于当<strong>服务器崩溃或者事务回滚</strong>时，通过执行<strong>相反的操作</strong>来恢复数据的日志。</p>
+<p>比如事务中<strong>删除一条数据</strong>，那么回滚日志就会记录一条<strong>插入</strong>操作</p>
+<p>同时通过回滚版本链可以在MVCC中用于创建某个旧版本的<strong>快照</strong></p>
+<p><code>undo-log</code>中记录的是旧版本的数据并形成<strong>数据版本链</strong>：</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/undo-log.png" width="50%"></p>
+<h4 id="redolog重做日志">3.6.3 redolog重做日志</h4>
+<p>不同于undolog，redo
+log是<strong>磁盘</strong>上的<strong>物理日志</strong>，用于<strong>系统崩溃后重做提交的事务</strong>，但是也是先写进<strong>redo-log
+buffer</strong>，再写进<strong>磁盘</strong>的</p>
+<p><code>redo log</code> 也是为了防止 <code>Buffer Pool</code>
+中的脏页丢失而设计的(只记录未被刷盘的数据的物理日志)</p>
+<p>由于<code>redo log</code>是顺序写，所以写的速度比实际数据随机落盘快，同时由于其对数据恢复很重要，所以他的刷盘时机也有讲究：</p>
+<p><strong>1）内存中的redo log buffer刷盘时机</strong></p>
+<ul>
+<li>redo log内存buffer满了，会刷盘</li>
+<li>MySQL正常关闭</li>
+<li>定时每<code>1s</code>刷盘一次</li>
+<li>每次<strong>事务提交</strong>时刷盘</li>
+</ul>
+<p>其中<strong>事务提交</strong>时有三种刷屏方式可选择：</p>
+<ul>
+<li>commit时不刷盘</li>
+<li>commit时将数据从用户态刷到内核态的page cache中但是不刷盘</li>
+<li>commit时将数据刷盘到磁盘中持久化</li>
+</ul>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/redo-log-buffer.png" width="50%"></p>
+<p><strong>2）磁盘中的redo log循环写</strong></p>
+<p><code>redo log</code>是<strong>循环写进本地磁盘</strong>的，写满会覆盖，所以<code>redo log</code>的大小是固定的，可以通过<code>innodb_log_file_size</code>来设置</p>
+<p>循环写时<code>write pos</code>顺时针移动，当<code>write pos</code>追上<code>checkpoint</code>时就是满了，此时MySQL的所有操作都会被阻塞，通过<code>checkpoint</code>顺时针移动来实现擦除
+- <img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/redo-log.png" width="50%"></p>
+<p>其中<strong>蓝色区域</strong>代表数据还<strong>未写进本地表数据文件</strong>中，<strong>红色区域</strong>代表数据<strong>已经落盘</strong></p>
+<h4 id="binlog二进制日志">3.6.4 binlog二进制日志</h4>
+<p>binlog是在事务提交后记录<strong>表结构更新</strong>和<strong>数据更新</strong>的日志，不记录<strong>查询</strong>的日志</p>
+<p>相比<code>redo log</code>，<code>binlog</code>是<strong>全量日志，写满会追加写</strong>，而<code>redo log</code>是<strong>循环写</strong>，写满会覆盖</p>
+<p><strong>1）binlog实现主从复制：实现读写分离</strong></p>
+<p><strong>mysql的主从设置可以通过中间件（如mycat）设置规则</strong></p>
+<p>实际中考虑I/O限制，一般会有<strong>1主2~3从</strong>的架构，并采用<strong>异步复制</strong>，即主库提交事务后不等待从库的返回，直接返回给客户端</p>
+<ul>
+<li>step1：MySQL提交事务请求给主库后，主库会先写<code>binlog</code>后再更新本地存储数据</li>
+<li>step2：然后<code>binlog</code>会发送复制给所有从库上写到<code>relay log</code>中继日志</li>
+<li>step3：从库读取<code>relay log</code>，然后写入本地<code>binlog</code>，再更新本地存储数据</li>
+</ul>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/binlog.png" width="70%"></p>
+<p><strong>2）事务提交的两阶段提交</strong></p>
+<p>原因：<code>redo log</code>和<code>binlog</code>的刷盘不能出现半成功，比如<code>redo log</code>刷盘更新了数据，<code>binlog</code>没刷盘，这样会导致数据不一致</p>
+<p>解决：为了防止两份日志不一致，MySQL采用了两阶段提交<strong>准备pre阶段</strong>和<strong>提交commit阶段</strong>，由<strong>协调者</strong>和<strong>参与者</strong>共同完成</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/two-phase-commit.png" width="70%"></p>
+<h4 id="三种日志的区别和关联">3.6.5 三种日志的区别和关联</h4>
+<p>服务器宕机了怎么办？</p>
+<ul>
+<li>在 redo log 刷新到磁盘之前，都是回滚（通过 undo log）</li>
+<li>如果 redo log 刷新到了磁盘，那么就是重做 redo log</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 5%">
+<col style="width: 43%">
+<col style="width: 6%">
+<col style="width: 26%">
+<col style="width: 3%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: center;">日志</th>
+<th style="text-align: center;">作用</th>
+<th style="text-align: center;">存储位置</th>
+<th style="text-align: center;">是否持久化</th>
+<th style="text-align: center;">是否可以恢复数据</th>
+<th style="text-align: center;">层级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">undo日志</td>
+<td style="text-align: center;">实现<strong>原子性</strong>，用于MVCC和回滚</td>
+<td style="text-align: center;">内存</td>
+<td style="text-align: center;">否（持久化也是通过redo log保证的）</td>
+<td style="text-align: center;">是</td>
+<td style="text-align: center;">Innodb存储引擎</td>
+</tr>
+<tr>
+<td style="text-align: center;">redo日志</td>
+<td style="text-align: center;">实现<strong>持久性</strong>，用于系统崩溃后重做提交的事务（循环写）</td>
+<td style="text-align: center;">磁盘</td>
+<td style="text-align: center;">是</td>
+<td style="text-align: center;">是</td>
+<td style="text-align: center;">Innodb存储引擎</td>
+</tr>
+<tr>
+<td style="text-align: center;">binlog日志</td>
+<td style="text-align: center;">用于<strong>主从复制和数据备份</strong>，记录所有的DDL和DML操作（全量日志）</td>
+<td style="text-align: center;">磁盘</td>
+<td style="text-align: center;">是</td>
+<td style="text-align: center;">是</td>
+<td style="text-align: center;">server层</td>
+</tr>
+</tbody>
+</table>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/log.png" width="70%"></p>
+<h3 id="分库分表路由和切片">3.7 分库分表：路由和切片</h3>
+<p>MySQL的高可用性体现在：</p>
+<ul>
+<li>主从复制下的读写分离</li>
+<li>分库分表下的路由和切片</li>
+<li>分布式事务下的分布式ID保证全局唯一</li>
+</ul>
+<h4 id="使用mysql分库分表中间件适用于小业务">3.7.1
+使用MySQL分库分表中间件：适用于小业务</h4>
+<p><strong>TDSQL</strong>：腾讯开源的分库分表中间件，支持<strong>读写分离</strong>、<strong>分库分表</strong>、<strong>分布式事务</strong>等功能，路由过程由中间件完成</p>
+<h4 id="自定义分库分表的路由策略切片">3.7.2
+自定义分库分表的路由策略：切片</h4>
+<p>一般分库分表的路由策略有<strong>取模</strong>、<strong>范围</strong>、<strong>一致性哈希</strong>等方式实现切片</p>
+<p><img src="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/sharding.png" width="70%"></p>
+<h4 id="分布式id">3.7.3 分布式ID</h4>
+<p><strong>1）分布式ID具有的特点</strong></p>
+<ul>
+<li><strong>全局唯一</strong>：必须保证生成的 ID
+是全局性唯一的，这是分布式 ID 的基本要求；</li>
+<li><strong>有序性</strong>：生成的 ID
+需要按照某种规则有序，便于数据库的写入和排序操作；</li>
+<li><strong>可用性</strong>：需要保证高并发下的可用性。除了对 ID
+号码自身的要求，业务还对 ID
+生成系统的可用性要求极高；如在asyncflow中拼接了表明，增加了task_id的可用性</li>
+<li><strong>自主性</strong>：分布式环境下不依赖中心认证即可自行生成
+ID；</li>
+<li><strong>安全性</strong>：不暴露系统和业务的信息。在一些业务场景下，会需要
+ID 无规则或者不规则。</li>
+</ul>
+<p><strong>2）分布式ID生成方案</strong></p>
+<p>分布式ID的生成一般都由<strong>时间、机器ID、序列号</strong>等组成，其中高位的时间戳保证和放在低位的自增序列号保证有序性，机器ID保证唯一性</p>
+<ul>
+<li><strong>UUID</strong>
+<ul>
+<li>优点：全局唯一、本地生成没有网络消耗</li>
+<li>缺点：无序、且占用空间大、有可能会暴露mac地址</li>
+</ul></li>
+<li><strong>雪花算法</strong>：Twitter开源的分布式ID生成算法
+<ul>
+<li>优点：可以保证高并发下的<strong>唯一性</strong>和<strong>单机的有序递增性</strong></li>
+<li>缺点：强依赖于<strong>机器时钟</strong>，如果机器时钟回拨会导致ID重复</li>
+</ul></li>
+</ul>
+<blockquote>
+<p>参考：</p>
+<ol type="1">
+<li><p><a target="_blank" rel="noopener" href="https://xiaolincoding.com/mysql/transaction/mvcc.html">事务隔离级别是怎么实现的？</a></p></li>
+<li><p><a target="_blank" rel="noopener" href="https://learn.lianglianglee.com/%E4%B8%93%E6%A0%8F/MySQL%E5%AE%9E%E6%88%98%E5%AE%9D%E5%85%B8/08%20%20%E7%B4%A2%E5%BC%95%EF%BC%9A%E6%8E%92%E5%BA%8F%E7%9A%84%E8%89%BA%E6%9C%AF.md">08
+索引：排序的艺术</a></p></li>
+<li><p><a target="_blank" rel="noopener" href="https://xiaolincoding.com/mysql/index/why_index_chose_bpuls_tree.html#%E6%80%8E%E6%A0%B7%E7%9A%84%E7%B4%A2%E5%BC%95%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%98%AF%E5%A5%BD%E7%9A%84">为什么
+MySQL 采用 B+ 树作为索引？</a></p></li>
+<li><p><a target="_blank" rel="noopener" href="https://xiaolincoding.com/mysql/log/how_update.html#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-undo-log">MySQL
+日志：undo log、redo log、binlog 有什么用？</a></p></li>
+<li><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/534893180">分布式唯一 ID
+生成方案浅谈</a></p></li>
+</ol>
+</blockquote>
+<h2 id="四sql安全问题">四、SQL安全问题</h2>
+<p>SQL会存在<strong>SQL注入</strong>问题，攻击者在<strong>HTTP包中注入一些SQL操作</strong>从而破坏数据库</p>
+<p>预防办法：</p>
+<ul>
+<li>使用<strong>orm</strong>框架：摒弃手动拼接SQL语句，而是通过<strong>orm框架传参</strong>实现SQL操作</li>
+<li>增强<strong>用户验证</strong></li>
+<li>完善<strong>数据库操作最小权限</strong></li>
+</ul>
+
+    </article>
+    <!-- license -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
+            <p>Link：<a href="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">April 12th 2024, 9:48:23 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">November 23rd 2025, 2:47:28 am</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2024/04/20/C-%E5%BA%95%E5%B1%82%E5%AD%A6%E4%B9%A0/" title="C++底层学习">
+                    <div class="nextTitle">C++底层学习</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/04/03/%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0/" title="排序实现">
+                    <div class="prevTitle">排序实现</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC81NjEyMS8zMjU4NA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活 JavaScript</noscript>
+    </div>
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:tianzheng_edu@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="https://github.com/akirazheng" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%9C%A8linux%E4%B8%AD%E7%9A%84%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-text">一、Mysql数据库在Linux中的使用方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81"><span class="toc-text">1.1 修改密码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%88%E7%AB%AF%E4%BD%BF%E7%94%A8mysqlsh%E6%9D%A5%E6%93%8D%E4%BD%9C%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-text">1.2
+终端使用mysqlsh来操作数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vscode%E4%B8%AD%E4%BD%BF%E7%94%A8mysqlsh"><span class="toc-text">1.3 vscode中使用mysqlsh</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8Cmysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C"><span class="toc-text">二、Mysql数据库基础操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%E8%A1%A8%E5%88%9B%E5%BB%BA%E8%A1%A8%E6%A0%BC%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5"><span class="toc-text">2.1
+数据库的数据库&amp;表创建、表格增删改查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AF%BC%E5%85%A5%E5%AF%BC%E5%87%BA"><span class="toc-text">2.2 数据库的导入导出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%B8%B8%E7%94%A8%E8%AF%AD%E5%8F%A5"><span class="toc-text">2.3 数据库的常用语句</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8C%83%E5%9B%B4%E6%9F%A5%E8%AF%A2"><span class="toc-text">2.3.1 范围查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E7%B3%8A%E6%9F%A5%E8%AF%A2"><span class="toc-text">2.3.2 模糊查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6%E5%8C%B9%E9%85%8D%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-text">2.3.3 通配符匹配正则表达式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%92%E5%BA%8F%E6%9F%A5%E8%AF%A2"><span class="toc-text">2.3.4 排序查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%81%9A%E5%90%88%E5%87%BD%E6%95%B0"><span class="toc-text">2.3.5 聚合函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E7%BB%84%E6%9F%A5%E8%AF%A2"><span class="toc-text">2.3.6 分组查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8E%BB%E9%87%8D%E6%9F%A5%E8%AF%A2"><span class="toc-text">2.3.7 去重查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B9%B6%E9%9B%86"><span class="toc-text">2.3.8 并集</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%A4%E9%9B%86"><span class="toc-text">2.3.9 交集</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%AE%E9%9B%86"><span class="toc-text">2.3.10 差集</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%90%E6%9F%A5%E8%AF%A2"><span class="toc-text">2.4 子查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A8%E5%85%B3%E8%81%94"><span class="toc-text">2.5 表关联</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E8%BF%9E%E6%8E%A5"><span class="toc-text">2.5.1 内连接</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%A6%E8%BF%9E%E6%8E%A5"><span class="toc-text">2.5.2 左连接</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%B3%E8%BF%9E%E6%8E%A5"><span class="toc-text">2.5.3 右连接</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95"><span class="toc-text">2.6 索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%86%E5%9B%BE"><span class="toc-text">2.7 视图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89mysql%E5%8E%9F%E7%90%86"><span class="toc-text">三、MySQL原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1"><span class="toc-text">3.1 事务</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-text">3.1.1 事务的基础概念</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">3.1.2 事务的隔离级别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E7%9A%84sql%E4%B8%BE%E4%BE%8B"><span class="toc-text">3.1.3 事务的sql举例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%94%81"><span class="toc-text">3.2 锁</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%94%81%E7%9A%84%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-text">3.2.1 锁的基础概念</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E9%94%81read-lock"><span class="toc-text">1）全局锁READ LOCK</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A1%A8%E7%BA%A7%E9%94%81"><span class="toc-text">2）表级锁</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A1%8C%E7%BA%A7%E9%94%81"><span class="toc-text">3）行级锁</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%BB%E9%94%81%E7%9A%84%E5%87%BA%E7%8E%B0%E4%B8%8E%E8%A7%A3%E5%86%B3"><span class="toc-text">3.2.2 死锁的出现与解决</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%A6%E6%9D%9F"><span class="toc-text">3.3 约束</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E9%94%AE%E7%BA%A6%E6%9D%9Fprimary-key"><span class="toc-text">1）主键约束：PRIMARY KEY</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%96%E9%94%AE%E7%BA%A6%E6%9D%9Fforeign-key"><span class="toc-text">2）外键约束：FOREIGN KEY</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%94%AF%E4%B8%80%E7%BA%A6%E6%9D%9Funique"><span class="toc-text">3）唯一约束：UNIQUE</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E5%A4%A7%E8%8C%83%E5%BC%8F"><span class="toc-text">3.4 三大范式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95ologn"><span class="toc-text">3.5 索引：O(logn)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#b%E6%A0%91%E7%B4%A2%E5%BC%95"><span class="toc-text">3.5.1 B+树索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-text">3.5.2 索引的类型</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95%E5%8F%AA%E6%9C%89%E4%B8%80%E4%B8%AA"><span class="toc-text">1）聚簇索引：只有一个</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95%E9%9D%9E%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95%E5%8F%AF%E4%BB%A5%E6%9C%89%E5%A4%9A%E4%B8%AA"><span class="toc-text">2）二级索引（非聚簇索引）：可以有多个</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95%E5%A4%9A%E4%B8%AA%E5%AD%97%E6%AE%B5%E7%BB%84%E5%90%88%E5%8F%AF%E4%BB%A5%E6%9C%89%E5%A4%9A%E4%B8%AA"><span class="toc-text">3）联合索引：多个字段组合，可以有多个</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E7%B4%A2%E5%BC%95%E6%80%BB%E7%BB%93"><span class="toc-text">4）三种索引总结</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88"><span class="toc-text">3.5.3 索引失效</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E7%94%A8%E8%BF%98%E6%98%AF%E4%B8%8D%E7%94%A8"><span class="toc-text">3.5.4 索引设计原则：用还是不用？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%A4%E5%8D%83%E4%B8%87%E6%95%B0%E6%8D%AE%E9%9C%80%E8%A6%81%E5%A4%9A%E9%AB%98%E7%9A%84%E6%A0%91"><span class="toc-text">3.5.5 两千万数据需要多高的树</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96"><span class="toc-text">3.5.6 索引优化</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97"><span class="toc-text">3.6 日志</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97%E7%94%A8%E4%BA%8E%E4%BC%98%E5%8C%96"><span class="toc-text">3.6.1 慢查询日志：用于优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#undolog%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97"><span class="toc-text">3.6.2 undolog回滚日志</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#redolog%E9%87%8D%E5%81%9A%E6%97%A5%E5%BF%97"><span class="toc-text">3.6.3 redolog重做日志</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#binlog%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%97%A5%E5%BF%97"><span class="toc-text">3.6.4 binlog二进制日志</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E6%97%A5%E5%BF%97%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E5%85%B3%E8%81%94"><span class="toc-text">3.6.5 三种日志的区别和关联</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E8%B7%AF%E7%94%B1%E5%92%8C%E5%88%87%E7%89%87"><span class="toc-text">3.7 分库分表：路由和切片</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8mysql%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E9%80%82%E7%94%A8%E4%BA%8E%E5%B0%8F%E4%B8%9A%E5%8A%A1"><span class="toc-text">3.7.1
+使用MySQL分库分表中间件：适用于小业务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E7%9A%84%E8%B7%AF%E7%94%B1%E7%AD%96%E7%95%A5%E5%88%87%E7%89%87"><span class="toc-text">3.7.2
+自定义分库分表的路由策略：切片</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8Fid"><span class="toc-text">3.7.3 分布式ID</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9Bsql%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98"><span class="toc-text">四、SQL安全问题</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 77
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search site-search-loading popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span>
+            <a class="archive-post-title" href="/2025/11/22/cacheLine%E7%AB%9E%E4%BA%89%E5%AF%B9%E6%80%A7%E8%83%BD%E7%9A%84%E5%BD%B1%E5%93%8D/">cacheLine竞争对性能的影响</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span>
+            <a class="archive-post-title" href="/2025/11/20/FIELD-PREP%E5%92%8CFIELD-GET%E6%9B%BF%E4%BB%A3%E6%89%8B%E5%8A%A8%E4%BD%8D%E7%A7%BB/">FIELD_PREP和FIELD_GET替代手动位移</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span>
+            <a class="archive-post-title" href="/2025/11/04/ARM64%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">ARM64基础知识</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">驱动学习2：字符设备驱动(fd,ioctl)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/Linux-%E5%86%85%E6%A0%B8%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6/">Linux:内核通知机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span>
+            <a class="archive-post-title" href="/2025/09/22/Linux-early-param%E5%8F%82%E6%95%B0/">Linux:early_param参数</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/">ARM64结构与编程:加载和存储指令</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">ARM64结构与编程:QEMU_BenOS环境搭建</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：CPU虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">git常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">linux常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span>
+            <a class="archive-post-title" href="/2025/09/02/TLB%E7%89%B9%E6%80%A7%E5%AD%A6%E4%B9%A0/">TLB特性学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span>
+            <a class="archive-post-title" href="/2025/08/23/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F2%EF%BC%9A%E7%BC%96%E5%86%99MBR%E4%B8%BB%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA/">手写操作系统2：编写MBR主引导扇区</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span>
+            <a class="archive-post-title" href="/2025/08/22/%E8%BF%9B%E5%88%B6%E8%BD%AC%E6%8D%A2CPP%E7%89%88/">进制转换CPP版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/21</span>
+            <a class="archive-post-title" href="/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/">驱动学习1：驱动demo练习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span>
+            <a class="archive-post-title" href="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/">openeluer安装与内核替换</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/">推广搜6：传统推荐模型之阿里LS-PLM模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/">推广搜5：传统推荐模型之GBDT+LR模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span>
+            <a class="archive-post-title" href="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C4%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">推广搜4：传统推荐模型之FM模型</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C3%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜3：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span>
+            <a class="archive-post-title" href="/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C2%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/">推广搜2：传统推荐模型之协同过滤算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span>
+            <a class="archive-post-title" href="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C1%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/">推广搜1：基础知识及学习路线篇</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span>
+            <a class="archive-post-title" href="/2024/12/18/%E7%88%AC%E8%99%AB%E5%AE%9E%E7%8E%B0QQ%E7%BE%A4%E4%BD%9C%E4%B8%9A%E7%9A%84%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD/">爬虫实现QQ群作业的批量下载</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">手写操作系统1：项目环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/23</span>
+            <a class="archive-post-title" href="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/">计算机网络层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span>
+            <a class="archive-post-title" href="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">计算机网络传输层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span>
+            <a class="archive-post-title" href="/2024/09/21/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Redis数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">调度项目6：worker开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2024/09/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE5%EF%BC%9Aflowsvr%E5%BC%80%E5%8F%91/">调度项目5：flowsvr开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/18</span>
+            <a class="archive-post-title" href="/2024/08/18/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE4%EF%BC%9AWorker%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目4：Worker的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/">分布式Kafka学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span>
+            <a class="archive-post-title" href="/2024/06/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">调度项目1：环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3%E7%9A%84Linux%E6%93%8D%E4%BD%9C/">操作系统相关的Linux操作</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">文件描述符</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span>
+            <a class="archive-post-title" href="/2024/05/17/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">操作系统内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/15</span>
+            <a class="archive-post-title" href="/2024/05/15/%E5%A4%A7%E9%A1%B6%E5%A0%86-%E5%B0%8F%E9%A1%B6%E5%A0%86%EF%BC%88CPP%EF%BC%89/">大顶堆/小顶堆（CPP）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/01</span>
+            <a class="archive-post-title" href="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">高并发系统设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span>
+            <a class="archive-post-title" href="/2024/04/29/KMP%E7%AE%97%E6%B3%95/">KMP算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span>
+            <a class="archive-post-title" href="/2024/04/26/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/">动态规划-背包问题</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/25</span>
+            <a class="archive-post-title" href="/2024/04/25/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">操作系统结构及进程管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span>
+            <a class="archive-post-title" href="/2024/04/20/C-%E5%BA%95%E5%B1%82%E5%AD%A6%E4%B9%A0/">C++底层学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Mysql数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span>
+            <a class="archive-post-title" href="/2024/04/03/%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0/">排序实现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">WebServer学习9：WebBench压力测试</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A08%EF%BC%9A%E9%80%9A%E7%94%A8%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1/">WebServer学习8：通用日志系统的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span>
+            <a class="archive-post-title" href="/2024/03/26/WebServer%E5%AD%A6%E4%B9%A07%EF%BC%9A%E5%AE%9A%E6%97%B6%E5%99%A8%E6%8E%A7%E5%88%B6%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4/">WebServer学习7：定时器控制客户端存活时间</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2024/03/11/WebServer%E5%AD%A6%E4%B9%A06%EF%BC%9AHTTP%E8%BF%9E%E6%8E%A5%E5%A4%84%E7%90%86%E5%8F%8A%E6%8A%A5%E6%96%87%E6%9C%BA%E5%88%B6/">WebServer学习6：HTTP连接处理及报文机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/">HTTP协议的迭代（HTTP：应用层）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%AD%A6%E4%B9%A0/">C++基础知识学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/WebServer%E5%AD%A6%E4%B9%A05%EF%BC%9A%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%AE%BE%E8%AE%A1/">WebServer学习5：线程池与数据库连接池设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/05</span>
+            <a class="archive-post-title" href="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/">WebServer学习4：并发事件驱动模式Reactor和Proactor</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span>
+            <a class="archive-post-title" href="/2024/03/04/WebServer%E5%AD%A6%E4%B9%A03%EF%BC%9Asocket%E7%BC%96%E7%A8%8B%E4%B8%8Eepoll%E5%AE%9E%E7%8E%B0I-O%E5%A4%8D%E7%94%A8/">WebServer学习3：socket编程与epoll实现I/O复用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/03</span>
+            <a class="archive-post-title" href="/2024/03/03/WebServer%E5%AD%A6%E4%B9%A02%EF%BC%9A%E4%BB%8EConfig%E6%96%87%E4%BB%B6%E4%BA%86%E8%A7%A3Makefile%E7%BC%96%E8%AF%91/">WebServer学习2：从Config文件了解Makefile编译</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span>
+            <a class="archive-post-title" href="/2024/02/28/WebServer%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C/">WebServer学习1：部署运行</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F6%EF%BC%9A%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/">设计模式6：策略模式</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F5%EF%BC%9A%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95/">设计模式5：模板方法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/08</span>
+            <a class="archive-post-title" href="/2024/02/08/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F0%EF%BC%9A%E9%9D%A2%E5%AF%B9%E5%AF%B9%E8%B1%A1%E7%9A%848%E5%A4%A7%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86/">设计模式0：面对对象的8大设计原理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/07</span>
+            <a class="archive-post-title" href="/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/">从0开始实现线程池(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F4%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">设计模式4：代理模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F3%EF%BC%9A%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/">设计模式3：抽象工厂模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">设计模式2：工厂方法模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span>
+            <a class="archive-post-title" href="/2024/01/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F1%EF%BC%9A%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">设计模式1：单例模式(C++)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span>
+            <a class="archive-post-title" href="/2023/03/18/QT%E7%BC%96%E7%A8%8B%E7%BB%8F%E9%AA%8C/">QT编程经验</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span>
+            <a class="archive-post-title" href="/2022/12/08/SolveProgramLearningProblem/">SolveProgramLearningProblem</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/04</span>
+            <a class="archive-post-title" href="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/">Mine-重装系统后软件相关设置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/24</span>
+            <a class="archive-post-title" href="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/">快捷键方式整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/15</span>
+            <a class="archive-post-title" href="/2022/11/15/LOVE/">LOVE_打火机与公主裙</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2022/04/17/%E5%8A%A8%E6%89%8B%E5%AD%A6%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A001/">动手学深度学习01</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/">搭建Conda虚拟环境</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/13</span>
+            <a class="archive-post-title" href="/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">部署colab利用GPU资源训练深度学习模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">重装系统后Hexo博客部署教程</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/">DELL系统重装教程</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="计算机">
+                <span class="iconfont-archer">&#xe606;</span>
+                计算机
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="杂货铺-休闲">
+                <span class="iconfont-archer">&#xe606;</span>
+                杂货铺-休闲
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="环境配置">
+                <span class="iconfont-archer">&#xe606;</span>
+                环境配置
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="深度学习">
+                <span class="iconfont-archer">&#xe606;</span>
+                深度学习
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="任务调度项目">
+                <span class="iconfont-archer">&#xe606;</span>
+                任务调度项目
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据结构与算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核基础">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核基础
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据库">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据库
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络">
+            <span class="iconfont-archer">&#xe60a;</span>
+            计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="WebServer项目（C++）">
+            <span class="iconfont-archer">&#xe60a;</span>
+            WebServer项目（C++）
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="系统设计">
+            <span class="iconfont-archer">&#xe60a;</span>
+            系统设计
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="深度学习算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            深度学习算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统">
+            <span class="iconfont-archer">&#xe60a;</span>
+            操作系统
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="虚拟化">
+            <span class="iconfont-archer">&#xe60a;</span>
+            虚拟化
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="设计模式">
+            <span class="iconfont-archer">&#xe60a;</span>
+            设计模式
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="任务调度项目">
+            <span class="iconfont-archer">&#xe60a;</span>
+            任务调度项目
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核驱动">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核驱动
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://AkiraZheng.github.io",
+        root: siteMetaRoot,
+        author: "AkiraZheng"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+            <div class="site-search site-search-loading">
+    <div class="algolia-popup popup">
+        <div class="algolia-search">
+            <div class="algolia-search-input-icon">
+                <i class="fa fa-search"></i>
+            </div>
+            <div class="algolia-search-input" id="algolia-search-input"></div>
+            <div class="popup-btn-close">
+                <i class="iconfont-archer">&#xe609;</i>
+            </div>
+        </div>
+
+        <div class="algolia-results">
+            <div id="algolia-stats" class="algolia-stats"></div>
+            <div id="algolia-hits"></div>
+            <div id="algolia-pagination" class="algolia-pagination"></div>
+        </div>
+    </div>
+</div>
+            <script src="/scripts/search.js?v=20211217" defer></script>
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
