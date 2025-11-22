@@ -121,15 +121,21 @@ npm install hexo-deployer-git --save
 
 ```shell
 npm install hexo-deployer-git --save
-npm install hexo-blog-encrypt
+npm install hexo-generator-json-content # 生成侧边栏索引
+npm install hexo-blog-encrypt # 文章加密插件
 
+# 统计words
 npm uninstall hexo-renderer-marked --save
 pandoc -v
 # brew install pandoc  # MacOS
 # sudo apt install pandoc  # Linux
 npm install hexo-renderer-pandoc --save
 
+# algolia搜索插件
 npm install hexo-algolia --save
+export HEXO_ALGOLIA_INDEXING_KEY='您的AdminAPIKey'
+hexo g
+hexo algolia
 ```
 
 由于 algolia 需要经常`hexo algolia`更新远程的 index 数据库，所以本地是需要安装的
