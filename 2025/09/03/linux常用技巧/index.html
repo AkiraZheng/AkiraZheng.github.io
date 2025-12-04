@@ -27,7 +27,7 @@
 <meta property="og:description" content="1. vim  .:小数点，重复上一次的命令  vim 中进行查找 1）基本查找命令 查找下一个匹配项： 1&#x2F;&lt;搜索内容&gt;  按下 &#x2F; 键，输入要查找的内容，然后按下回车键 Enter。 例如：&#x2F;hello表示查找 hello  2）跳转到另一个查找结果 &#x2F;hello查找后，要先按 enter 键，然后按 n 键才能跳转到下一个匹配项。  跳转到下一个匹配项：按n键 跳转到上一个匹配项">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-09-03T07:50:10.000Z">
-<meta property="article:modified_time" content="2025-11-22T18:47:28.223Z">
+<meta property="article:modified_time" content="2025-12-04T07:42:57.830Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -337,7 +337,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">2.6k</span>Reading time: <span class="post-count reading-time">10 min</span></span>
+                        <span>Word count: <span class="post-count word-count">1.1k</span>Reading time: <span class="post-count reading-time">3 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -568,11 +568,10 @@ xclip,通过<code>:version</code>查看当前是否支持与系统剪贴板交�
 <h2 id="配置vim显示行号">配置vim显示行号</h2>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 打开vimrc配置文件</span></span><br><span class="line">vim ~/.vimrc</span><br></pre></td></tr></table></figure>
 <p>在vimrc配置文件中添加如下内容：</p>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">number</span></span><br></pre></td></tr></table></figure>
-<h2 id="vim-双屏">vim 双屏</h2>
-<p>vim
-查看一个文件后，用<code>:vsp</code>来跟另一个文件进行比较（双屏）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim ./file1.c</span><br><span class="line">:vsp ./file2.c</span><br></pre></td></tr></table></figure>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">number</span> <span class="comment">&quot;行号显示</span></span><br><span class="line"><span class="keyword">syntax</span> <span class="keyword">on</span> <span class="comment">&quot; 打开语法高亮</span></span><br><span class="line"><span class="keyword">set</span> background=dark <span class="comment">&quot; 如果背景是黑色，最好加上这句</span></span><br></pre></td></tr></table></figure>
+<!-- tips:如果是新建一个原先不存在的vimrc文件，那么会失去默认的高亮等行为，这种情况下，如果没有root权限，但是想保留root原有的配置，可以在`~/.vimrc`文件第一行写上下面的语句：
+
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">source</span> /etc/<span class="keyword">vim</span>/vimrc</span><br><span class="line">``` --&gt;</span><br><span class="line"></span><br><span class="line">## <span class="keyword">vim</span> 双屏</span><br><span class="line"></span><br><span class="line"><span class="keyword">vim</span> 查看一个文件后，用`:vsp`来跟另一个文件进行比较（双屏）</span><br><span class="line"></span><br><span class="line">```<span class="keyword">shell</span></span><br><span class="line"><span class="keyword">vim</span> ./file1.<span class="keyword">c</span></span><br><span class="line">:vsp ./file2.<span class="keyword">c</span></span><br></pre></td></tr></table></figure>
 <p>然后如果要切到第二个屏进行查找的话，可以用快捷键<code>CTRL+ww</code>切过去</p>
 <h1 id="terminal-操作">2. terminal 操作</h1>
 <h2 id="find"><code>find</code></h2>
@@ -614,7 +613,8 @@ host 用以下方法暂时关闭，这样开启 guest
 <p>服务器与服务器之间进行文件传输用scp</p>
 <p><code>scp user1@ip1:/home/user1/file1.txt user2@ip2:/home/user2/file2.txt</code></p>
 <blockquote>
-<p><a target="_blank" rel="noopener" href="https://ngwind.github.io/2019/01/25/%E4%BF%9D%E6%8C%81ssh%E6%9C%8D%E5%8A%A1%E8%BF%9E%E6%8E%A5%E4%B8%8D%E6%96%AD%E5%BC%80%E7%9A%84%E6%96%B9%E6%B3%95/">设置维持
+<p><a
+target="_blank" rel="noopener" href="https://ngwind.github.io/2019/01/25/%E4%BF%9D%E6%8C%81ssh%E6%9C%8D%E5%8A%A1%E8%BF%9E%E6%8E%A5%E4%B8%8D%E6%96%AD%E5%BC%80%E7%9A%84%E6%96%B9%E6%B3%95/">设置维持
 ssh 连接不断连</a></p>
 </blockquote>
 <p>单个服务器内进行文件复制粘贴用cp</p>
@@ -633,7 +633,8 @@ ssh 连接不断连</a></p>
 <p>按当前寄存器值查看</p>
 <p>看 x1 指向的同一块目的地址<code>x/4xg 0x200000</code></p>
 <blockquote>
-<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014470361/article/details/102230583">gdb查看内存的值</a></p>
+<p><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/u014470361/article/details/102230583">gdb查看内存的值</a></p>
 </blockquote>
 <h2 id="查看变量值">查看变量值</h2>
 <ol start="2" type="1">
@@ -703,7 +704,8 @@ ssh 连接不断连</a></p>
 <h1 id="linux-中对工程代码的跳转函数查找">5. Linux
 中对工程代码的跳转、函数查找</h1>
 <h2 id="vim-中函数跳转">vim 中函数跳转</h2>
-<h3 id="使用-cscope-实现函数跳转">使用 cscope 实现函数跳转</h3>
+<h3 id="way1使用-cscope-实现函数跳转">way1：使用 cscope
+实现函数跳转</h3>
 <p>如果你的 Vim 配置了 <code>+cscope</code> 支持（可以通过
 <code>:version</code> 命令查看），你可以使用 cscope 来进行函数跳转。</p>
 <!-- 安装 ctags
@@ -727,11 +729,16 @@ R：递归查找源代码。</p>
 <ul>
 <li><p>使用 <code>:cs find c &lt;function_name&gt;</code>
 查找并跳转到某个函数的定义位置。</p></li>
-<li><p>使用 <code>Ctrl-]</code> 跳转到光标所在函数的定义。</p></li>
+<li><p>使用 <code>Ctrl-]</code>
+跳转到光标所在函数的<strong>定义</strong>。</p>
+<ul>
+<li><code>:f</code> 查看当前跳转到了哪个文件中</li>
+</ul></li>
+<li><p>使用<code>:tjump/函数名</code></p></li>
 <li><p>使用 <code>Ctrl-T</code> 返回到跳转之前的位置。</p></li>
 </ul>
-<h3 id="使用-tag-文件实现函数跳转基于-ctags">使用 tag
-文件实现函数跳转（基于 ctags）</h3>
+<h3 id="way2使用-tag-文件实现函数跳转基于-ctags推荐">way2：使用 tag
+文件实现函数跳转（基于 ctags）【推荐】</h3>
 <p>另一个常用的跳转方式是使用 ctags 来生成标签文件，这可以在 Vim
 中实现函数的跳转。</p>
 <p><strong>1.</strong> 安装 ctags：</p>
@@ -759,6 +766,7 @@ R：递归查找源代码。</p>
 <h2 id="工程目录下查找某个函数名">工程目录下查找某个函数名</h2>
 <p><code>grep -r "函数名" path</code></p>
 <p><code>grep -rn "函数名" path # n: 显示行号</code></p>
+<p><code>grep -r "待查找内容" --include="*.c"</code></p>
 <h1 id="编译">6. 编译</h1>
 <h2 id="反汇编">反汇编</h2>
 <p>编译完二进制文件<code>.o</code>等二进制可执行文件后，可以使用
@@ -772,7 +780,7 @@ R：递归查找源代码。</p>
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">September 3rd 2025, 3:50:10 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">November 23rd 2025, 2:47:28 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">December 4th 2025, 3:42:57 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -938,9 +946,8 @@ R：递归查找源代码。</p>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#vim"><span class="toc-text">1. vim</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="toc-text">vim 中进行查找</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E5%A4%8D%E5%88%B6%E7%B2%98%E8%B4%B4"><span class="toc-text">vim 中复制粘贴</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%89%E6%A0%87%E7%A7%BB%E5%8A%A8"><span class="toc-text">光标移动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEvim%E6%98%BE%E7%A4%BA%E8%A1%8C%E5%8F%B7"><span class="toc-text">配置vim显示行号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E5%8F%8C%E5%B1%8F"><span class="toc-text">vim 双屏</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#terminal-%E6%93%8D%E4%BD%9C"><span class="toc-text">2. terminal 操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#find"><span class="toc-text">find</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E5%86%85%E6%A0%B8%E7%9A%84%E8%B7%AF%E5%BE%84"><span class="toc-text">查找内核的路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8Bbios%E7%89%88%E6%9C%AC"><span class="toc-text">查看bios版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%89%88%E6%9C%AC"><span class="toc-text">查看操作系统版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%A3%81%E7%9B%98%E5%93%AA%E4%B8%AA%E5%8D%A0%E7%94%A8%E6%9C%80%E9%AB%98"><span class="toc-text">查看磁盘哪个占用最高</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="toc-text">设置环境变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%85%B3%E5%86%85%E6%A0%B8%E6%89%93%E5%8D%B0"><span class="toc-text">开关内核打印</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9-linux-root-%E5%AF%86%E7%A0%81"><span class="toc-text">修改 linux-root 密码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E7%BB%B4%E6%8C%81-ssh-%E8%BF%9E%E6%8E%A5%E4%B8%8D%E6%96%AD%E8%BF%9E"><span class="toc-text">设置维持 ssh 连接不断连</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#scpcp"><span class="toc-text">scp，cp</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E9%BB%98%E8%AE%A4%E5%86%85%E6%A0%B8%E9%80%89%E9%A1%B9"><span class="toc-text">修改默认内核选项</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#gdb-%E8%B0%83%E8%AF%95"><span class="toc-text">3. gdb 调试</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E6%8C%87%E4%BB%A4"><span class="toc-text">常用指令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%9F%90%E4%B8%AA%E5%9C%B0%E5%9D%80%E5%A4%84%E5%86%85%E5%AD%98%E7%9A%84%E5%80%BC"><span class="toc-text">查看某个地址处内存的值：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%8F%98%E9%87%8F%E5%80%BC"><span class="toc-text">查看变量值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9"><span class="toc-text">设置断点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E4%B8%8E%E7%BB%A7%E7%BB%AD%E6%89%A7%E8%A1%8C"><span class="toc-text">运行与继续执行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95"><span class="toc-text">单步调试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E8%AF%95%E7%BA%BF%E7%A8%8B"><span class="toc-text">调试线程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%E8%B0%83%E8%AF%95"><span class="toc-text">普通可执行文件调试</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#qemu-%E4%BD%BF%E7%94%A8"><span class="toc-text">4. qemu 使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu-%E6%8C%87%E4%BB%A4"><span class="toc-text">qemu 指令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#virsh-%E6%8C%87%E4%BB%A4"><span class="toc-text">virsh 指令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%94%A8qemu%E8%B5%B7%E7%9A%84%E8%99%9A%E6%9C%BA-pid"><span class="toc-text">查看用qemu起的虚机 pid</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#linux-%E4%B8%AD%E5%AF%B9%E5%B7%A5%E7%A8%8B%E4%BB%A3%E7%A0%81%E7%9A%84%E8%B7%B3%E8%BD%AC%E5%87%BD%E6%95%B0%E6%9F%A5%E6%89%BE"><span class="toc-text">5. Linux
-中对工程代码的跳转、函数查找</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC"><span class="toc-text">vim 中函数跳转</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-cscope-%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC"><span class="toc-text">使用 cscope 实现函数跳转</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-tag-%E6%96%87%E4%BB%B6%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC%E5%9F%BA%E4%BA%8E-ctags"><span class="toc-text">使用 tag
-文件实现函数跳转（基于 ctags）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E7%9B%AE%E5%BD%95%E4%B8%8B%E6%9F%A5%E6%89%BE%E6%9F%90%E4%B8%AA%E5%87%BD%E6%95%B0%E5%90%8D"><span class="toc-text">工程目录下查找某个函数名</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BC%96%E8%AF%91"><span class="toc-text">6. 编译</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E6%B1%87%E7%BC%96"><span class="toc-text">反汇编</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#vim"><span class="toc-text">1. vim</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="toc-text">vim 中进行查找</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E5%A4%8D%E5%88%B6%E7%B2%98%E8%B4%B4"><span class="toc-text">vim 中复制粘贴</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%89%E6%A0%87%E7%A7%BB%E5%8A%A8"><span class="toc-text">光标移动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEvim%E6%98%BE%E7%A4%BA%E8%A1%8C%E5%8F%B7"><span class="toc-text">配置vim显示行号</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#way2%E4%BD%BF%E7%94%A8-tag-%E6%96%87%E4%BB%B6%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC%E5%9F%BA%E4%BA%8E-ctags%E6%8E%A8%E8%8D%90"><span class="toc-text">way2：使用 tag
+文件实现函数跳转（基于 ctags）【推荐】</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E7%9B%AE%E5%BD%95%E4%B8%8B%E6%9F%A5%E6%89%BE%E6%9F%90%E4%B8%AA%E5%87%BD%E6%95%B0%E5%90%8D"><span class="toc-text">工程目录下查找某个函数名</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BC%96%E8%AF%91"><span class="toc-text">6. 编译</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E6%B1%87%E7%BC%96"><span class="toc-text">反汇编</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -2084,14 +2091,6 @@ R：递归查找源代码。</p>
         
         
         
-        
-        
-        
-        
-        
-        
-        
-        
     
     
     
@@ -2326,13 +2325,13 @@ R：递归查找源代码。</p>
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/15</span>
-            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/15</span>
-            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
         </li>
     
         
@@ -2647,14 +2646,14 @@ R：递归查找源代码。</p>
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
         <span class="sidebar-category-name" data-categories="C++知识点">
             <span class="iconfont-archer">&#xe60a;</span>
             C++知识点
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="Linux内核基础">
