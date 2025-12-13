@@ -26,6 +26,16 @@ categories:
 - 安装VMware和Ubuntu
     - [（一）TinyWebServer的环境配置与运行](https://blog.csdn.net/weixin_46653651/article/details/133420059)
     - 这里Ubuntu可以在清华镜像中下载，否则很慢[清华大学开源软件镜像站](https://mirrors.tuna.tsinghua.edu.cn/)
+    - 如果是`ARM`芯片的话，如 MAC 的 M1 芯片，参考这个文章下载镜像[如何在 ARM 设备上安装和使用 Ubuntu](https://blog.csdn.net/qq_30820239/article/details/144520798)，这里`desktop`版本从`25.04`开始才支持，当然不需要桌面版本的话可选项就很多了。
+        - 下载完镜像就可以安装[VMware 虚拟机安装 Ubuntu 24.04 Server 系统](https://www.cnblogs.com/YangShengzhou/articles/19323323) 
+        - 网络配置按默认的DHCP就行
+        - 安装等待过程很久，安装成功会显示`Reboot Now`：
+
+        <img src=2025-12-13-03-13-00.png>
+        <!-- - 涉及到配置网络时，不要选DHCP，选Manual手动配，这样IP不会变
+            - 在host终端输入`ifconfig`查看网卡配置，可以看到`bridgexxx`是VMware NAT / Host-only生成的，选择VMware NAT作为子网，比如我的host显示NAT 网关为`bridge100: 192.168.234.1`，那么我的配置如下图所示：
+
+            <img src=2025-12-13-02-21-48.png> -->
     
     <img src="config_qinghua1.png">
 
@@ -152,12 +162,16 @@ make
 
 ### 1. 部署Linux和Windows下的VScode环境
 
-- 在Linux下安装VSCode
+<!-- - 在Linux下安装VSCode
     - 打开应用商店搜索`VSCode`安装即可
 
-    <img src="vscode_linux.png">
+    <img src="vscode_linux.png"> -->
 
 - 按照[VSCode远程连接Ubuntu](https://www.bilibili.com/video/BV1MN411T71b/?spm_id_from=333.999.0.0)的步骤即可
+
+<img src=2025-12-13-17-20-51.png>
+
+<img src=2025-12-13-17-23-34.png>
 
 ### 2. 在Linux下运行本文代码 && 在Windows下运行本文代码
 

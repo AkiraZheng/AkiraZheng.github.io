@@ -22,6 +22,10 @@ Hypervisor：虚拟机管理程序，也叫做 VMM（Virtual Machine Manager）�
 
 kvm 属于 type2 虚拟化，但是由于硬件问题，为了方便直接用 qemu 做实验，我们将在 benos 基础上设计一个 type1 的软件虚拟化。这部分在后面的实操会再进一步介绍。
 
+VHE模式下可以减少trap：
+
+<img src=2025-12-02-19-54-42.png>
+
 # 二、vCPU
 
 在虚拟化中，一个 VM 虚拟机由 vCPU、虚拟的内存、存储、网络等，组成的独立运行的计算机。其中一个 VM 可以有多个进程，每个进程可以运行在不同的 vCPU 上。

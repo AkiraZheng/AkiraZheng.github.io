@@ -96,7 +96,7 @@ categories:
 ```shell
 git clone -b dev git@github.com:AkiraZheng/AkiraZheng.github.io.git # 这里的分支名要跟远程的一样，git 会自动给你切到远程的 dev 分支
 cd ./AkiraZheng.github.io
-git remote -v
+git remote -v···········
 ```
 
 然后就可以在`AkiraZheng.github.io`下通过`npm`重建起新电脑的本地博客：

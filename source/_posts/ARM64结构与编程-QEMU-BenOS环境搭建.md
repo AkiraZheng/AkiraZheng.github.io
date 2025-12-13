@@ -6,6 +6,10 @@ tags:
 
 > 项目仓库：[https://github.com/AkiraZheng/BenOS_ARM.git](https://github.com/AkiraZheng/BenOS_ARM.git)
 
+如果还没安装虚机，可以参考这篇文章进行安装[WebServer学习1：部署运行](https://akirazheng.github.io/2024/02/28/WebServer%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C/#/%E7%8E%AF%E5%A2%83)
+
+mac用户参考这篇[在Mac OS中使用VMware Fusion安装Ubuntu系统来学习linux](https://blog.csdn.net/u012275628/article/details/125663520)，[openeluer安装与内核替换](https://akirazheng.github.io/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/)
+
 # 一、安装QEMU环境
 
 在Ubuntu 20.04 LTS上安装定制的QEMU环境，需要两个文件`openocd-benos_1.0-3_amd64.deb`，`qemu-system-arm-pi4_4.1.50-3_without_GIC_amd64.deb`
@@ -16,12 +20,23 @@ sudo apt update
 
 sudo dpkg -i *.deb          # 先装包
 sudo apt-get install -f     # 自动补依赖
+# sudo dpkg --force-architecture --force-depends -i *.deb # arm芯片
 
 sudo apt install gcc-aarch64-linux-gnu
 sudo apt install gdb-multiarch
 ```
 
+此外，如果使用的是 Mac M系列芯片的话，qemu可能不支持`raspi4`，所以需要查看当前系统支持哪些树莓派型号：
+
+```shell
+qemu-system-aarch64 -machine help | grep -i rasp
+```
+
+如果看到只支持了`raspi3`的话，需要修改`Makefile`，将里面的`board ?= rpi4`改成`board ?= rpi4`
+
 # 二、代码仓配置
+
+注：本项目已经被 push 到 github 上了，所以省略下面的步骤，直接git clone就行。
 
 `armv8_trainning.git-20240318.tar.xz`代码解压到ubuntu中
 

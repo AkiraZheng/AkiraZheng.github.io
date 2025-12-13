@@ -84,7 +84,9 @@ vim ~/.vimrc
 在vimrc配置文件中添加如下内容：
 
 ```vim
-set number
+set number "行号显示
+syntax on " 打开语法高亮
+set background=dark " 如果背景是黑色，最好加上这句
 ```
 
 ## vim 双屏
@@ -97,6 +99,11 @@ vim ./file1.c
 ```
 
 然后如果要切到第二个屏进行查找的话，可以用快捷键`CTRL+ww`切过去
+
+## vim 中显示当前文件的 路径&&文件名
+
+在底部输入`:f`然后 Enter
+
 
 # 2. terminal 操作
 
@@ -490,7 +497,7 @@ virsh net-start default
 
 ## vim 中函数跳转
 
-### 使用 cscope 实现函数跳转
+### way1：使用 cscope 实现函数跳转
 
 如果你的 Vim 配置了 `+cscope` 支持（可以通过 `:version` 命令查看），你可以使用 cscope 来进行函数跳转。
 
@@ -526,11 +533,15 @@ cscope -Rbq
 
 - 使用 `:cs find c <function_name>` 查找并跳转到某个函数的定义位置。
 
-- 使用 `Ctrl-]` 跳转到光标所在函数的定义。
+- 使用 `Ctrl-]` 跳转到光标所在函数的**定义**。
+
+  - `:f` 查看当前跳转到了哪个文件中
+
+- 使用`:tjump/函数名`
 
 - 使用 `Ctrl-T` 返回到跳转之前的位置。
 
-### 使用 tag 文件实现函数跳转（基于 ctags）
+### way2：使用 tag 文件实现函数跳转（基于 ctags）【推荐】
 
 另一个常用的跳转方式是使用 ctags 来生成标签文件，这可以在 Vim 中实现函数的跳转。
 
@@ -582,6 +593,8 @@ vim
 `grep -r "函数名" path`
 
 `grep -rn "函数名" path # n: 显示行号`
+
+`grep -r "待查找内容" --include="*.c"`
 
 
 # 6. 编译
