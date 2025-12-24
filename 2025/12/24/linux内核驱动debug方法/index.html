@@ -19,24 +19,22 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="一、内存虚拟化介绍 虚拟化有软件模拟方式和硬件模拟方式  软件模拟方式需要通过影子页表来实现内存映射，速度比较慢 硬件模拟方式丢弃了影子页表的方式，通过4种地址来实现转换：  gva -&gt; vm转换为 -&gt; gpa hva -&gt; kvm转换为 -&gt; hpa">
+    <meta name="description" content="当我们需要查看内核中函数是否调用、入参值是否符合预期、函数返回值、函数调用栈等问题时，我们可以在启动机器后，通过trace方法来动态获取这些信息。 ftrace是最常用的工具，其中kprobe和tracepoint是其中的两个子工具。 kprobe 内核中几乎所有函数都可以被kprobe拦截，包括内核初始化时的函数。kprobe可以用来跟踪函数的调用、入参值和返回值，且不需要手动写trace代码。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="虚拟化：内存虚拟化">
-<meta property="og:url" content="https://akirazheng.github.io/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/index.html">
+<meta property="og:title" content="linux内核驱动debug方法">
+<meta property="og:url" content="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一、内存虚拟化介绍 虚拟化有软件模拟方式和硬件模拟方式  软件模拟方式需要通过影子页表来实现内存映射，速度比较慢 硬件模拟方式丢弃了影子页表的方式，通过4种地址来实现转换：  gva -&gt; vm转换为 -&gt; gpa hva -&gt; kvm转换为 -&gt; hpa">
+<meta property="og:description" content="当我们需要查看内核中函数是否调用、入参值是否符合预期、函数返回值、函数调用栈等问题时，我们可以在启动机器后，通过trace方法来动态获取这些信息。 ftrace是最常用的工具，其中kprobe和tracepoint是其中的两个子工具。 kprobe 内核中几乎所有函数都可以被kprobe拦截，包括内核初始化时的函数。kprobe可以用来跟踪函数的调用、入参值和返回值，且不需要手动写trace代码。">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://akirazheng.github.io/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/2025-09-14-15-15-33.png">
-<meta property="article:published_time" content="2025-09-14T07:03:46.000Z">
-<meta property="article:modified_time" content="2025-11-22T18:47:28.269Z">
+<meta property="article:published_time" content="2025-12-24T11:48:13.000Z">
+<meta property="article:modified_time" content="2025-12-24T14:07:24.790Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://akirazheng.github.io/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/2025-09-14-15-15-33.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>虚拟化：内存虚拟化 · AkiraZheng&#39;s Time</title>
+    <title>linux内核驱动debug方法 · AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -274,7 +272,7 @@
                 <a href="/">AkiraZheng&#39;s Time.</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">虚拟化：内存虚拟化</a>
+                <a href="#" class="post-name">linux内核驱动debug方法</a>
             </div>
         </div>
     
@@ -320,7 +318,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                虚拟化：内存虚拟化
+                linux内核驱动debug方法
             <!-- 404 -->
             
         </h1>
@@ -339,13 +337,13 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">94</span>Reading time: <span class="post-count reading-time">1 min</span></span>
+                        <span>Word count: <span class="post-count word-count">1.4k</span>Reading time: <span class="post-count reading-time">6 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
                     <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2025/09/14</span>
+                    <span class="post-intro-time">2025/12/24</span>
                     <!-- busuanzi -->
                     
                         <span id="busuanzi_container_page_pv" class="busuanzi-pv">
@@ -500,26 +498,60 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="一内存虚拟化介绍">一、内存虚拟化介绍</h1>
-<p>虚拟化有<strong>软件模拟方式和硬件模拟方式</strong></p>
-<ul>
-<li><p>软件模拟方式需要通过<strong>影子页表</strong>来实现内存映射，速度比较慢</p></li>
-<li><p>硬件模拟方式丢弃了影子页表的方式，通过4种地址来实现转换：</p>
-<ul>
-<li><p>gva -&gt; vm转换为 -&gt; gpa</p></li>
-<li><p>hva -&gt; kvm转换为 -&gt; hpa</p></li>
-</ul></li>
-</ul>
-<p><img src="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/2025-09-14-15-15-33.png"></p>
+        <p>当我们需要查看<strong>内核中函数是否调用、入参值是否符合预期、函数返回值、函数调用栈</strong>等问题时，我们可以在启动机器后，通过<code>trace</code>方法来动态获取这些信息。</p>
+<p><code>ftrace</code>是最常用的工具，其中<code>kprobe</code>和<code>tracepoint</code>是其中的两个子工具。</p>
+<h1 id="kprobe">kprobe</h1>
+<p>内核中几乎所有函数都可以被<code>kprobe</code>拦截，包括内核初始化时的函数。<code>kprobe</code>可以用来跟踪函数的调用、入参值和返回值，且不需要<strong>手动写trace代码</strong>。</p>
+<p>在 host 中用 kprobe 查看 vfio_pci_set_msi_trigger：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">cd /sys/kernel/debug/tracing</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 禁用所有已存在的 kprobe 事件（关键步骤）</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 这会关闭所有 events/kprobes/ 下的 <span class="built_in">enable</span> 开关</span></span><br><span class="line">echo 0 &gt; events/kprobes/enable 2&gt;/dev/null</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 1. 查看当前已经添加跟踪的事件</span></span><br><span class="line">cat kprobe_events</span><br><span class="line"><span class="meta">#</span><span class="bash"> 在./events/kprobes/路径下就有这个vfio_pci_set_msi_trigger</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> p:kprobes/vfio_pci_set_msi_trigger vfio_pci_set_msi_trigger <span class="built_in">type</span>=%x1:u32 count=%x3:u32 flags=%x4:u32</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 2. 使用简单ftrace查看</span></span><br><span class="line">echo &#x27;p:kprobes/vfio_pci_set_msi_trigger vfio_pci_set_msi_trigger type=%x1:u32 count=%x3:u32 flags=%x4:u32&#x27; &gt; kprobe_events</span><br><span class="line">echo nostacktrace &gt; /sys/kernel/debug/tracing/trace_options  # 关闭调用栈的打印，只看vfio_pci_set_msi_trigger的入参显示</span><br><span class="line">echo 1 &gt; events/kprobes/enable</span><br><span class="line">echo 1 &gt; tracing_on</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 3. 查看输出</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> cat trace <span class="comment"># 可以看到所有的 trace，包括耗时</span></span></span><br><span class="line">cat trace_pipe # 实时采集管道，退出后就看不到了</span><br><span class="line">cat trace_pipe | tee /tmp/trace.log # 使用tee同时输出到屏幕和文件</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 4. 停止追踪</span></span><br><span class="line">echo 0 &gt; tracing_on</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 5. 清空缓存</span></span><br><span class="line">echo &gt; trace</span><br></pre></td></tr></table></figure>
+<p>用 kprobe 查看<code>__setup_irq</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">cd /sys/kernel/debug/tracing</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 清理旧的kprobe</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">echo</span> &gt; kprobe_events</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 禁用所有已存在的 kprobe 事件（关键步骤）</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 这会关闭所有 events/kprobes/ 下的 <span class="built_in">enable</span> 开关</span></span><br><span class="line">echo 0 &gt; events/kprobes/enable 2&gt;/dev/null</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 添加三个跟踪函数</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ARM64架构：x0=irq参数，x1=desc参数</span></span><br><span class="line">echo &#x27;p:kprobes/__setup_irq __setup_irq irq=%x0 desc=%x1 new=%x2&#x27; &gt; kprobe_events</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 开启跟踪</span></span><br><span class="line">echo 1 &gt; events/kprobes/enable</span><br><span class="line">echo 1 &gt; tracing_on</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看输出</span></span><br><span class="line">cat trace_pipe # 实时采集管道，退出后就看不到了</span><br><span class="line">cat trace_pipe | tee /tmp/trace.log # 使用tee同时输出到屏幕和文件</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 停止追踪</span></span><br><span class="line">echo 0 &gt; tracing_on</span><br><span class="line"><span class="meta">#</span><span class="bash"> 清理kprobe</span></span><br><span class="line">echo &gt; kprobe_events</span><br></pre></td></tr></table></figure>
+<h1 id="tracepoint-内核插桩">tracepoint 内核插桩</h1>
+<p>trace point 是内核中预定义的跟踪点，通常用于跟踪内核事件。与 kprobe
+不同，tracepoint 需要内核源码中明确定义。并显式调用 tracepoint
+事件。</p>
+<p>有时我们需要<code>printk</code>来输出信息，但<code>printk</code>的输出量很大，且无法控制输出格式。而
+tracepoint 可以通过 ftrace 来控制输出，且输出格式可以自定义。</p>
+<p><code>tracepoint</code>都有一个 name、一个 enable
+开关和一系列桩函数。</p>
+<h2 id="tracepoint-结构体">tracepoint 结构体</h2>
+<p>在<code>./include/linux/tracepoint-defs.h</code>中提供了<code>tracepoint struct</code>结构体来定义
+tracepoint 的信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tracepoint</span> &#123;</span></span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span> *name;               <span class="comment">/* Tracepoint name */</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">static_key_false</span> <span class="title">key</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">static_call_key</span> *<span class="title">static_call_key</span>;</span></span><br><span class="line">        <span class="keyword">void</span> *static_call_tramp;</span><br><span class="line">        <span class="keyword">void</span> *iterator;</span><br><span class="line">        <span class="keyword">void</span> *probestub;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">tracepoint_func</span> __<span class="title">rcu</span> *<span class="title">funcs</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">tracepoint_ext</span> *<span class="title">ext</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="创建-tracepoint">创建 tracepoint</h2>
+<p>内核里已经自带实现了许多 tracepoint
+桩函数，可以在<code>/sys/kernel/debug/tracing/events/</code>目录下看到。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@akira:/sys/kernel/tracing# ls ./events/irq</span><br><span class="line">enable  filter  irq_handler_entry  irq_handler_exit  softirq_entry  softirq_exit  softirq_raise</span><br></pre></td></tr></table></figure>
+<p>如果想实现添加自己的 tracepoint，可以参考下面的步骤：</p>
+<p>首先要在内核中插件入 tracepoint，需要在内核源码中添加 tracepoint
+的定义和实现。一般基于模块粒度创建一个<code>trace</code>头文件，本例中创建<code>./include/trace/events/irq.</code>。</p>
+<p>比如对于<code>irq</code>，可以在<code>./include/trace/events/irq.h</code>中添加
+tracepoint 定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* SPDX-License-Identifier: GPL-2.0 */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> TRACE_SYSTEM</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> TRACE_SYSTEM irq</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> !defined(_TRACE_IRQ_H) || defined(TRACE_HEADER_MULTI_READ)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _TRACE_IRQ_H</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/tracepoint.h&gt;</span></span></span><br></pre></td></tr></table></figure>
+<p>然后可以在<code>./include/trace/events/irq.h</code>中添加 tracepoint
+的定义和实现，一个 tracepoint
+文件可以包含多个事件，这里以<code>irq_handler_exit</code>为例：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * irq_handler_exit - called immediately after the irq action handler returns</span></span><br><span class="line"><span class="comment">  * @irq: irq number</span></span><br><span class="line"><span class="comment">  * @action: pointer to struct irqaction</span></span><br><span class="line"><span class="comment">  * @ret: return value</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * If the @ret value is set to IRQ_HANDLED, then we know that the corresponding</span></span><br><span class="line"><span class="comment">  * @action-&gt;handler successfully handled this irq. Otherwise, the irq might be</span></span><br><span class="line"><span class="comment">  * a shared irq line, or the irq was not handled successfully. Can be used in</span></span><br><span class="line"><span class="comment">  * conjunction with the irq_handler_entry to understand irq handler latencies.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> TRACE_EVENT(irq_handler_exit,                          <span class="comment">// tracepoint name 可自定义，后面使用时用 trace_irq_handler_exit 来调用</span></span><br><span class="line"> </span><br><span class="line">         TP_PROTO(<span class="keyword">int</span> irq, struct irqaction *action, <span class="keyword">int</span> ret),</span><br><span class="line"></span><br><span class="line">         TP_ARGS(irq, action, ret),                             <span class="comment">// 函数参数</span></span><br><span class="line"> </span><br><span class="line">         TP_STRUCT__entry(                      <span class="comment">// 表示当前 trace 函数定义了这些变量  </span></span><br><span class="line">                 __field(        <span class="keyword">int</span>,    irq     )</span><br><span class="line">                 __field(        <span class="keyword">int</span>,    ret     )</span><br><span class="line">         ),</span><br><span class="line"> </span><br><span class="line">         TP_fast_assign(            <span class="comment">// 对前面定义的 trace 函数变量进行赋值</span></span><br><span class="line">                 __entry-&gt;irq    = irq;</span><br><span class="line">                 __entry-&gt;ret    = ret;</span><br><span class="line">         ),</span><br><span class="line"> </span><br><span class="line">         TP_printk(<span class="string">&quot;irq=%d ret=%s&quot;</span>,</span><br><span class="line">                  __entry-&gt;irq, __entry-&gt;ret ? <span class="string">&quot;handled&quot;</span> : <span class="string">&quot;unhandled&quot;</span>) <span class="comment">// tracepoint 的输出格式，也就是前面说的可以替代printk的地方</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<h2 id="代码中调用-tracepoint">代码中调用 tracepoint</h2>
+<p>在内核代码中，可以通过<code>trace_irq_handler_exit</code>来调用
+tracepoint。比如在<code>./kernel/irq/handle.c</code>中添加：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;trace/events/irq.h&gt;</span></span></span><br><span class="line">trace_irq_handler_exit(irq, action, res);</span><br></pre></td></tr></table></figure>
+<h2 id="内核中动态查看相关桩函数的打印">内核中动态查看相关桩函数的打印</h2>
+<p>查看可用的 tracepoint 以及它们的输出格式：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 查看所有 irq 相关的 tracepoints</span></span><br><span class="line">ls /sys/kernel/tracing/events/irq/</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看特定 tracepoint 的格式</span></span><br><span class="line">cat /sys/kernel/tracing/events/irq/irq_handler_exit/format</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 输出示例：</span></span><br><span class="line">name: irq_handler_exit</span><br><span class="line">ID: 1234</span><br><span class="line">format:</span><br><span class="line">        field:unsigned short common_type;       offset:0;       size:2; signed:0;</span><br><span class="line">        field:unsigned char common_flags;       offset:2;       size:1; signed:0;</span><br><span class="line">        field:unsigned char common_preempt_count;       offset:3;       size:1; signed:0;</span><br><span class="line">        field:int common_pid;   offset:4;       size:4; signed:1;</span><br><span class="line">        field:int irq;  offset:8;       size:4; signed:1;</span><br><span class="line">        field:int ret;  offset:12;      size:4; signed:1;</span><br></pre></td></tr></table></figure>
+<p>启用和查看 tracepoint</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 方法1：单个启用</span></span><br><span class="line">echo 1 &gt; /sys/kernel/tracing/events/irq/irq_handler_exit/enable</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 方法2：启用所有 irq 相关的 tracepoints</span></span><br><span class="line">echo 1 &gt; /sys/kernel/tracing/events/irq/enable</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 开启跟踪</span></span><br><span class="line">echo 1 &gt; /sys/kernel/tracing/tracing_on</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看输出</span></span><br><span class="line">cat /sys/kernel/tracing/trace</span><br><span class="line"><span class="meta">#</span><span class="bash"> 或实时查看</span></span><br><span class="line">cat /sys/kernel/tracing/trace_pipe</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 停止跟踪</span></span><br><span class="line">echo 0 &gt; /sys/kernel/tracing/tracing_on</span><br><span class="line">echo 0 &gt; /sys/kernel/tracing/events/irq/irq_handler_exit/enable</span><br></pre></td></tr></table></figure>
+<p>也可以使用 perf 工具来查看 tracepoint 的输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 查看所有可用的 tracepoints</span></span><br><span class="line">sudo perf list | grep irq:</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 记录 tracepoint 事件</span></span><br><span class="line">sudo perf record -e irq:irq_handler_exit -a sleep 10</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 实时查看</span></span><br><span class="line">sudo perf trace -e irq:irq_handler_exit</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 统计事件计数</span></span><br><span class="line">sudo perf stat -e irq:irq_handler_exit -a sleep 10</span><br></pre></td></tr></table></figure>
 
     </article>
     <!-- license -->
     
         <div class="license-wrapper">
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
-            <p>Link：<a href="https://akirazheng.github.io/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">https://akirazheng.github.io/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/</a>
-            <p>Publish date：<a href="https://akirazheng.github.io/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">September 14th 2025, 3:03:46 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">November 23rd 2025, 2:47:28 am</a>
+            <p>Link：<a href="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">December 24th 2025, 7:48:13 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">December 24th 2025, 10:07:24 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -527,17 +559,12 @@
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/" title="虚拟化：IO虚拟化">
-                    <div class="nextTitle">虚拟化：IO虚拟化</div>
-                </a>
-            
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/" title="虚拟化：CPU虚拟化">
-                    <div class="prevTitle">虚拟化：CPU虚拟化</div>
+                <a href="/2025/11/22/cacheLine%E7%AB%9E%E4%BA%89%E5%AF%B9%E6%80%A7%E8%83%BD%E7%9A%84%E5%BD%B1%E5%93%8D/" title="cacheLine竞争对性能的影响">
+                    <div class="prevTitle">cacheLine竞争对性能的影响</div>
                 </a>
             
         </li>
@@ -685,7 +712,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96%E4%BB%8B%E7%BB%8D"><span class="toc-text">一、内存虚拟化介绍</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#kprobe"><span class="toc-text">kprobe</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#tracepoint-%E5%86%85%E6%A0%B8%E6%8F%92%E6%A1%A9"><span class="toc-text">tracepoint 内核插桩</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#tracepoint-%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-text">tracepoint 结构体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-tracepoint"><span class="toc-text">创建 tracepoint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E4%B8%AD%E8%B0%83%E7%94%A8-tracepoint"><span class="toc-text">代码中调用 tracepoint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E4%B8%AD%E5%8A%A8%E6%80%81%E6%9F%A5%E7%9C%8B%E7%9B%B8%E5%85%B3%E6%A1%A9%E5%87%BD%E6%95%B0%E7%9A%84%E6%89%93%E5%8D%B0"><span class="toc-text">内核中动态查看相关桩函数的打印</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
