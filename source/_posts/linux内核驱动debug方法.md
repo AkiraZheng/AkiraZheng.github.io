@@ -316,3 +316,197 @@ sudo perf trace -e irq:irq_handler_exit
 # 统计事件计数
 sudo perf stat -e irq:irq_handler_exit -a sleep 10
 ```
+
+# perf 性能分析工具
+
+perf 是基于 Linux 内核提供的 tracepoint 性能事件 perf_events 来进行性能分析的工具。它可以用于分析 CPU 性能、内存性能、I/O 性能等方面的问题。
+
+- `perf stat`：用于统计性能事件的计数，例如 CPU 周期数、指令数、缓存命中率等。简单的屏幕输出，支持的指令可以用`perf stat -h`查看。
+    
+    `perf stat -a sleep 10`：统计全系统在 10 秒内的性能事件计数。
+
+    假设有一个测试的可执行文件要分析，可以使用以下命令： `perf stat -e cycles,instructions,cache-references,cache-misses ./test_program`
+
+    - -a：显示所有 CPU 上的统计信息。
+    - -c：显示指定 CPU 上的统计信息。
+    - -e：指定要显示的事件。
+    - -i：禁止子任务继承父任务的性能计数器。
+    - -r：重复执行 n 次目标程序，并给出性能指标在 n 次执行中的变化范围。
+    - -p：指定要显示的进程的 ID。
+    - -t：指定要显示的线程的 ID。
+- `perf record`：用于记录性能事件的采样数据，可以生成性能分析报告。可以与`-e`选项指定要记录的事件类型。通过`perf record -h`查看指令参数
+    
+    比如针对 irq ：`perf record -e "irq:irq_handler_exit,irq:irq_handler_entry" -a -- sleep 2`
+
+    - -a：分析整个系统的性能
+    - -A：以 append 的方式写输出文件
+    - -c：事件的采样周期
+    - -C：只采集指定 CPU 数据
+    - -e：选择性能事件，可以是硬件事件也可以是软件事件
+    - -f：以 OverWrite 的方式写输出文件
+    - -g：记录函数间的调用关系
+    - -o：指定输出文件，默认为 perf.data
+    - -p：指定一个进程的 ID 来采集特定进程的数据
+    - -t：指定一个线程的 ID 来采集特定线程的数据
+
+- `perf report`：针对`perf record`生成的采样数据进行分析和报告。通过`perf report -h`查看指令参数
+    
+    比如：`perf report`
+
+    - -c<n>：指定采样周期
+    - -C<cpu>：只显示指定 CPU 的信息
+    - -d<dos>：只显示指定 dos 的符号
+    - -g：生成函数调用关系图，具体等同于 perf top 命令中的 -g
+    - -i：导入的数据文件的名称，默认为 perf.data
+    - -M：以指定汇编指令风格显示
+    - –sort：分类统计信息，如 PID、COMM、CPU 等
+    - -S：只考虑指定符号
+    - -U：只显示已解析的符号
+    - -v：显示每个符号的地址
+
+<img src=2025-12-26-22-03-58.png>
+
+<img src=2025-12-26-22-09-27.png>
+
+1. 第一列：Children
+
+    这列表示当前函数或符号所占的执行时间占比。
+
+    例如，77.14% 表示该项在整个分析的执行时间中占用了 99.95%。
+
+2. 第三列：Command
+
+    这列显示了执行命令的名称。例如，swapper 是 Linux 内核中的一个常见进程，负责交换内存页。
+
+3. 第四列：Shared Object
+
+    这列显示符号所属的共享对象或库。
+
+    在这个例子中，[kernel.kallsysms] 表示这是内核的符号。
+
+    [k] 表示该符号或函数是在内核模式下执行的。
+
+4. 第五列：Symbol
+
+    这列列出了对应的符号或**函数名称**。例如：default_idle_call。
+
+## 查看可用的性能事件
+
+```shell
+perf -h
+perf list # 查看所有可用的性能事件
+perf list | grep kvm  # 查看某个子模块的性能事件
+```
+
+## 生成火焰图
+
+要生成火焰图必须有调用栈信息，所以需要在`perf record`时加上`-g`选项。
+
+用`perf record -g`记录采样数据后，通过`perf script > out.perf`生成脚本文件，该脚本数据可以用于生成火焰图。
+
+然后使用`FlameGraph`工具生成火焰图。
+
+```shell
+git clone https://github.com/brendangregg/FlameGraph.git
+cd FlameGraph
+```
+
+生成火焰图：
+
+```shell
+./stackcollapse-perf.pl ../out.perf > out.folded
+./flamegraph.pl out.folded > flamegraph.svg
+```
+
+将生成的`flamegraph.svg`文件用浏览器打开即可看到火焰图。
+
+## 实战
+
+写一个简单的测试程序 test.c：
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+
+int main(void)
+{
+        int times_s = 10;//10s
+        int num = 1;
+        for (int i = 0; i < times_s * 1000; ++i) {
+                num += 1;
+                usleep(1000);//睡眠1us
+        }
+        return 0;
+}
+```
+
+编译并运行（运行的时候加上 perf record）：
+
+```shell
+gcc -o test test.c
+perf record ./test
+```
+
+<img src=2025-12-26-22-26-52.png>
+
+- 22.22% test libc-2.31.so clock_nanosleep@GLIBC_2.17：
+
+    这表示 test 程序在执行时，clock_nanosleep 函数占用了 22.22% 的 CPU 时间。
+
+    clock_nanosleep 来自 libc-2.31.so 库，表示程序在执行睡眠操作（或者等待）时占用了大量 CPU 时间。
+
+- 13.68% test [kernel.kallsysms] __arm64_sys_clock_nanosleep：
+
+    这个符号表示内核调用 __arm64_sys_clock_nanosleep，也就是说内核在处理 clock_nanosleep 系统调用时占用了 13.68% 的 CPU 时间。
+
+    __arm64_sys_clock_nanosleep 是 ARM64 平台下的系统调用处理函数。
+
+- 13.25% test [kernel.kallsysms] el0_svc_common.constprop.0：
+
+    该符号与内核中系统调用的处理有关，尤其是与特定的服务调用（SVC）相关。
+
+    SVC（Supervisor Call） 是一种特权指令，用于从用户模式切换到内核模式。
+
+- 8.55% test [kernel.kallsysms] common_nsleep：
+
+    这个符号表示内核中的 common_nsleep，与常见的睡眠操作有关。它占用了 8.55% 的 CPU 时间。
+
+下面针对这个测试程序生成火焰图：
+
+```shell
+perf record -g ./test
+perf script > out.perf
+cd FlameGraph
+./stackcollapse-perf.pl ../out.perf > out.folded
+./flamegraph.pl out.folded > flamegraph.svg
+```
+
+生成火焰图的效果图：
+
+<img src=2025-12-26-22-46-24.png>
+
+这个火焰图**主要显示了程序在执行 `usleep()` 导致的系统调用 `nanosleep()` 时花费了大量时间**。您提供的代码正是导致此性能特征的原因。
+
+*   **Y轴（垂直方向）：** 表示函数调用栈的深度。底部的函数是调用者（父函数），其上方的函数是被调用者（子函数）。
+*   **X轴（水平方向）：** 表示该函数在性能分析采样期间占用的 CPU 时间比例，**宽度越宽，表示占用 CPU 时间越长**。X轴上的顺序没有特定的时间含义，仅用于最大化地合并相同调用栈的矩形块。
+*   **颜色：** 通常没有特定含义，仅用于区分不同的函数或表示新旧版本对比等。
+
+结合代码中有一个循环，每次循环都会调用 `usleep(1000)`（睡眠 1 毫秒）。
+
+```c
+for (int i = 0; i < times_s * 1000; ++i) {
+        num += 1;
+        usleep(1000);//睡眠1us
+}
+```
+
+这个火焰图显示：
+
+1. 最底层的 test（您的程序二进制文件，或 main 函数）是程序的起点。
+2. main 函数调用了 libc_start_main，然后调用 usleep。
+3. usleep 最终导致了 nanosleep 或类似的系统调用，例如 hrtimer_nanosleep 和 do_nanosleep，这些调用在图中形成了最宽的“火焰尖”。
+
+结论：
+- 图中最宽的区域是与 nanosleep 相关的系统调用栈。这表明您的程序大部分时间都花在了“睡眠”（等待）状态，而不是在执行计算任务。火焰图有效地指出了性能瓶颈在于频繁且耗时的睡眠操作。
+
+> [Linux 性能分析工具 perf 的使用指南](https://zhuanlan.zhihu.com/p/8497782204)
