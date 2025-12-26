@@ -66,6 +66,7 @@ example:
   - `$`: 行尾
 
 其他高级组合用法符号说明：
+
 - `viw`：选择当前单词（包括单词的前后空格）
 - `0`: 行首
 - `^`: 到本行**第一个**非空字符
@@ -157,6 +158,10 @@ sudo du -sh /* 2>/dev/null | sort -hr | head -n 10
 rm -rf /var/crash/*
 ```
 
+## 查看 CPU 使用率
+
+通常用`top`就能查看，但是如果要指定查看某个`CPU`的使用率可以用`mpstat -P 1 1`，这个还可以查看中断率
+
 ## 设置环境变量
 
 用 `export` 命令设置环境变量，例如：
@@ -186,6 +191,18 @@ echo 0 > /proc/sys/kernel/printk
 
 ```shell
 echo 7 > /proc/sys/kernel/printk
+```
+
+## 查看当前内核有哪些编译选项
+
+内核的编译选项一般存在`/boot/config-$(uname -r)`中，所以可以结合`grep`查看当前内核有没有编进去你想找的编译选项
+
+```shell
+# 查看当前包含的所有编译选项
+cat /boot/config-$(uname -r)
+
+# 查找有没有 KUT kvm 单元测试的编译选项
+grep -r CONFIG_KUT /boot/config-$(uname -r)
 ```
 
 ## 修改 linux-root 密码
@@ -223,6 +240,19 @@ Host *
 `cp file1.txt file2.txt`
 
 `cp -r /home/dir1 /home/dir2` 在源目录下有子目录时，用-r参数，表示递归复制
+
+## ll 文件字节数
+
+```shell
+akira@akira:~/linux-code$ ll tags
+-rw-rw-r-- 1 akira akira 1005478272 Dec 24 14:00 tags
+```
+
+`1005478272`单位是字节，以**3位**为间隔，可以展开成`1,005,478,272`
+
+- 1005478.272 **KB**
+- 1005.478272 **MB**
+- 1.005478272 **GB**
 
 ## 修改默认内核选项
 
@@ -443,6 +473,73 @@ gdb ./my_program
 
 ## qemu 指令
 
+## qemu 主线编译运行
+
+
+### 克隆QEMU工程
+
+克隆工程时必须加入`g--recurse-submodules`把子工程一并克隆下来
+
+```shell
+git clone --recurse-submodules https://github.com/qemu/qemu.git
+```
+
+**注意：克隆工程时一定要加上`--recurse-submodules`，否则很容易出现版本问题**
+
+### QEMU编译
+
+编译arm64架构下的qemu虚拟机：
+
+```shell
+mkdir build
+cd build
+
+# 执行前先创建QEMU的Python环境
+# 执行 ../configure 时，不加`--target-list`参数的话会使后面 make 时编译所有x86、ARM、RISC-V架构的代码，时间很久
+
+../configure --target-list=aarch64-softmmu
+
+make -j64
+
+ll qemu-system-aarch64 # 确认是否编译成可执行文件
+```
+
+编译完确认没报错后，需要打包生成的`qemu-system-aarch64`，然后由于选择的是动态编译，所以需要把所有的动态库打包进去：
+
+```shell
+mkdir qemu_build
+cp qemu-system-aarch64 qemu_build/
+mkdir qemu_build/libs
+ldd qemu-system-aarch64 | awk '{print $3}' | grep '^/' | xargs -I {} cp -v {} qemu_build/libs/	#拷贝动态库
+tar czf qemu_build.tar.gz qemu_build/
+```
+
+### 测试验证
+
+将编译的qemu放到开发板中进行测试验证
+
+```shell
+scp qemu_build.tar.gz <user>@<server>:</path/>
+tar -xzvf qemu_build.tar.gz
+```
+
+启动虚机：
+
+```shell
+./qemu_build/qemu_build/qemu-system-aarch64 -machine virt,gic-version=3 \
+-enable-kvm -cpu host -m 4G -smp 4 -net none -nographic \
+-kernel Image -initrd minifs.cpio.gz \
+-bios QEMU_EFI.fd \
+-append "rdinit=init root=init console=ttyAMA0 earlycon=pl011,0x9000000"
+```
+
+如果编译中出现库找不到的问题，可能是因为编译机跟开发机环境不一样，可以尝试下面的方法：
+
+```shell
+patchelf --set-rpath '$ORIGIN/libs' ./qemu_build/qemu-system-aarch64
+ldd ./qemu-system-aarch64 | grep '=> /' | awk '{print $3}' | xargs -I {} cp -v {} libs/
+```
+
 ## virsh 指令
 
 ```shell
@@ -588,6 +685,19 @@ vim
 
 <!-- ## shell 中查找整个哪个文件包含某个函数名 -->
 
+## 更新 tag
+
+第一种方法是使用 vim 插件 `vim-gutentags`，它会在保存文件时，自动在后台增量更新 tags 文件。
+
+第二种方法是手动增量更新 tags 文件：
+
+```shell
+ctags -R -a .
+ctags -R -a <filename>
+```
+
+`-a` 参数表示追加模式，这样可以避免每次都重新生成整个 tags 文件。
+
 ## 工程目录下查找某个函数名
 
 `grep -r "函数名" path`
@@ -605,4 +715,42 @@ vim
 
 ```shell
 objdump -D myfile.o > myfile.s
+```
+
+# 7. 硬件参数查询
+
+## 查看 CPU 数、numa数、qemu 线程 pid
+
+```shell
+lscpu
+numactl -H
+```
+
+qemu 进入monitor
+
+```shell
+info cpus
+```
+
+## 开关 SMT
+
+SMT (Simultaneous Multithreading, 同时多线程) 
+
+也就是假设你的单 P （单 socket 槽）机器上有 64 个物理核，如果**关 SMT**的话，同一时刻只能有 64 个逻辑核，同一时刻也只能有 64 个线程。
+
+但是当**开 SMT**后，可以启用超线程，把逻辑核翻倍，每两个逻辑核公用一套物理核上的资源，但是此时每个物理核上同一时刻可以跑 2 个逻辑核，同时跑 2 个线程。
+开 SMT 后重新用`lscpu`查看 cpu 数，可以看到显示的 `cpu online`数量翻倍了。
+
+可以通过以下方式查看 CPU 是否支持 SMT 超线程、以及当前是否开启了 SMT 超线程：
+
+```shell
+cat /sys/devices/system/cpu/smt/active 
+cat /sys/devices/system/cpu/smt/control 
+```
+
+```shell
+akira@akira:~$ cat /sys/devices/system/cpu/smt/active 
+0 # 说明当前没开，开了的话应该是 1
+akira@akira:~$ cat /sys/devices/system/cpu/smt/control 
+notimplemented # 说明 CPU 不支持 SMT 超线程，支持的话应该是 on 或者 off
 ```
