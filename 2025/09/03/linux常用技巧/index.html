@@ -27,7 +27,7 @@
 <meta property="og:description" content="1. vim  .:小数点，重复上一次的命令  vim 中进行查找 1）基本查找命令 查找下一个匹配项： 1&#x2F;&lt;搜索内容&gt;  按下 &#x2F; 键，输入要查找的内容，然后按下回车键 Enter。 例如：&#x2F;hello表示查找 hello  2）跳转到另一个查找结果 &#x2F;hello查找后，要先按 enter 键，然后按 n 键才能跳转到下一个匹配项。  跳转到下一个匹配项：按n键 跳转到上一个匹配项">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-09-03T07:50:10.000Z">
-<meta property="article:modified_time" content="2025-12-27T09:03:21.152Z">
+<meta property="article:modified_time" content="2025-12-27T09:04:39.652Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -620,7 +620,7 @@ host 用以下方法暂时关闭，这样开启 guest
 <h3 id="编好的-rpm-包">编好的 rpm 包</h3>
 <p>如果是编了 rpm 包，还没有 rpm
 添加进服务器内核，且没有更新内核的话：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rpm2cpio kernel-xxx.rpm | cpio -idmv # 这样会把内核解压到当前目录下，生成一个`boot`和`lib`目录</span><br><span class="line">grep -r &quot;CONFIG NAME&quot; .</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rpm2cpio kernel-xxx.rpm | cpio -idmv # 这样会把内核解压到当前目录下，生成一个`boot`和`lib`目录</span><br><span class="line">grep -r &quot;CONFIG_XXX&quot; .</span><br></pre></td></tr></table></figure>
 <p>对于已经<code>rpm -qa</code>安装的内核包，可以用以下命令查看内核编译选项：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpm -q --configfiles kernel-&lt;version&gt;.rpm</span><br></pre></td></tr></table></figure>
 <h2 id="修改-linux-root-密码">修改 linux-root 密码</h2>
@@ -850,7 +850,7 @@ SMT</strong>后，可以启用超线程，把逻辑核翻倍，每两个逻辑�
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">September 3rd 2025, 3:50:10 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">December 27th 2025, 5:03:21 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">December 27th 2025, 5:04:39 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
