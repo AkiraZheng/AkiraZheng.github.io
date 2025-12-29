@@ -31,7 +31,7 @@
 <meta property="og:image" content="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/2025-12-26-22-26-52.png">
 <meta property="og:image" content="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/2025-12-26-22-46-24.png">
 <meta property="article:published_time" content="2025-12-24T11:48:13.000Z">
-<meta property="article:modified_time" content="2025-12-29T08:29:44.087Z">
+<meta property="article:modified_time" content="2025-12-29T13:54:51.823Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/2025-12-26-22-03-58.png">
@@ -342,7 +342,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">3.7k</span>Reading time: <span class="post-count reading-time">15 min</span></span>
+                        <span>Word count: <span class="post-count word-count">3.9k</span>Reading time: <span class="post-count reading-time">16 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -537,15 +537,27 @@ events</h2>
 kprobe_events</h2>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;p:kprobes/__setup_irq __setup_irq irq=%x0 desc=%x1 new=%x2&#x27; &gt; kprobe_events</span><br><span class="line">cat kprobe_events # 此时就能看到刚刚添加的 kprobe 事件</span><br><span class="line">ls events/kprobes/  | grep __setup_irq  # 此时能看到 __setup_irq 事件了</span><br></pre></td></tr></table></figure>
 <p>其中可以根据参数类型来选择不同的格式化输出：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;p:kprobes/vfio_pci_set_msi_trigger vfio_pci_set_msi_trigger type=%x1:u32 count=%x3:u32 flags=%x4:u32&#x27; &gt; kprobe_events</span><br><span class="line">echo &#x27;p:nic_open hns3_nic_net_up name=+0(%x0):string state=+64(%x0):x64&#x27; &gt; kprobe_events</span><br></pre></td></tr></table></figure>
-<p>参数类型： - <code>:x8-64</code>：表示 8-64 位十六进制数 -
-<code>:s8-64</code>：表示 8-64 位有符号十进制数 -
-<code>:u8-64</code>：表示 8-64 位无符号十 -
-<code>:string</code>：表示字符串</p>
-<p>而这里的<code>+0(%x0):string</code>表示从第 0
-个偏移量开始读取字符串，<code>+64(%x0):x64</code>表示从第 64
-个偏移量开始读取一个 64
-位十六进制数。可以通过<code>cat /sys/kernel/debug/tracing/events/kprobes/nic_open/format</code>来查看具体的偏移量。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;p:kprobes/vfio_pci_set_msi_trigger vfio_pci_set_msi_trigger type=%x1:u32 count=%x3:u32 flags=%x4:u32&#x27; &gt; kprobe_events</span><br><span class="line">echo &#x27;p:kprobes/nic_open hns3_nic_net_up name=+0(%x0):string state=+64(%x0):x64&#x27; &gt; kprobe_events</span><br></pre></td></tr></table></figure>
+<p>参数类型：</p>
+<ul>
+<li><code>:x8-64</code>：表示 8-64 位十六进制数</li>
+<li><code>:s8-64</code>：表示 8-64 位有符号十进制数</li>
+<li><code>:u8-64</code>：表示 8-64 位无符号十</li>
+<li><code>:string</code>：表示字符串</li>
+</ul>
+<p>寄存器参数：寄存器一般是通用寄存器，在 ARM64 架构中，参数传递通常使用
+<strong>x0 到 x7</strong> 寄存器，按照传入参数顺序依次为 -
+第一个参数：<code>%x0</code> - 第二个参数：<code>%x1</code> - ...</p>
+<p>所以我们一般要求函数参数控制在 5
+个以内，如果函数参数超过了寄存器的数量，额外的参数通常会通过 栈 或
+其他寄存器 传递。</p>
+<!-- 如果不确定偏移值到底是多少，可以先不带参数类型添加进去`echo 'p:kprobes/nic_open hns3_nic_net_up' > kprobe_events`，添加成功后，再查看`/sys/kernel/debug/tracing/events/kprobes/nic_open/format`，根据偏移量再重新添加进去。偏移量一般是相对于传入的参数是一个结构体指针的偏移。
+
+而这里的`+0(%x0):string`表示从第 0 个偏移量开始读取字符串，`+64(%x0):x64`表示从第 64 个偏移量开始读取一个 64 位十六进制数。可以通过`cat /sys/kernel/debug/tracing/events/kprobes/nic_open/format`来查看具体的偏移量。 -->
+<p>查找对应偏移量的方法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> way 1</span></span><br><span class="line">cat /proc/kallsyms | grep hns3_nic_net_up  # /proc/kallsyms 中包含了内核中所有符号的地址，查看函数地址</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> way 2</span></span><br><span class="line">objdump -d /path/to/vmlinux | grep hns3_nic_net_up -A 20  # 反汇编查看函数实现</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> way 3：gdb 可以调试内核并查看寄存器的使用（结构体偏移量推荐用gdb查看，可以参考下面的文章）</span></span><br><span class="line">gdb /path/to/vmlinux</span><br><span class="line">(gdb) disassemble hns3_nic_net_up</span><br></pre></td></tr></table></figure>
+<p>偏移量的获取参考<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2404303">Kernel调试追踪技术之
+Kprobe on ARM64</a></p>
 <h2 id="过滤禁止输出调用栈">过滤、禁止输出调用栈</h2>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;name==&quot;eth2&quot;&#x27; &gt; events/kprobes/filter  # 过滤入参 name==eth2 的事件</span><br><span class="line">echo &#x27;pid!=1234&#x27; &gt; events/kprobes/filter  # 过滤特定 pid 的事件</span><br><span class="line">echo nostacktrace &gt; /sys/kernel/debug/tracing/trace_options  # 关闭调用栈的打印，只看 __setup_irq 的入参显示</span><br></pre></td></tr></table></figure>
 <h2 id="启动追踪">启动追踪</h2>
@@ -553,7 +565,7 @@ kprobe_events</h2>
 <h2 id="查看输出">查看输出</h2>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cat trace # 可以看到所有的 trace，包括耗时</span><br><span class="line">cat trace_pipe # 实时采集管道，退出后就看不到了</span><br><span class="line">cat trace_pipe | tee /tmp/trace.log # 使用tee同时输出到屏幕和文件</span><br></pre></td></tr></table></figure>
 <h2 id="停止追踪">停止追踪</h2>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 0 &gt; tracing_on</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo 0 &gt; tracing_on</span><br><span class="line">echo 0 &gt; events/kprobes/enable</span><br></pre></td></tr></table></figure>
 <h2 id="清空缓存">清空缓存</h2>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &gt; trace</span><br></pre></td></tr></table></figure>
 <h2 id="示例使用-kprobe-跟踪__setup_irq">示例：使用 kprobe
@@ -744,7 +756,7 @@ perf 的使用指南</a></p>
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">December 24th 2025, 7:48:13 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">December 29th 2025, 4:29:44 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">December 29th 2025, 9:54:51 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
