@@ -17,15 +17,15 @@ categories:
 如果要过滤的话，可以查看该函数的`format`才能知道怎么过滤：
 
 ```shell
-cat /sys/kernel/debug/tracing/events/目录/函数名/format
+cat events/目录/函数名/format
 # eg：
-cat /sys/kernel/debug/tracing/events/irq/irq_handler_entry/format
+cat events/irq/irq_handler_entry/format
 ```
 
 然后就可以根据`format`中的字段来过滤：
 
 ```shell
-echo 'irq==123' > /sys/kernel/debug/tracing/events/irq/irq_handler_entry/filter
+echo 'irq==123' > events/irq/irq_handler_entry/filter
 ```
 
 ## 查看有哪些可用的 trace events
@@ -83,24 +83,79 @@ echo > trace
 
 ## 添加 kprobe 事件到 kprobe_events
 
+原生`tracing`目录下是没有`events/kprobes/`目录的，但是为了方便管理 kprobe 事件，我们可以把 kprobe 事件都添加到`events/kprobes/`目录下进行管理。（echo 命令里带不带 kprobes 都会被定向到kprobes文件夹中）
+
+添加的事项可以有 `p` 标志的和 `r`标志的，其中 `r`标志的表示跟踪的是这个函数的**返回值**
+
 ```shell
-echo 'p:kprobes/__setup_irq __setup_irq irq=%x0 desc=%x1 new=%x2' > kprobe_events
+echo 'p:kprobes/p___setup_irq __setup_irq irq=%x0 desc=%x1 new=%x2' > kprobe_events
+echo `r:kprobes/r___setup_irq __setup_irq ret=$retval` > kprobe_events
 cat kprobe_events # 此时就能看到刚刚添加的 kprobe 事件
 ls events/kprobes/  | grep __setup_irq  # 此时能看到 __setup_irq 事件了
 ```
+
+其中可以根据参数类型来选择不同的格式化输出：
+
+```shell
+echo 'p:vfio_pci_set_msi_trigger vfio_pci_set_msi_trigger type=%x1:u32 count=%x3:u32 flags=%x4:u32' > kprobe_events
+echo 'p:nic_open hns3_nic_net_up name=+0(%x0):string state=+64(%x0):x64' > kprobe_events
+```
+
+参数类型：
+
+- `:x8-64`：表示 8-64 位十六进制数
+- `:s8-64`：表示 8-64 位有符号十进制数
+- `:u8-64`：表示 8-64 位无符号十
+- `:string`：表示字符串
+
+寄存器参数：寄存器一般是通用寄存器，在 ARM64 架构中，参数传递通常使用 **x0 ~ x7** 寄存器，按照传入参数顺序依次为
+- 第一个参数：`%x0`
+- 第二个参数：`%x1`
+- ...
+
+所以我们一般要求函数参数控制在 5 个以内，如果函数参数超过了寄存器的数量，额外的参数通常会通过 栈 或 其他寄存器 传递。
+
+<!-- 如果不确定偏移值到底是多少，可以先不带参数类型添加进去`echo 'p:kprobes/nic_open hns3_nic_net_up' > kprobe_events`，添加成功后，再查看`/sys/kernel/debug/tracing/events/kprobes/nic_open/format`，根据偏移量再重新添加进去。偏移量一般是相对于传入的参数是一个结构体指针的偏移。
+
+而这里的`+0(%x0):string`表示从第 0 个偏移量开始读取字符串，`+64(%x0):x64`表示从第 64 个偏移量开始读取一个 64 位十六进制数。可以通过`cat /sys/kernel/debug/tracing/events/kprobes/nic_open/format`来查看具体的偏移量。 -->
+
+查找对应偏移量的方法：
+
+```shell
+# way 1
+cat /proc/kallsyms | grep hns3_nic_net_up  # /proc/kallsyms 中包含了内核中所有符号的地址，查看函数地址
+
+# way 2
+objdump -d /path/to/vmlinux | grep hns3_nic_net_up -A 20  # 反汇编查看函数实现
+
+# way 3：gdb 可以调试内核并查看寄存器的使用（结构体偏移量推荐用gdb查看，可以参考下面的文章）
+gdb /path/to/vmlinux
+(gdb) disassemble hns3_nic_net_up
+
+# way 4：
+# pahole 是查看内核结构体布局的最佳工具，它直接解析 DWARF 调试信息。
+# 假设我们要看：vfio_pci_core_device的入参结构体布局：
+# dnf install -y dwarves
+pahole -C vfio_pci_core_device
+```
+
+偏移量的获取参考[Kernel调试追踪技术之 Kprobe on ARM64](https://cloud.tencent.com/developer/article/2404303)
 
 ## 过滤、禁止输出调用栈
 
 ```shell
 echo 'name=="eth2"' > events/kprobes/filter  # 过滤入参 name==eth2 的事件
+# echo name!="eth2" > events/kprobes/nic_open/filter  # 过滤入参 name!=eth2 的事件
 echo 'pid!=1234' > events/kprobes/filter  # 过滤特定 pid 的事件
-echo nostacktrace > /sys/kernel/debug/tracing/trace_options  # 关闭调用栈的打印，只看 __setup_irq 的入参显示
+echo nostacktrace > trace_options  # 关闭调用栈的打印，只看 __setup_irq 的入参显示
+echo nostacktrace > events/kprobes/p___setup_irq/trigger # 关闭特定 kprobe 事件的调用栈打印
 ```
 
 ## 启动追踪
 
 ```shell
-echo 1 > events/kprobes/enable
+echo 1 > events/kprobes/enable # 启用所有 kprobe 事件
+# echo 1 > events/kprobes/nic_open/enable  # 单独启用某个 kprobe 事件
 echo 1 > tracing_on
 ```
 
@@ -115,6 +170,9 @@ cat trace_pipe | tee /tmp/trace.log # 使用tee同时输出到屏幕和文件
 ## 停止追踪
 
 ```shell
+echo '-:p___setup_irq' > kprobe_events  # 删除某个 kprobe 事件
+echo 0 > events/kprobes/enable
+# echo 0 > events/kprobes/p___setup_irq/enable  # 单独禁用某个 kprobe 事件
 echo 0 > tracing_on
 ```
 
@@ -142,7 +200,7 @@ cat kprobe_events
 echo 'p:kprobes/__setup_irq __setup_irq irq=%x0 desc=%x1 new=%x2' > kprobe_events
 # 刚开始 ./events/kprobes/路径 查不到有 __setup_irq
 # 事件 echo 进 kprobe_events 后，在./events/kprobes/路径下就有这个 __setup_irq
-echo nostacktrace > /sys/kernel/debug/tracing/trace_options  # 关闭调用栈的打印，只看 __setup_irq 的入参显示
+echo nostacktrace > trace_options  # 关闭调用栈的打印，只看 __setup_irq 的入参显示
 echo 1 > events/kprobes/enable
 echo 1 > tracing_on
 
@@ -262,10 +320,10 @@ trace_irq_handler_exit(irq, action, res);
 
 ```shell
 # 查看所有 irq 相关的 tracepoints
-ls /sys/kernel/tracing/events/irq/
+ls events/irq/
 
 # 查看特定 tracepoint 的格式
-cat /sys/kernel/tracing/events/irq/irq_handler_exit/format
+cat events/irq/irq_handler_exit/format
 
 # 输出示例：
 name: irq_handler_exit
@@ -283,22 +341,22 @@ format:
 
 ```shell
 # 方法1：单个启用
-echo 1 > /sys/kernel/tracing/events/irq/irq_handler_exit/enable
+echo 1 > events/irq/irq_handler_exit/enable
 
 # 方法2：启用所有 irq 相关的 tracepoints
-echo 1 > /sys/kernel/tracing/events/irq/enable
+echo 1 > events/irq/enable
 
 # 开启跟踪
-echo 1 > /sys/kernel/tracing/tracing_on
+echo 1 > tracing_on
 
 # 查看输出
-cat /sys/kernel/tracing/trace
+cat trace
 # 或实时查看
-cat /sys/kernel/tracing/trace_pipe
+cat trace_pipe
 
 # 停止跟踪
-echo 0 > /sys/kernel/tracing/tracing_on
-echo 0 > /sys/kernel/tracing/events/irq/irq_handler_exit/enable
+echo 0 > tracing_on
+echo 0 > events/irq/irq_handler_exit/enable
 ```
 
 也可以使用 perf 工具来查看 tracepoint 的输出：
@@ -334,6 +392,7 @@ perf 是基于 Linux 内核提供的 tracepoint 性能事件 perf_events 来进�
     - -r：重复执行 n 次目标程序，并给出性能指标在 n 次执行中的变化范围。
     - -p：指定要显示的进程的 ID。
     - -t：指定要显示的线程的 ID。
+
 - `perf record`：用于记录性能事件的采样数据，可以生成性能分析报告。可以与`-e`选项指定要记录的事件类型。通过`perf record -h`查看指令参数
     
     比如针对 irq ：`perf record -e "irq:irq_handler_exit,irq:irq_handler_entry" -a -- sleep 2`
@@ -363,6 +422,16 @@ perf 是基于 Linux 内核提供的 tracepoint 性能事件 perf_events 来进�
     - -S：只考虑指定符号
     - -U：只显示已解析的符号
     - -v：显示每个符号的地址
+
+- `perf annotate`：用于查看特定函数或代码段的**汇编代码**，并采集显示每行代码的耗时，可以帮助我们找到代码、函数的执行瓶颈。通过`perf annotate -h`查看指令参数
+
+    比如：`perf annotate -i perf.data`
+
+    - -C<cpu>：指定某个 CPU 事件
+    - -d：只解析指定文件中符号
+    - -i：指定输入文件
+    - -k：指定内核文件
+    - -s：指定符号定位
 
 <img src=2025-12-26-22-03-58.png>
 
@@ -422,6 +491,8 @@ cd FlameGraph
 
 ## 实战
 
+### 代码
+
 写一个简单的测试程序 test.c：
 
 ```c
@@ -434,7 +505,7 @@ int main(void)
         int num = 1;
         for (int i = 0; i < times_s * 1000; ++i) {
                 num += 1;
-                usleep(1000);//睡眠1us
+                usleep(1000);//睡眠1ms
         }
         return 0;
 }
@@ -444,7 +515,7 @@ int main(void)
 
 ```shell
 gcc -o test test.c
-perf record ./test
+perf record ./test # 只记录函数调用，没有调用关系
 ```
 
 <img src=2025-12-26-22-26-52.png>
@@ -471,15 +542,29 @@ perf record ./test
 
     这个符号表示内核中的 common_nsleep，与常见的睡眠操作有关。它占用了 8.55% 的 CPU 时间。
 
-下面针对这个测试程序生成火焰图：
+### 耗时排查
+
+下面针对这个测试程序通过`annotate`查看具体的汇编代码及耗时百分比：
 
 ```shell
 perf record -g ./test
+perf annotate -i perf.data
+```
+
+<img src=2026-01-01-14-39-30.png>
+
+### 火焰图
+
+下面针对这个测试程序生成火焰图：
+
+```shell
+perf record -g ./test  # -g: 记录完整的调用栈，有完整的调用栈才能生成火焰图
 perf script > out.perf
 cd FlameGraph
 ./stackcollapse-perf.pl ../out.perf > out.folded
 ./flamegraph.pl out.folded > flamegraph.svg
 ```
+
 
 生成火焰图的效果图：
 

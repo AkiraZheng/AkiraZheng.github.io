@@ -195,6 +195,8 @@ echo 7 > /proc/sys/kernel/printk
 
 ## 查看当前内核有哪些编译选项
 
+### 已经启动的内核
+
 内核的编译选项一般存在`/boot/config-$(uname -r)`中，所以可以结合`grep`查看当前内核有没有编进去你想找的编译选项
 
 ```shell
@@ -203,6 +205,21 @@ cat /boot/config-$(uname -r)
 
 # 查找有没有 KUT kvm 单元测试的编译选项
 grep -r CONFIG_KUT /boot/config-$(uname -r)
+```
+
+### 编好的 rpm 包
+
+如果是编了 rpm 包，还没有 rpm 添加进服务器内核，且没有更新内核的话：
+
+```shell
+rpm2cpio kernel-xxx.rpm | cpio -idmv # 这样会把内核解压到当前目录下，生成一个`boot`和`lib`目录
+grep -r "CONFIG_XXX" .
+```
+
+对于已经`rpm -qa`安装的内核包，可以用以下命令查看内核编译选项：
+
+```shell
+rpm -q --configfiles kernel-<version>.rpm
 ```
 
 ## 修改 linux-root 密码
@@ -256,6 +273,17 @@ akira@akira:~/linux-code$ ll tags
 
 ## 修改默认内核选项
 
+### 方法一（推荐）
+
+这个方法不会把其他内核的 cmdline 刷掉，配完就可以直接重启了
+
+```shell
+grubby --default-kernel #查看默认启动内核
+grubby --set-default /boot/vmlinuz-xxx # 可以先 ls /boot/ 查看有哪些内核，然后把想要的内核设置为默认内核
+```
+
+### 方法二
+
 先查看你要改为默认选项的内核的编号
 
 ```shell
@@ -268,7 +296,7 @@ awk -F\' '/menuentry / { print i++ " : " $2 }' /boot/efi/EFI/openEuler/grub.cfg
 cp /etc/default/grub /etc/default/grub.bak
 vim /etc/default/grub
 # GRUB_DEFAULT=5
-grub2-mkconfig -o /boot/efi/EFI/openEuler/grub.cfg
+grub2-mkconfig -o /boot/efi/EFI/openEuler/grub.cfg  # 每次都会刷新 grub 文件，把生成的 grub 中其他内核新增的 cmdline 也刷掉
 ```
 
 # 3. gdb 调试

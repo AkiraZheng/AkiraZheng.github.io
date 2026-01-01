@@ -2,6 +2,8 @@
 title: 'ARM64结构与编程:QEMU_BenOS环境搭建'
 date: 2025-09-14 17:21:03
 tags:
+categories:
+    - ARM64结构与编程实操
 ---
 
 > 项目仓库：[https://github.com/AkiraZheng/BenOS_ARM.git](https://github.com/AkiraZheng/BenOS_ARM.git)
