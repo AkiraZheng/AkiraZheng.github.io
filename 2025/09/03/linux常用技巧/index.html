@@ -26,10 +26,14 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="1. vim  .:小数点，重复上一次的命令  vim 中进行查找 1）基本查找命令 查找下一个匹配项： 1&#x2F;&lt;搜索内容&gt;  按下 &#x2F; 键，输入要查找的内容，然后按下回车键 Enter。 例如：&#x2F;hello表示查找 hello  2）跳转到另一个查找结果 &#x2F;hello查找后，要先按 enter 键，然后按 n 键才能跳转到下一个匹配项。  跳转到下一个匹配项：按n键 跳转到上一个匹配项">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-05-43.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-11-45.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-36-58.png">
 <meta property="article:published_time" content="2025-09-03T07:50:10.000Z">
-<meta property="article:modified_time" content="2026-01-08T13:51:28.007Z">
+<meta property="article:modified_time" content="2026-01-10T05:10:40.456Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-05-43.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
@@ -337,7 +341,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">3.9k</span>Reading time: <span class="post-count reading-time">15 min</span></span>
+                        <span>Word count: <span class="post-count word-count">5.1k</span>Reading time: <span class="post-count reading-time">20 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -532,7 +536,7 @@
 <h2 id="光标移动">光标移动</h2>
 <ul>
 <li><code>NG</code>: 跳转到第 N 行</li>
-<li><code>:n</code>: 跳转到第 N 行</li>
+<li><code>:n</code>: 跳转到第 N 行（好用！）</li>
 <li><code>gg</code>: 跳转到第一行, 相当于 <code>1G</code></li>
 <li><code>G</code>: 跳转到最后一行</li>
 <li><code>w</code>: 光标跳到下一个单词的开头</li>
@@ -581,6 +585,11 @@ xclip,通过<code>:version</code>查看当前是否支持与系统剪贴板交�
 <h2 id="vim-中显示当前文件的-路径文件名">vim 中显示当前文件的
 路径&amp;&amp;文件名</h2>
 <p>在底部输入<code>:f</code>然后 Enter</p>
+<h2 id="vim-中多个文件选择和切换">vim 中多个文件选择和切换</h2>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:buffers</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-05-43.png"></p>
+<p>然后找到要跳转的文件的编号，比如上图中的<code>irqchip.c</code>的编号是<code>1</code>，然后输入：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:buffer 1</span><br></pre></td></tr></table></figure>
 <h1 id="terminal-操作">2. terminal 操作</h1>
 <h2 id="find"><code>find</code></h2>
 <p>查找并忽略没有权限的文件的报错信息：</p>
@@ -756,8 +765,8 @@ ssh 连接不断连</a></p>
 <h1 id="linux-中对工程代码的跳转函数查找">5. Linux
 中对工程代码的跳转、函数查找</h1>
 <h2 id="vim-中函数跳转">vim 中函数跳转</h2>
-<h3 id="way1使用-cscope-实现函数跳转">way1：使用 cscope
-实现函数跳转</h3>
+<h3 id="way1使用-cscope-实现函数跳转功能更齐全">way1：使用 cscope
+实现函数跳转（功能更齐全）</h3>
 <p>如果你的 Vim 配置了 <code>+cscope</code> 支持（可以通过
 <code>:version</code> 命令查看），你可以使用 cscope 来进行函数跳转。</p>
 <!-- 安装 ctags
@@ -827,12 +836,108 @@ R：递归查找源代码。</p>
 <p><code>grep -r "函数名" path</code></p>
 <p><code>grep -rn "函数名" path # n: 显示行号</code></p>
 <p><code>grep -r "待查找内容" --include="*.c"</code></p>
-<h1 id="编译">6. 编译</h1>
+<h1 id="打造最强vim-ide">6. 打造最强vim ide</h1>
+<p>安装工具 vim 插件管理工具：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim</span><br></pre></td></tr></table></figure>
+<p>然后把事先准备好的 <code>.vimrc</code> 文件放到 home
+目录下，获取链接：<a target="_blank" rel="noopener" href="https://pan.quark.cn/s/121edf29a6de">https://pan.quark.cn/s/121edf29a6de</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /path/to/your/.vimrc ~/.vimrc</span><br></pre></td></tr></table></figure>
+<p>打开 vim，执行以下命令安装和查看插件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vim</span><br><span class="line">:PluginInstall</span><br><span class="line">:PluginList</span><br></pre></td></tr></table></figure>
+<h2 id="ctags">ctags</h2>
+<p>安装 ctags：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install exuberant-ctags</span><br><span class="line">ctags --version</span><br></pre></td></tr></table></figure>
+<p>每个工程目录下生成 tags 文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ctags -R .</span><br><span class="line">vim</span><br><span class="line">:set tags=./tags;</span><br></pre></td></tr></table></figure>
+<p>常用的快捷键有两个：</p>
+<ul>
+<li><code>Ctrl-]</code>：跳转到光标所在函数的定义。</li>
+<li><code>Ctrl-T</code>：返回到跳转之前的位置。</li>
+</ul>
+<h2 id="cscope">cscope</h2>
+<p>ctags 只能跳转到函数定义，无法跳转到函数调用处，而 cscope
+可以实现这两个功能。</p>
+<p>安装 cscope：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install cscope</span><br><span class="line">cscope --version</span><br></pre></td></tr></table></figure>
+<p>每个工程目录下生成 cscope 数据库文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 下面的命令会生成 3 个文件： cscope.out、cscope.in.out、cscope.po.out</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 其中 cscope.out 是主要的数据库文件，另外两个是加速索引</span></span><br><span class="line">cscope -Rbq</span><br></pre></td></tr></table></figure>
+<p>为了方便使用，我们已经在<code>.vimrc</code>中配置好了 cscope
+的快捷键：</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;nmap &lt;C-_&gt;s :cs find s &lt;C-R&gt;=expand(&quot;</span><span class="symbol">&lt;cword&gt;</span><span class="comment">&quot;)&lt;CR&gt;&lt;CR&gt;</span></span><br><span class="line"><span class="comment">&quot;F5 查找c符号； F6 查找字符串；   F7 查找函数定义； F8 查找函数谁调用了，</span></span><br><span class="line"><span class="keyword">nmap</span> <span class="symbol">&lt;silent&gt;</span> <span class="symbol">&lt;F5&gt;</span> :<span class="keyword">cs</span> <span class="keyword">find</span> s <span class="symbol">&lt;C-R&gt;</span>=<span class="built_in">expand</span>(<span class="string">&quot;&lt;cword&gt;&quot;</span>)<span class="symbol">&lt;CR&gt;</span><span class="symbol">&lt;CR&gt;</span> :<span class="keyword">botright</span> <span class="keyword">copen</span><span class="symbol">&lt;CR&gt;</span><span class="symbol">&lt;CR&gt;</span></span><br><span class="line"><span class="keyword">nmap</span> <span class="symbol">&lt;silent&gt;</span> <span class="symbol">&lt;F6&gt;</span> :<span class="keyword">cs</span> <span class="keyword">find</span> t <span class="symbol">&lt;C-R&gt;</span>=<span class="built_in">expand</span>(<span class="string">&quot;&lt;cword&gt;&quot;</span>)<span class="symbol">&lt;CR&gt;</span><span class="symbol">&lt;CR&gt;</span> :<span class="keyword">botright</span> <span class="keyword">copen</span><span class="symbol">&lt;CR&gt;</span><span class="symbol">&lt;CR&gt;</span></span><br><span class="line"><span class="string">&quot;nmap &lt;silent&gt; &lt;F7&gt; :cs find g &lt;C-R&gt;=expand(&quot;</span><span class="symbol">&lt;cword&gt;</span><span class="comment">&quot;)&lt;CR&gt;&lt;CR&gt; </span></span><br><span class="line"><span class="keyword">nmap</span> <span class="symbol">&lt;silent&gt;</span> <span class="symbol">&lt;F7&gt;</span> :<span class="keyword">cs</span> <span class="keyword">find</span> <span class="keyword">c</span> <span class="symbol">&lt;C-R&gt;</span>=<span class="built_in">expand</span>(<span class="string">&quot;&lt;cword&gt;&quot;</span>)<span class="symbol">&lt;CR&gt;</span><span class="symbol">&lt;CR&gt;</span> :<span class="keyword">botright</span> <span class="keyword">copen</span><span class="symbol">&lt;CR&gt;</span><span class="symbol">&lt;CR&gt;</span></span><br></pre></td></tr></table></figure>
+<p>常用快捷键说明：<code>fn + Fx</code></p>
+<ul>
+<li><code>F5</code>：查找符号（变量、宏等）</li>
+<li><code>F6</code>：全工程查找光标下的字符串（其中就包含了函数调用处）</li>
+<li><code>F7</code>：全工程查找函数调用处</li>
+</ul>
+<p>找到后，会自动打开底部窗口显示查找结果，输入下面的命令后就可以通过<code>hjkl</code>键在结果中进行上下选择：</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:<span class="keyword">copen</span></span><br></pre></td></tr></table></figure>
+<p>找到想去的地方后，按回车键 Enter 就可以跳转过去。</p>
+<p><img src="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-11-45.png"></p>
+<p>输入下面的命令关闭窗口：</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:<span class="keyword">cclose</span></span><br></pre></td></tr></table></figure>
+<h2 id="tagbar">tagbar</h2>
+<p><code>.vmrc</code>中已经配置好了 tagbar 插件</p>
+<ul>
+<li>打开 tagbar 窗口：</li>
+</ul>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:TagbarToggle</span><br></pre></td></tr></table></figure>
+<ul>
+<li>关闭 tagbar 窗口：</li>
+</ul>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:TagbarClose</span><br></pre></td></tr></table></figure>
+<h2 id="nerdtree">nerdtree</h2>
+<p>用于左侧显示目录树</p>
+<p><code>.vmrc</code>中已经配置好了 nerdtree 插件</p>
+<h2 id="动态语法检测">动态语法检测</h2>
+<p><code>.vmrc</code>中已经配置好了 Ale
+插件，左侧显示语法错误，其中<code>x</code>表示错误，<code>w</code>表示警告，</p>
+<p><code>:ALEFix</code>可以自动修复一些简单的语法错误。</p>
+<h2 id="ycm-代码自动补全">YCM 代码自动补全</h2>
+<p><code>.vmrc</code>中已经配置好了 YouCompleteMe 插件，该插件对 vim
+的版本号有要求。</p>
+<p>同时还需要安装一些依赖：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake vim-nox python3-dev</span><br></pre></td></tr></table></figure>
+<p>检查 python 版本是否为 Python3：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python</span><br></pre></td></tr></table></figure>
+<p>接下来编译 YouCompleteMe：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.vim/bundle/YouCompleteMe</span><br><span class="line">python3 install.py --clangd-completer</span><br><span class="line"><span class="meta">#</span><span class="bash"> 如果需要支持 C++11 及以上标准，可以加上 --clang-completer 标志</span></span><br></pre></td></tr></table></figure>
+<p>编译完之后，还要把<code>~/.vim/bundle/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py</code>文件复制到<code>./.vim</code>目录下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp ~/.vim/bundle/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py ~/.vim/</span><br></pre></td></tr></table></figure>
+<p>以及在<code>.vimrc</code>中添加了相关配置就行了。</p>
+<h2 id="lsp-自动补全">LSP 自动补全</h2>
+<p>但是由于 YCM 需要各种 vim 版本要求、python
+要求，没达到要求的还要重新编译，非常麻烦，所以推荐使用 LSP
+方式来实现代码自动补全。</p>
+<p>先安装<code>clangd</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install clangd</span><br><span class="line">clangd --background-index # 启动后台索引功能</span><br></pre></td></tr></table></figure>
+<p><code>.vimrc</code>中已经配置相关插件，<code>:PluginInstall</code>安装完插件后，在你的
+linux 工程目录下创建一个<code>compile_commands.json</code>文件：</p>
+<p><strong>linux 内核工程下生成 compile_commands.json：</strong></p>
+<p>linux
+的话推荐用<code>scripts/clang-tools/gen_compile_commands.py</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make defconfig</span><br><span class="line">scripts/clang-tools/gen_compile_commands.py</span><br></pre></td></tr></table></figure>
+<p>然后打开<code>c</code>文件，可以查看是否启用了 LSP 补全：</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">:LspStatus</span><br><span class="line">:LspLog # 遇到问题可以查看日志</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-36-58.png"></p>
+<p><strong>其他C/C++ 项目生成 compile_commands.json：</strong></p>
+<p>可以使用<code>cmake</code>生成：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..</span><br></pre></td></tr></table></figure>
+<p>这会在项目根目录下生成一个 compile_commands.json 文件，clangd
+使用该文件来获取编译选项。</p>
+<p>如果你的项目不是用 cmake 构建的，一般 clang
+会自动生成<code>gen_compile_commands.py</code>，可以利用该工具来生成
+compile_commands.json：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp /path/scripts/gen_compile_commands.py</span><br><span class="line">python3 gen_compile_commands.py</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参考：<a target="_blank" rel="noopener" href="https://www.kawabangga.com/posts/3745">vim安装LSP语法补全插件</a></p>
+</blockquote>
+<h1 id="编译">7. 编译</h1>
 <h2 id="反汇编">反汇编</h2>
 <p>编译完二进制文件<code>.o</code>等二进制可执行文件后，可以使用
 <code>objdump -d</code> 反汇编查看函数的汇编代码。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -D myfile.o &gt; myfile.s</span><br></pre></td></tr></table></figure>
-<h1 id="硬件参数查询">7. 硬件参数查询</h1>
+<h1 id="硬件参数查询">8. 硬件参数查询</h1>
 <h2 id="查看-cpu-数numa数qemu-线程-pid">查看 CPU 数、numa数、qemu 线程
 pid</h2>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lscpu</span><br><span class="line">numactl -H</span><br></pre></td></tr></table></figure>
@@ -859,7 +964,7 @@ SMT</strong>后，可以启用超线程，把逻辑核翻倍，每两个逻辑�
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">September 3rd 2025, 3:50:10 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">January 8th 2026, 9:51:28 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">January 10th 2026, 1:10:40 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -1026,11 +1131,11 @@ SMT</strong>后，可以启用超线程，把逻辑核翻倍，每两个逻辑�
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
                 <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#vim"><span class="toc-text">1. vim</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="toc-text">vim 中进行查找</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E5%A4%8D%E5%88%B6%E7%B2%98%E8%B4%B4"><span class="toc-text">vim 中复制粘贴</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%89%E6%A0%87%E7%A7%BB%E5%8A%A8"><span class="toc-text">光标移动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEvim%E6%98%BE%E7%A4%BA%E8%A1%8C%E5%8F%B7"><span class="toc-text">配置vim显示行号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E5%8F%8C%E5%B1%8F"><span class="toc-text">vim 双屏</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E6%98%BE%E7%A4%BA%E5%BD%93%E5%89%8D%E6%96%87%E4%BB%B6%E7%9A%84-%E8%B7%AF%E5%BE%84%E6%96%87%E4%BB%B6%E5%90%8D"><span class="toc-text">vim 中显示当前文件的
-路径&amp;&amp;文件名</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#terminal-%E6%93%8D%E4%BD%9C"><span class="toc-text">2. terminal 操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#find"><span class="toc-text">find</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E5%86%85%E6%A0%B8%E7%9A%84%E8%B7%AF%E5%BE%84"><span class="toc-text">查找内核的路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8Bbios%E7%89%88%E6%9C%AC"><span class="toc-text">查看bios版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%89%88%E6%9C%AC"><span class="toc-text">查看操作系统版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%A3%81%E7%9B%98%E5%93%AA%E4%B8%AA%E5%8D%A0%E7%94%A8%E6%9C%80%E9%AB%98"><span class="toc-text">查看磁盘哪个占用最高</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B-cpu-%E4%BD%BF%E7%94%A8%E7%8E%87"><span class="toc-text">查看 CPU 使用率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="toc-text">设置环境变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%85%B3%E5%86%85%E6%A0%B8%E6%89%93%E5%8D%B0"><span class="toc-text">开关内核打印</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="toc-text">内核编译选项</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%B7%B2%E7%BB%8F%E5%90%AF%E5%8A%A8%E7%9A%84%E5%86%85%E6%A0%B8%E6%98%AF%E5%90%A6%E5%8C%85%E5%90%AB%E5%93%AA%E4%B8%AA%E7%BC%96%E8%AF%91%E9%A1%B9"><span class="toc-text">查看已经启动的内核是否包含哪个编译项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%BC%96%E5%A5%BD%E7%9A%84-rpm-%E5%8C%85%E6%98%AF%E5%90%A6%E5%8C%85%E5%90%AB%E6%9F%90%E4%B8%AA%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="toc-text">查看编好的 rpm
+路径&amp;&amp;文件名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E5%A4%9A%E4%B8%AA%E6%96%87%E4%BB%B6%E9%80%89%E6%8B%A9%E5%92%8C%E5%88%87%E6%8D%A2"><span class="toc-text">vim 中多个文件选择和切换</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#terminal-%E6%93%8D%E4%BD%9C"><span class="toc-text">2. terminal 操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#find"><span class="toc-text">find</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E5%86%85%E6%A0%B8%E7%9A%84%E8%B7%AF%E5%BE%84"><span class="toc-text">查找内核的路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8Bbios%E7%89%88%E6%9C%AC"><span class="toc-text">查看bios版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%89%88%E6%9C%AC"><span class="toc-text">查看操作系统版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%A3%81%E7%9B%98%E5%93%AA%E4%B8%AA%E5%8D%A0%E7%94%A8%E6%9C%80%E9%AB%98"><span class="toc-text">查看磁盘哪个占用最高</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B-cpu-%E4%BD%BF%E7%94%A8%E7%8E%87"><span class="toc-text">查看 CPU 使用率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="toc-text">设置环境变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%85%B3%E5%86%85%E6%A0%B8%E6%89%93%E5%8D%B0"><span class="toc-text">开关内核打印</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="toc-text">内核编译选项</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%B7%B2%E7%BB%8F%E5%90%AF%E5%8A%A8%E7%9A%84%E5%86%85%E6%A0%B8%E6%98%AF%E5%90%A6%E5%8C%85%E5%90%AB%E5%93%AA%E4%B8%AA%E7%BC%96%E8%AF%91%E9%A1%B9"><span class="toc-text">查看已经启动的内核是否包含哪个编译项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%BC%96%E5%A5%BD%E7%9A%84-rpm-%E5%8C%85%E6%98%AF%E5%90%A6%E5%8C%85%E5%90%AB%E6%9F%90%E4%B8%AA%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="toc-text">查看编好的 rpm
 包是否包含某个编译选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#linux-rpm-%E5%8C%85%E6%B7%BB%E5%8A%A0-tracing"><span class="toc-text">linux rpm 包添加 tracing</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9-linux-root-%E5%AF%86%E7%A0%81"><span class="toc-text">修改 linux-root 密码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E7%BB%B4%E6%8C%81-ssh-%E8%BF%9E%E6%8E%A5%E4%B8%8D%E6%96%AD%E8%BF%9E"><span class="toc-text">设置维持 ssh 连接不断连</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#scpcp"><span class="toc-text">scp，cp</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ll-%E6%96%87%E4%BB%B6%E5%AD%97%E8%8A%82%E6%95%B0"><span class="toc-text">ll 文件字节数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E9%BB%98%E8%AE%A4%E5%86%85%E6%A0%B8%E9%80%89%E9%A1%B9"><span class="toc-text">修改默认内核选项</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%E6%8E%A8%E8%8D%90"><span class="toc-text">方法一（推荐）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C"><span class="toc-text">方法二</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#gdb-%E8%B0%83%E8%AF%95"><span class="toc-text">3. gdb 调试</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E6%8C%87%E4%BB%A4"><span class="toc-text">常用指令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%9F%90%E4%B8%AA%E5%9C%B0%E5%9D%80%E5%A4%84%E5%86%85%E5%AD%98%E7%9A%84%E5%80%BC"><span class="toc-text">查看某个地址处内存的值：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%8F%98%E9%87%8F%E5%80%BC"><span class="toc-text">查看变量值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9"><span class="toc-text">设置断点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E4%B8%8E%E7%BB%A7%E7%BB%AD%E6%89%A7%E8%A1%8C"><span class="toc-text">运行与继续执行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95"><span class="toc-text">单步调试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E8%AF%95%E7%BA%BF%E7%A8%8B"><span class="toc-text">调试线程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%E8%B0%83%E8%AF%95"><span class="toc-text">普通可执行文件调试</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#qemu-%E4%BD%BF%E7%94%A8"><span class="toc-text">4. qemu 使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu-%E6%8C%87%E4%BB%A4"><span class="toc-text">qemu 指令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu-%E4%B8%BB%E7%BA%BF%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C"><span class="toc-text">qemu 主线编译运行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%8B%E9%9A%86qemu%E5%B7%A5%E7%A8%8B"><span class="toc-text">克隆QEMU工程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#qemu%E7%BC%96%E8%AF%91"><span class="toc-text">QEMU编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E9%AA%8C%E8%AF%81"><span class="toc-text">测试验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#virsh-%E6%8C%87%E4%BB%A4"><span class="toc-text">virsh 指令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%94%A8qemu%E8%B5%B7%E7%9A%84%E8%99%9A%E6%9C%BA-pid"><span class="toc-text">查看用qemu起的虚机 pid</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#linux-%E4%B8%AD%E5%AF%B9%E5%B7%A5%E7%A8%8B%E4%BB%A3%E7%A0%81%E7%9A%84%E8%B7%B3%E8%BD%AC%E5%87%BD%E6%95%B0%E6%9F%A5%E6%89%BE"><span class="toc-text">5. Linux
-中对工程代码的跳转、函数查找</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC"><span class="toc-text">vim 中函数跳转</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#way1%E4%BD%BF%E7%94%A8-cscope-%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC"><span class="toc-text">way1：使用 cscope
-实现函数跳转</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#way2%E4%BD%BF%E7%94%A8-tag-%E6%96%87%E4%BB%B6%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC%E5%9F%BA%E4%BA%8E-ctags%E6%8E%A8%E8%8D%90"><span class="toc-text">way2：使用 tag
-文件实现函数跳转（基于 ctags）【推荐】</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0-tag"><span class="toc-text">更新 tag</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E7%9B%AE%E5%BD%95%E4%B8%8B%E6%9F%A5%E6%89%BE%E6%9F%90%E4%B8%AA%E5%87%BD%E6%95%B0%E5%90%8D"><span class="toc-text">工程目录下查找某个函数名</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BC%96%E8%AF%91"><span class="toc-text">6. 编译</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E6%B1%87%E7%BC%96"><span class="toc-text">反汇编</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%8F%82%E6%95%B0%E6%9F%A5%E8%AF%A2"><span class="toc-text">7. 硬件参数查询</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B-cpu-%E6%95%B0numa%E6%95%B0qemu-%E7%BA%BF%E7%A8%8B-pid"><span class="toc-text">查看 CPU 数、numa数、qemu 线程
+中对工程代码的跳转、函数查找</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC"><span class="toc-text">vim 中函数跳转</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#way1%E4%BD%BF%E7%94%A8-cscope-%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC%E5%8A%9F%E8%83%BD%E6%9B%B4%E9%BD%90%E5%85%A8"><span class="toc-text">way1：使用 cscope
+实现函数跳转（功能更齐全）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#way2%E4%BD%BF%E7%94%A8-tag-%E6%96%87%E4%BB%B6%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC%E5%9F%BA%E4%BA%8E-ctags%E6%8E%A8%E8%8D%90"><span class="toc-text">way2：使用 tag
+文件实现函数跳转（基于 ctags）【推荐】</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0-tag"><span class="toc-text">更新 tag</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E7%9B%AE%E5%BD%95%E4%B8%8B%E6%9F%A5%E6%89%BE%E6%9F%90%E4%B8%AA%E5%87%BD%E6%95%B0%E5%90%8D"><span class="toc-text">工程目录下查找某个函数名</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%89%93%E9%80%A0%E6%9C%80%E5%BC%BAvim-ide"><span class="toc-text">6. 打造最强vim ide</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ctags"><span class="toc-text">ctags</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cscope"><span class="toc-text">cscope</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tagbar"><span class="toc-text">tagbar</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nerdtree"><span class="toc-text">nerdtree</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%AF%AD%E6%B3%95%E6%A3%80%E6%B5%8B"><span class="toc-text">动态语法检测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ycm-%E4%BB%A3%E7%A0%81%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8"><span class="toc-text">YCM 代码自动补全</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#lsp-%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8"><span class="toc-text">LSP 自动补全</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BC%96%E8%AF%91"><span class="toc-text">7. 编译</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E6%B1%87%E7%BC%96"><span class="toc-text">反汇编</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%8F%82%E6%95%B0%E6%9F%A5%E8%AF%A2"><span class="toc-text">8. 硬件参数查询</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B-cpu-%E6%95%B0numa%E6%95%B0qemu-%E7%BA%BF%E7%A8%8B-pid"><span class="toc-text">查看 CPU 数、numa数、qemu 线程
 pid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%85%B3-smt"><span class="toc-text">开关 SMT</span></a></li></ol></li></ol>
             </div>
         
