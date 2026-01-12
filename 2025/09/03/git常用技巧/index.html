@@ -27,7 +27,7 @@
 <meta property="og:description" content="状态类指令  git branch: 查看当前本地所处的 branch、本地中拉的所有的branch git branch -r: 查看远程所有的分支 git status or git st: 当前所处 branch、是否有需要 commit 的 git log: 查看当前 branch 的所有提交记录 git log --oneline: 查看当前 branch 的所有提交记录，每行只显示 c">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-09-03T07:13:31.000Z">
-<meta property="article:modified_time" content="2026-01-09T06:31:45.334Z">
+<meta property="article:modified_time" content="2026-01-11T12:39:15.540Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -578,6 +578,9 @@ diff A B 表示从 A 提交到 B 的修改，B 一般是比较新的提交，A
 统计修改的行数(添加、删除、修改)</li>
 <li><code>git stash show -p stash@&#123;0&#125;</code>:显示当前stash某个暂存内容的diff情况</li>
 </ul>
+<h1 id="日志">日志</h1>
+<h2 id="查看某行代码的修改历史">查看某行代码的修改历史</h2>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git blame &lt;文件路径&gt;</span><br></pre></td></tr></table></figure>
 <h1 id="制作.patch文件存储当前工作夹的修改">制作.patch文件存储当前工作夹的修改</h1>
 <h2 id="针对某个文件">针对某个文件</h2>
 <ul>
@@ -725,7 +728,7 @@ linux 工具检查 patch
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">September 3rd 2025, 3:13:31 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">January 9th 2026, 2:31:45 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">January 11th 2026, 8:39:15 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -891,7 +894,7 @@ linux 工具检查 patch
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E7%B1%BB%E6%8C%87%E4%BB%A4"><span class="toc-text">状态类指令</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E6%8F%90%E4%BA%A4%E5%90%88%E5%B9%B6push%E5%88%B0%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93"><span class="toc-text">代码提交、合并、push到远程仓库</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E6%8F%90%E4%BA%A4%E6%9A%82%E6%97%B6%E4%B8%8D%E6%8E%A8%E5%88%B0%E8%BF%9C%E7%A8%8B%E4%BB%93%E4%B8%AD"><span class="toc-text">1）代码提交：暂时不推到远程仓中</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%89%E5%8F%96%E4%BB%A3%E7%A0%81"><span class="toc-text">2）拉取代码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%87%E6%8D%A2%E5%88%86%E6%94%AF"><span class="toc-text">切换分支</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%88%86%E6%94%AF%E9%A2%86%E5%85%88%E8%90%BD%E5%90%8E%E6%8F%90%E4%BA%A4%E6%95%B0"><span class="toc-text">查看分支领先&#x2F;落后提交数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E5%88%86%E6%94%AF"><span class="toc-text">删除分支</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#diff-%E6%9F%A5%E7%9C%8B%E4%BF%AE%E6%94%B9%E5%86%85%E5%AE%B9"><span class="toc-text">diff 查看修改内容</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%B6%E4%BD%9C.patch%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E5%BD%93%E5%89%8D%E5%B7%A5%E4%BD%9C%E5%A4%B9%E7%9A%84%E4%BF%AE%E6%94%B9"><span class="toc-text">制作.patch文件存储当前工作夹的修改</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%92%88%E5%AF%B9%E6%9F%90%E4%B8%AA%E6%96%87%E4%BB%B6"><span class="toc-text">针对某个文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E8%BF%87.patch%E6%96%87%E4%BB%B6%E6%81%A2%E5%A4%8D%E4%BB%A3%E7%A0%81"><span class="toc-text">通过.patch文件恢复代码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E4%BF%AE%E6%94%B9"><span class="toc-text">撤销修改</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E5%B7%B2%E6%9C%89%E5%86%85%E5%AE%B9%E7%9A%84%E6%96%87%E4%BB%B6%E5%A4%B9%E4%B8%8B%E5%B0%86%E8%AF%A5%E5%86%85%E5%AE%B9%E5%90%8C%E6%AD%A5%E5%88%B0%E6%96%B0%E7%9A%84%E4%BB%93%E5%BA%93%E4%B8%AD"><span class="toc-text">在一个已有内容的文件夹下将该内容同步到新的仓库中</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#git-am-%E6%8B%89%E5%8F%96%E9%82%AE%E4%BB%B6%E8%A1%A5%E4%B8%81"><span class="toc-text">git am 拉取邮件补丁</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E5%B9%B6%E6%B7%BB%E5%8A%A0%E8%A1%A5%E4%B8%81%E8%83%BD%E4%B8%9D%E6%BB%91%E6%88%90%E5%8A%9F%E7%9A%84%E8%AF%9D"><span class="toc-text">下载并添加补丁（能丝滑成功的话）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patch%E5%90%88%E5%85%A5%E5%A4%B1%E8%B4%A5%E6%97%B6rebase"><span class="toc-text">patch合入失败时rebase</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BB%8E%E4%B8%BB%E7%BA%BF%E4%B8%8A%E4%B8%80%E4%B8%AA%E4%B8%80%E4%B8%AApatch%E8%BF%9B%E8%A1%8Crebase"><span class="toc-text">方法：从主线上一个一个patch进行rebase</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E-git-am---3way-%E4%BE%9D%E7%84%B6%E8%A7%A3%E5%86%B3%E4%B8%8D%E4%BA%86%E7%9A%84%E9%97%AE%E9%A2%98%E9%80%9A%E8%BF%87-.rej-%E6%89%8B%E5%8A%A8%E8%A7%A3%E5%86%B3"><span class="toc-text">对于
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E7%B1%BB%E6%8C%87%E4%BB%A4"><span class="toc-text">状态类指令</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E6%8F%90%E4%BA%A4%E5%90%88%E5%B9%B6push%E5%88%B0%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93"><span class="toc-text">代码提交、合并、push到远程仓库</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E6%8F%90%E4%BA%A4%E6%9A%82%E6%97%B6%E4%B8%8D%E6%8E%A8%E5%88%B0%E8%BF%9C%E7%A8%8B%E4%BB%93%E4%B8%AD"><span class="toc-text">1）代码提交：暂时不推到远程仓中</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%89%E5%8F%96%E4%BB%A3%E7%A0%81"><span class="toc-text">2）拉取代码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%87%E6%8D%A2%E5%88%86%E6%94%AF"><span class="toc-text">切换分支</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%88%86%E6%94%AF%E9%A2%86%E5%85%88%E8%90%BD%E5%90%8E%E6%8F%90%E4%BA%A4%E6%95%B0"><span class="toc-text">查看分支领先&#x2F;落后提交数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E5%88%86%E6%94%AF"><span class="toc-text">删除分支</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#diff-%E6%9F%A5%E7%9C%8B%E4%BF%AE%E6%94%B9%E5%86%85%E5%AE%B9"><span class="toc-text">diff 查看修改内容</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%97%A5%E5%BF%97"><span class="toc-text">日志</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%9F%90%E8%A1%8C%E4%BB%A3%E7%A0%81%E7%9A%84%E4%BF%AE%E6%94%B9%E5%8E%86%E5%8F%B2"><span class="toc-text">查看某行代码的修改历史</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%B6%E4%BD%9C.patch%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E5%BD%93%E5%89%8D%E5%B7%A5%E4%BD%9C%E5%A4%B9%E7%9A%84%E4%BF%AE%E6%94%B9"><span class="toc-text">制作.patch文件存储当前工作夹的修改</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%92%88%E5%AF%B9%E6%9F%90%E4%B8%AA%E6%96%87%E4%BB%B6"><span class="toc-text">针对某个文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E8%BF%87.patch%E6%96%87%E4%BB%B6%E6%81%A2%E5%A4%8D%E4%BB%A3%E7%A0%81"><span class="toc-text">通过.patch文件恢复代码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E4%BF%AE%E6%94%B9"><span class="toc-text">撤销修改</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E5%B7%B2%E6%9C%89%E5%86%85%E5%AE%B9%E7%9A%84%E6%96%87%E4%BB%B6%E5%A4%B9%E4%B8%8B%E5%B0%86%E8%AF%A5%E5%86%85%E5%AE%B9%E5%90%8C%E6%AD%A5%E5%88%B0%E6%96%B0%E7%9A%84%E4%BB%93%E5%BA%93%E4%B8%AD"><span class="toc-text">在一个已有内容的文件夹下将该内容同步到新的仓库中</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#git-am-%E6%8B%89%E5%8F%96%E9%82%AE%E4%BB%B6%E8%A1%A5%E4%B8%81"><span class="toc-text">git am 拉取邮件补丁</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E5%B9%B6%E6%B7%BB%E5%8A%A0%E8%A1%A5%E4%B8%81%E8%83%BD%E4%B8%9D%E6%BB%91%E6%88%90%E5%8A%9F%E7%9A%84%E8%AF%9D"><span class="toc-text">下载并添加补丁（能丝滑成功的话）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patch%E5%90%88%E5%85%A5%E5%A4%B1%E8%B4%A5%E6%97%B6rebase"><span class="toc-text">patch合入失败时rebase</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BB%8E%E4%B8%BB%E7%BA%BF%E4%B8%8A%E4%B8%80%E4%B8%AA%E4%B8%80%E4%B8%AApatch%E8%BF%9B%E8%A1%8Crebase"><span class="toc-text">方法：从主线上一个一个patch进行rebase</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E-git-am---3way-%E4%BE%9D%E7%84%B6%E8%A7%A3%E5%86%B3%E4%B8%8D%E4%BA%86%E7%9A%84%E9%97%AE%E9%A2%98%E9%80%9A%E8%BF%87-.rej-%E6%89%8B%E5%8A%A8%E8%A7%A3%E5%86%B3"><span class="toc-text">对于
 git am --3way 依然解决不了的问题，通过 .rej 手动解决</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8-v1-%E4%BD%9C%E8%80%85-patch-%E7%9A%84%E5%9F%BA%E7%A1%80%E4%B8%8A%E4%BD%9C%E4%B8%BA%E6%96%B0%E7%9A%84-v2-%E4%BD%9C%E8%80%85%E5%88%B6%E4%BD%9C-patchrebase-%E6%96%B9%E6%B3%95"><span class="toc-text">在
 v1 作者 patch 的基础上作为新的 v2 作者制作 patch：rebase 方法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%94%A8-linux-%E5%B7%A5%E5%85%B7%E6%A3%80%E6%9F%A5-patch-%E6%98%AF%E5%90%A6%E7%AC%A6%E5%90%88%E5%86%85%E6%A0%B8%E7%BC%96%E7%A0%81%E9%A3%8E%E6%A0%BC%E5%A6%82%E7%BC%A9%E8%BF%9B%E6%B3%A8%E9%87%8A%E7%A9%BA%E8%A1%8C%E5%87%BD%E6%95%B0%E5%91%BD%E5%90%8D%E7%AD%89"><span class="toc-text">用
 linux 工具检查 patch
@@ -1300,7 +1303,32 @@ linux 工具检查 patch
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -2067,7 +2095,7 @@ linux 工具检查 patch
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 78
+        Total : 79
         </div>
         <!-- search  -->
         
@@ -2081,6 +2109,21 @@ linux 工具检查 patch
     
         
             
+            
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/11</span>
+            <a class="archive-post-title" href="/2026/01/11/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">ARM64结构与编程:异常处理</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
             
             <div class="archive-year"> 2025 </div>
             <ul class="year-list">

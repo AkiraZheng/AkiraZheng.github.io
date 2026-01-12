@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-11-45.png">
 <meta property="og:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-36-58.png">
 <meta property="article:published_time" content="2025-09-03T07:50:10.000Z">
-<meta property="article:modified_time" content="2026-01-10T05:10:40.456Z">
+<meta property="article:modified_time" content="2026-01-12T04:56:23.401Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-05-43.png">
@@ -341,7 +341,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">5.1k</span>Reading time: <span class="post-count reading-time">20 min</span></span>
+                        <span>Word count: <span class="post-count word-count">5.1k</span>Reading time: <span class="post-count reading-time">21 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -541,6 +541,7 @@
 <li><code>G</code>: 跳转到最后一行</li>
 <li><code>w</code>: 光标跳到下一个单词的开头</li>
 <li><code>e</code>: 光标跳到当前单词的结尾</li>
+<li><code>$</code>: 跳转到这一行的末尾</li>
 <li><code>%</code>: 跳转到匹配的括号处（大括号、中括号）</li>
 <li><code>*</code>:
 高亮显示所有与当前光标所在单词<strong>相同的单词处</strong>
@@ -840,7 +841,7 @@ R：递归查找源代码。</p>
 <p>安装工具 vim 插件管理工具：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim</span><br></pre></td></tr></table></figure>
 <p>然后把事先准备好的 <code>.vimrc</code> 文件放到 home
-目录下，获取链接：<a target="_blank" rel="noopener" href="https://pan.quark.cn/s/121edf29a6de">https://pan.quark.cn/s/121edf29a6de</a></p>
+目录下，获取链接：<a target="_blank" rel="noopener" href="https://pan.quark.cn/s/84d039d2ffc2">https://pan.quark.cn/s/84d039d2ffc2</a></p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /path/to/your/.vimrc ~/.vimrc</span><br></pre></td></tr></table></figure>
 <p>打开 vim，执行以下命令安装和查看插件：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vim</span><br><span class="line">:PluginInstall</span><br><span class="line">:PluginList</span><br></pre></td></tr></table></figure>
@@ -964,7 +965,7 @@ SMT</strong>后，可以启用超线程，把逻辑核翻倍，每两个逻辑�
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">September 3rd 2025, 3:50:10 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">January 10th 2026, 1:10:40 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">January 12th 2026, 12:56:23 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -1540,7 +1541,32 @@ pid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -2307,7 +2333,7 @@ pid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 78
+        Total : 79
         </div>
         <!-- search  -->
         
@@ -2321,6 +2347,21 @@ pid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%
     
         
             
+            
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/11</span>
+            <a class="archive-post-title" href="/2026/01/11/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">ARM64结构与编程:异常处理</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
             
             <div class="archive-year"> 2025 </div>
             <ul class="year-list">
