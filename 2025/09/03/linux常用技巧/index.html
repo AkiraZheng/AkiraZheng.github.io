@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-11-45.png">
 <meta property="og:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-36-58.png">
 <meta property="article:published_time" content="2025-09-03T07:50:10.000Z">
-<meta property="article:modified_time" content="2026-01-12T04:56:23.401Z">
+<meta property="article:modified_time" content="2026-01-12T14:04:35.084Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-05-43.png">
@@ -694,7 +694,7 @@ ssh 连接不断连</a></p>
 <p>print string 指针</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">p s</span><br><span class="line">$1 = 0x555555559260 &quot;hello world&quot;</span><br><span class="line">p *s</span><br><span class="line">$2 = 104 &#x27;h&#x27;       # 打印第一个字符</span><br></pre></td></tr></table></figure>
 <p>print 数组</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p arr        # 打印数组指针</span><br><span class="line">p *arr@10    # 打印 arr 数组的前10个元素</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">p arr        # 打印数组指针</span><br><span class="line">p *arr@10    # 打印 arr 数组的前10个元素</span><br><span class="line">p arr[0]     # 打印数组第一个元素</span><br></pre></td></tr></table></figure>
 <h2 id="设置断点">设置断点</h2>
 <p>函数断点</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">break main          # 在 main 函数处断点</span><br><span class="line">break my_func       # 在 my_func 函数入口断点</span><br><span class="line">c</span><br></pre></td></tr></table></figure>
@@ -709,6 +709,8 @@ ssh 连接不断连</a></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">step</span><br></pre></td></tr></table></figure>
 <p>next / n：执行下一行，但不进入函数内部</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">next</span><br></pre></td></tr></table></figure>
+<p>你已经在 print_el 里了，那就直接跳出去：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) finish</span><br></pre></td></tr></table></figure>
 <p>跳到下一个断点：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 设置多个断点后，连续执行到下一个断点</span><br><span class="line">(gdb) break function1</span><br><span class="line">(gdb) break function2</span><br><span class="line">(gdb) run # 运行程序</span><br><span class="line">(gdb) continue  # 从当前位置执行到function1</span><br><span class="line">(gdb) continue  # 从function1执行到function2</span><br></pre></td></tr></table></figure>
 <p>stepi / si：按 CPU 指令单步执行</p>
@@ -965,7 +967,7 @@ SMT</strong>后，可以启用超线程，把逻辑核翻倍，每两个逻辑�
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">September 3rd 2025, 3:50:10 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">January 12th 2026, 12:56:23 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">January 12th 2026, 10:04:35 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
