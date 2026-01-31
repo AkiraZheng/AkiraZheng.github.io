@@ -27,6 +27,15 @@ git mm 特有的指令：
   - `--decorate`: 显示分支、tag、commit id
   - `--all`: 显示所有分支
 
+查看每行代码的提交记录：
+
+```shell
+git blame -L <文件名>
+git blame -L <start>,<end> <文件名> # 查看指定行范围内的提交记录
+```
+
+- `-L`：显示Commit id、作者和提交时间
+
 # 代码提交、合并、push到远程仓库
 
 ## 1）代码提交：暂时不推到远程仓中
@@ -128,6 +137,15 @@ git restore ./* # 取消当前目录下所有修改
 - `git diff --numstat <commit id>`: 显示每个文件修改的行数(添加、删除、修改)
 - `git show --stat <commit id>`: 统计修改的行数(添加、删除、修改)
 - `git stash show -p stash@{0}`:显示当前stash某个暂存内容的diff情况
+- `git stash show -p stash@{0} > my_changes.patch`: 把当前stash某个暂存内容的diff情况保存到patch文件中
+
+# 日志
+
+## 查看某行代码的修改历史
+
+```shell
+git blame <文件路径>
+```
 
 # 制作.patch文件存储当前工作夹的修改
 
@@ -335,10 +353,10 @@ Signed-off-by: 原作者 <原作者邮箱>
 Signed-off-by: Tian Zheng <zhengtian10@huawei.com>
 ```
 
-然后就可以保存一下当前的新patch
+然后就可以保存一下当前某个 commitid 的patch
 
 ```shell
-git format-patch -1
+git format-patch -1 <commit-id>
 ```
 
 最后继续 rebase：
@@ -417,6 +435,15 @@ git commit # 完成合并
 
 # git 中对 commit 的坏点二分法查找
 
+先查找某个时间点（某一天）的提交记录：
+
+```shell
+git log --since="2024-01-01" --until="2024-02-01" --oneline
+```
+
+```shell
+git log --after="2024-01-01" --before="2024-02-01" --oneline
+```
 
 1. 找到一个好点 commit id：<commit_id_good>
 2. 找到一个坏点 commit id：<commit_id_bad>

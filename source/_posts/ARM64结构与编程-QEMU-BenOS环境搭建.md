@@ -134,7 +134,7 @@ make debug
 ```bash
 
 gdb-multiarch --tui ./build/benos.elf
-(gdb) target remote localhost:1234t
+(gdb) target remote localhost:1234
 (gdb) b _start
 (gdb) c
 (gdb) layout regs # 查看寄存器
@@ -149,4 +149,27 @@ gdb-multiarch --tui ./build/benos.elf
 (gdb) q
 ```
 
+# 问题解决
+
+## Mac M4芯片上跑不通
+
+发现问题在于`qemu-system-aarch64`不支持`raspi4`，只能支持到`raspi3`，所以需要修改`Makefile`中的
+
+```makefile
+# board ?= rpi4
+# 改成下面的
+board ?= rpi3
+```
+
+## 支持`raspi3`后汇编中ifdef没有生效
+
+在[ARM64结构与编程:异常处理](https://akirazheng.github.io/2026/01/11/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/)实现的过程中发现卡在`early_uart`中了，自己实现的汇编可用的 uart 可能有问题，初步定位是使用的 pi3 基地址没配好，用gdb执行到卡死的代码处，查看寄存器：
+
+```shell
+(gdb) info registers
+```
+
+可以确定在汇编文件中并没有看到`CONFIG_BOARD_PI3B`，但是在`kernel.c`中有这个宏定义，因此怀疑是编译时没有定义这个宏。
+
+发现对于汇编文件，在`Makefile`中没有定义宏，因此需要在`Makefile`中把原先的`ASMOPS = -g -Iinclude `修改成`ASMOPS = $(COPS) -g -Iinclude`
 

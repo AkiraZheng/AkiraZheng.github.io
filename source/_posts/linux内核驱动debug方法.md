@@ -10,6 +10,8 @@ categories:
 
 `ftrace`是最常用的工具，其中`kprobe`和`tracepoint`是其中的两个子工具。
 
+<img src=2026-01-07-09-19-48.png>
+
 # 通用操作
 
 ## 过滤
@@ -146,7 +148,7 @@ pahole -C vfio_pci_core_device
 ```shell
 echo 'name=="eth2"' > events/kprobes/filter  # 过滤入参 name==eth2 的事件
 # echo name!="eth2" > events/kprobes/nic_open/filter  # 过滤入参 name!=eth2 的事件
-echo 'pid!=1234' > events/kprobes/filter  # 过滤特定 pid 的事件
+echo 'pid==1234 || pid==1235' > events/kprobes/filter  # 过滤特定 pid 的事件
 echo nostacktrace > trace_options  # 关闭调用栈的打印，只看 __setup_irq 的入参显示
 echo nostacktrace > events/kprobes/p___setup_irq/trigger # 关闭特定 kprobe 事件的调用栈打印
 ```
@@ -307,10 +309,23 @@ enable  filter  irq_handler_entry  irq_handler_exit  softirq_entry  softirq_exit
 
 ## 代码中调用 tracepoint
 
-在内核代码中，可以通过`trace_irq_handler_exit`来调用 tracepoint。比如在`./kernel/irq/handle.c`中添加：
+在内核代码中，可以通过`trace_irq_handler_exit`来调用 tracepoint。比如在`./kernel/irq/handle.c`中要调用这个 tracepoint 的话，添加对应的头文件：
 
 ```c
 #include <trace/events/irq.h>
+```
+
+注意！！如果是自己添加的 tracepoint 头文件，需要在第一次调用的文件里面加上：
+
+```c
+#define CREATE_TRACE_POINTS
+```
+
+且整个工程中关于**同一个tracepoint 文件**只能有一个文件定义这个宏，否则编译会不通过。正常情况下如果你没有重新自己创建一个 tracepoint 文件，只是在现有的 tracepoint 文件中添加事件的话，是**不需要在调用处**定义这个宏的。
+
+然后使用的时候直接调用：
+
+```c
 trace_irq_handler_exit(irq, action, res);
 ```
 
@@ -386,7 +401,7 @@ perf 是基于 Linux 内核提供的 tracepoint 性能事件 perf_events 来进�
     假设有一个测试的可执行文件要分析，可以使用以下命令： `perf stat -e cycles,instructions,cache-references,cache-misses ./test_program`
 
     - -a：显示所有 CPU 上的统计信息。
-    - -c：显示指定 CPU 上的统计信息。
+    - -C：显示指定 CPU 上的统计信息。
     - -e：指定要显示的事件。
     - -i：禁止子任务继承父任务的性能计数器。
     - -r：重复执行 n 次目标程序，并给出性能指标在 n 次执行中的变化范围。

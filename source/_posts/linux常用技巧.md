@@ -43,11 +43,12 @@ tags:
 ## 光标移动
 
 - `NG`: 跳转到第 N 行
-- `:n`: 跳转到第 N 行
+- `:n`: 跳转到第 N 行（好用！）
 - `gg`: 跳转到第一行, 相当于 `1G`
 - `G`: 跳转到最后一行
 - `w`: 光标跳到下一个单词的开头
 - `e`: 光标跳到当前单词的结尾
+- `$`: 跳转到这一行的末尾
 - `%`: 跳转到匹配的括号处（大括号、中括号）
 - `*`: 高亮显示所有与当前光标所在单词**相同的单词处**
   - 按 `n` 跳转到下一个匹配处
@@ -92,6 +93,8 @@ set background=dark " 如果背景是黑色，最好加上这句
 
 ## vim 双屏
 
+### 方法一：vsp
+
 vim 查看一个文件后，用`:vsp`来跟另一个文件进行比较（双屏）
 
 ```shell
@@ -99,12 +102,39 @@ vim ./file1.c
 :vsp ./file2.c
 ```
 
-然后如果要切到第二个屏进行查找的话，可以用快捷键`CTRL+ww`切过去
+如果要打开另一个文件：
+
+```shell
+:e ./file3.c
+```
+
+然后如果要切到第二个屏进行查找的话，可以用快捷键`CTRL+ww`或者`CTRL+h/j/k/l`通过方向键切过去
+
+### 方法二：-O
+
+加上`-O`参数直接多屏打开多个文件，通过垂直屏幕的方式。
+
+```shell
+vim -O file1.c file2.c
+```
 
 ## vim 中显示当前文件的 路径&&文件名
 
 在底部输入`:f`然后 Enter
 
+## vim 中多个文件选择和切换
+
+```shell
+:buffers
+```
+
+<img src=2026-01-10-12-05-43.png>
+
+然后找到要跳转的文件的编号，比如上图中的`irqchip.c`的编号是`1`，然后输入：
+
+```shell
+:buffer 1
+```
 
 # 2. terminal 操作
 
@@ -193,21 +223,22 @@ echo 0 > /proc/sys/kernel/printk
 echo 7 > /proc/sys/kernel/printk
 ```
 
-## 查看当前内核有哪些编译选项
+## 内核编译选项
 
-### 已经启动的内核
+### 查看已经启动的内核是否包含哪个编译项
 
 内核的编译选项一般存在`/boot/config-$(uname -r)`中，所以可以结合`grep`查看当前内核有没有编进去你想找的编译选项
 
 ```shell
 # 查看当前包含的所有编译选项
 cat /boot/config-$(uname -r)
+zcat /proc/config.gz | grep CONFIG_XXX
 
 # 查找有没有 KUT kvm 单元测试的编译选项
 grep -r CONFIG_KUT /boot/config-$(uname -r)
 ```
 
-### 编好的 rpm 包
+### 查看编好的 rpm 包是否包含某个编译选项
 
 如果是编了 rpm 包，还没有 rpm 添加进服务器内核，且没有更新内核的话：
 
@@ -220,6 +251,27 @@ grep -r "CONFIG_XXX" .
 
 ```shell
 rpm -q --configfiles kernel-<version>.rpm
+```
+
+### linux rpm 包添加 tracing
+
+如果内核没有编译 tracing，可以重新编译内核，添加 tracing 编译选项：
+
+```shell
+CONFIG_FTRACE=y
+CONFIG_TRACING=y
+CONFIG_KPROBES=y
+CONFIG_KPROBE_EVENTS=y # /sys/kernel/debug/tracing/kprobe_events
+CONFIG_DYNAMIC_FTRACE=y
+CONFIG_DYNAMIC_EVENTS=y
+CONFIG_FUNCTION_TRACER=y
+CONFIG_EVENT_TRACING=y
+CONFIG_KPROBE_EVENTS=y
+CONFIG_UPROBE_EVENTS=y
+# 辅助调试
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+CONFIG_DEBUG_INFO=y
 ```
 
 ## 修改 linux-root 密码
@@ -365,6 +417,7 @@ print 数组
 ```gdb
 p arr        # 打印数组指针
 p *arr@10    # 打印 arr 数组的前10个元素
+p arr[0]     # 打印数组第一个元素
 ```
 
 ## 设置断点
@@ -411,6 +464,12 @@ next / n：执行下一行，但不进入函数内部
 
 ```gdb
 next
+```
+
+你已经在 print_el 里了，那就直接跳出去：
+
+```gdb
+(gdb) finish
 ```
 
 跳到下一个断点：
@@ -599,7 +658,7 @@ virsh list
 virsh destroy file_name
 virsh undefine file_name
 
-# 查看分配的 DHCP 租约
+# 查看分配的 DHCP 租约（virsh自动分配给vm的网络IP）
 virsh net-dhcp-leases default
 
 # 检查默认网络状态
@@ -610,6 +669,12 @@ virsh net-destroy default
 
 # 启动默认网络
 virsh net-start default
+
+# 查看虚机的详细信息（qemu monitor）
+virsh qemu-monitor-command <虚机名称> --hmp "<指令>"
+# 例如查看虚机的 CPU 信息
+virsh qemu-monitor-command vm1 --hmp "info cpus"
+
 ```
 
 ## 查看用qemu起的虚机 pid
@@ -622,7 +687,7 @@ virsh net-start default
 
 ## vim 中函数跳转
 
-### way1：使用 cscope 实现函数跳转
+### way1：使用 cscope 实现函数跳转（功能更齐全）
 
 如果你的 Vim 配置了 `+cscope` 支持（可以通过 `:version` 命令查看），你可以使用 cscope 来进行函数跳转。
 
@@ -734,8 +799,213 @@ ctags -R -a <filename>
 
 `grep -r "待查找内容" --include="*.c"`
 
+# 6. 打造最强vim ide
 
-# 6. 编译
+安装工具 vim 插件管理工具：
+
+```shell
+git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+```
+
+然后把事先准备好的 `.vimrc` 文件放到 home 目录下，获取链接：[https://pan.quark.cn/s/84d039d2ffc2](https://pan.quark.cn/s/84d039d2ffc2)
+
+```shell
+cp /path/to/your/.vimrc ~/.vimrc
+```
+
+打开 vim，执行以下命令安装和查看插件：
+
+```shell
+vim
+:PluginInstall
+:PluginList
+```
+
+## ctags
+
+安装 ctags：
+
+```shell
+sudo apt-get install exuberant-ctags
+ctags --version
+```
+
+每个工程目录下生成 tags 文件：
+
+```shell
+ctags -R .
+vim
+:set tags=./tags;
+```
+
+常用的快捷键有两个：
+
+- `Ctrl-]`：跳转到光标所在函数的定义。
+- `Ctrl-T`：返回到跳转之前的位置。
+
+## cscope
+
+ctags 只能跳转到函数定义，无法跳转到函数调用处，而 cscope 可以实现这两个功能。
+
+安装 cscope：
+
+```shell
+sudo apt-get install cscope
+cscope --version
+```
+
+每个工程目录下生成 cscope 数据库文件：
+
+```shell
+# 下面的命令会生成 3 个文件： cscope.out、cscope.in.out、cscope.po.out
+# 其中 cscope.out 是主要的数据库文件，另外两个是加速索引
+cscope -Rbq
+```
+
+为了方便使用，我们已经在`.vimrc`中配置好了 cscope 的快捷键：
+
+```vim
+"nmap <C-_>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+"F5 查找c符号； F6 查找字符串；   F7 查找函数定义； F8 查找函数谁调用了，
+nmap <silent> <F5> :cs find s <C-R>=expand("<cword>")<CR><CR> :botright copen<CR><CR>
+nmap <silent> <F6> :cs find t <C-R>=expand("<cword>")<CR><CR> :botright copen<CR><CR>
+"nmap <silent> <F7> :cs find g <C-R>=expand("<cword>")<CR><CR> 
+nmap <silent> <F7> :cs find c <C-R>=expand("<cword>")<CR><CR> :botright copen<CR><CR>
+```
+
+常用快捷键说明：`fn + Fx`
+
+- `F5`：查找符号（变量、宏等）
+- `F6`：全工程查找光标下的字符串（其中就包含了函数调用处）
+- `F7`：全工程查找函数调用处
+
+找到后，会自动打开底部窗口显示查找结果，输入下面的命令后就可以通过`hjkl`键在结果中进行上下选择：
+
+```vim
+:copen
+```
+
+找到想去的地方后，按回车键 Enter 就可以跳转过去。
+
+<img src=2026-01-10-12-11-45.png>
+
+输入下面的命令关闭窗口：
+
+```vim
+:cclose
+```
+
+## tagbar
+
+`.vmrc`中已经配置好了 tagbar 插件
+
+- 打开 tagbar 窗口：
+
+```vim
+:TagbarToggle
+```
+
+- 关闭 tagbar 窗口：
+
+```vim
+:TagbarClose
+```
+
+## nerdtree
+
+用于左侧显示目录树
+
+`.vmrc`中已经配置好了 nerdtree 插件
+
+## 动态语法检测
+
+`.vmrc`中已经配置好了 Ale 插件，左侧显示语法错误，其中`x`表示错误，`w`表示警告，
+
+`:ALEFix`可以自动修复一些简单的语法错误。
+
+## YCM 代码自动补全
+
+`.vmrc`中已经配置好了 YouCompleteMe 插件，该插件对 vim 的版本号有要求。
+
+同时还需要安装一些依赖：
+
+```shell
+sudo apt-get install build-essential cmake vim-nox python3-dev
+```
+
+检查 python 版本是否为 Python3：
+
+```shell 
+python
+```
+
+接下来编译 YouCompleteMe：
+
+```shell
+cd ~/.vim/bundle/YouCompleteMe
+python3 install.py --clangd-completer
+# 如果需要支持 C++11 及以上标准，可以加上 --clang-completer 标志
+```
+
+编译完之后，还要把`~/.vim/bundle/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py`文件复制到`./.vim`目录下：
+
+```shell
+cp ~/.vim/bundle/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py ~/.vim/
+```
+
+以及在`.vimrc`中添加了相关配置就行了。
+
+## LSP 自动补全
+
+但是由于 YCM 需要各种 vim 版本要求、python 要求，没达到要求的还要重新编译，非常麻烦，所以推荐使用 LSP 方式来实现代码自动补全。
+
+先安装`clangd`：
+
+```shell
+sudo apt-get install clangd
+clangd --background-index # 启动后台索引功能
+```
+
+`.vimrc`中已经配置相关插件，`:PluginInstall`安装完插件后，在你的 linux 工程目录下创建一个`compile_commands.json`文件：
+
+**linux 内核工程下生成 compile_commands.json：**
+
+linux 的话推荐用`scripts/clang-tools/gen_compile_commands.py`
+
+```shell
+make defconfig
+scripts/clang-tools/gen_compile_commands.py
+```
+
+然后打开`c`文件，可以查看是否启用了 LSP 补全：
+
+```vim
+:LspStatus
+:LspLog # 遇到问题可以查看日志
+```
+
+<img src=2026-01-10-12-36-58.png>
+
+**其他C/C++ 项目生成 compile_commands.json：**
+
+可以使用`cmake`生成：
+
+```shell
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+```
+
+这会在项目根目录下生成一个 compile_commands.json 文件，clangd 使用该文件来获取编译选项。
+
+如果你的项目不是用 cmake 构建的，一般 clang 会自动生成`gen_compile_commands.py`，可以利用该工具来生成 compile_commands.json：
+
+```shell
+cp /path/scripts/gen_compile_commands.py
+python3 gen_compile_commands.py
+```
+
+> 参考：[vim安装LSP语法补全插件](https://www.kawabangga.com/posts/3745)
+
+# 7. 编译
 
 ## 反汇编
 
@@ -745,7 +1015,7 @@ ctags -R -a <filename>
 objdump -D myfile.o > myfile.s
 ```
 
-# 7. 硬件参数查询
+# 8. 硬件参数查询
 
 ## 查看 CPU 数、numa数、qemu 线程 pid
 
