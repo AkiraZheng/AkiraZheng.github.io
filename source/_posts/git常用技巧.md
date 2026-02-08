@@ -30,7 +30,7 @@ git mm 特有的指令：
 查看每行代码的提交记录：
 
 ```shell
-git blame -L <文件名>
+git blame <文件名>
 git blame -L <start>,<end> <文件名> # 查看指定行范围内的提交记录
 ```
 

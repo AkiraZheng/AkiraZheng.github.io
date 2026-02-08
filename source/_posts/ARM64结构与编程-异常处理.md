@@ -137,36 +137,68 @@ text
 
 所以向量表必须整体放在 [0x0000_0000_0001_2000, 0x0000_0000_0001_27FF] 这 2KB 里。
 
-裸机汇编里保证 VBAR_EL1 对齐的方式以为下：
+在 spec 里，定义了四种异常类型的入口顺序：
+
+- 同步异常
+- IRQ 异常
+- FIQ 异常
+- SError 异常
+
+每个 EL 级别都有这四种异常类型的入口，因此 lnux 内核里保证 VBAR_EL1 的异常向量表和对齐方式以为下：
+
+<img src=2026-02-04-20-20-58.png>
+
+其中，`kernel_ventry`是宏定义，定义在`arch/arm64/kernel/vectors.S`文件中：
 
 ```armasm
-.section .vectors
-.align 11          // Align to 2KB boundary
-.globl vector_table
-vector_table:
-	// 当前 EL，SP0
-    b   sync_el_sp0
-    .align 7                // 128B 对齐
-	b   irq_el_sp0
-	.align 7
-	b   fiq_el_sp0
-	.align 7
-	b   serr_el_sp0
-	.align 7
-	// 当前 EL，SPx
-	b   sync_el_spx
-	.align 7
-	b   irq_el_spx
-	.align 7
-	b   fiq_el_spx
-	.align 7
-	b   serr_el_spx
-	.align 7
-	// Lower EL using AArch64
-    ...
+.macro kernel_ventry type, el, label, regsize = 64
+.align 7                       // align to 128 bytes，每个entry表项都是128字节
+sub sp, sp, #S_FRAME_SIZE // create stack frame，S_FRAME_SIZE表示栈宽大小
+b el \()\el\()_\label  //比如在EL1的 FIQ 中断中，会跳转到异常向量表中 el1_fiq_invalid 异常处理函数中，也就是变成 b el1_fiq_invalid
+.endm
 ```
 
+<img src=2026-02-04-20-38-03.png>
 
+其中，`kernel_entry`宏是用来保存异常现场的（上下文），保存CPU中的重要信息。
+
+<img src=2026-02-04-20-42-53.png>
+
+<img src=2026-02-04-19-32-53.png>
+
+
+四种异常类型的入口地址偏移分别是：
+
+<img src=2026-02-04-19-35-51.png>
+
+# 七、同步异常的解析
+
+同步异常的原因可以通过 `ESR_ELx` 寄存器来解析，`ESR_ELx` 寄存器中包含了异常的**类型和原因信息**：
+
+<img src=2026-02-08-15-06-21.png>
+
+其中比较创建的 EC 有：
+
+- `EC == 0b100000`：Instruction Abort from a lower Exception level，指令访问内存异常，且是来自 lower EL 的异常
+- `EC == 0b100001`：Instruction Abort taken without a change in Exception level，来自当前 EL 的指令访问内存异常
+- `EC == 0b100100`：Data Abort from a lower Exception level，数据访问内存异常，且是来自 lower EL 的异常
+- `EC == 0b100101`：Data Abort taken without a change in Exception level，来自当前 EL 的数据访问内存异常
+
+当异常发生时，硬件会填充 `ESR_ELx` 寄存器的 EC 域来表示异常的类型和原因。软件可以通过读取 `ESR_ELx` 寄存器来获取异常的详细信息，从而进行相应的处理。处理流程如下：
+
+<img src=2026-02-08-15-11-48.png>
+
+ISS 域的编码规则如下：
+
+<img src=2026-02-08-15-38-19.png>
+
+其中`DFSC`很重要，可以从`DFSC`的编码直接确认是由于缺页、权限异常还是其他原因导致的。
+
+<img src=2026-02-08-15-40-00.png>
+
+linux 源码`arch/arm64/kvm/handle_exit.c`中有与各ESR对应的异常处理函数表：
+
+<img src=2026-02-08-15-35-03.png>
 
 
 
@@ -332,3 +364,223 @@ print_el:
     ret 
 ```
 
+# 实验二：实现同步异常处理
+
+本实验的异常暂时不做保存异常上下文的操作，只是简单地将异常全部触发 panic。
+
+ARM v8 中指令通常是 4 字节对齐的，因此我们可以通过**故意执行一个未对齐的内存访问指令**来触发同步异常。
+
+首先创建一个 EL1 的异常向量表`vectors`：
+
+```armasm
+// vectors.S
+#define BAD_SYNC 0
+#define BAD_IRQ  1
+#define BAD_FIQ  2
+#define BAD_ERROR 3
+
+/*
+* 定义 inv_entry 宏，用于生成无效异常处理程序
+* 参数：
+*   el: 异常发生时的异常级别（0 或 1）
+*   reason: 异常原因代码
+ */
+    .macro inv_entry el, reason
+    //kernel_entry el //上下文保存-未实现
+    mov x0, sp
+    mov x1, #\reason
+    mrs x2, esr_el1
+    b bad_mode //在kernel.c的函数中定义异常处理函数bad_mode
+    .endm
+
+/*
+* 定义 vtentry 宏，用于生成异常向量表的表项，每个表项占 128 字节
+* 参数：
+*   label: 异常处理程序的标签
+ */
+    .macro vtentry label
+    .align 7         // 128 字节对齐
+    b \label
+    .endm
+
+/*
+* 异常向量表
+* ARM 的异常向量表一共占 2048 字节（4*4*128）
+* 因此用 align 11 表示 2048 字节对齐
+* 分为 4 组，根据四个异常类型每组有4个表项，每个表项占 128 字节
+ */
+
+.align 11
+.global vectors
+vectors:
+    /*
+    * Current EL with SP0
+    * 异常描述：当前系统运行在EL1时使用EL0的栈指针SP
+     */
+    vtentry el1_sync_invalid
+    vtentry el1_irq_invalid
+    vtentry el1_fiq_invalid
+    vtentry el1_serror_invalid
+
+    /*
+    * Current EL with SPx
+    * 异常描述：当前系统运行在EL1时使用当前EL1的栈指针SP
+    *          说明是在内核态下发生的异常
+    * 当前我们只实现此处的 IRQ 中断
+     */
+    vtentry el1_sync_invalid
+    vtentry el1_irq_invalid
+    vtentry el1_fiq_invalid
+    vtentry el1_serror_invalid
+
+    /*
+    * Lower EL using AArch64
+    * 异常描述：在用户态下发生的异常
+     */
+    vtentry el0_sync_invalid
+    vtentry el0_irq_invalid 
+    vtentry el0_fiq_invalid
+    vtentry el0_serror_invalid
+
+    /*
+    * Lower EL using AArch32
+    * 异常描述：在用户态下发生的异常
+    */
+    vtentry el0_sync_invalid
+    vtentry el0_irq_invalid
+    vtentry el0_fiq_invalid
+    vtentry el0_serror_invalid
+
+el1_sync_invalid:
+    inv_entry 1, BAD_SYNC
+el1_irq_invalid:
+    inv_entry 1, BAD_IRQ
+el1_fiq_invalid:
+    inv_entry 1, BAD_FIQ
+el1_serror_invalid:
+    inv_entry 1, BAD_ERROR
+el0_sync_invalid:
+    inv_entry 0, BAD_SYNC
+el0_irq_invalid:
+    inv_entry 0, BAD_IRQ
+el0_fiq_invalid:
+    inv_entry 0, BAD_FIQ
+el0_serror_invalid:
+    inv_entry 0, BAD_ERROR
+```
+
+```c
+// kernel.c
+//对应异常向量表inv_entry函数传入的reason参数：0~3
+static const char * const bad_mode_handler[] = {
+	"Sync Abort",
+	"IRQ",
+	"FIQ",
+	"SError",
+};
+
+void bad_mode(struct pt_regs *regs, int reason, unsigned long esr)
+{
+	printk("Bad mode for %s, far:0x%x, esr:0x%016llx\n",//其中far_el1为故障地址寄存器
+		bad_mode_handler[reason],
+		read_sysreg(far_el1),
+		esr);
+}
+```
+
+编写完 EL1 的异常向量表后，需要在进入 EL1 的`el1_entry`函数中，配置`VBAR_EL1`寄存器，让 CPU 知道 EL1 的异常向量表地址：
+
+```armasm
+// boot.s
+
+el1_entry:
+	//...
+
+	/* 设置 EL1 的异常向量表地址到 vbar 寄存器中 */
+	ldr x5, =vectors
+	msr vbar_el1, x5
+	isb
+
+	//...
+```
+
+完成后，就可以正常编译运行了。但是此时我们还没有触发异常，因此我们需要在`kernel_main`函数中，故意通过**指令未对齐**来触发Instruction Alignment Fault（指令对齐故障）：
+
+```c
+// kernel.c
+extern void trigger_alignment(void);
+
+void kernel_main(void)
+{
+	//...
+
+	trigger_alignment();
+
+	//...
+}
+```
+
+如果我们只是通过下面的方式来访问内存，是不触发异常的：
+
+```armasm
+// entry.S
+.global trigger_alignment	//执行到这里，地址是0x83004，是4字节对齐的，不会触发异常
+trigger_alignment:
+    ldr x0, =0x80002
+    ldr x1, [x0]
+    ret
+```
+
+<img src=2026-02-04-21-55-54.png>
+
+但是如果我们在`trigger_alignment`前面加上一个字节的偏移，就会触发异常：
+
+```armasm
+// entry.S
+string_test:		//83004
+    .string "t"		//t 和 \0 分别占用83004和83005两个字节
+
+.global trigger_alignment
+trigger_alignment:		 //执行到这里变差83006，是未对齐的地址，触发异常
+    // 故意触发指令对齐异常
+    //在 ARM v8 中，指令通常是 4 字节对齐的
+    // 而0x83006不是4的倍数，所以访问的是没有4字节对齐的地址，进而触发对齐异常
+    ldr x0, =0x80002
+    ldr x1, [x0]
+    ret
+```
+
+<img src=2026-02-04-22-01-52.png>
+
+<img src=2026-02-04-22-07-56.png>
+
+进一步通过单步调试来查看单步调试到trigger_alignment的时候发生的报错：
+
+<img src=2026-02-04-22-20-58.png>
+
+
+从上面`x/4i 0x83004`的反汇编结果可以看到，CPU 在执行到`ldr x1, [x0]`这条指令时，触发了对齐异常
+
+按照指令规则，当前应该会执行`0x83004`这条指令，CPU会尝试去执行这条指令，但是由于我们塞了一个`.string "t"`，导致此时 CPU 尝试从`string test`处执行，也就是说，错误地把它当成一条指令来执行了，结果自然就触发了对齐异常。也就是说，内存跑飞了。
+
+进一步地，如果我们想执行`trigger_alignment`函数后不触发异常，可以将`string_test`进行对齐：
+
+```armasm
+// entry.S
+string_test:		//83004
+	.string "t"
+	.align 2        //对齐到4字节边界
+
+.global trigger_alignment
+trigger_alignment:		
+	ldr x0, =0x80002
+	ldr x1, [x0]  s
+	ret
+```
+
+
+| 情况 | 内存布局 | 执行结果 |
+| :--- | :--- | :--- |
+| **不加字符串** | `trigger_alignment` 位于 `0x83004` (对齐) | CPU 正常读取 `ldr` 指令，执行成功。 |
+| **加了字符串** | `0x83004` 变成了数据 `'t'` | CPU 把数据当指令读，读到非法编码，崩了。 |
+| **加了字符串且没对齐** | `trigger_alignment` 位于 `0x83006` | CPU 根本无法从该地址提取指令，直接触发对齐故障。 |
