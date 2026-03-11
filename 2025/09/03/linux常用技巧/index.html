@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-11-45.png">
 <meta property="og:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-36-58.png">
 <meta property="article:published_time" content="2025-09-03T07:50:10.000Z">
-<meta property="article:modified_time" content="2026-02-12T13:53:47.511Z">
+<meta property="article:modified_time" content="2026-03-07T06:35:28.530Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/2026-01-10-12-05-43.png">
@@ -341,7 +341,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">5.4k</span>Reading time: <span class="post-count reading-time">22 min</span></span>
+                        <span>Word count: <span class="post-count word-count">5.9k</span>Reading time: <span class="post-count reading-time">24 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -982,6 +982,29 @@ SMT</strong>后，可以启用超线程，把逻辑核翻倍，每两个逻辑�
 超线程：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cat /sys/devices/system/cpu/smt/active </span><br><span class="line">cat /sys/devices/system/cpu/smt/control </span><br></pre></td></tr></table></figure>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">akira@akira:~$ cat /sys/devices/system/cpu/smt/active </span><br><span class="line">0 # 说明当前没开，开了的话应该是 1</span><br><span class="line">akira@akira:~$ cat /sys/devices/system/cpu/smt/control </span><br><span class="line">notimplemented # 说明 CPU 不支持 SMT 超线程，支持的话应该是 on 或者 off</span><br></pre></td></tr></table></figure>
+<h1 id="tmux-使用">9. tmux 使用</h1>
+<h2 id="会话管理">会话管理</h2>
+<p><strong>新建会话</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tmux new -s &lt;session_name&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>进入会话</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tmux</span><br><span class="line">tmux attach -t &lt;session_name&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>查看会话</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tmux l</span><br></pre></td></tr></table></figure>
+<p><strong>退出会话</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 快捷键：Ctrl + b, 然后按 d <span class="comment"># 会话跟窗口分离，可以退出当前会话，但会话还在后台继续运行</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> tmux外部：tmux detach -t &lt;session_name&gt;</span></span><br><span class="line"></span><br><span class="line">exits # 不会保留该会话（终止会话）</span><br></pre></td></tr></table></figure>
+<p><strong>切换会话</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tmux switch -t &lt;session_name&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>重命名会话</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tmux rename-session -t &lt;new_session_name&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="分屏">分屏</h2>
+<p><strong>分屏</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 划分上下两个窗格</span></span><br><span class="line">tmux split-window</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 划分左右两个窗格</span></span><br><span class="line">tmux split-window -h</span><br></pre></td></tr></table></figure>
+<p><strong>切换窗口</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 切换到下一个窗口</span></span><br><span class="line">Ctrl + b, 然后按 n</span><br><span class="line"><span class="meta">#</span><span class="bash"> 切换到上一个窗口</span>  </span><br><span class="line">Ctrl + b, 然后按 p</span><br></pre></td></tr></table></figure>
+<p><strong>窗口快捷键</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Ctrl+b %：划分左右两个窗格。</span><br><span class="line">Ctrl+b &quot;：划分上下两个窗格。</span><br><span class="line">Ctrl+b &lt;arrow key&gt;：光标切换到其他窗格。&lt;arrow key&gt;是指向要切换到的窗格的方向键，比如切换到下方窗格，就按方向键↓。</span><br><span class="line">Ctrl+b ;：光标切换到上一个窗格。</span><br><span class="line">Ctrl+b o：光标切换到下一个窗格。</span><br><span class="line">Ctrl+b &#123;：当前窗格与上一个窗格交换位置。</span><br><span class="line">Ctrl+b &#125;：当前窗格与下一个窗格交换位置。</span><br><span class="line">Ctrl+b Ctrl+o：所有窗格向前移动一个位置，第一个窗格变成最后一个窗格。</span><br><span class="line">Ctrl+b Alt+o：所有窗格向后移动一个位置，最后一个窗格变成第一个窗格。</span><br><span class="line">Ctrl+b x：关闭当前窗格。</span><br><span class="line">Ctrl+b !：将当前窗格拆分为一个独立窗口。</span><br><span class="line">Ctrl+b z：当前窗格全屏显示，再使用一次会变回原来大小。</span><br><span class="line">Ctrl+b Ctrl+&lt;arrow key&gt;：按箭头方向调整窗格大小。</span><br><span class="line">Ctrl+b q：显示窗格编号。</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2019/10/tmux.html">Tmux
+使用教程</a></p>
 
     </article>
     <!-- license -->
@@ -990,7 +1013,7 @@ SMT</strong>后，可以启用超线程，把逻辑核翻倍，每两个逻辑�
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">September 3rd 2025, 3:50:10 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">February 12th 2026, 9:53:47 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">March 7th 2026, 2:35:28 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -1162,7 +1185,7 @@ SMT</strong>后，可以启用超线程，把逻辑核翻倍，每两个逻辑�
 中对工程代码的跳转、函数查找</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vim-%E4%B8%AD%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC"><span class="toc-text">vim 中函数跳转</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#way1%E4%BD%BF%E7%94%A8-cscope-%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC%E5%8A%9F%E8%83%BD%E6%9B%B4%E9%BD%90%E5%85%A8"><span class="toc-text">way1：使用 cscope
 实现函数跳转（功能更齐全）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#way2%E4%BD%BF%E7%94%A8-tag-%E6%96%87%E4%BB%B6%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B7%B3%E8%BD%AC%E5%9F%BA%E4%BA%8E-ctags%E6%8E%A8%E8%8D%90"><span class="toc-text">way2：使用 tag
 文件实现函数跳转（基于 ctags）【推荐】</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0-tag"><span class="toc-text">更新 tag</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E7%9B%AE%E5%BD%95%E4%B8%8B%E6%9F%A5%E6%89%BE%E6%9F%90%E4%B8%AA%E5%87%BD%E6%95%B0%E5%90%8D"><span class="toc-text">工程目录下查找某个函数名</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%89%93%E9%80%A0%E6%9C%80%E5%BC%BAvim-ide"><span class="toc-text">6. 打造最强vim ide</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ctags"><span class="toc-text">ctags</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cscope"><span class="toc-text">cscope</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tagbar"><span class="toc-text">tagbar</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nerdtree"><span class="toc-text">nerdtree</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%AF%AD%E6%B3%95%E6%A3%80%E6%B5%8B"><span class="toc-text">动态语法检测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ycm-%E4%BB%A3%E7%A0%81%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8"><span class="toc-text">YCM 代码自动补全</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#lsp-%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8"><span class="toc-text">LSP 自动补全</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BC%96%E8%AF%91"><span class="toc-text">7. 编译</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E6%B1%87%E7%BC%96"><span class="toc-text">反汇编</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%8F%82%E6%95%B0%E6%9F%A5%E8%AF%A2"><span class="toc-text">8. 硬件参数查询</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B-cpu-%E6%95%B0numa%E6%95%B0qemu-%E7%BA%BF%E7%A8%8B-pid"><span class="toc-text">查看 CPU 数、numa数、qemu 线程
-pid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%85%B3-smt"><span class="toc-text">开关 SMT</span></a></li></ol></li></ol>
+pid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%85%B3-smt"><span class="toc-text">开关 SMT</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#tmux-%E4%BD%BF%E7%94%A8"><span class="toc-text">9. tmux 使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86"><span class="toc-text">会话管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B1%8F"><span class="toc-text">分屏</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1591,7 +1614,24 @@ pid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -2442,7 +2482,7 @@ pid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 83
+        Total : 84
         </div>
         <!-- search  -->
         
@@ -2460,6 +2500,12 @@ pid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/06</span>
+            <a class="archive-post-title" href="/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/">Mac中配置使用claude</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/12</span>
