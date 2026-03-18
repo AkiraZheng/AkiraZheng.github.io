@@ -370,7 +370,16 @@ print_el:
 
 ARM v8 中指令通常是 4 字节对齐的，因此我们可以通过**故意执行一个未对齐的内存访问指令**来触发同步异常。
 
-首先创建一个 EL1 的异常向量表`vectors`：
+首先创建一个 EL1 的异常向量表`vectors`，其中vectors中`vtentry label`每一个标签都必须根据手册按顺序填进去，否则自动查异常向量表的时候会导致错位（比如本来你想跳到el1_irq_invalid的，由于前面少写了一个el1_sync_invalid，导致直接跳到了el1_fiq_invalid）：
+
+```
+0x000: vtentry irq      (错误！本应是 sync)
+0x080: vtentry fiq      (错误！本应是 irq)
+0x100: vtentry serror   (错误！本应是 fiq)
+0x180: vtentry sync     (错误！本应是 serror)
+0x200: vtentry irq      (错误！本应是 sync)
+...
+```
 
 ```armasm
 // vectors.S

@@ -390,6 +390,21 @@ sudo perf trace -e irq:irq_handler_exit
 sudo perf stat -e irq:irq_handler_exit -a sleep 10
 ```
 
+## trace_printk
+
+在代码中可以直接通过`trace_printk`来输出信息，输出的信息会被 ftrace 捕获并显示在 trace 中。相比于`printk`，`trace_printk`的输出量更小，用法跟普通的`printf`类似，可以输出格式化字符串和变量值。
+
+```c
+trace_printk("This is a trace message with value: %d\n", value);
+```
+
+但他不会输出到内核日志中，所以不会对系统性能产生太大影响，且可以通过 ftrace 来控制输出的格式和内容：
+
+```shell
+echo 1 > /sys/kernel/debug/tracing/tracing_on
+cat /sys/kernel/debug/tracing/trace_pipe
+```
+
 # perf 性能分析工具
 
 perf 是基于 Linux 内核提供的 tracepoint 性能事件 perf_events 来进行性能分析的工具。它可以用于分析 CPU 性能、内存性能、I/O 性能等方面的问题。
@@ -487,6 +502,13 @@ perf list | grep kvm  # 查看某个子模块的性能事件
 要生成火焰图必须有调用栈信息，所以需要在`perf record`时加上`-g`选项。
 
 用`perf record -g`记录采样数据后，通过`perf script > out.perf`生成脚本文件，该脚本数据可以用于生成火焰图。
+
+生成的 `out.perf`可以放到其他机器上生成火焰图，如果只有`perf.data`的话，需要把`/proc/kallsyms`文件也一起复制过去，因为生成火焰图需要解析符号表。
+
+```shell
+perf record -g ./test
+perf script > out.perf
+```
 
 然后使用`FlameGraph`工具生成火焰图。
 
@@ -610,3 +632,102 @@ for (int i = 0; i < times_s * 1000; ++i) {
 - 图中最宽的区域是与 nanosleep 相关的系统调用栈。这表明您的程序大部分时间都花在了“睡眠”（等待）状态，而不是在执行计算任务。火焰图有效地指出了性能瓶颈在于频繁且耗时的睡眠操作。
 
 > [Linux 性能分析工具 perf 的使用指南](https://zhuanlan.zhihu.com/p/8497782204)
+
+# tmp
+
+ftrace主要用于跟踪时延和行为
+
+perf的原理是这样的：每隔一个固定的时间，就在CPU上（每个核上都有）产生一个中断，在中断上看看，当前是哪个pid，哪个函数，然后给对应的pid和函数加一个统计值，这样，我们就知道CPU有百分几的时间在某个pid，或者某个函数上了。
+很明显可以看出，这是一种采样的模式，我们预期，运行时间越多的函数，被时钟中断击中的机会越大，从而推测，那个函数（或者pid等）的CPU占用率就越高。（所以不是完整样本，具有概率性）
+参考：https://mysummary.readthedocs.io/zh/latest/软件构架设计/在Linux下做性能分析.html#id1
+
+sudo perf record -e 'cycles' -- myapplication arg1 arg2
+sudo perf report
+
+另外，我们要清楚，现代CPU基本上已经不用忙等的方式进入等待了，所以，如果CPU在idle（就是没有任务调度，这种情况只要你的CPU占用率不是100%，必然要发生的），击中任务也会停止，所以，在Idle上是没有点的（你看到Idle函数本身的点并非CPU Idle的点，而是准备进入Idle前后花的时间），所以，perf的统计不能用来让你分析CPU占用率的。ftrace和top等工具才能看CPU占用率，perf是不行的。
+
+<img src=2026-02-12-21-55-44.png>
+
+qemu guest host hypervisor的陷入陷出流程
+
+从这个图上我们可以看到，除了掌握更多的资源（IO资源），Host的地位和Guest地位几乎是对等的。这造成一个很有趣的现象：如果我们在host上用top来看进程的CPU的占用率，Guest占掉的CPU是算在qemu头上的，因为从时间上来说，host确实看到CPU进入qemu后，就没有出来了。但如果用perf top来看，你却看不见qemu占用CPU，因为PMU的中断打进来后，如果调度到Guest中，Host是看不到这个打的点的。所以perf top的报告是qemu占用并不高。
+
+反过来，如果我们在Guest看，top看不见Host抢去的CPU，Guest从这个角度是看不到Host或者其他Guest抢去的CPU的时间的。Perf top同样看不到，因为Guest的中断基本上都是Host种进去的，它只能统计它自己看到的点。
+
+kvm_entry是进入guet，kvm_exit是离开guest进入host/kvm
+
+<!-- CXL 有自己的接口来管理和分配内存，其中dev_pagemap_ops是在各个关键操作点（如释放页、分裂页、处理缺页异常）插入回调函数，其核心作用是将设备（Device）的物理内存区域映射到内核的页管理系统（struct page）中，使得这些设备内存能够被内核以类似普通 RAM 的方式管理和使用。通过一个全局的 XArray（高效稀疏数组）`static DEFINE_XARRAY(pgmap_array);`来维护设备内存与 struct page 之间的映射关系。给定一个物理页帧号（PFN），能够迅速找到它所属的 struct dev_pagemap 结构体。
+
+当系统中有需要特殊管理的设备页（如 DEVICE_PRIVATE 或 FS_DAX）时，这个键为真，从而启用额外的处理逻辑（如 free_devmap_managed_page）。如果没有此类页，内核可以跳过相关检查，减少性能开销。
+
+它为设备驱动提供了一套标准 API，让设备内存能够：
+
+- 拥有对应的 struct page。
+
+- 被内核的 MMU 页表映射。
+
+- 参与内存管理活动（如通过回调处理缺页异常）。
+
+- 通过引用计数进行生命周期管理。
+
+为什么方差变大而非均值增加
+这是最关键的线索。如果是固定开销增加，方差应该基本不变。方差变大意味着引入了不确定性，这通常指向：
+
+- RCU 锁的竞争：pgmap_array 的查找使用 RCU，RCU 读临界区的性能受当前 CPU 的 quiescent state（静默状态）影响。如果系统有其他设备内存操作，RCU 的开销会波动。
+
+- 缓存行 bouncing：pgmap_array 是一个全局 XArray，它的根节点可能被多个 CPU 共享。在 Guest 中，vCPU 可能被调度到不同的物理 CPU 上，导致缓存亲和性丢失，有时候命中了缓存（1.0ns），有时候没命中（1.2ns+）。
+
+- KVM 的 EPT 冲突：KVM 在建立 EPT 页表时，如果发现某个 PFN 属于 ZONE_DEVICE，可能会采取不同的处理路径。这种路径选择的不一致性会导致延迟波动。
+
+当 CONFIG_ZONE_DEVICE 禁用时，pfn_valid() 的实现通常非常直接和快速。它主要检查 PFN 是否在一个连续的、预先计算好的范围内（例如，小于 max_pfn）。这是一个确定性的、O(1) 的检查，几乎没有波动。
+
+当 CONFIG_ZONE_DEVICE 启用时，pfn_valid() 的逻辑必须考虑那些不连续、热插拔的 ZONE_DEVICE 内存区域。为了支持这一点，它最终需要查询一个全局的数据结构，通常是你在 memremap.c 中看到的 pgmap_array。
+
+c
+// 伪代码示意 ZONE_DEVICE 开启时的 pfn_valid
+bool pfn_valid(unsigned long pfn)
+{
+    if (pfn < max_pfn) // 快速检查普通内存
+        return true;
+
+    // 需要去慢速路径查找是否是 ZONE_DEVICE 内存
+    // 这涉及到 RCU 读锁定和 XArray 查找
+    rcu_read_lock();
+    pgmap = xa_load(&pgmap_array, pfn);
+    rcu_read_unlock();
+    return pgmap != NULL;
+}
+虽然这个查找是 RCU 保护的，理论上很快，但它引入了不确定性：
+
+缓存依赖性：pgmap_array 的 XArray 节点可能不在 CPU 缓存中。
+
+RCU 状态：RCU 读锁定的开销在不同上下文中可能略有不同。
+
+XArray 深度：查找可能需要遍历树的多层节点。
+
+3. 为什么 Host 正常，Guest 异常？
+Host (宿主机)：Host 上的 open/close 操作主要在进程上下文中执行，并且宿主机通常有更多的 CPU 资源和更大的缓存。pgmap_array 查找的微小开销（如果发生的话）可能被淹没在系统调用的总成本中，或者其缓存命中率很高，导致波动不明显。
+
+Guest (虚拟机)：
+
+路径更长：Guest 的每个内存访问（包括内核代码和数据结构）都可能被宿主机上的 KVM 截获和处理。Guest 内核中的 pfn_valid 检查对应的 Host 物理地址查找，可能触发 KVM 的二级页表遍历，这本身就是一个开销更大、更不稳定的操作。
+资源竞争：vCPU 是共享物理 CPU 的。当 vCPU 被调度走再调度回来时，其缓存（包括 TLB 和 L2/L3 缓存）内容可能已经失效。这意味着 Guest 中 pgmap_array 的查找更可能遭遇缓存未命中，从而产生 1.2+ns 的延迟峰值。
+不确定性放大：CONFIG_ZONE_DEVICE 引入的查找操作本身就带有轻微的不确定性（缓存依赖）。在 Host 上，这种不确定性可能只有 0.01ns 的波动。但在 Guest 中，由于上述的调度和二级转换，这种微小的不确定性被放大成了你观察到的 0.00058 -> 0.015 的方差剧增。
+
+Guest 的 close() 系统调用
+    → 释放页面
+        → free_unref_page()
+            → free_unref_page_commit()
+                → __free_one_page()
+                    → pfn_valid_within()
+                        → pfn_valid()
+                            → 可能触发 pgmap_array 查找 (RCU)
+                            ← 结果不确定，依赖缓存
+                    ← 返回结果，继续伙伴系统合并
+    ← close() 返回
+
+波动来源：
+1. RCU 查找的缓存依赖性
+2. is_zone_device_page() 的分支预测
+3. vCPU 调度导致的缓存亲和性丢失
+4. 架构相关的对齐要求影响 KVM 页表 -->

@@ -4,7 +4,7 @@ date: 2025-09-03 15:13:31
 tags:
 ---
 
-# 状态类指令
+# 日志状态类指令
 - `git branch`: 查看当前本地所处的 branch、本地中拉的所有的branch
 - `git branch -r`: 查看远程所有的分支
 - `git status` or `git st`: 当前所处 branch、是否有需要 commit 的
@@ -15,6 +15,8 @@ tags:
 - `git show -1`: 查看当前 branch 的最新一次提交记录
 - `git show <commit id>`
 - `git log --pretty=format:"%cd %h %s" --date=short`: 显示当前 branch 的所有提交记录，每行只显示 commit id、commit message、提交时间
+- `git log --since="2024-05-20 00:00:00" --until="2024-05-20 23:59:59"`：显示当前 branch 在指定时间范围内的提交记录
+- `git log --pretty=fuller -1`：能显示patch实际上库的时间，也就是 CommitDate
 
 git mm 特有的指令：
 
@@ -35,6 +37,12 @@ git blame -L <start>,<end> <文件名> # 查看指定行范围内的提交记录
 ```
 
 - `-L`：显示Commit id、作者和提交时间
+
+查看包含特定字符串的提交历史：
+
+```shell
+git log -S "CONFIG_DEV_PAGEMAP_OPS" --oneline -- include/linux/mm.h
+```
 
 # 代码提交、合并、push到远程仓库
 

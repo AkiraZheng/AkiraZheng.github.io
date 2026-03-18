@@ -136,6 +136,25 @@ vim -O file1.c file2.c
 :buffer 1
 ```
 
+## vim 块操作
+
+多行注释：
+
+- `ctrl+v` 进入可视化模式
+- 按**方向键**向下多选同一光标下的多行
+- 选完按 `shift+i`
+- 然后**输入想输入的符号**（如注释）
+- 输完按 `esc` 退出编辑模式后就会发现选中的块都加上了注释
+
+如果想实现比如，**把//删除然后替换成“**，需要：
+- `ctrl+v`
+- `l` 向右选中“//”
+- `j` 选中多行
+- 按 `c` 删除，并输入 `“` 添加 `“` 字符
+- 最后按 `esc`键退出编辑模式
+
+
+
 # 2. terminal 操作
 
 ## `find`
@@ -164,9 +183,11 @@ find / -name "文件名.c" 2>/dev/null
 
 ```shell
 df -h
-sudo du -sh /* 2>/dev/null | sort -hr | head -n 10
+du -sh ./* | sort -rh
+
+sudo du -sh /* 2>/dev/null | sort -hr
 # 2>/dev/null: 忽略没有权限访问的目录产生的错误信息
-# du 指令按查询结果逐层筛查
+# 后面再加一个 | head -n 10 的话，就只显示占用最高的前10个目录了
 ```
 
 ```
@@ -563,6 +584,13 @@ gdb ./my_program
 ```
 
 # 4. qemu 使用
+
+## 将虚机 log 存到文件中
+
+```shell
+# 用 tee 指令可以实时把 log 输出到终端的同时也写入到文件中
+<启虚机指令> | tee qemu.log 2>&1
+```
 
 ## qemu 指令
 
@@ -1058,3 +1086,107 @@ akira@akira:~$ cat /sys/devices/system/cpu/smt/active
 akira@akira:~$ cat /sys/devices/system/cpu/smt/control 
 notimplemented # 说明 CPU 不支持 SMT 超线程，支持的话应该是 on 或者 off
 ```
+
+# 9. tmux 使用
+
+## 会话管理
+
+**新建会话**
+
+```shell
+tmux new -s <session_name>
+```
+
+**进入会话**
+
+```shell
+tmux a -t <session_name>
+tmux attach -t <session_name>
+```
+
+**查看会话**
+
+```shell
+tmux ls
+```
+
+**退出会话**
+
+```shell
+# 快捷键：Ctrl + b, 然后按 d # 会话跟窗口分离，可以退出当前会话，但会话还在后台继续运行
+# tmux外部：tmux detach -t <session_name>
+
+exits # 不会保留该会话（终止会话）
+```
+
+**切换会话**
+
+```shell
+tmux switch -t <session_name>
+```
+
+**重命名会话**
+
+```shell
+tmux rename-session -t <new_session_name>
+```
+
+**复制模式：解决鼠标没法上划的问题**
+
+进入：按`ctrl+b`，然后按`[`进入复制模式后，就可以用方向键或者鼠标滚轮上划查看之前的输出了
+
+退出：按`q`退出复制模式。
+
+## 分屏
+
+**分屏**
+
+```shell
+# 划分上下两个窗格
+tmux split-window
+
+# 划分左右两个窗格
+tmux split-window -h
+```
+
+**切换窗口**
+
+```shell
+# 切换到下一个窗口
+Ctrl + b, 然后按 o
+# 切换到上一个窗口  
+Ctrl + b, 然后按 ;
+# 删除当前窗口
+Ctrl + b, 然后按 x
+```
+
+**窗口快捷键**
+
+```shell
+Ctrl+b %：划分左右两个窗格。
+Ctrl+b "：划分上下两个窗格。
+Ctrl+b <arrow key>：光标切换到其他窗格。<arrow key>是指向要切换到的窗格的方向键，比如切换到下方窗格，就按方向键↓。
+Ctrl+b ;：光标切换到上一个窗格。
+Ctrl+b o：光标切换到下一个窗格。
+Ctrl+b {：当前窗格与上一个窗格交换位置。
+Ctrl+b }：当前窗格与下一个窗格交换位置。
+Ctrl+b Ctrl+o：所有窗格向前移动一个位置，第一个窗格变成最后一个窗格。
+Ctrl+b Alt+o：所有窗格向后移动一个位置，最后一个窗格变成第一个窗格。
+Ctrl+b x：关闭当前窗格。
+Ctrl+b !：将当前窗格拆分为一个独立窗口。
+Ctrl+b z：当前窗格全屏显示，再使用一次会变回原来大小。
+Ctrl+b Ctrl+<arrow key>：按箭头方向调整窗格大小。
+Ctrl+b q：显示窗格编号。
+```
+
+**解决左右分屏后无法精准选中的问题**
+
+```shell
+vim ~/.tmux.conf
+# 启用鼠标支持（包括选择窗格、调整大小等）
+set -g mouse on
+# 重新加载配置
+tmux source-file ~/.tmux.conf
+```
+
+[Tmux 使用教程](https://www.ruanyifeng.com/blog/2019/10/tmux.html)
