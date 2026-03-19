@@ -14,6 +14,12 @@ tags:
 
 [灵芽API](https://api.lingyaai.cn/)
 
+# claude code 接入 vscode
+
+上面在terminal部署完且配置好claude code之后，直接在vscode中安装插件`claude code for vs code`，就可以直接用了
+
+<img src=2026-03-19-23-59-25.png>
+
 # Mac 中使用 Claude 的指令
 
 ## claude 中的三种模式
