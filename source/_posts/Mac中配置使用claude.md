@@ -14,6 +14,7 @@ tags:
 
 [灵芽API](https://api.lingyaai.cn/)
 
+
 # claude code 接入 vscode
 
 上面在terminal部署完且配置好claude code之后，直接在vscode中安装插件`claude code for vs code`，就可以直接用了
@@ -136,6 +137,22 @@ claude exit
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-chat",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-chat"
+  }
+}
+```
+
+**火山引擎**
+
+[火山引擎API配置](https://www.volcengine.com/docs/82379/1928262?lang=zh)
+
+```json
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "<你的火山引擎API密钥>",
+    "ANTHROPIC_BASE_URL": "https://ark.cn-beijing.volces.com/api/coding",
+    "API_TIMEOUT_MS": "3000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "ANTHROPIC_MODEL": "GLM-4-7-<ENDPOINT_ID>"
   }
 }
 ```

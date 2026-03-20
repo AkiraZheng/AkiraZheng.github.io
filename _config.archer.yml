@@ -196,12 +196,13 @@ mermaid:
   enable: true
   # Version number '8' is for the latest '8.x' version of Mermaid.
   version: 8.11.0
-  theme: default
+  # 主题选项: default, neutral, forest, dark, base (neutral 适合浅色网站)
+  theme: neutral
   # find more api options from https://github.com/knsv/mermaid/blob/master/src/mermaidAPI.js
   options:
-      theme: default
+      theme: neutral
       flowchart:
-      curve: linear
+          curve: linear
 # LaTeX Math Equations Support
 math:
   mathjax:

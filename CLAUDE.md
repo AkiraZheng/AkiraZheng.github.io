@@ -57,8 +57,9 @@ The `themes/archer/` directory contains its own build system (Gulp, Webpack). If
 ## Important Notes
 
 ### Security & Credentials
-- The `_config.yml` contains a GitHub token (`ghp_...`) and Algolia API keys. Although `.gitignore` lists `_config.yml`, the file is currently committed. **Never commit changes that expose valid credentials.** Rotate tokens if they have been exposed.
-- The repository’s README mentions that `_config.yml` “contains github token information cannot git upload.” Ensure any changes to this file are made cautiously.
+- The `_config.yml` contains a GitHub token (`ghp_...`) and Algolia API keys. This file is listed in `.gitignore` and cannot be committed to the public repository.
+- To obtain `_config.yml`, download it from the private repository `blog_config_yml_file` and place it in the root directory.
+- Never commit changes that expose valid credentials. Rotate tokens if they have been exposed.
 
 ### Deployment
 - Deployment is configured to push the generated `public/` contents to the `main` branch of `https://github.com/AkiraZheng/AkiraZheng.github.io` (the GitHub Pages branch).
