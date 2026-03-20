@@ -29,7 +29,7 @@
 <meta property="og:image" content="https://akirazheng.github.io/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/2026-03-19-23-59-25.png">
 <meta property="og:image" content="https://akirazheng.github.io/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/2026-03-07-00-15-07.png">
 <meta property="article:published_time" content="2026-03-06T15:56:21.000Z">
-<meta property="article:modified_time" content="2026-03-19T15:59:32.307Z">
+<meta property="article:modified_time" content="2026-03-20T16:25:23.599Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/2026-03-19-23-59-25.png">
@@ -340,7 +340,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">569</span>Reading time: <span class="post-count reading-time">2 min</span></span>
+                        <span>Word count: <span class="post-count word-count">640</span>Reading time: <span class="post-count reading-time">2 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -548,6 +548,9 @@ code之后，直接在vscode中安装插件<code>claude code for vs code</code>�
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;env&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;ANTHROPIC_AUTH_TOKEN&quot;</span>: <span class="string">&quot;&lt;你的智谱API密钥&gt;&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;ANTHROPIC_BASE_URL&quot;</span>: <span class="string">&quot;https://open.bigmodel.cn/api/anthropic&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;API_TIMEOUT_MS&quot;</span>: <span class="string">&quot;3000000&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">		<span class="attr">&quot;ANTHROPIC_DEFAULT_SONNET_MODEL&quot;</span>: <span class="string">&quot;glm-4.7&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;ANTHROPIC_DEFAULT_OPUS_MODEL&quot;</span>: <span class="string">&quot;glm-4.7&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>deepseek配置</strong></p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;env&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;ANTHROPIC_AUTH_TOKEN&quot;</span>: <span class="string">&quot;&lt;你的deepseek API密钥&gt;&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;ANTHROPIC_BASE_URL&quot;</span>: <span class="string">&quot;https://api.deepseek.com/anthropic&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;API_TIMEOUT_MS&quot;</span>: <span class="string">&quot;3000000&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;ANTHROPIC_DEFAULT_SONNET_MODEL&quot;</span>: <span class="string">&quot;deepseek-chat&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;ANTHROPIC_DEFAULT_OPUS_MODEL&quot;</span>: <span class="string">&quot;deepseek-chat&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>火山引擎</strong></p>
+<p><a target="_blank" rel="noopener" href="https://www.volcengine.com/docs/82379/1928262?lang=zh">火山引擎API配置</a></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;env&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;ANTHROPIC_AUTH_TOKEN&quot;</span>: <span class="string">&quot;&lt;你的火山引擎API密钥&gt;&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;ANTHROPIC_BASE_URL&quot;</span>: <span class="string">&quot;https://ark.cn-beijing.volces.com/api/coding&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;API_TIMEOUT_MS&quot;</span>: <span class="string">&quot;3000000&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;ANTHROPIC_MODEL&quot;</span>: <span class="string">&quot;GLM-4-7-&lt;ENDPOINT_ID&gt;&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </article>
     <!-- license -->
@@ -556,7 +559,7 @@ code之后，直接在vscode中安装插件<code>claude code for vs code</code>�
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/">https://akirazheng.github.io/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/">March 6th 2026, 11:56:21 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/">March 19th 2026, 11:59:32 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/">March 21st 2026, 12:25:23 am</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -2000,14 +2003,6 @@ code之后，直接在vscode中安装插件<code>claude code for vs code</code>�
         
         
         
-        
-        
-        
-        
-        
-        
-        
-        
     
     
     
@@ -2041,13 +2036,13 @@ code之后，直接在vscode中安装插件<code>claude code for vs code</code>�
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/12</span>
-            <a class="archive-post-title" href="/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">虚拟化:传统热迁移</a>
+            <a class="archive-post-title" href="/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">linux文件系统</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/12</span>
-            <a class="archive-post-title" href="/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">linux文件系统</a>
+            <a class="archive-post-title" href="/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">虚拟化:传统热迁移</a>
         </li>
     
         
@@ -2134,13 +2129,13 @@ code之后，直接在vscode中安装插件<code>claude code for vs code</code>�
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/14</span>
-            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/14</span>
-            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
         </li>
     
         
@@ -2614,6 +2609,11 @@ code之后，直接在vscode中安装插件<code>claude code for vs code</code>�
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
+        <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
+            <span class="iconfont-archer">&#xe60a;</span>
+            ARM64结构与编程实操
+        </span>
+    
         <span class="sidebar-category-name" data-categories="C++知识点">
             <span class="iconfont-archer">&#xe60a;</span>
             C++知识点
@@ -2684,11 +2684,6 @@ code之后，直接在vscode中安装插件<code>claude code for vs code</code>�
             Linux内核驱动
         </span>
     
-        <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
-            <span class="iconfont-archer">&#xe60a;</span>
-            ARM64结构与编程实操
-        </span>
-    
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
     <div class="sidebar-categories-list"></div>
@@ -2754,6 +2749,13 @@ code之后，直接在vscode中安装插件<code>claude code for vs code</code>�
             <script src="/scripts/share.js?v=20211217" async></script>
         
         <!-- mermaid -->
+        
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js'></script>
+            <script>
+                if (window.mermaid) {
+                    mermaid.initialize({theme: 'neutral'});
+                }
+            </script>
         
     </body>
 </html>
