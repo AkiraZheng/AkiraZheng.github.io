@@ -193,12 +193,15 @@ outdated_threshold:
   specify_article: false
 # Mermaid Chart: https://github.com/knsv/mermaid
 mermaid:
-  enable: false
+  enable: true
   # Version number '8' is for the latest '8.x' version of Mermaid.
   version: 8.11.0
-  theme: dark
+  theme: default
   # find more api options from https://github.com/knsv/mermaid/blob/master/src/mermaidAPI.js
   options:
+      theme: default
+      flowchart:
+      curve: linear
 # LaTeX Math Equations Support
 math:
   mathjax:

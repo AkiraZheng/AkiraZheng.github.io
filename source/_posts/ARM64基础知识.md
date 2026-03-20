@@ -69,3 +69,51 @@ Linux的透明大页（THP）机制很好地解决了你的疑虑。它的行为
 - 如果进程后续只访问其中4KB，或者修改局部权限，内核甚至可以将大页拆分回4KB页。
 
 结论： 如果是静态开启大页（如HugeTLB），映射和查找都按2MB粒度进行，TLB中只有一条记录，效率极高但内存浪费严重；如果是透明大页，内核会动态调整，尽量让你“既享受大页的速度，又不失小页的灵活”。
+
+2MB大页的页表结构：
+
+| 逻辑名称 | Linux内核常用名 | 作用 |
+| --- | --- | --- |
+| Page Global Directory | PGD | 一级索引 |
+| Page Upper Directory | PUD | 二级索引 |
+| Page Middle Directory | PMD | 三级索引（关键转折点） |
+| Page Table Entry | PTE | 四级索引（2MB大页模式下被省略） |
+
+以一个2MB大页为例，48 bit 地址长度为例，虚拟地址的页表翻译过程如下图所示，在：
+
+<img src=2026-03-20-22-35-49.png>
+
+可以看出，在2MB大页模式下，PMD级别的页表项直接指向一个2MB的物理内存块，而不需要再访问PTE级别的页表了，这样就减少了一次内存访问，提高了地址翻译的效率。
+
+在这种页表翻译的情况下，拿到实际 PA 物理地址后，也会通过地址总线访问内存
+
+<img src=2026-03-20-22-39-08.png>
+
+访问 2mb 大页其中一个 4k 内存时，tlb的地址命中过程如下：
+
+```mermaid
+flowchart TD
+    %%{init: {'theme': 'default', 'themeVariables': { 'background': '#ffffff', 'primaryColor': '#e3f2fd', 'primaryBorderColor': '#1976d2', 'lineColor': '#333333' }}}%%
+
+    A["VA 0x234567"] --> B["MMU split"]
+    B --> C["VA = base 0x200000 + offset 0x034567"]
+    C --> D["TLB lookup"]
+
+    subgraph TLB["TLB entries (连续地址范围)"]
+        direction LR
+        D1["2MB entry\nbase 0x200000\nsize 2MB\nrange: 0x200000-0x3FFFFF"]
+        D2["4KB entry\nbase 0x400000\nsize 4KB\nrange: 0x400000-0x400FFF"]
+        D3["EntryN ..."]
+    end
+
+    D --> TLB
+    TLB --> E{"VA 在哪个条目范围内?"}
+
+    E -- "命中 2MB 块<br>VA = 0x200000(base) + 0x034567(offset)<br>范围检查: 0x200000 ≤ VA < 0x400000" --> F["获取 OA base"]
+    E -- "未命中" --> G["页表遍历 page table walk"]
+
+    F --> H["offset = VA - base = 0x234567 - 0x200000 = 0x034567"]
+    H --> I["PA = OA base + offset"]
+```
+
+

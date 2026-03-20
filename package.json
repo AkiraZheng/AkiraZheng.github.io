@@ -17,6 +17,7 @@
     "hexo-asset-image": "github:7ym0n/hexo-asset-image",
     "hexo-blog-encrypt": "^3.1.9",
     "hexo-deployer-git": "^3.0.0",
+    "hexo-filter-mermaid-diagrams": "^1.0.5",
     "hexo-generator-archive": "^1.0.0",
     "hexo-generator-category": "^1.0.0",
     "hexo-generator-index": "^2.0.0",
