@@ -102,50 +102,6 @@ if (my_feature_enable)
     do_something();
 ```
 
-### 解析数字参数
-
-```c
-static unsigned long reserved_mem_size = 0;
-
-static int __init parse_reserved_mem(char *p)
-{
-    if (!p)
-        return -EINVAL;
-
-    /* kstrtoul 可在早期使用，依赖简单字符串转换 */
-    if (kstrtoul(p, 0, &reserved_mem_size) != 0)
-        return -EINVAL;
-
-    pr_info("Will reserve %lu bytes of memory\n", reserved_mem_size);
-    return 0;
-}
-
-early_param("reserve_mem", parse_reserved_mem);
-```
-
-### ARM64 架构中的用法
-
-```c
-/* arch/arm64/kernel/setup.c */
-
-static int __init early_init_dt_scan_memory(unsigned long node,
-                                             const char *uname, int depth,
-                                             void *data)
-{
-    const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-
-    if (type == NULL || strcmp(type, "memory") != 0)
-        return 0;
-
-    /* 解析内存区域 */
-    early_init_dt_add_memory_arch(node);
-    return 0;
-}
-
-early_param("mem", early_mem); /* 处理 mem= 参数 */
-early_param("memmap", parse_memmap); /* 处理 memmap= 参数 */
-```
-
 ## 限制和注意点
 
 ### 不能使用 kmalloc/kfree
