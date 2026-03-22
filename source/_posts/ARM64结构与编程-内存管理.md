@@ -229,7 +229,7 @@ static void create_identical_mapping(void)
     __create_pgd_mapping((pgd_t *)idmap_pg_dir, start, start,
                     end - start, PAGE_KERNEL_ROX,
                     early_pgtable_alloc,
-                    0);//flags 是 0，表示不设置了NO_BLOCK_MAPPINGS标志
+                    0);//flags 是 0，表示不设置NO_BLOCK_MAPPINGS标志
     //...
 }
 ```
@@ -384,7 +384,7 @@ static void alloc_init_pmd(pud_t *pudp, unsigned long addr,
                next = pmd_addr_end(addr, end);
 
                if (((addr | next | phys) & ~SECTION_MASK) == 0 && // 地址对齐检查
-                               (flags & NO_BLOCK_MAPPINGS) == 0) // flags 检查出是NO_BLOCK_MAPPINGS块映射
+                               (flags & NO_BLOCK_MAPPINGS) == 0) // flags 检查出是BLOCK_MAPPINGS块映射
                        pmd_set_section(pmdp, phys, prot);
                else
                        alloc_init_pte(pmdp, addr, next, phys,
@@ -556,3 +556,172 @@ Kernel panic
 # 实验二：dump 页表
 
 我们 debug 内存相关的内容的时候，经常需要 dump 出页表的**虚拟地址、页表项属性**等信息。
+
+同时，这也可以看出我们的页表映射是否正确。
+
+实现方法是软件上遍历页表，遍历到页表的**叶子节点**时，打印出**虚拟地址、页表项属性**等信息。
+
+## 一、定义打印内容-数据结构
+
+需要打印的内容：
+- 页表项属性对应的属性值（转成文字描述）
+- 叶子节点的层级：pg_level[].name = PGD/PUD/PMD/PTE
+- 每个叶子节点 entry 代表的页面大小
+    - 普通内存页是 4K，叶子节点的层级是**PTE**
+    - 大页有可能是是 2MB，叶子节点的层级是**PMD**
+
+```c
+struct prot_bits {
+       unsigned long mask;//ATTR 表中的哪一类属性（idx），比如PTE_RDONLY、PTE_AF
+       unsigned long val;//ATTR 表中的哪一类属性（idx），比如PTE_RDONLY、PTE_AF
+       const char *set;//属性值，表示开启这个属性的话应该打印什么，比如"ro"、"AF"
+       const char *clear;//属性值，表示关闭这个属性的话应该打印什么，比如"RW"、" "
+};
+
+struct pg_level {
+       const struct prot_bits *bits;//数组，数组中每一项表示一种属性及其值。
+       const char *name; // 层级名称："PGD"/"PUD"/"PMD"/"PTE"
+       size_t num;//页面大小：
+       unsigned long mask;//提取当前level entry 项的 prot mask
+};
+```
+
+下面在初始化 MMU 后，就可以初始化一下各个层级的各个属性的mask值，把所有属性位全部置为1：
+
+```c
+static void pg_level_init()
+{
+    unsigned int i, j;
+
+    for (i = 0; i < ARRAY_SIZE(pg_level); ++i)//4个页表级别，ARRAY_SIZE(pg_level)=4
+        if (pg_level[i].bits)
+            for (j = 0; j < pg_level[i].num; ++j)//这里设置了ATTR表的15个属性
+                pg_level[i].mask |= pg_level[i].bits[j].mask;
+}
+```
+
+运行结果如下：
+
+```shell
+(gdb) p/x pg_level[1].mask
+$2 = 0x70000000000fdf
+(gdb) p/x pg_level[2].mask
+$3 = 0x70000000000fdf
+(gdb) p/x pg_level[3].mask
+$4 = 0x70000000000fdf
+(gdb) p/x pg_level[4].mask
+$5 = 0x70000000000fdf
+(gdb) 
+```
+
+## 二、遍历页表并打印
+
+遍历页表的逻辑跟创建页表的类似，也是一层一层遍历下去，这里就不赘述了。唯一不一样的是遇到`PUD_TYPE_SECT/PMD_TYPE_SECT/PTE_TYPE_SECT`属性时，表示是叶子节点，此时停止遍历，调用`print_pgtable`dump 打印节点信息。
+
+```
+walk_pgd
+    +-> walk_pud
+        +-> walk_pmd
+            +-> walk_pte
+```
+
+```c
+static void walk_pud(pgd_t *pgdp, unsigned long start, unsigned long end)
+{
+       unsigned long next, addr = start;
+       pud_t *pudp = pud_offset_phys(pgdp, start);
+       pud_t pud;
+
+       do {
+               pud = *pudp;
+               next = pud_addr_end(start, end);
+
+                //pud_sect(pud) == true 表示是叶子节点
+               if (pud_none(pud) || pud_sect(pud))
+                       print_pgtable(addr, next, 2, pud_val(pud));
+               else
+               //非叶子节点，向下继续遍历
+                       walk_pmd(pudp, addr, next);
+                            +-> walk_pte
+
+       } while (pudp++, addr = next, addr != end);
+}
+
+static void walk_pgd(pgd_t *pgd, unsigned long start, unsigned long size)
+{
+       unsigned long end = start + size;
+       unsigned long next, addr = start;
+       pgd_t *pgdp;
+       pgd_t pgd_entry;
+
+       pgdp = pgd_offset_raw(pgd, start);
+
+       do {
+               pgd_entry = *pgdp;
+               next = pgd_addr_end(addr, end);
+
+               if (pgd_none(pgd_entry))//无效页，未用于映射的页表项
+                        print_pgtable(addr, next, 1, pgd_val(pgd_entry));
+               else
+                       walk_pud(pgdp, addr, next);
+       } while (pgdp++, addr = next, addr != end);
+}
+```
+
+运行结果如下：
+
+- `create_identical_mapping`函数创建出来的**.text 段**不是 2MB 对齐的，虽然设置了`BLOCK_MAPPINGS`但是非 2MB 对齐，因此也是创建 PTE 节点：
+
+    ```shell
+    ---[ Identical mapping ]---                                                                                                                                                         
+    0x0000000000080000-0x0000000000081000           4K PTE       ro x  SHD AF            UXN MEM/NORMAL                                                                                 
+    0x0000000000081000-0x0000000000082000           4K PTE       ro x  SHD AF            UXN MEM/NORMAL                                                                                 
+    0x0000000000082000-0x0000000000083000           4K PTE       ro x  SHD AF            UXN MEM/NORMAL                                                                             
+    #...
+    0x00000000001fd000-0x00000000001fe000           4K PTE       RW NX SHD AF            UXN MEM/NORMAL                                                                                 
+    0x00000000001fe000-0x00000000001ff000           4K PTE       RW NX SHD AF            UXN MEM/NORMAL                                                                                 
+    0x00000000001ff000-0x0000000000200000           4K PTE       RW NX SHD AF            UXN MEM/NORMAL 
+    ```
+- `create_identical_mapping`函数创建出来的 512MB 块内存区域：
+
+    ```shell
+    0x0000000000200000-0x0000000000400000           2M PMD       RW NX SHD AF        BLK UXN MEM/NORMAL                                                                                 
+    0x0000000000400000-0x0000000000600000           2M PMD       RW NX SHD AF        BLK UXN MEM/NORMAL                                                                                 
+    0x0000000000600000-0x0000000000800000           2M PMD       RW NX SHD AF        BLK UXN MEM/NORMAL 
+    #...
+    0x000000001fa00000-0x000000001fc00000           2M PMD       RW NX SHD AF        BLK UXN MEM/NORMAL
+    0x000000001fc00000-0x000000001fe00000           2M PMD       RW NX SHD AF        BLK UXN MEM/NORMAL
+    0x000000001fe00000-0x0000000020000000           2M PMD       RW NX SHD AF        BLK UXN MEM/NORMAL
+    ```
+
+非 text 段的普通内存页范围为`0x86000~0x20000000`，所以也有一部分未对齐的普通内存页被写成 4KB 内存了。原因是：
+
+```shell
+_etext = 0x850d0
+PAGE_ALIGN(_etext) = 0x86000  # 4KB 对齐
+```
+
+0x86000 不是 2MB 对齐的，因此会创建 4KB 页节点
+
+```shell
+$ python3 -c "print(hex(0x86000 % 0x200000))"
+0x86000  # 余数不为0，说明不是2MB对齐
+```
+
+所以从 0x86000 开始：
+
+- 先用 4KB 页填充到 0x90000（下一个 2MB 边界）
+- 从 0x200000 开始才是 2MB 对齐，才用 2MB 块
+
+```
+0x86000 ──── 4KB 页 ───→ 0x200000 ──── 2MB 块 ───→ 0x20000000
+   ↑                      ↑                          ↑
+ 开始                   第一个2MB边界                512MB结束
+```
+
+不同内存区域的对齐方式导致 dump_pgtable 会同时看到 4KB 和 2MB 叶子节点：
+
+| 内存区域 | 起始/结束对齐 | 结果 |
+|----------|-----------------|--------|
+| .text 代码段 | 通常不是严格 2MB 对齐 | 4KB 页（PTE 叶子） |
+| 512MB 内存 | 通常是 2MB 对齐 | 2MB 块（PMD 叶子） |
