@@ -6,7 +6,9 @@ tags:
 
 # 在 terminal 中配置
 
-[安装Claude](https://zhuanlan.zhihu.com/p/2011763523731092738)
+[mac安装Claude](https://zhuanlan.zhihu.com/p/2011763523731092738)
+
+[linux安装Claude](https://zhuanlan.zhihu.com/p/2004160455539696109)
 
 [配置glm智谱API（免费版）](https://zhuanlan.zhihu.com/p/1993323826382139976)
 
