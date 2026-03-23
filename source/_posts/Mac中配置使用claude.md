@@ -10,6 +10,8 @@ tags:
 
 [linux安装Claude](https://zhuanlan.zhihu.com/p/2004160455539696109)
 
+- 本机已经配过代理了，linux虚机中不需要再配了
+
 [配置glm智谱API（免费版）](https://zhuanlan.zhihu.com/p/1993323826382139976)
 
 [魔塔免费API](https://modelscope.csdn.net/68e774a18867235e138f1912.html)
