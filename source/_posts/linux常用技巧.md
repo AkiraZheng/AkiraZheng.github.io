@@ -594,6 +594,12 @@ gdb ./my_program
 
 ## qemu 指令
 
+## qemu 制作共享镜像
+
+```shell
+qemu-nbd -f qcow2 -c /dev/nbd0 /path/to/image.qcow2
+```
+
 ## qemu 主线编译运行
 
 

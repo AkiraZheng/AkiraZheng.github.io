@@ -237,6 +237,440 @@ AllowTcpForwarding yes   # 取消注释或添加此行
 systemctl restart sshd  # 大多数 Linux 系统
 ```
 
+# 六、在 mac host 上通过 qemu 启动虚机
+
+首先要安装 qemu：
+
+```shell
+brew install qemu
+```
+
+然后查找本地的 fd 固件：
+
+```shell
+# 查找固件文件
+find /opt/homebrew/Cellar/qemu -name "edk2-aarch64-code.fd" 2>/dev/null
+```
+
+然后在[欧拉官网下载 qcow2 文件](https://repo.openeuler.org/openEuler-24.03-LTS/virtual_machine_img/aarch64/)：`openEuler-24.03-LTS-aarch64.qcow2.xz`，下载后解压：
+
+```shell
+xz -d openEuler-24.03-LTS-aarch64.qcow2.xz
+```
+
+启动虚机：
+
+```shell
+qemu-system-aarch64 \
+  -machine virt,accel=hvf -cpu host \
+  -smp 4 \
+  -m 4G \
+  -bios edk2-aarch64-code.fd \
+  -drive file=openEuler-24.03-LTS-aarch64.qcow2,if=none,id=hd0,format=qcow2 \
+  -device virtio-blk-pci,drive=hd0 \
+  -netdev user,id=net0,hostfwd=tcp::2222-:22 \
+  -device virtio-net-pci,netdev=net0 \
+  -nographic
+```
+
+欧拉 qcow2 的默认账号密码（进入后密码通常修改成root就行）：
+
+- 用户名: root
+- 密码: openEuler12#$
+
+之后就可以使用 ssh 登录虚机了：
+
+## macos 中免密登录到虚机中
+
+成功以root登录后，执行以下命令：
+
+```bash
+# 1. 编辑SSH配置文件
+vi /etc/ssh/sshd_config
+```
+
+在文件中找到并修改以下配置（按 i 进入编辑模式）：
+
+```bash
+# 确保这些行没有被注释（行首没有#号）
+PasswordAuthentication yes
+PermitRootLogin yes
+PubkeyAuthentication yes
+ChallengeResponseAuthentication yes
+```
+
+如果找不到这些行，就手动添加。
+
+保存退出：按 ESC，输入 :wq，回车。
+
+```bash
+# 2. 重启SSH服务
+systemctl restart sshd
+
+# 3. 验证SSH服务状态
+systemctl status sshd
+```
+
+然后使用密钥认证实现免密登录，在host中查找公钥文件（如果没有的话就创建自己的公钥）：
+
+```bash
+cat ~/.ssh/id_rsa.pub
+```
+
+在虚拟机内执行：
+
+```bash
+# 创建.ssh目录
+mkdir -p /root/.ssh
+
+# 添加你的公钥
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..." >> /root/.ssh/authorized_keys
+
+# 设置正确的权限
+chmod 700 /root/.ssh
+chmod 600 /root/.ssh/authorized_keys
+```
+
+注意：公钥内容就是 `~/.ssh/id_rsa.pub` 文件的内容。
+
+从Mac端重新连接：
+
+```bash
+# 或者使用密钥登录
+ssh -p 2222 root@127.0.0.1
+```
+
+## 自动挂载9P
+
+```shell
+qemu-system-aarch64 \
+  -machine virt,accel=hvf -cpu host \
+  -smp 4 \
+  -m 4G \
+  -bios edk2-aarch64-code.fd \
+  -drive file=openEuler-24.03-LTS-aarch64.qcow2,if=none,id=hd0,format=qcow2 \
+  -device virtio-blk-pci,drive=hd0 \
+  -netdev user,id=net0,hostfwd=tcp::2222-:22 \
+  -device virtio-net-pci,netdev=net0 \
+  -virtfs local,path=../kernel,mount_tag=host-kernel,security_model=mapped \
+  -nographic
+```
+
+从Mac host通过SSH执行以下命令，在虚拟机中配置自动挂载。
+
+首先配置 /etc/fstab：
+
+```bash
+ssh -p 2222 root@127.0.0.1 "echo 'host-kernel /mnt/kernel 9p trans=virtio,version=9p2000.L 0 0' >> /etc/fstab"
+```
+
+创建挂载点目录并验证配置：
+
+```bash
+ssh -p 2222 root@127.0.0.1 "mkdir -p /mnt/kernel && cat /etc/fstab | grep kernel"
+```
+
+手动挂载测试：
+
+```bash
+# 创建挂载点并挂载
+ssh -p 2222 root@127.0.0.1 "mkdir -p /mnt/kernel && mount -t 9p -o trans=virtio,version=9p2000.L host-kernel /mnt/kernel"
+
+# 验证挂载
+ssh -p 2222 root@127.0.0.1 "ls /mnt/kernel"
+```
+
+如果能看到文件就成功了。重启虚拟机后会自动挂载。
+
+
+## qemu tcg 启动
+
+<!-- numactl -N 0 -m 0 qemu-system-aarch64 -machine virt,kernel_irqchip=on,gic-version=3,virtualization=true -net none \
+-cpu max -kernel Image -initrd minifs.cpio.gz -bios QEMU_EFI.fd \
+-m 8G -smp 8,sockets=1,cores=8,threads=1 \
+-nographic -append "rdinit=init console=ttyAMA0 earlycon=ttyAMA0 selinux=0" \
+-fsdev local,security_model=passthrough,id=fsdev0,path=./qemu-shared \
+-device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=p9 \
+-netdev tap,id=mynet1,ifname=tap1,script=./qemu-ifup-nat,downscript=./qemu-ifdown-nat \
+-device virtio-net-pci,netdev=mynet1,id=net0 -->
+
+```shell
+qemu-system-aarch64 \
+  -machine virt,virtualization=true -cpu max \
+  -smp 8 \
+  -m 6G \
+  -bios edk2-aarch64-code.fd \
+  -drive file=openEuler-24.03-LTS-aarch64.qcow2,if=none,id=hd0,format=qcow2 \
+  -device virtio-blk-pci,drive=hd0 \
+  -netdev user,id=net0,hostfwd=tcp::2222-:22 \
+  -device virtio-net-pci,netdev=net0 \
+  -virtfs local,path=../kernel,mount_tag=host-kernel,security_model=mapped \
+  -nographic
+```
+
+关键点是要加上`virtualization=true`，然后`-cpu max`
+
+## lkvm 编译
+
+```shell
+git clone https://git.kernel.org/pub/scm/linux/kernel/git/will/kvmtool.git
+cd kvmtool
+```
+
+修改 Makefile，将 LDFLAGS 设为静态编译：
+
+```shell
+# 原来
+LDFLAGS       :=
+# 改为
+LDFLAGS := -static
+```
+
+安装依赖：
+
+```shell
+dnf install -y dtc libfdt-devel glibc-static glib2-devel
+```
+
+执行静态编译：
+
+```shell
+make ARCH=arm64 CC="gcc -static"
+
+file lkvm
+```
+
+> [lkvm编译运行](https://www.yuanguohuo.com/2024/07/22/virtualization-3-kvmtool-playaround/)
+
+## 从qemu虚机中启动lkvm就可以实现代码调试
+
+启动 lkvm 的时候还需要在 qcow2 起的虚机中编译好启动 lkvm 需要的最小根文件系统`initramfs.cpio.gz`，可以直接使用附件中的脚本【注意，用脚本中的方式启的lkvm是不能用的，这里是为了在作为 host 的 qemu 中验证 stage 2 页表是否能用而已，所以倒也不需要lkvm能用，只要它能起来就行】
+
+启动 lkvm：
+
+<!-- ./lkvm run -k Image -i minifs.cpio.gz -m 4G -smp 4 -net none -nographic -->
+
+```shell
+./lkvm run --name testvm \
+    -k Image \
+    --initrd initramfs.cpio.gz \
+    --console serial \
+    --params "console=ttyS0 rdinit=/init" \
+    -m 512 \
+    --nodefaults
+```
+
+## 给挂在的仓库添加虚机的git权限
+
+在虚机中执行：
+
+```bash
+# 如果还是卡住，先移除可能存在的配置
+git config --global --unset safe.directory /mnt/kernel
+
+# 重新添加
+git config --global --add safe.directory /mnt/kernel
+
+# 验证配置
+git config --global --get-all safe.directory
+```
+
+# 附件
+
+**build-initramfs.sh**
+
+```shell
+#!/bin/sh
+set -e
+
+# Output directory (current working directory by default)
+OUTPUT_DIR="${1:-$(pwd)}"
+WORK_DIR="$OUTPUT_DIR/initramfs"
+
+echo "Building initramfs in $OUTPUT_DIR..."
+
+# Detect architecture
+ARCH=$(uname -m)
+case "$ARCH" in
+    x86_64)   LD_ARCH="ld-linux-x86-64.so.2" ;;
+    i386|i686) LD_ARCH="ld-linux.so.2" ;;
+    aarch64)  LD_ARCH="ld-linux-aarch64.so.1" ;;
+    arm*)     LD_ARCH="ld-linux-arm" ;;
+    *)        LD_ARCH="ld-linux" ;;
+esac
+
+# Find library path dynamically
+find_lib() {
+    local libname="$1"
+    # Search in common library locations
+    for dir in /lib /lib64 /usr/lib /usr/lib64 /lib32; do
+        if [ -f "$dir/$libname" ]; then
+            echo "$dir/$libname"
+            return 0
+        fi
+    done
+    # Use ldconfig to find library
+    if command -v ldconfig >/dev/null 2>&1; then
+        result=$(ldconfig -p 2>/dev/null | grep "$libname" | head -1 | awk '{print $NF}')
+        if [ -n "$result" ]; then
+            echo "$result"
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# Copy a binary and all its required libraries
+copy_binary() {
+    local src="$1"
+    local dest_dir="$2"
+    local bin_name=$(basename "$src")
+
+    # Resolve symlinks to get real binary
+    if [ -L "$src" ]; then
+        real_bin=$(readlink -f "$src" 2>/dev/null || echo "$src")
+    else
+        real_bin="$src"
+    fi
+
+    mkdir -p "$dest_dir"
+
+    # Copy the binary
+    cp "$real_bin" "$dest_dir/$bin_name"
+
+    # Copy libraries needed by this binary using ldd
+    if command -v ldd >/dev/null 2>&1; then
+        ldd "$real_bin" 2>/dev/null | grep -E '=>' | awk '{print $3}' | while read -r lib; do
+            # Handle virtual libraries
+            [ -z "$lib" ] && continue
+            [ ! -f "$lib" ] && continue
+
+            lib_name=$(basename "$lib")
+
+            # Determine destination based on path
+            case "$lib" in
+                */lib64/*)
+                    mkdir -p "$dest_dir/lib64"
+                    lib_dest="$dest_dir/lib64"
+                    ;;
+                */lib32/*)
+                    mkdir -p "$dest_dir/lib"
+                    lib_dest="$dest_dir/lib"
+                    ;;
+                *)
+                    mkdir -p "$dest_dir/lib"
+                    lib_dest="$dest_dir/lib"
+                    ;;
+            esac
+
+            # Avoid duplicate copies
+            if [ ! -f "$lib_dest/$lib_name" ]; then
+                cp "$lib" "$lib_dest/$lib_name"
+            fi
+        done
+    fi
+}
+
+# Resolve command path
+resolve_cmd() {
+    local cmd="$1"
+    # Try command -v first, fall back to which
+    if command -v "$cmd" >/dev/null 2>&1; then
+        command -v "$cmd"
+    elif command -v which >/dev/null 2>&1; then
+        which "$cmd" 2>/dev/null
+    fi
+}
+
+# 1. Create directory structure
+mkdir -p "$WORK_DIR"/bin "$WORK_DIR"/sbin "$WORK_DIR"/etc "$WORK_DIR"/proc
+mkdir -p "$WORK_DIR"/sys "$WORK_DIR"/dev "$WORK_DIR"/lib "$WORK_DIR"/lib64 "$WORK_DIR"/run
+
+# 2. List of required binaries (name:path format, one per line)
+# Format: name|path|destdir
+BINARIES="
+bash|/bin/bash|bin
+sh|/bin/sh|bin
+ls|/usr/bin/ls|bin
+cat|/usr/bin/cat|bin
+echo|/usr/bin/echo|bin
+mkdir|/usr/bin/mkdir|bin
+switch_root|/usr/sbin/switch_root|sbin
+switch_root|/sbin/switch_root|sbin
+mount|/usr/bin/mount|bin
+umount|/usr/bin/umount|bin
+sleep|/usr/bin/sleep|bin
+"
+
+# 3. Copy binaries
+echo "$BINARIES" | while IFS='|' read -r name path destdir; do
+    [ -z "$name" ] && continue
+    resolved=$(resolve_cmd "$name")
+
+    if [ -n "$resolved" ] && [ -f "$resolved" ]; then
+        echo "Copying $name from $resolved"
+        copy_binary "$resolved" "$WORK_DIR/$destdir"
+    else
+        echo "Warning: $name not found, skipping"
+    fi
+done
+
+# 4. Copy the dynamic linker
+copy_ld() {
+    for pattern in /lib64/ld-linux*.so.* /lib/ld-linux*.so.* /lib/*/ld-linux*.so.*; do
+        case "$pattern" in
+            *\*) continue ;;
+        esac
+        if [ -f "$pattern" ]; then
+            ld_name=$(basename "$pattern")
+            mkdir -p "$WORK_DIR/lib64"
+            cp "$pattern" "$WORK_DIR/lib64/$ld_name"
+            # Create versioned symlink
+            if [ -L "$pattern" ]; then
+                target=$(readlink "$pattern")
+                case "$target" in
+                    ld-*.so.*)
+                        ln -sf "$target" "$WORK_DIR/lib64/${target%.so.*}.so" 2>/dev/null || true
+                        ;;
+                esac
+            fi
+            return 0
+        fi
+    done
+    return 1
+}
+copy_ld
+
+# 5. Create init script
+cat > "$WORK_DIR/init" << 'INITEOF'
+#!/bin/sh
+echo "initramfs booting..."
+mount -t proc none /proc
+mount -t sysfs none /sys
+mount -t devtmpfs none /dev
+echo "Welcome to LKVM!"
+exec /bin/sh
+INITEOF
+chmod +x "$WORK_DIR/init"
+
+# 6. Package initramfs
+cd "$WORK_DIR"
+if command -v cpio >/dev/null 2>&1; then
+    find . -print0 | cpio -o -H newc --null | gzip > "$OUTPUT_DIR/initramfs.cpio.gz"
+else
+    echo "Error: cpio not found"
+    exit 1
+fi
+
+if [ -f "$OUTPUT_DIR/initramfs.cpio.gz" ]; then
+    size=$(ls -lh "$OUTPUT_DIR/initramfs.cpio.gz" | awk '{print $5}')
+    echo "Done! initramfs.cpio.gz created: $size"
+else
+    echo "Error: Failed to create initramfs.cpio.gz"
+    exit 1
+fi
+```
+
 # 参考
 
 > 0. [Fusion 或 Vmware 安装 openEuler 20.03 最小镜像](https://segmentfault.com/a/1190000040810052)

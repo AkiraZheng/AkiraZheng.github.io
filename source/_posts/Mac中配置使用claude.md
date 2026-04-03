@@ -160,3 +160,88 @@ claude exit
   }
 }
 ```
+
+# skills
+
+将 claude 官方的 skills 仓库添加到`~/.claude/skills`目录下，然后重启 claude 即可。
+
+## find-skills
+
+- `sudo npx skills find <skill>`
+- `sudo npx skills add <skill>`
+- `sudo npx skills remove <skill>`
+- `sudo npx skills list`
+
+```shell
+sudo npx skills add https://github.com/vercel-labs/skills --skill find-skills
+```
+
+然后就可以直接在终端查找skills：
+
+```shell
+sudo npx skills find code-reviewer
+```
+
+找到的skills如下：
+
+```shell
+╚════██║██╔═██╗ ██║██║     ██║     ╚════██║
+███████║██║  ██╗██║███████╗███████╗███████║
+╚══════╝╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚══════╝
+
+Install with npx skills add <owner/repo@skill>
+
+google-gemini/gemini-cli@code-reviewer 3.8K installs
+└ https://skills.sh/google-gemini/gemini-cli/code-reviewer
+
+shubhamsaboo/awesome-llm-apps@code-reviewer 1.7K installs
+└ https://skills.sh/shubhamsaboo/awesome-llm-apps/code-reviewer
+
+jeffallan/claude-skills@code-reviewer 1.3K installs
+└ https://skills.sh/jeffallan/claude-skills/code-reviewer
+
+davila7/claude-code-templates@code-reviewer 461 installs
+└ https://skills.sh/davila7/claude-code-templates/code-reviewer
+
+sickn33/antigravity-awesome-skills@code-reviewer 283 installs
+└ https://skills.sh/sickn33/antigravity-awesome-skills/code-reviewer
+
+alirezarezvani/claude-skills@code-reviewer 219 installs
+└ https://skills.sh/alirezarezvani/claude-skills/code-reviewer
+```
+
+然后你就可以选一个安装：
+
+```shell
+sudo npx skills add google-gemini/gemini-cli@code-reviewer
+# 通过镜像安装
+sudo npx skills add https://gitclone.com/github.com/google-gemini/gemini-cli.git --skill code-reviewer
+```
+
+[find-skills github](https://github.com/vercel-labs/skills/blob/main/skills/find-skills/SKILL.md)
+
+如果安装报错，大概率是代理问题，可以设置代理，或者使用镜像：
+
+```shell
+# 设置 HTTP 代理（根据你的代理地址和端口调整）
+git config --global http.proxy http://127.0.0.1:7890
+git config --global https.proxy http://127.0.0.1:7890
+
+# 然后再执行安装
+```
+
+安装的时候注意选择`claude code -> global`
+
+最简单的方法其实是直接`git clone`到`~/.claude/skills`目录下，然后重启claude
+
+当然也可以直接`scp -r <skills_dir> <username>@<host>:~/.claude/skills`，然后在传入端实测可以直接用该skills
+
+下面的代码本身就是我让ai自动帮我改的，然后让他review，效果如下：
+
+<img src=2026-03-25-01-41-15.png>
+
+<img src=2026-03-25-01-45-17.png>
+
+此外，由于很多skill都是英文回答，所以你可以让claude直接帮你把所有skills全部加上一句中文回答的约束：**帮我把所有~/.claude/skills的skills的文件都加上一个约束:用中文回答**，他会自动帮你更新所有skill（不然上面那个图其实本来回答的是英文的）
+
+> [搜索skills的网站：skillsmp](https://skillsmp.com/zh)
