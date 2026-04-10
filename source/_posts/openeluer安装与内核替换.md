@@ -429,7 +429,7 @@ LDFLAGS := -static
 安装依赖：
 
 ```shell
-dnf install -y dtc libfdt-devel glibc-static glib2-devel
+dnf install -y dtc libfdt-devel glibc-static glib2-devel dtc-devel
 ```
 
 执行静态编译：
