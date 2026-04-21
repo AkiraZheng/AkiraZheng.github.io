@@ -131,9 +131,26 @@ npm install hexo-renderer-pandoc --save
 
 # algolia 搜索插件
 npm install hexo-algolia --save
-export HEXO_ALGOLIA_INDEXING_KEY='您的AdminAPIKey'
-hexo g
-hexo algolia
+
+# Algolia 全文搜索配置
+# 由于 hexo-algolia 只索引标题/摘要，需要手动上传全文
+# 脚本已预先配置在 upload-algolia.js 中
+# 使用方式：
+#   1. 关闭 VPN/代理（或将 algolia 相关域名加白名单）
+#   2. 设置环境变量：export HEXO_ALGOLIA_INDEXING_KEY='您的AdminAPIKey'
+#   3. 运行：node upload-algolia.js
+# 注意：Algolia 免费版有 10KB 记录大小限制，建议正文截断
+#
+# 新电脑配置步骤：
+#   1. npm install
+#   2. 关掉 VPN 或加白名单 (algolia.net, algolianet.com)
+#   3. export HEXO_ALGOLIA_INDEXING_KEY='你的AdminAPIKey'
+#   4. node upload-algolia.js  (上传全文索引)
+#   5. hexo g && hexo d  (部署博客)
+#
+# ⚠️ VPN/代理限制说明:
+# 如果开启了 VPN（如 Clash），Algolia 上传/搜索会失败
+# 解决方法：在 VPN 中将 algolia.net, algolianet.com 加到白名单
 
 # PlantUML 图表插件
 # 由于 node_modules 目录权限问题，需要手动创建 scripts/plantuml-filter.js 和 scripts/deflate.js
@@ -162,23 +179,15 @@ Alice -> Bob: Hello
 @enduml
 ```
 
-由于 algolia 需要经常`hexo algolia`更新远程的 index 数据库，所以本地是需要安装的
+由于 algolia 需要经常更新远程的 index 数据库，所以本地是需要安装的
 
 - 启用全局搜索功能-Algolia 搜索（在Archer官方文档中有）
 
-	- hexo目录下安装`hexo-algolia`插件（注意，不要跟着官网安装hexo-algolia，因为安装这个的话只支持标题搜索，不支持文章内容搜索）更正：目前archer不支持algoliasearch，只支持algolia，所以只能搜索标题了
+	- hexo目录下安装`hexo-algolia`插件
 
 		`npm install hexo-algolia --save`
 
-	上传数据
-	```shell
-	export HEXO_ALGOLIA_INDEXING_KEY='您的AdminAPIKey'
-	# 生成并上传
-	hexo g
-	hexo algolia
-	```
-
-	> [algolia搜索功能配置1](https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8-Algolia-%E6%90%9C%E7%B4%A2)
+> [algolia搜索功能配置1](https://github.com/fi3ework/hexo-theme-archer/wiki/%E5%90%AF%E7%94%A8-Algolia-%E6%90%9C%E7%B4%A2)
 	>
 	> [algolia搜索功能配置2](https://www.chipmunk.top/posts/algolia%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD%E9%85%8D%E7%BD%AE/)
 

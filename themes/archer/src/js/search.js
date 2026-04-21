@@ -65,15 +65,15 @@ const initAlgolia = () => {
             const link = data.permalink
               ? data.permalink
               : siteMeta.root + data.path
+            const highlight = data._highlightResult;
+            const titleHighlight = highlight && highlight.title ? highlight.title.value : data.title;
+            const contentHighlight = highlight && highlight.content ? highlight.content.value : (data.excerpt || '');
             return (
               '<a href="' +
               link +
               '" class="algolia-hit-item-link">' +
-              instantsearch.highlight({
-                attribute: 'title',
-                hit: data,
-                highlightedTagName: 'em',
-              }) +
+              '<div class="algolia-hit-title">' + titleHighlight + '</div>' +
+              '<div class="algolia-hit-excerpt">' + contentHighlight + '</div>' +
               '</a>'
             )
           },

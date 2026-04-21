@@ -184,6 +184,24 @@
         color: $feature-color;
       }
     }
+
+    &-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    &-excerpt {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
   }
 }
 
