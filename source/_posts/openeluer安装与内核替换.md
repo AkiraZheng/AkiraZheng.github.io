@@ -475,6 +475,40 @@ git config --global --add safe.directory /mnt/kernel
 git config --global --get-all safe.directory
 ```
 
+## 通过 Remote-Tunnels 的方式用 vscode 连接虚机
+
+在虚机中安装 tunnel：
+
+```shell
+# 下载 ARM64 版本
+curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-arm64' --output vscode_cli.tar.gz
+
+tar -xf vscode_cli.tar.gz
+./code tunnel
+# 按提示完成 GitHub/Microsoft 账号授权
+```
+
+授权后会打印：`? What would you like to call this machine? (localhost)`，意思是要输入 remote 的名称，随便取，这里我们可以取为`openeuler-vm`。
+
+然后回车后就能看到：
+
+```shell
+[2026-04-14 04:59:43] info Creating tunnel with the name: openeuler-vm
+
+
+Open this link in your browser https://vscode.dev/tunnel/openeuler-vm/xxx
+```
+
+虚机中保持呈现链接的终端运行着，然后在 host 网页中打开这个链接就可以直接进入 vscode 的 qemu 虚机中了。
+
+<img src=2026-04-15-11-34-25.png>
+
+也可以在本地的 vscode 中
+
+<img src=2026-04-15-11-41-19.png>
+
+之后只要在 guest 中运行`./code tunnel`即可。
+
 # 附件
 
 **build-initramfs.sh**
