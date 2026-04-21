@@ -26,20 +26,12 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="内存管理的基础内容可以看另一篇博客：内存管理篇 VMSA MMU VMSA 提供了 MMU 硬件单元，MMU 中还包含了 TLB，保留的是 MMU 页表翻译后的转换结果。 MMU 硬件单元用来实现 VA 到 PA 的地址转换（转换由硬件自动转换）：  硬件遍历页表：table walk TTBR0&#x2F;1：页表基地址寄存器，指向当前使用的页表（一级页表）的物理地址  其中，TTBR0 通常用于用户空间">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-16-15.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-22-16.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-22-01-45-30.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-04-18-51.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-42-22.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-22-28-11.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-22-16.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-22-16.png">
 <meta property="og:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-22-01-45-30.png">
 <meta property="article:published_time" content="2026-03-20T17:16:47.000Z">
-<meta property="article:modified_time" content="2026-03-22T10:47:06.644Z">
+<meta property="article:modified_time" content="2026-04-10T11:42:22.596Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-16-15.png">
+<meta name="twitter:image" content="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-22-01-45-30.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
@@ -347,7 +339,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">5.5k</span>Reading time: <span class="post-count reading-time">23 min</span></span>
+                        <span>Word count: <span class="post-count word-count">2.1k</span>Reading time: <span class="post-count reading-time">9 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -529,57 +521,10 @@
 <li>用户空间：0x0000000000000000 ~
 0x0000FFFFFFFFFFFF，占用低位虚拟地址空间</li>
 </ul>
-<p><img src="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-16-15.png"></p>
-<p>硬件单元的作用：</p>
-<ul>
-<li>地址转换：将虚拟地址转换为物理地址</li>
-<li>权限检查：根据页表项中的权限位检查访问权限</li>
-<li>内存属性检查：根据页表项中的内存属性位检查访问类型（如缓存策略）</li>
-</ul>
-<h2 id="页表描述符">页表描述符</h2>
-<p>L0-L2页表描述符有三种类型：</p>
-<ul>
-<li>无效页表项：表示该页表项无效，访问该页会触发页错误异常</li>
-<li>块类型页表项：表示该页表项直接映射一个大页（如2MB或1GB），不需要继续遍历下一级页表</li>
-<li>页表page table类型页表项：表示该页表项指向下一级页表（最常见）</li>
-</ul>
-<p><img src="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-22-16.png"></p>
-<p>L3页表描述符有五种类型：</p>
-<ul>
-<li>无效页表项：表示该页表项无效，访问该页会触发页错误异常</li>
-<li>保留页表项：表示该页表项保留，访问该页会触发页错误异常</li>
-<li>4KB粒度页表项：表示该页表项映射一个4KB的页</li>
-<li>16KB粒度页表项：表示该页表项映射一个16KB的页</li>
-<li>64KB粒度页表项：表示该页表项映射一个64KB的页</li>
-</ul>
-<!-- <img src=2026-03-21-03-25-26.png> -->
-<p><img src="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-22-01-45-30.png"></p>
-<p>页表属性包含了该 entry
-的读写权限位、访问位、脏位、内存属性位等信息，stage1的一些典型页表属性如下：</p>
-<!-- <img src=2026-03-21-03-35-56.png> -->
-<!-- <img src=2026-03-21-04-09-46.png> -->
-<p><img src="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-04-18-51.png"></p>
-<ul>
-<li>Device-nGnRnE：
-不支持聚合操作，不支持指令重排，不支持提前写应答。</li>
-<li>Device-nGnRE： 不支持聚合操作，不支持指令重排，支持提前写应答。</li>
-<li>Device-nGRE： 不支持聚合操作，支持指令重排，支持提前写应答。</li>
-<li>Device-GRE： 支持聚合操作，支持指令重排，支持提前写应答。</li>
-</ul>
-<p><img src="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-42-22.png"></p>
-<p>Armv8 上利用 TLB 进行的一个优化： 通过设置 Contiguous bit，利用一个
-TLB entry 来完成多个连续 page 的 VA 到 PA 的转换。</p>
-<p>使用 Contiguous bit 的条件： - 页面对应的 VA 必须是连续的</p>
-<ul>
-<li><p>对于 4KB 的页面，16 个连续的 page</p></li>
-<li><p>对于 16KB 的页面，32 或者 128 个连续的 page</p></li>
-<li><p>对于 64KB 的页面，32 个连续的 page</p></li>
-<li><p>连续的页面必须有相同的属性</p></li>
-<li><p>起始地址必须以页面对齐</p></li>
-</ul>
-<p>根据上述这些 Attribute 配置，在linux kernel中定义了一些代表 Attribute
-集合属性的宏：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//.linux/include/asm/pgtable-prot.h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_KERNEL      __pgprot(PROT_NORMAL)                         <span class="comment">// 内核普通内存页面</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_KERNEL_RO   __pgprot((PROT_NORMAL &amp; ~PTE_WRITE) | PTE_RDONLY)      <span class="comment">// 内核只读页面</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_KERNEL_ROX  __pgprot((PROT_NORMAL &amp; ~(PTE_WRITE | PTE_PXN)) | PTE_RDONLY) <span class="comment">// 内核只读可执行页面</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_KERNEL_EXEC __pgprot((PROT_NORMAL &amp; ~PTE_PXN))            <span class="comment">// 内核可执行页面</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_KERNEL_EXEC_CONT __pgprot((PROT_NORMAL &amp; ~PTE_PXN) | PTE_CONT)       <span class="comment">// 内核可执行连续页面（物理页面连续）</span></span></span><br></pre></td></tr></table></figure>
+<!-- - 内核空间：0xFFFF000000000000 ~ 0xFFFFFFFFFFFFFFFF，占用高位虚拟地址空间
+- 用户空间：0x0000000000000000 ~ 0x00007FFFFFFFFFFF，占用低位虚拟地址空间
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line">  用户空间: 0x0000_0000_0000_0000 ~ 0x0000_7FFF_FFFF_FFFF                       </span><br><span class="line">                                       ↑                                        </span><br><span class="line">                                    bit 47 = 0</span><br><span class="line">                                                                                </span><br><span class="line">  内核空间: 0xFFFF_8000_0000_0000 ~ 0xFFFF_FFFF_FFFF_FFFF                       </span><br><span class="line">                                       ↑                                        </span><br><span class="line">                                    bit 47 = 1                                  </span><br><span class="line">                                                                                </span><br><span class="line">  中间 0x0000_8000_0000_0000 ~ 0xFFFF_7FFF_FFFF_FFFF 这段（bit 47               </span><br><span class="line">  附近）是未定义区域，两种描述都没覆盖它。             </span><br><span class="line">```                          --&gt;</span><br><span class="line"></span><br><span class="line">&lt;img src=2026-03-21-03-16-15.png&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">硬件单元的作用：</span><br><span class="line"></span><br><span class="line">- 地址转换：将虚拟地址转换为物理地址</span><br><span class="line">- 权限检查：根据页表项中的权限位检查访问权限</span><br><span class="line">- 内存属性检查：根据页表项中的内存属性位检查访问类型（如缓存策略）</span><br><span class="line"></span><br><span class="line">## 页表描述符</span><br><span class="line"></span><br><span class="line">L0-L2页表描述符有三种类型：</span><br><span class="line"></span><br><span class="line">- 无效页表项：表示该页表项无效，访问该页会触发页错误异常</span><br><span class="line">- 块类型页表项：表示该页表项直接映射一个大页（如2MB或1GB），不需要继续遍历下一级页表</span><br><span class="line">- 页表page table类型页表项：表示该页表项指向下一级页表（最常见）</span><br><span class="line"></span><br><span class="line">&lt;img src=2026-03-21-03-22-16.png&gt;</span><br><span class="line"></span><br><span class="line">L3页表描述符有五种类型：</span><br><span class="line"></span><br><span class="line">- 无效页表项：表示该页表项无效，访问该页会触发页错误异常</span><br><span class="line">- 保留页表项：表示该页表项保留，访问该页会触发页错误异常</span><br><span class="line">- 4KB粒度页表项：表示该页表项映射一个4KB的页</span><br><span class="line">- 16KB粒度页表项：表示该页表项映射一个16KB的页</span><br><span class="line">- 64KB粒度页表项：表示该页表项映射一个64KB的页</span><br><span class="line"></span><br><span class="line">&lt;!-- &lt;img src=2026-03-21-03-25-26.png&gt; --&gt;</span><br><span class="line"></span><br><span class="line">&lt;img src=2026-03-22-01-45-30.png&gt;</span><br><span class="line"></span><br><span class="line">页表属性包含了该 entry 的读写权限位、访问位、脏位、内存属性位等信息，stage1的一些典型页表属性如下：</span><br><span class="line"></span><br><span class="line">&lt;!-- &lt;img src=2026-03-21-03-35-56.png&gt; --&gt;</span><br><span class="line"></span><br><span class="line">&lt;!-- &lt;img src=2026-03-21-04-09-46.png&gt; --&gt;</span><br><span class="line"></span><br><span class="line">&lt;img src=2026-03-21-04-18-51.png&gt;</span><br><span class="line"></span><br><span class="line">- Device-nGnRnE： 不支持聚合操作，不支持指令重排，不支持提前写应答。</span><br><span class="line">- Device-nGnRE： 不支持聚合操作，不支持指令重排，支持提前写应答。</span><br><span class="line">- Device-nGRE： 不支持聚合操作，支持指令重排，支持提前写应答。</span><br><span class="line">- Device-GRE： 支持聚合操作，支持指令重排，支持提前写应答。</span><br><span class="line"></span><br><span class="line">&lt;img src=2026-03-21-03-42-22.png&gt;</span><br><span class="line"></span><br><span class="line">Armv8 上利用 TLB 进行的一个优化： 通过设置 Contiguous bit，利用一个 TLB entry 来完成多个连续 page 的 VA 到 PA 的转换。</span><br><span class="line"></span><br><span class="line">使用 Contiguous bit 的条件：</span><br><span class="line">- 页面对应的 VA 必须是连续的</span><br><span class="line"></span><br><span class="line">- 对于 4KB 的页面，16 个连续的 page</span><br><span class="line"></span><br><span class="line">- 对于 16KB 的页面，32 或者 128 个连续的 page</span><br><span class="line"></span><br><span class="line">- 对于 64KB 的页面，32 个连续的 page</span><br><span class="line"></span><br><span class="line">- 连续的页面必须有相同的属性</span><br><span class="line"></span><br><span class="line">- 起始地址必须以页面对齐</span><br><span class="line"></span><br><span class="line">根据上述这些 Attribute 配置，在linux kernel中定义了一些代表 Attribute 集合属性的宏：</span><br><span class="line"></span><br><span class="line">```c</span><br><span class="line">//.linux/include/asm/pgtable-prot.h</span><br><span class="line">#define PAGE_KERNEL      __pgprot(PROT_NORMAL)                         // 内核普通内存页面</span><br><span class="line">#define PAGE_KERNEL_RO   __pgprot((PROT_NORMAL &amp; ~PTE_WRITE) | PTE_RDONLY)      // 内核只读页面</span><br><span class="line">#define PAGE_KERNEL_ROX  __pgprot((PROT_NORMAL &amp; ~(PTE_WRITE | PTE_PXN)) | PTE_RDONLY) // 内核只读可执行页面</span><br><span class="line">#define PAGE_KERNEL_EXEC __pgprot((PROT_NORMAL &amp; ~PTE_PXN))            // 内核可执行页面</span><br><span class="line">#define PAGE_KERNEL_EXEC_CONT __pgprot((PROT_NORMAL &amp; ~PTE_PXN) | PTE_CONT)       // 内核可执行连续页面（物理页面连续）</span><br></pre></td></tr></table></figure>
 <h1 id="实验一建立恒等映射vapa">实验一：建立恒等映射：VA=PA</h1>
 <p>实际上多进程运行的系统中，我们不会用恒等映射，VA不会等于PA。但是某些特殊场景下是要求用恒等映射的。</p>
 <p>我们知道，在MMU开启后，PC指令存的值也是虚拟地址，然后经过页表映射成物理地址后，在内存中查找对应的代码来执行。</p>
@@ -661,7 +606,7 @@ bytes（64位），存储物理地址的高位和标志位。512个 entry 正好
 <p>创建 4 KB 页表的代码为：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="title">early_pgtable_alloc</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">       <span class="keyword">unsigned</span> <span class="keyword">long</span> phys;</span><br><span class="line"></span><br><span class="line">       phys = get_free_page();</span><br><span class="line">       <span class="built_in">memset</span>((<span class="keyword">void</span> *)phys, <span class="number">0</span>, PAGE_SIZE);</span><br><span class="line"></span><br><span class="line">       <span class="keyword">return</span> phys;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="创建-pgd-页表-实现映射">创建 PGD 页表 &amp;&amp; 实现映射</h3>
-<p><img src="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-22-28-11.png"></p>
+<p><img src=2026-03-21-22-28-11.png></p>
 <p>创建页表时会先创建 text 段映射，原因是：CPU 正在执行的代码就在 text
 段中，启用 MMU 后，CPU
 的下一条指令地址必须在页表中已存在，否则会立即触发页错误导致崩溃。这就是自包含代码的自举问题。早期初始化阶段，只需要确保代码段能继续执行（ROX），其他数据段、栈等可以在后面逐步映射。</p>
@@ -721,7 +666,7 @@ text 段的起始地址和结束地址，链接器会根据这些符号来确定
 entry值的，因此该 entry 的填充会在<code>alloc_init_pud</code>
 函数中完成，创建完一个 pud 页后，就可以拿到pud
 页的基地址，也就可以填充给 pgd entry 了。填充规则如下图所示：</p>
-<p><img src="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-22-16.png"></p>
+<p><img src=2026-03-21-03-22-16.png></p>
 <h3 id="创建-pud-页表-实现映射">创建 PUD 页表 &amp;&amp; 实现映射</h3>
 <p>如果上一级 pgd entry <code>pgd_t *pgdp</code> 指向的 pud
 页不存在，才会创建一个 pud 页并填充到 pgd entry 中。否则会直接映射下一级
@@ -737,7 +682,7 @@ index 索引拼接获取下一级 pud entry 的物理地址。</p>
 table类型页表项</strong>，如果是块类型页表项，则直接调用<code>pmd_set_section</code>函数，没有下一级
 PTE 页表了，否则调用<code>alloc_init_pte</code>函数创建下一级 PTE
 页表。</p>
-<p><img src="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2026-03-21-03-22-16.png"></p>
+<p><img src=2026-03-21-03-22-16.png></p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">pmd_set_section</span><span class="params">(<span class="keyword">pmd_t</span> *pmdp, <span class="keyword">unsigned</span> <span class="keyword">long</span> phys,</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="keyword">unsigned</span> <span class="keyword">long</span> prot)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">       <span class="keyword">unsigned</span> <span class="keyword">long</span> sect_prot = PMD_TYPE_SECT | mk_sect_prot(prot);</span><br><span class="line"></span><br><span class="line">       <span class="keyword">pmd_t</span> new_pmd = pfn_pmd(phys &gt;&gt; PMD_SHIFT, sect_prot);</span><br><span class="line"></span><br><span class="line">       <span class="comment">//往 pmdp entry 中填所映射的物理地址的 PFN 值</span></span><br><span class="line">       set_pmd(pmdp, new_pmd);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">alloc_init_pmd</span><span class="params">(<span class="keyword">pud_t</span> *pudp, <span class="keyword">unsigned</span> <span class="keyword">long</span> addr,</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="keyword">unsigned</span> <span class="keyword">long</span> end, <span class="keyword">unsigned</span> <span class="keyword">long</span> phys,</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="keyword">unsigned</span> <span class="keyword">long</span> prot,</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="keyword">unsigned</span> <span class="keyword">long</span> (*alloc_pgtable)(<span class="keyword">void</span>),</span></span></span><br><span class="line"><span class="params"><span class="function">               <span class="keyword">unsigned</span> <span class="keyword">long</span> flags)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">       <span class="keyword">pud_t</span> pud = *pudp;</span><br><span class="line">       <span class="keyword">pmd_t</span> *pmdp;</span><br><span class="line">       <span class="keyword">unsigned</span> <span class="keyword">long</span> next;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> (pud_none(pud)) &#123;</span><br><span class="line">               <span class="keyword">unsigned</span> <span class="keyword">long</span> pmd_phys;</span><br><span class="line"></span><br><span class="line">               pmd_phys = alloc_pgtable();</span><br><span class="line">               set_pud(pudp, __pud(pmd_phys | PUD_TYPE_TABLE));</span><br><span class="line">               pud = *pudp;</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       pmdp = pmd_offset_phys(pudp, addr);</span><br><span class="line">       <span class="keyword">do</span> &#123;</span><br><span class="line">               next = pmd_addr_end(addr, end);</span><br><span class="line"></span><br><span class="line">               <span class="keyword">if</span> (((addr | next | phys) &amp; ~SECTION_MASK) == <span class="number">0</span> &amp;&amp; <span class="comment">// 地址对齐检查</span></span><br><span class="line">                               (flags &amp; NO_BLOCK_MAPPINGS) == <span class="number">0</span>) <span class="comment">// flags 检查出是BLOCK_MAPPINGS块映射</span></span><br><span class="line">                       pmd_set_section(pmdp, phys, prot);</span><br><span class="line">               <span class="keyword">else</span></span><br><span class="line">                       alloc_init_pte(pmdp, addr, next, phys,</span><br><span class="line">                                       prot,  alloc_pgtable, flags);<span class="comment">//创建下一级 PTE 映射</span></span><br><span class="line"></span><br><span class="line">               phys += next - addr;</span><br><span class="line">       &#125; <span class="keyword">while</span> (pmdp++, addr = next, addr != end);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>代码跑到 alloc_init_pmd 函数中，我们 gdb 打断点查看一下它的 flags
 值：</p>
@@ -852,7 +797,7 @@ TLB</li>
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">March 21st 2026, 1:16:47 am</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">March 22nd 2026, 6:47:06 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">April 10th 2026, 7:42:22 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -1018,7 +963,7 @@ TLB</li>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#vmsa"><span class="toc-text">VMSA</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#mmu"><span class="toc-text">MMU</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E8%A1%A8%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="toc-text">页表描述符</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%80%E5%BB%BA%E7%AB%8B%E6%81%92%E7%AD%89%E6%98%A0%E5%B0%84vapa"><span class="toc-text">实验一：建立恒等映射：VA&#x3D;PA</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%88%9B%E5%BB%BA%E9%A1%B5%E8%A1%A8"><span class="toc-text">一、创建页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-pgd-%E9%A1%B5%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E6%98%A0%E5%B0%84"><span class="toc-text">创建 PGD 页表 &amp;&amp; 实现映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-pud-%E9%A1%B5%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E6%98%A0%E5%B0%84"><span class="toc-text">创建 PUD 页表 &amp;&amp; 实现映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-pmd-%E9%A1%B5%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E6%98%A0%E5%B0%84"><span class="toc-text">创建 PMD 页表 &amp;&amp; 实现映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA-pte-%E9%A1%B5%E8%A1%A8-%E5%AE%9E%E7%8E%B0%E6%98%A0%E5%B0%84"><span class="toc-text">创建 PTE 页表 &amp;&amp; 实现映射</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%88%9D%E5%A7%8B%E5%8C%96-mmu"><span class="toc-text">二、初始化 MMU</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E8%AE%BF%E9%97%AE%E6%B5%8B%E8%AF%95"><span class="toc-text">三、访问测试</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%8Cdump-%E9%A1%B5%E8%A1%A8"><span class="toc-text">实验二：dump 页表</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%AE%9A%E4%B9%89%E6%89%93%E5%8D%B0%E5%86%85%E5%AE%B9-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">一、定义打印内容-数据结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E9%81%8D%E5%8E%86%E9%A1%B5%E8%A1%A8%E5%B9%B6%E6%89%93%E5%8D%B0"><span class="toc-text">二、遍历页表并打印</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#vmsa"><span class="toc-text">VMSA</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#mmu"><span class="toc-text">MMU</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%88%9D%E5%A7%8B%E5%8C%96-mmu"><span class="toc-text">二、初始化 MMU</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E8%AE%BF%E9%97%AE%E6%B5%8B%E8%AF%95"><span class="toc-text">三、访问测试</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%8Cdump-%E9%A1%B5%E8%A1%A8"><span class="toc-text">实验二：dump 页表</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%AE%9A%E4%B9%89%E6%89%93%E5%8D%B0%E5%86%85%E5%AE%B9-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">一、定义打印内容-数据结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E9%81%8D%E5%8E%86%E9%A1%B5%E8%A1%A8%E5%B9%B6%E6%89%93%E5%8D%B0"><span class="toc-text">二、遍历页表并打印</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -2312,10 +2257,6 @@ TLB</li>
         
         
         
-        
-        
-        
-        
     
     
     
@@ -2448,13 +2389,13 @@ TLB</li>
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/14</span>
-            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/14</span>
-            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
         </li>
     
         
@@ -2928,6 +2869,11 @@ TLB</li>
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
+        <span class="sidebar-category-name" data-categories="Linux内核基础">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核基础
+        </span>
+    
         <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
             <span class="iconfont-archer">&#xe60a;</span>
             ARM64结构与编程实操
@@ -2941,11 +2887,6 @@ TLB</li>
         <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
             <span class="iconfont-archer">&#xe60a;</span>
             重装-环境配置-计算机
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="Linux内核基础">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Linux内核基础
         </span>
     
         <span class="sidebar-category-name" data-categories="计算机网络">
