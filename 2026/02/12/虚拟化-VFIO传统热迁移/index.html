@@ -19,22 +19,24 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="参考：KVM同步脏页位图到Qemu">
+    <meta name="description" content="虚拟化：传统热迁移 热迁移（Live Migration）的本质是：在虚拟机运行过程中，将 VM 状态从源主机传输到目标主机，且中断时间可控。要做到这一点，必须先知道 VM 的哪些内存页在迁移周期内被修改过——这就是 脏页跟踪（Dirty Page Tracking）。 本文梳理两条独立的脏页跟踪路径：CPU 侧（KVM MMU）和 设备侧（VFIO&#x2F;SMMU），以及它们如何共同跳过 MMIO B">
 <meta property="og:type" content="article">
-<meta property="og:title" content="虚拟化:传统热迁移">
-<meta property="og:url" content="https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/index.html">
+<meta property="og:title" content="虚拟化:VFIO传统热迁移">
+<meta property="og:url" content="https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="参考：KVM同步脏页位图到Qemu">
+<meta property="og:description" content="虚拟化：传统热迁移 热迁移（Live Migration）的本质是：在虚拟机运行过程中，将 VM 状态从源主机传输到目标主机，且中断时间可控。要做到这一点，必须先知道 VM 的哪些内存页在迁移周期内被修改过——这就是 脏页跟踪（Dirty Page Tracking）。 本文梳理两条独立的脏页跟踪路径：CPU 侧（KVM MMU）和 设备侧（VFIO&#x2F;SMMU），以及它们如何共同跳过 MMIO B">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/ZLHTInj157sVNp7ur6x9Iv-a3qKGMuGs2R4MYfLbcvsOXVrYTs99oOChIZHDIXxIMggM69NOZqH1gzMOxdyfxkpaoR_GYRlP96vQ2ZliClVClUVSStScJ2mOEAF882s92295nrae8ZDfI3gMD1K01i08Zf6BilljyFfoRKPOHDUNwsDGCA5f905Ry05SJ4aQRx8GRoASqU_SXR-NAf3QcyxgFemdflZ9MFn522jXPB3iFhfJMo5lp-Z9DhKRLwtT43gfARgCCE9r0oKrFUiVSwmjidKXPXGzp0Ntir_PsqxZ8unFJiFEQibjDzql5vsDaq2WkzaarRodyOacY3sDeea1MxsyCWkDqfYOcfbzEXrz7COESA3rNVAvJDuVaLAJ_B2WA9cwW9FfqA6aZ0GrAE6i7dSs6Z0b0Z37pSD8v25Cp4QZtMh-6qOCQI6DMQ3Nwr6UW20OWlFn-t5s903SWsnZ02zghzM_PGzSVAbwpf7D4_BXYAapS9OtfJS839M9o2XrY-fjwuVnVl6PPx5uxu1dEjbQSbjhDzRtWuDmXgJDNyvUlejlr6vGVV5-ytpjnAevUoLgb-bE4Go68XcTWRkTPzbiowstd6QHh9K7tF3D7pKa80ZU8kQFmRjzKZdr4_wBdbEeqdRR1_uVFLLZWuqr7N3SyqVJCQyJRk6KB5bioCVTUeaDESU1gKGYbe0vZrYkLzVVyFxSG4HkY5QkRs9kQ9POIQyGRNydfHhTEU0uhpSfGrFubAdmM7WbexdnUVO0KZrdlO2AjC0cYLqxV4eM5an8yr-TmW4zEwPs_kfdYLGEIT5oFwtGmhAxV0wGAiAkHW0cs2UxnFu0">
 <meta property="article:published_time" content="2026-02-12T13:20:37.000Z">
-<meta property="article:modified_time" content="2026-02-12T13:22:47.844Z">
+<meta property="article:modified_time" content="2026-05-21T04:02:39.749Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.plantuml.com/plantuml/svg/ZLHTInj157sVNp7ur6x9Iv-a3qKGMuGs2R4MYfLbcvsOXVrYTs99oOChIZHDIXxIMggM69NOZqH1gzMOxdyfxkpaoR_GYRlP96vQ2ZliClVClUVSStScJ2mOEAF882s92295nrae8ZDfI3gMD1K01i08Zf6BilljyFfoRKPOHDUNwsDGCA5f905Ry05SJ4aQRx8GRoASqU_SXR-NAf3QcyxgFemdflZ9MFn522jXPB3iFhfJMo5lp-Z9DhKRLwtT43gfARgCCE9r0oKrFUiVSwmjidKXPXGzp0Ntir_PsqxZ8unFJiFEQibjDzql5vsDaq2WkzaarRodyOacY3sDeea1MxsyCWkDqfYOcfbzEXrz7COESA3rNVAvJDuVaLAJ_B2WA9cwW9FfqA6aZ0GrAE6i7dSs6Z0b0Z37pSD8v25Cp4QZtMh-6qOCQI6DMQ3Nwr6UW20OWlFn-t5s903SWsnZ02zghzM_PGzSVAbwpf7D4_BXYAapS9OtfJS839M9o2XrY-fjwuVnVl6PPx5uxu1dEjbQSbjhDzRtWuDmXgJDNyvUlejlr6vGVV5-ytpjnAevUoLgb-bE4Go68XcTWRkTPzbiowstd6QHh9K7tF3D7pKa80ZU8kQFmRjzKZdr4_wBdbEeqdRR1_uVFLLZWuqr7N3SyqVJCQyJRk6KB5bioCVTUeaDESU1gKGYbe0vZrYkLzVVyFxSG4HkY5QkRs9kQ9POIQyGRNydfHhTEU0uhpSfGrFubAdmM7WbexdnUVO0KZrdlO2AjC0cYLqxV4eM5an8yr-TmW4zEwPs_kfdYLGEIT5oFwtGmhAxV0wGAiAkHW0cs2UxnFu0">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>虚拟化:传统热迁移 · AkiraZheng&#39;s Time</title>
+    <title>虚拟化:VFIO传统热迁移 · AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -272,7 +274,7 @@
                 <a href="/">AkiraZheng&#39;s Time.</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">虚拟化:传统热迁移</a>
+                <a href="#" class="post-name">虚拟化:VFIO传统热迁移</a>
             </div>
         </div>
     
@@ -318,7 +320,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                虚拟化:传统热迁移
+                虚拟化:VFIO传统热迁移
             <!-- 404 -->
             
         </h1>
@@ -337,7 +339,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">10</span>Reading time: <span class="post-count reading-time">1 min</span></span>
+                        <span>Word count: <span class="post-count word-count">3.6k</span>Reading time: <span class="post-count reading-time">15 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -498,7 +500,414 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <blockquote>
+        <h1 id="虚拟化传统热迁移">虚拟化：传统热迁移</h1>
+<p>热迁移（Live Migration）的本质是：在虚拟机运行过程中，将 VM
+状态从源主机传输到目标主机，且中断时间可控。要做到这一点，必须先知道 VM
+的哪些内存页在迁移周期内被修改过——这就是 <strong>脏页跟踪（Dirty Page
+Tracking）</strong>。</p>
+<p>本文梳理两条独立的脏页跟踪路径：<strong>CPU 侧</strong>（KVM MMU）和
+<strong>设备侧</strong>（VFIO/SMMU），以及它们如何共同跳过 MMIO
+BAR。</p>
+<hr>
+<h2 id="一cpu-物理地址空间的构成">一、CPU 物理地址空间的构成</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+----------------------+</span><br><span class="line">| DRAM                 |  ← 普通内存，可缓存，可跟踪</span><br><span class="line">+----------------------+</span><br><span class="line">| PCI MMIO windows     |  ← 设备内存，不可缓存，不可跟踪</span><br><span class="line">+----------------------+</span><br><span class="line">| ACPI                 |  ← 设备内存，不可缓存</span><br><span class="line">+----------------------+</span><br><span class="line">| GIC/ITS              |  ← 设备内存，不可缓存</span><br><span class="line">+----------------------+</span><br></pre></td></tr></table></figure>
+<p>物理地址空间大致分为两类： -
+<strong>Memory</strong>（DRAM）：可缓存、有 writeback 语义、可参与 dirty
+tracking -
+<strong>Device</strong>（MMIO、ACPI、GIC）：不可缓存、不可speculative、无
+dirty 语义</p>
+<h2 id="二传统热迁移的脏页跟踪机制">二、传统热迁移的脏页跟踪机制</h2>
+<h3 id="跟踪对象guest-ram-pages">2.1 跟踪对象：Guest RAM Pages</h3>
+<p>热迁移中，跟踪的是 <strong>guest RAM pages</strong> 的变化。</p>
+<p>Dirty tracking 依赖 CPU 页表的硬件语义： - <strong>Writable
+PTE</strong>：CPU 可写 - <strong>Dirty Bit</strong>：CPU
+写操作后硬件自动置位 - <strong>Writeback
+Cache</strong>：写入后最终落盘</p>
+<p>满足这些条件的内存才能被 dirty logging / writable fault 跟踪。</p>
+<h3 id="为什么-mmio-不参与跟踪">2.2 为什么 MMIO 不参与跟踪</h3>
+<p>MMIO 在 ARM64 对应 <strong>DEVICE_nGnRE</strong>，在 x86 对应
+<strong>UC/WC</strong>。其页表属性决定了：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>MMIO 的表现</th>
+<th>对 dirty tracking 的影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不可缓存</td>
+<td>写操作直接到设备</td>
+<td>无 writeback，无法感知 "脏"</td>
+</tr>
+<tr>
+<td>不可 speculative</td>
+<td>CPU 不会推测性访问</td>
+<td>无 dirty bit 语义</td>
+</tr>
+<tr>
+<td>无 side effect</td>
+<td>每次访问可能触发硬件行为</td>
+<td>不能随意重复访问</td>
+</tr>
+<tr>
+<td>不 coherent</td>
+<td>不参与缓存一致性协议</td>
+<td>无法与其他 agent 协调</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论</strong>：MMIO BAR 的本质不是 "内存"，而是
+"设备行为接口"（Device Transaction Interface）。它是 CPU 与 PCIe
+设备之间的控制/数据交互窗口，不能当普通 RAM 使用。</p>
+<h2 id="三vfio-设备的热迁移">三、VFIO 设备的热迁移</h2>
+<p>VFIO 直通设备涉及三类概念：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>由谁管理</th>
+<th>在热迁移中的角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BAR mmap</td>
+<td>MMU（stage-2）</td>
+<td>不能跟踪（页表属性决定）</td>
+</tr>
+<tr>
+<td>DMA Buffer</td>
+<td>SMMU/IOMMU</td>
+<td>跟踪 device DMA 写入</td>
+</tr>
+<tr>
+<td>PCI Config Space</td>
+<td>PCI 总线</td>
+<td>不跟踪</td>
+</tr>
+</tbody>
+</table>
+<h3 id="vfio-bar-mmap区域">vfio bar mmap区域</h3>
+<p>vfio bar
+mmap区域不应该热迁移中进行脏页跟踪，因为前一后换了一套设备，要重新建立mmap映射。</p>
+<p>不跟踪的防护手段：qemu向kvm注册内存区域时，会通过KVM_SET_USER_MEMORY_REGION，里面有一个KVM_MEM_LOG_DIRTY_PAGES，普通ram会带上这个，从而阻止热迁移的脏页跟踪。而qemu根本不给这些页面加这个标签</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">1. VFIO BAR mmap 子区域创建</span><br><span class="line">   memory_region_init_ram_device_ptr()          [memory.c:1674]</span><br><span class="line">     → qemu_ram_alloc_from_ptr(size, ptr, mr)   [memory.c:1661]</span><br><span class="line">       → qemu_ram_alloc_internal(..., RAM_PREALLOC)</span><br><span class="line">         → new_block-&gt;flags = RAM_PREALLOC      [physmem.c:2537]</span><br><span class="line">         → RAM_MIGRATABLE 未被设置！</span><br><span class="line"></span><br><span class="line">   对比普通 RAM：</span><br><span class="line">   memory_region_init_ram()</span><br><span class="line">     → qemu_ram_alloc()</span><br><span class="line">       → 后续 vmstate_register_ram()            [savevm.c:3516]</span><br><span class="line">         → qemu_ram_set_migratable()             [savevm.c:3520]</span><br><span class="line">         → RAM_MIGRATABLE ✓</span><br><span class="line"></span><br><span class="line">2. KVM memslot 注册（VM 启动时）</span><br><span class="line">   kvm_set_phys_mem()                           [kvm-all.c:1644]</span><br><span class="line">     → memory_region_is_ram(mr) == true         ← ram_device 通过检查</span><br><span class="line">     → 创建 KVM memslot（用于 guest 直接访问 MMIO）</span><br><span class="line">     → 此时 dirty_log_mask = 0，未设 KVM_MEM_LOG_DIRTY_PAGES</span><br><span class="line">     → 内核 dirty_bitmap = NULL</span><br><span class="line"></span><br><span class="line">3. 迁移开始</span><br><span class="line">   memory_global_dirty_log_start()</span><br><span class="line">     → global_dirty_tracking = true</span><br><span class="line">     → memory_region_transaction_commit()       ← 触发拓扑更新</span><br><span class="line">       → kvm_set_phys_mem() 重新计算 memslot flags</span><br><span class="line">         → kvm_mem_flags(mr)                    [kvm-all.c:785]</span><br><span class="line"></span><br><span class="line">           memory_region_get_dirty_log_mask(mr)  [memory.c:1821]</span><br><span class="line">             mask = mr-&gt;dirty_log_mask;         // = 0 (ram_device 的初始值)</span><br><span class="line">             if (global_dirty_tracking &amp;&amp;</span><br><span class="line">                 ((rb &amp;&amp; qemu_ram_is_migratable(rb)) ||  ← false!</span><br><span class="line">                  memory_region_is_iommu(mr)))           ← false!</span><br><span class="line">                 mask |= (1 &lt;&lt; DIRTY_MEMORY_MIGRATION);</span><br><span class="line">             // mask 最终 = 0 → 不设置 KVM_MEM_LOG_DIRTY_PAGES!</span><br><span class="line"></span><br><span class="line">   内核:</span><br><span class="line">     if (!(new-&gt;flags &amp; KVM_MEM_LOG_DIRTY_PAGES))</span><br><span class="line">         new-&gt;dirty_bitmap = NULL;              ← 不分配，不跟踪</span><br><span class="line"></span><br><span class="line">4. Guest 访问 MMIO BAR</span><br><span class="line">   BAR memslot 没有 KVM_MEM_LOG_DIRTY_PAGES</span><br><span class="line">   → 没有 write-protect</span><br><span class="line">   → guest 直接访问，无 fault</span><br><span class="line">   → 无脏页记录产生</span><br></pre></td></tr></table></figure>
+<p>总的来说，由于qemu对vfio bar进行mmap的时候，flags 不带
+RAM_MIGRATABLE，导致热迁移中不会为它设置KVM_MEM_LOG_DIRTY_PAGES的flags，从而内核不会对它进行跟踪。</p>
+<p>ACC 加速器设备完整的 VFIO BAR mmap流程如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">完整调用链 (从 QEMU 启动 ACC VFIO 设备开始)                                          </span><br><span class="line">                                                                                     </span><br><span class="line">vfio_bars_register()                         [pci.c:1997]</span><br><span class="line">  └→ vfio_bar_register()                     [pci.c:1970]                            </span><br><span class="line">       └→ vfio_region_mmap(&amp;bar-&gt;region)     [pci.c:1988]  ← 每个 BAR 都会调用       </span><br><span class="line">                                                                                     </span><br><span class="line">进入条件 (vfio_region_mmap, region.c:360):                                           </span><br><span class="line">- region-&gt;mem != NULL ✓ — vfio_region_setup() 中已分配                               </span><br><span class="line">- region-&gt;nr_mmaps &gt; 0 ✓ — 关键判定见下                                              </span><br><span class="line">                                       </span><br><span class="line">nr_mmaps 如何产生 (vfio_region_setup(), region.c:231-268):                           </span><br><span class="line">                                                                                     </span><br><span class="line">1. QEMU 向内核发起 VFIO_DEVICE_GET_REGION_INFO ioctl                                 </span><br><span class="line">2. ACC 驱动的 ioctl 对 BAR2 做了特殊处理 (hisi_acc_vfio_pci.c:1402-1412)：           </span><br><span class="line">info.flags = VFIO_REGION_INFO_FLAG_READ |                                            </span><br><span class="line">             VFIO_REGION_INFO_FLAG_WRITE |                                           </span><br><span class="line">             VFIO_REGION_INFO_FLAG_MMAP;   // ← 明确设置了 MMAP 标志                 </span><br><span class="line">2. 其他 BAR 走 vfio_pci_core_ioctl，也会根据 bar_mmap_supported 设置 MMAP。          </span><br><span class="line">3. QEMU 检查 !vbasedev-&gt;no_mmap &amp;&amp; region-&gt;flags &amp; VFIO_REGION_INFO_FLAG_MMAP → 通过 </span><br><span class="line">(no_mmap 默认 false, pci.c:3824)                                                     </span><br><span class="line">4. vfio_setup_region_sparse_mmaps() 尝试找 VFIO_REGION_INFO_CAP_SPARSE_MMAP → ACC    </span><br><span class="line">驱动没有实现 sparse mmap → 返回 -ENODEV                                              </span><br><span class="line">5. 回退到整区映射 (region.c:260-264):</span><br><span class="line">region-&gt;nr_mmaps = 1;          // ← 单个 mmap region                                 </span><br><span class="line">region-&gt;mmaps[0].offset = 0;                                                         </span><br><span class="line">region-&gt;mmaps[0].size = region-&gt;size;  // 等于 BAR 实际大小                          </span><br><span class="line">                                                                                     </span><br><span class="line">mmap 子区域创建 (vfio_region_mmap(), region.c:407-441):                              </span><br><span class="line">                                                                                     </span><br><span class="line">// 行 409-413: 从 VFIO 设备 fd 做实际 mmap                                           </span><br><span class="line">region-&gt;mmaps[i].mmap = mmap(map_align + offset, size, prot,                         </span><br><span class="line">                              MAP_SHARED | MAP_FIXED, fd, ...); </span><br><span class="line">// 行 427-430: 创建 ram_device MemoryRegion ← 你问的关键路径                         </span><br><span class="line">memory_region_init_ram_device_ptr(&amp;region-&gt;mmaps[i].mem,                             </span><br><span class="line">                                   memory_region_owner(region-&gt;mem),                 </span><br><span class="line">                                   name, region-&gt;mmaps[i].size,                      </span><br><span class="line">                                   region-&gt;mmaps[i].mmap);   // ptr = mmap 返回的地址</span><br><span class="line">                                                                                     </span><br><span class="line">// 行 432: 将此子区域挂到父 MemoryRegion 下                                          </span><br><span class="line">memory_region_add_subregion(region-&gt;mem, region-&gt;mmaps[i].offset,                    </span><br><span class="line">                             &amp;region-&gt;mmaps[i].mem);                                 </span><br><span class="line">                                                                                     </span><br><span class="line">memory_region_init_ram_device_ptr 内部 (memory.c:1674-1682):                         </span><br><span class="line">                                                                                     </span><br><span class="line">→ memory_region_init_io(mr, owner, &amp;ram_device_mem_ops, mr, name, size);             </span><br><span class="line">   mr-&gt;ram = true;                                                                   </span><br><span class="line">   mr-&gt;ram_device = true;       // ← 标记为 RAM 设备类型                             </span><br><span class="line">→ memory_region_set_ram_ptr(mr, size, ptr)   // memory.c:1656                        </span><br><span class="line">    → qemu_ram_alloc_from_ptr(size, ptr, mr, &amp;error_abort)  // physmem.c:2547        </span><br><span class="line">       → qemu_ram_alloc_internal(size, size, NULL, host,                             </span><br><span class="line">                                  RAM_PREALLOC, mr, errp)   // physmem.c:2460        </span><br><span class="line">          → new_block-&gt;flags = RAM_PREALLOC;  // physmem.c:2537                      </span><br><span class="line">          → // RAM_MIGRATABLE 未被设置！ </span><br></pre></td></tr></table></figure>
+<h3 id="vfio设备的内部状态">VFIO设备的内部状态</h3>
+<p>VFIO设备的内部状态，存在设备自己的硬件寄存器或内部RAM中，QEMU必须通过特殊的VFIO通道将其”抽取”出来，序列化后作为一段特殊的数据流传输。所以这些也不会被迁移。</p>
+<p>VFIO在热迁移中，靠有限状态机来跟踪迁移状态</p>
+<p><code>include/uapi/linux/vfio.h:1238-1248</code> 定义了 8
+种设备状态：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ERROR</strong></td>
+<td>错误状态</td>
+</tr>
+<tr>
+<td><strong>STOP</strong></td>
+<td>设备停止，不工作也不传输数据</td>
+</tr>
+<tr>
+<td><strong>RUNNING</strong></td>
+<td>设备正常运行</td>
+</tr>
+<tr>
+<td><strong>STOP_COPY</strong></td>
+<td>设备停止，正在传输最终状态数据</td>
+</tr>
+<tr>
+<td><strong>RESUMING</strong></td>
+<td>目标端正在恢复设备状态</td>
+</tr>
+<tr>
+<td><strong>RUNNING_P2P</strong></td>
+<td>运行中 + P2P（peer-to-peer）</td>
+</tr>
+<tr>
+<td><strong>PRE_COPY</strong></td>
+<td>预拷贝阶段，设备运行中，可增量传输数据</td>
+</tr>
+<tr>
+<td><strong>PRE_COPY_P2P</strong></td>
+<td>预拷贝 + P2P</td>
+</tr>
+</tbody>
+</table>
+<p>内核维护一个静态的二维状态转换表 vfio_from_fsm_table[8][8]，定义每个
+(当前状态,目标状态) 对的下一步骤。根据设备支持的
+migration_flags（设备迁移能力位掩码：STOP_COPY / P2P /
+PRE_COPY），会自动跳过不支持的状态节点。</p>
+<p>例如：STOP → RUNNING 会先经过 RUNNING_P2P（如果设备支持 P2P），让
+QEMU 每次 ioctl 时逐步推进。</p>
+<p>完整的迁移状态转换流程：</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/ZLHTInj157sVNp7ur6x9Iv-a3qKGMuGs2R4MYfLbcvsOXVrYTs99oOChIZHDIXxIMggM69NOZqH1gzMOxdyfxkpaoR_GYRlP96vQ2ZliClVClUVSStScJ2mOEAF882s92295nrae8ZDfI3gMD1K01i08Zf6BilljyFfoRKPOHDUNwsDGCA5f905Ry05SJ4aQRx8GRoASqU_SXR-NAf3QcyxgFemdflZ9MFn522jXPB3iFhfJMo5lp-Z9DhKRLwtT43gfARgCCE9r0oKrFUiVSwmjidKXPXGzp0Ntir_PsqxZ8unFJiFEQibjDzql5vsDaq2WkzaarRodyOacY3sDeea1MxsyCWkDqfYOcfbzEXrz7COESA3rNVAvJDuVaLAJ_B2WA9cwW9FfqA6aZ0GrAE6i7dSs6Z0b0Z37pSD8v25Cp4QZtMh-6qOCQI6DMQ3Nwr6UW20OWlFn-t5s903SWsnZ02zghzM_PGzSVAbwpf7D4_BXYAapS9OtfJS839M9o2XrY-fjwuVnVl6PPx5uxu1dEjbQSbjhDzRtWuDmXgJDNyvUlejlr6vGVV5-ytpjnAevUoLgb-bE4Go68XcTWRkTPzbiowstd6QHh9K7tF3D7pKa80ZU8kQFmRjzKZdr4_wBdbEeqdRR1_uVFLLZWuqr7N3SyqVJCQyJRk6KB5bioCVTUeaDESU1gKGYbe0vZrYkLzVVyFxSG4HkY5QkRs9kQ9POIQyGRNydfHhTEU0uhpSfGrFubAdmM7WbexdnUVO0KZrdlO2AjC0cYLqxV4eM5an8yr-TmW4zEwPs_kfdYLGEIT5oFwtGmhAxV0wGAiAkHW0cs2UxnFu0" alt="plantuml diagram"></p>
+<p>其中，内核侧的驱动的 mig_state
+结构体以及迁移数据文件和kzalloc出来的数据，本质上是host侧的内核堆内存，属于
+host kernel RAM，不会被“KVM guest dirty page tracking”
+跟踪。他们的迁移是靠 VFIO 中 vendor migration callback进行打包，比如通过
+vfio_pci_save_state()。</p>
+<p>而QEMU侧整个VFIOMigration 整个结构体由 glib
+堆分配，是本地缓存，也不会被跟踪。</p>
+<p>总而言之，QEMU 用 memory_region_init_ram() 注册的才是 guest
+RAM，才可能被迁移和跟踪。不在 ram_list 链表中，KVM dirty log
+根本看不到它们。</p>
+<h3 id="被设备驱动钉住pinned的内存页">被设备驱动”钉住”（pinned）的内存页</h3>
+<p>cpu真实会访问到的页除了mmap的外，还有：被设备驱动“钉住”（pinned）的内存页。它们是设备与虚拟机内存进行数据交换的“窗口”和“契约”，其内容在迁移时必须被完整传输，以保证设备恢复后能找到正确的数据。比如<strong>描述符环（Descriptor
+Ring）</strong></p>
+<p>pre-copy-dirty-page-tracking=off 就是 QEMU
+在预拷贝阶段对设备脏页的彻底封杀。表示预拷贝阶段完全不跟踪，只有停机后再一次性把这些东西迁移过去。</p>
+<p>它的防护手段是，在qemu发起内存页进行ro防护时，qemu会自动过滤掉这些页，根本不会发给kvm。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    subgraph A[源端 VM 运行]</span><br><span class="line">        A1_1[CPU: <span class="built_in">memcpy</span> 搬发送数据] --&gt;|写入 GVA| A_MMU[MMU 页表翻译: GVA到HPA]</span><br><span class="line">        A1_2[CPU: 填描述符环] --&gt;|写入 GVA| A_MMU</span><br><span class="line">        </span><br><span class="line">        A_MMU --&gt;|写入| MEM1[物理内存: DMA Buffer与描述符环]</span><br><span class="line"></span><br><span class="line">        A2_1[设备: DMA读描述符] --&gt;|发起IOVA| A_SMMU[SMMU 页表翻译: IOVA到HPA且记账]</span><br><span class="line">        A2_2[设备: DMA写收包数据] --&gt;|发起IOVA| A_SMMU</span><br><span class="line">        A2_3[设备: DMA写回描述符状态] --&gt;|发起IOVA| A_SMMU</span><br><span class="line">        </span><br><span class="line">        A_SMMU --&gt;|写入| MEM2[物理内存: DMA Buffer与描述符环]</span><br><span class="line">        </span><br><span class="line">        A1_2 -.-&gt;|描述符含IOVA供设备读| A2_1</span><br><span class="line">        A1_2 -.-&gt;|敲门铃写BAR寄存器| A2_1</span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">    subgraph B[热迁移过程]</span><br><span class="line">        A_MMU --&gt;|写操作产生| M_MMU[CPU MMU 脏页位图]</span><br><span class="line">        A_SMMU --&gt;|DMA写操作产生| M_SMMU[SMMU 脏页位图]</span><br><span class="line"></span><br><span class="line">        M_MMU --&gt; BitOR[QEMU: 双位图按位OR合并]</span><br><span class="line">        M_SMMU --&gt; BitOR</span><br><span class="line">        </span><br><span class="line">        BitOR --&gt; B1[轨道一: 内存脏页传输 - 描述符环与DMA Buffer]</span><br><span class="line">        </span><br><span class="line">        M_SMMU -.-&gt;|若无SMMU硬件支持| Fallback[退避策略: 所有Pin住的页面视为脏页]</span><br><span class="line">        Fallback -.-&gt; B1</span><br><span class="line"></span><br><span class="line">        B2[轨道二: VFIO状态迁移 - 设备寄存器与上下文]</span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">    subgraph C[目的端 VM 恢复]</span><br><span class="line">        B1 --&gt; C1[内存数据就绪: 描述符环与缓冲区完整]</span><br><span class="line">        B2 --&gt; C2[设备状态就绪: 内部指针指向描述符环]</span><br><span class="line">        </span><br><span class="line">        C1 -.-&gt;|IOVA与数据匹配| C2</span><br><span class="line">    end</span><br></pre></td></tr></table></figure>
+<h3 id="vfio-的-dirty-tracking-路径">3.1 VFIO 的 dirty tracking
+路径</h3>
+<p>VFIO 跟踪的是 <strong>device DMA 写入了哪些 guest RAM
+pages</strong>，这些由 SMMU 管理，而非 MMU。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CPU                     Device (DMA)</span><br><span class="line">   │                          │</span><br><span class="line">   ▼                          ▼</span><br><span class="line">Stage-2 MMU               SMMU/IOMMU</span><br><span class="line">(user_mem_abort)    (vfio_iommu_type1 / device DMA logging)</span><br><span class="line">   │                          │</span><br><span class="line">   ▼                          ▼</span><br><span class="line">跟踪 CPU 写入 GPA      跟踪 Device DMA 写入 IOVA</span><br></pre></td></tr></table></figure>
+<p>两条路径互相独立，各自覆盖各自的场景。</p>
+<h3 id="mmio-bar-为什么不能被跟踪">3.2 MMIO BAR 为什么不能被跟踪</h3>
+<p>MMIO BAR 的 VMA 类型是 <code>VM_PFNMAP</code>，其物理地址在 memblock
+中是 "reserved"，不在 "memory" 中。这导致：</p>
+<ol type="1">
+<li><strong>QEMU 注册时不带 <code>KVM_MEM_LOG_DIRTY_PAGES</code>
+标志</strong> → dirty_bitmap 为 NULL</li>
+<li><strong><code>kvm_is_device_pfn()</code> 返回 true</strong> →
+即使触发 fault，也被标记为 device memory</li>
+</ol>
+<hr>
+<h2 id="四kvm-mmu-侧mmio-bar-如何跳过脏页跟踪">四、KVM MMU 侧：MMIO BAR
+如何跳过脏页跟踪</h2>
+<h3 id="核心入口user_mem_abort">4.1 核心入口：user_mem_abort()</h3>
+<p>当 guest 第一次访问 MMIO BAR 触发 stage-2 fault 时进入（<a href="arch/arm64/kvm/mmu.c#L1476">arch/arm64/kvm/mmu.c:1476</a>）。</p>
+<h3 id="两层判断决定是否跟踪">4.2 两层判断决定是否跟踪</h3>
+<h4 id="第一层logging_active-脏页日志是否对该-memslot-启用">第一层：logging_active
+— 脏页日志是否对该 memslot 启用</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> logging_active = memslot_is_logging(memslot);</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">memslot_is_logging</span><span class="params">(struct kvm_memory_slot *memslot)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> memslot-&gt;dirty_bitmap &amp;&amp; !(memslot-&gt;flags &amp; KVM_MEM_READONLY);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键事实</strong>：QEMU 注册 MMIO BAR 为 KVM memslot
+时，从来不带 <code>KVM_MEM_LOG_DIRTY_PAGES</code> 标志。因此：</p>
+<ul>
+<li>MMIO BAR 所在 memslot 的 <code>dirty_bitmap == NULL</code></li>
+<li><code>memslot_is_logging()</code> 返回 <code>false</code></li>
+<li><code>logging_active = false</code></li>
+</ul>
+<p>代码注释（mmu.c:1544-1547）明确写了： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * logging_active is guaranteed to never be true for VM_PFNMAP</span></span><br><span class="line"><span class="comment"> * memslots.</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure></p>
+<p><strong>结论</strong>：脏页日志开启时，只有 RAM memslot 的 stage-2
+PTE 会被 write-protect。MMIO BAR 的 stage-2 PTE 保持 writable，guest 写
+MMIO 不会触发 permission fault。</p>
+<h4 id="第二层kvm_is_device_pfn-pfn-是不是设备内存">第二层：kvm_is_device_pfn()
+— PFN 是不是设备内存</h4>
+<p>即使 guest 第一次访问 MMIO BAR（初始 mapping fault），也会进入
+<code>user_mem_abort()</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">pfn = __gfn_to_pfn_memslot(memslot, gfn, <span class="literal">false</span>, <span class="literal">false</span>, <span class="literal">NULL</span>,</span><br><span class="line">                           write_fault, &amp;writable, <span class="literal">NULL</span>);</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">if</span> (kvm_is_device_pfn(pfn)) &#123;</span><br><span class="line">    device = <span class="literal">true</span>;    <span class="comment">// &lt;--- 标记为设备内存</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">kvm_is_device_pfn</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> pfn)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> !pfn_is_map_memory(pfn);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>pfn_is_map_memory()</code> 问的是：这个物理地址在 memblock
+里是不是 "memory"（普通 RAM）？MMIO BAR 的物理地址在 memblock 中是
+"reserved"，不在 "memory" 里，所以返回 <code>false</code> →
+<code>kvm_is_device_pfn()</code> 返回 <code>true</code> →
+<code>device = true</code>。</p>
+<h3 id="device-true-触发的五种特殊处理">4.3 device = true
+触发的五种特殊处理</h3>
+<table>
+<colgroup>
+<col style="width: 27%">
+<col style="width: 45%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr>
+<th>处理</th>
+<th>代码位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不设 DBM</td>
+<td>mmu.c:1692</td>
+<td>传统迁移和 HDBSS 都不会对 MMIO 做硬件脏页跟踪</td>
+</tr>
+<tr>
+<td>设 Device 属性</td>
+<td>mmu.c:1698-1699</td>
+<td>MAIR 设为 Device nGnRE（非 Gathering、非 Reorder、Early Write
+Ack）</td>
+</tr>
+<tr>
+<td>禁止 THP</td>
+<td>mmu.c:1657</td>
+<td>永远按 base page 粒度映射</td>
+</tr>
+<tr>
+<td>禁止执行</td>
+<td>mmu.c:1633</td>
+<td>MMIO 不可执行</td>
+</tr>
+<tr>
+<td>禁止 MTE</td>
+<td>mmu.c:1672</td>
+<td>内存标签扩展不适用于设备内存</td>
+</tr>
+</tbody>
+</table>
+<h4 id="不设-dbmdirty-bit-management">1. 不设 DBM（Dirty Bit
+Management）</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!device &amp;&amp; writable &amp;&amp; kvm-&gt;arch.enable_hdbss &amp;&amp; logging_active)</span><br><span class="line">    prot |= KVM_PGTABLE_PROT_DBM;</span><br></pre></td></tr></table></figure>
+<p><code>!device</code> 为 <code>false</code> → DBM 永远不会加到 MMIO 的
+stage-2 PTE 上。</p>
+<p>debug 检查： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (device &amp;&amp; writable &amp;&amp; kvm-&gt;arch.enable_hdbss &amp;&amp; logging_active) &#123;</span><br><span class="line">    pr_info_ratelimited(<span class="string">&quot;KVM_HDBSS_DBG: BUG detected! &quot;</span></span><br><span class="line">        <span class="string">&quot;DBM would be added to MMIO ...&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="设置-device-内存属性">2. 设置 Device 内存属性</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (device)</span><br><span class="line">    prot |= KVM_PGTABLE_PROT_DEVICE;</span><br></pre></td></tr></table></figure>
+<p>Stage-2 PTE 的 MAIR 字段被设为 <strong>Device nGnRE</strong>，而不是
+Normal Cacheable。设备寄存器不能被 speculative
+access、不能合并、不能缓存。</p>
+<h4 id="禁止-thp">3. 禁止 THP</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (vma_pagesize == PAGE_SIZE &amp;&amp; !(force_pte || device)) &#123;</span><br><span class="line">    <span class="comment">// THP adjustment</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>device memory 不参与 transparent hugepage 调整，永远按 base page
+粒度映射。</p>
+<h4 id="禁止执行">4. 禁止执行</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (exec_fault &amp;&amp; device)</span><br><span class="line">    <span class="keyword">return</span> -ENOEXEC;</span><br></pre></td></tr></table></figure>
+<h4 id="禁止-mte">5. 禁止 MTE</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (fault_status != ESR_ELx_FSC_PERM &amp;&amp; !device &amp;&amp; kvm_has_mte(kvm)) &#123;</span><br><span class="line">    <span class="comment">// MTE handling</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="mark_page_dirty_in_slot-是-no-op">4.4 mark_page_dirty_in_slot()
+是 no-op</h3>
+<p>代码在 mmu.c:1725-1728 无条件调用了： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (writable &amp;&amp; !ret) &#123;</span><br><span class="line">    kvm_set_pfn_dirty(pfn);</span><br><span class="line">    mark_page_dirty_in_slot(kvm, memslot, gfn);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但进入 <code>mark_page_dirty_in_slot()</code>（kvm_main.c:3450）：
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (memslot &amp;&amp; kvm_slot_dirty_track_enabled(memslot)) &#123;</span><br><span class="line">    <span class="comment">// set_bit_le</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>kvm_slot_dirty_track_enabled()</code>： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">bool</span> <span class="title">kvm_slot_dirty_track_enabled</span><span class="params">(<span class="keyword">const</span> struct kvm_memory_slot *slot)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> slot-&gt;flags &amp; KVM_MEM_LOG_DIRTY_PAGES;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>MMIO BAR 的 memslot 没有 <code>KVM_MEM_LOG_DIRTY_PAGES</code>
+标志</strong> → 直接返回，set_bit_le 永远不会被执行。</p>
+<p>这是一个<strong>双重保险</strong>：即使前面的
+<code>logging_active</code> 和 <code>device</code> 检查都漏了，最终的
+bitmap 写入也会被挡住。</p>
+<hr>
+<h2 id="五完整代码链总结">五、完整代码链总结</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">Guest 第一次访问 MMIO BAR</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">user_mem_abort()                           [arch/arm64/kvm/mmu.c:1476]</span><br><span class="line">  │</span><br><span class="line">  ├─ logging_active = memslot_is_logging(memslot)</span><br><span class="line">  │   └─ memslot-&gt;dirty_bitmap == NULL      [mmu.c:162]</span><br><span class="line">  │       → logging_active = false          ← MMIO memslot 无 dirty_bitmap</span><br><span class="line">  │</span><br><span class="line">  ├─ pfn = __gfn_to_pfn_memslot()           [mmu.c:1604]</span><br><span class="line">  │</span><br><span class="line">  ├─ kvm_is_device_pfn(pfn)                 [mmu.c:1613]</span><br><span class="line">  │   └─ !pfn_is_map_memory(pfn)            [mmu.c:187]</span><br><span class="line">  │       └─ !memblock_is_map_memory()      ← MMIO 物理地址不在 memblock &quot;memory&quot; 中</span><br><span class="line">  │           → device = true</span><br><span class="line">  │</span><br><span class="line">  ├─ 无 THP (device 阻止)                   [mmu.c:1657]</span><br><span class="line">  ├─ 无 MTE (device 阻止)                   [mmu.c:1672]</span><br><span class="line">  ├─ 无 DBM (device 阻止)                   [mmu.c:1692]</span><br><span class="line">  ├─ 无 EXEC (device 阻止)                  [mmu.c:1633]</span><br><span class="line">  ├─ prot |= KVM_PGTABLE_PROT_DEVICE        [mmu.c:1698]  ← Device nGnRE 属性</span><br><span class="line">  │</span><br><span class="line">  └─ mark_page_dirty_in_slot()              [mmu.c:1727]</span><br><span class="line">      └─ kvm_slot_dirty_track_enabled()     [kvm_main.c:3450]</span><br><span class="line">          └─ KVM_MEM_LOG_DIRTY_PAGES 未设置  ← MMIO memslot 无此标志</span><br><span class="line">              → no-op</span><br><span class="line"></span><br><span class="line">Guest 再次写 MMIO BAR（迁移脏页日志开启期间）</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">不触发任何 fault！</span><br><span class="line">  └─ logging_active = false</span><br><span class="line">      → stage-2 PTE 从未被 write-protect</span><br><span class="line">      → 直接通过，无 dirty tracking</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="六哪些页会被标成-device">六、哪些页会被标成 DEVICE</h2>
+<p><strong>PCIe MMIO BAR</strong>： - ACC accelerator BAR - GPU BAR -
+NIC BAR - NVMe BAR</p>
+<p>来源： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pci_iomap()</span><br><span class="line">remap_pfn_range()</span><br></pre></td></tr></table></figure></p>
+<p><strong>PCI ECAM / Config Space</strong></p>
+<p>ECAM window，例如 <code>0x40000000+</code></p>
+<p><strong>GIC/ITS 页</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GICD</span><br><span class="line">GICR</span><br><span class="line">ITS</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="七对比smmu-路径-vs-kvm-mmu-路径">七、对比：SMMU 路径 vs KVM MMU
+路径</h2>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 44%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>SMMU/IOMMU 路径</th>
+<th>KVM MMU 路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>跟踪对象</td>
+<td>Device DMA 写 IOVA</td>
+<td>CPU 写 GPA</td>
+</tr>
+<tr>
+<td>谁写</td>
+<td>设备</td>
+<td>Guest CPU</td>
+</tr>
+<tr>
+<td>跟踪什么</td>
+<td>DMA buffer（guest RAM）</td>
+<td>普通 RAM</td>
+</tr>
+<tr>
+<td>核心函数</td>
+<td>vfio_sync_dirty_bitmap()</td>
+<td>user_mem_abort()</td>
+</tr>
+<tr>
+<td>MMIO BAR 如何跳过</td>
+<td>vfio_listener_skipped_section()</td>
+<td>kvm_is_device_pfn() + logging_active=false</td>
+</tr>
+<tr>
+<td>关键标志</td>
+<td>!(is_iommuMapped &amp;&amp; is_ram)</td>
+<td>memslot-&gt;dirty_bitmap == NULL</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="八mmio-bar-的本质总结">八、MMIO BAR 的本质总结</h2>
+<table>
+<colgroup>
+<col style="width: 8%">
+<col style="width: 15%">
+<col style="width: 13%">
+<col style="width: 18%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr>
+<th>类别</th>
+<th>BAR中内容</th>
+<th>典型用途</th>
+<th>是否高频访问</th>
+<th>是否适合 migration dirty tracking</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>控制寄存器</td>
+<td>control/status register</td>
+<td>启停设备、reset、enable DMA</td>
+<td>低频</td>
+<td>否</td>
+</tr>
+<tr>
+<td>Doorbell寄存器</td>
+<td>queue doorbell</td>
+<td>通知硬件有新任务</td>
+<td>极高频</td>
+<td>否</td>
+</tr>
+<tr>
+<td>Queue/Descriptor Window</td>
+<td>SQ/CQ寄存器</td>
+<td>提交/完成队列管理</td>
+<td>高频</td>
+<td>否</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p>MMIO BAR 不具有 normal memory semantics： - 不能当普通 RAM 使用 -
+不能 cache/writeback - 可能有 side effect - 可能触发硬件行为</p>
+<p>在 <code>user_mem_abort</code> 中会被标志为
+<code>device</code>，从而跳过所有脏页跟踪机制。</p>
+<hr>
+<blockquote>
 <p>参考：<a target="_blank" rel="noopener" href="https://frankjkl.github.io/2019/04/07/QemuKVM-Qemu%E5%90%8C%E6%AD%A5KVM%E8%84%8F%E9%A1%B5%E4%BD%8D%E5%9B%BE/">KVM同步脏页位图到Qemu</a></p>
 </blockquote>
 
@@ -507,9 +916,9 @@
     
         <div class="license-wrapper">
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
-            <p>Link：<a href="https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/</a>
-            <p>Publish date：<a href="https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">February 12th 2026, 9:20:37 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">February 12th 2026, 9:22:47 pm</a>
+            <p>Link：<a href="https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">February 12th 2026, 9:20:37 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">May 21st 2026, 12:02:39 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -675,7 +1084,15 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%8C%96%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB"><span class="toc-text">虚拟化：传统热迁移</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80cpu-%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E7%9A%84%E6%9E%84%E6%88%90"><span class="toc-text">一、CPU 物理地址空间的构成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB%E7%9A%84%E8%84%8F%E9%A1%B5%E8%B7%9F%E8%B8%AA%E6%9C%BA%E5%88%B6"><span class="toc-text">二、传统热迁移的脏页跟踪机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%9F%E8%B8%AA%E5%AF%B9%E8%B1%A1guest-ram-pages"><span class="toc-text">2.1 跟踪对象：Guest RAM Pages</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-mmio-%E4%B8%8D%E5%8F%82%E4%B8%8E%E8%B7%9F%E8%B8%AA"><span class="toc-text">2.2 为什么 MMIO 不参与跟踪</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89vfio-%E8%AE%BE%E5%A4%87%E7%9A%84%E7%83%AD%E8%BF%81%E7%A7%BB"><span class="toc-text">三、VFIO 设备的热迁移</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#vfio-bar-mmap%E5%8C%BA%E5%9F%9F"><span class="toc-text">vfio bar mmap区域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vfio%E8%AE%BE%E5%A4%87%E7%9A%84%E5%86%85%E9%83%A8%E7%8A%B6%E6%80%81"><span class="toc-text">VFIO设备的内部状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A2%AB%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E9%92%89%E4%BD%8Fpinned%E7%9A%84%E5%86%85%E5%AD%98%E9%A1%B5"><span class="toc-text">被设备驱动”钉住”（pinned）的内存页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vfio-%E7%9A%84-dirty-tracking-%E8%B7%AF%E5%BE%84"><span class="toc-text">3.1 VFIO 的 dirty tracking
+路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mmio-bar-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E8%A2%AB%E8%B7%9F%E8%B8%AA"><span class="toc-text">3.2 MMIO BAR 为什么不能被跟踪</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9Bkvm-mmu-%E4%BE%A7mmio-bar-%E5%A6%82%E4%BD%95%E8%B7%B3%E8%BF%87%E8%84%8F%E9%A1%B5%E8%B7%9F%E8%B8%AA"><span class="toc-text">四、KVM MMU 侧：MMIO BAR
+如何跳过脏页跟踪</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%85%A5%E5%8F%A3user_mem_abort"><span class="toc-text">4.1 核心入口：user_mem_abort()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E5%B1%82%E5%88%A4%E6%96%AD%E5%86%B3%E5%AE%9A%E6%98%AF%E5%90%A6%E8%B7%9F%E8%B8%AA"><span class="toc-text">4.2 两层判断决定是否跟踪</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%82logging_active-%E8%84%8F%E9%A1%B5%E6%97%A5%E5%BF%97%E6%98%AF%E5%90%A6%E5%AF%B9%E8%AF%A5-memslot-%E5%90%AF%E7%94%A8"><span class="toc-text">第一层：logging_active
+— 脏页日志是否对该 memslot 启用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%82kvm_is_device_pfn-pfn-%E6%98%AF%E4%B8%8D%E6%98%AF%E8%AE%BE%E5%A4%87%E5%86%85%E5%AD%98"><span class="toc-text">第二层：kvm_is_device_pfn()
+— PFN 是不是设备内存</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#device-true-%E8%A7%A6%E5%8F%91%E7%9A%84%E4%BA%94%E7%A7%8D%E7%89%B9%E6%AE%8A%E5%A4%84%E7%90%86"><span class="toc-text">4.3 device &#x3D; true
+触发的五种特殊处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E8%AE%BE-dbmdirty-bit-management"><span class="toc-text">1. 不设 DBM（Dirty Bit
+Management）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE-device-%E5%86%85%E5%AD%98%E5%B1%9E%E6%80%A7"><span class="toc-text">2. 设置 Device 内存属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A6%81%E6%AD%A2-thp"><span class="toc-text">3. 禁止 THP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A6%81%E6%AD%A2%E6%89%A7%E8%A1%8C"><span class="toc-text">4. 禁止执行</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A6%81%E6%AD%A2-mte"><span class="toc-text">5. 禁止 MTE</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mark_page_dirty_in_slot-%E6%98%AF-no-op"><span class="toc-text">4.4 mark_page_dirty_in_slot()
+是 no-op</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81%E9%93%BE%E6%80%BB%E7%BB%93"><span class="toc-text">五、完整代码链总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E5%93%AA%E4%BA%9B%E9%A1%B5%E4%BC%9A%E8%A2%AB%E6%A0%87%E6%88%90-device"><span class="toc-text">六、哪些页会被标成 DEVICE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E5%AF%B9%E6%AF%94smmu-%E8%B7%AF%E5%BE%84-vs-kvm-mmu-%E8%B7%AF%E5%BE%84"><span class="toc-text">七、对比：SMMU 路径 vs KVM MMU
+路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%ABmmio-bar-%E7%9A%84%E6%9C%AC%E8%B4%A8%E6%80%BB%E7%BB%93"><span class="toc-text">八、MMIO BAR 的本质总结</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1979,6 +2396,12 @@
         
         
         
+        
+        
+        
+        
+        
+        
     
     
     
@@ -2030,7 +2453,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/12</span>
-            <a class="archive-post-title" href="/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">虚拟化:传统热迁移</a>
+            <a class="archive-post-title" href="/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">虚拟化:VFIO传统热迁移</a>
         </li>
     
         
