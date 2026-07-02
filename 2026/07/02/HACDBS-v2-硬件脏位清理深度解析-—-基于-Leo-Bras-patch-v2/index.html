@@ -1,0 +1,3427 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="AkiraZheng">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="AkiraZheng">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta name="description" content="HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2 核心问题：HACDBS 里硬件自动识别 DBM+writable-dirty → writable-clean，但只在收到 HACDBSBR_EL2 触发后才执行，不是随时自动。本文档基于 Leo Bras 2026-06-29 提交的 patch v2（共 13 个 patch, 2186 行）的真实源码。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2">
+<meta property="og:url" content="https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2 核心问题：HACDBS 里硬件自动识别 DBM+writable-dirty → writable-clean，但只在收到 HACDBSBR_EL2 触发后才执行，不是随时自动。本文档基于 Leo Bras 2026-06-29 提交的 patch v2（共 13 个 patch, 2186 行）的真实源码。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-07-02T12:18:12.000Z">
+<meta property="article:modified_time" content="2026-07-02T12:20:10.565Z">
+<meta property="article:author" content="AkiraZheng">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/yueyue.jpg">
+    
+    <title>HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2 · AkiraZheng&#39;s Time</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+        <script>
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"We did not find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'OG7KZ1ED66',
+                apiKey: '8daa81c36784d89945ec12e46f72de54',
+                indexName: 'hexo_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>AkiraZheng's Time.</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">AkiraZheng&#39;s Time.</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">5.4k</span>Reading time: <span class="post-count reading-time">24 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/07/02</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="hacdbs-v2-硬件脏位清理深度解析-基于-leo-bras-patch-v2">HACDBS v2
+硬件脏位清理深度解析 — 基于 Leo Bras patch v2</h1>
+<p><strong>核心问题：</strong>HACDBS 里硬件自动识别 DBM+writable-dirty →
+writable-clean，<strong>但只在收到 HACDBSBR_EL2
+触发后才执行</strong>，不是随时自动。本文档基于 Leo Bras 2026-06-29
+提交的 patch v2（共 13 个 patch, 2186 行）的真实源码。</p>
+<p><strong>配套文档：</strong>《传统脏页 Bitmap 迁移路径深度解析（无
+HACDBS）》</p>
+<h1 id="一pte.dbm-位的真实位置">一、PTE.DBM 位的真实位置</h1>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> KVM_PTE_LEAF_ATTR_HI_S2_DBM    BIT(51)  <span class="comment">// ← ★ Dirty Bit Modifier</span></span></span><br></pre></td></tr></table></figure>
+<p><strong>关键位号：DBM 在 Stage-2 PTE 的 bit[51]</strong>（属于高位段
+KVM_PTE_LEAF_ATTR_HI）。不是 bit[7]（bit[7] 是 S2AP[1]）。这个位号是从
+Leo Bras patch v2 的真实源码里查到的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Stage-2 PTE bits (4KB granule, with FEAT_HACDBS):</span><br><span class="line">  bit[0]    = Valid</span><br><span class="line">  bit[1]    = Type (0=Block, 1=Page)</span><br><span class="line">  bit[2:5]  = AttrIndx</span><br><span class="line">  bit[6:7]  = S2AP  (bit 6=S2AP[0], bit 7=S2AP[1])</span><br><span class="line">  bit[8:9]  = SH</span><br><span class="line">  bit[10]   = AF</span><br><span class="line">  bit[11]   = nG</span><br><span class="line">  bit[50]   = 保留</span><br><span class="line">  bit[51]   = DBM          ← ★ Dirty Bit Modifier (FEAT_HACDBS)</span><br><span class="line">  bit[52]   = UXN</span><br><span class="line">  bit[53]   = PXN</span><br><span class="line">  bit[54]   = Contiguous</span><br></pre></td></tr></table></figure>
+<p><strong>DBM + writable-dirty 的语义：</strong></p>
+<ul>
+<li><p><strong>DBM=0 + AP=RW</strong>：writable but NOT dirty（clean +
+writable） → guest 第一次写会 trap 到 EL2</p></li>
+<li><p><strong>DBM=1 + AP=RW</strong>：writable and
+dirty（硬件自动设的） → guest 写直接成功，不再 trap</p></li>
+</ul>
+<p><strong>硬件在 DBM 0→1 翻转的同时原子清 W 位</strong> —— 即
+"writable-dirty → writable-clean"。这是 ARM ARM DDI 0487M.b
+白纸黑字的描述。</p>
+<h1 id="二hw_entries-数据结构与编码">二、hw_entries 数据结构与编码</h1>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">hw_entries = kmalloc_objs(u64, entries_sz, GFP_KERNEL);</span><br><span class="line"><span class="comment">// entries_sz = PAGE_SIZE / sizeof(u64) = 512</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// hw_entries[i] 编码格式（每个 8 字节）：</span></span><br><span class="line"><span class="comment">//   bit[55:12]  = IPA    (44-bit, max 16TB guest)</span></span><br><span class="line"><span class="comment">//   bit[11:4]   = 保留</span></span><br><span class="line"><span class="comment">//   bit[3:1]    = TTWL   (Translation Table Walk Level)</span></span><br><span class="line"><span class="comment">//   bit[0]      = Valid</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* HDBSS entry field definitions */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_VALID    BIT(0)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_TTWL_SHIFT  (1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_TTWL_MASK   (GENMASK(3, 1))</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_TTWL(x) \</span></span><br><span class="line"><span class="meta">    (((x) &lt;&lt; HDBSS_ENTRY_TTWL_SHIFT) &amp; HDBSS_ENTRY_TTWL_MASK)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_TTWL_RESV   HDBSS_ENTRY_TTWL(-4)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_IPA         GENMASK_ULL(55, 12)</span></span><br></pre></td></tr></table></figure>
+<p><strong>hw_entries 的本质：</strong></p>
+<ul>
+<li><p><strong>软件维护</strong>的 u64 数组（512 项 = 一个 page
+大小）</p></li>
+<li><p><strong>物理连续内存</strong>（kmalloc，不是
+vmalloc），硬件可以直接 DMA-style 读取</p></li>
+<li><p>每个 entry 是 <strong>IPA 列表 +
+寻路提示（TTWL）</strong>，告诉硬件「去清这个 IPA 对应的 PTE 的 DBM
+位」</p></li>
+</ul>
+<p>所以 hw_entries 不是 bitmap（不是 1bit/page
+的紧凑结构），而是<strong>显式的 IPA 数组</strong>，每项 8 字节。</p>
+<p><strong>为什么用显式 IPA 而不是 bitmap[i] 直接传给硬件？</strong></p>
+<p>原因：硬件<strong>只知道 IPA 物理地址</strong>，不知道 memslot 的
+base_gfn，也不知道 bitmap 是 per-memslot
+的。软件必须做<strong>算术换算</strong>：index i → memslot 内 gfn = base
++ i → gpa = gfn&lt;&lt;12 → IPA。把 IPA 编码进 entry [55:12]，加上 TTWL
+和 Valid，硬件才认得。</p>
+<h1 id="三bitmap-index-ipamask_to_hdbss-源码解析">三、bitmap index →
+IPA：mask_to_hdbss 源码解析</h1>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">mask_to_hdbss</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> *mask, u64 *hw_entries,</span></span></span><br><span class="line"><span class="params"><span class="function">                                <span class="keyword">const</span> <span class="keyword">gfn_t</span> offset, u64 ttwl,</span></span></span><br><span class="line"><span class="params"><span class="function">                                <span class="keyword">int</span> idx, <span class="keyword">int</span> entries_sz)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (idx &lt; entries_sz) &#123;</span><br><span class="line">        <span class="keyword">int</span> j = __ffs(*mask);                <span class="comment">// 找 mask 里最低位的 1</span></span><br><span class="line">        u64 a = gfn_to_gpa(offset + j);      <span class="comment">// ← ★ index j → GFN → GPA（IPA）</span></span><br><span class="line"></span><br><span class="line">        hw_entries[idx++] = (a &amp; HDBSS_ENTRY_IPA) |  <span class="comment">// IPA 编码进 [55:12]</span></span><br><span class="line">                            ttwl |                    <span class="comment">// TTWL 寻路提示</span></span><br><span class="line">                            HDBSS_ENTRY_VALID;        <span class="comment">// 标记 entry 有效</span></span><br><span class="line"></span><br><span class="line">        *mask &amp;= ~BIT(j);</span><br><span class="line">        <span class="keyword">if</span> (!*mask)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> idx;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>这一段是你问的"index i 是否传给硬件"的答案：</strong></p>
+<p><strong>不是直接传 index i，而是做算术换算 →
+IPA</strong>。三步走：</p>
+<ul>
+<li><p><strong>Step 1</strong>：<code>__ffs(*mask)</code> 在 mask
+里找最低位的 1，得到局部偏移 j（mask 内 0~63）</p></li>
+<li><p><strong>Step 2</strong>：<code>gfn_to_gpa(offset + j)</code> ——
+offset 是 memslot 内的 gfn 起点，+j 是绝对 gfn，左移 12 位变成
+GPA/IPA</p></li>
+<li><p><strong>Step 3</strong>：把 IPA 编码进 entry 的 bit[55:12]，加上
+TTWL 和 Valid 位，硬件认得</p></li>
+</ul>
+<p>这样硬件扫描 entry 列表时，每个 entry 就是<strong>一个完整的 IPA
+寻址指令</strong>，不需要外部上下文。</p>
+<p><strong>TTWL（Translation Table Walk Level）的含义：</strong></p>
+<p>IPA 在 stage-2 里可能映射在 L0/L1/L2/L3 任意一级。TTWL
+是<strong>硬件寻路提示</strong>，告诉 PE 从哪一级开始下钻：</p>
+<ul>
+<li><p>TTWL=0 → L3（最终 4KB page descriptor）</p></li>
+<li><p>TTWL=1 → L2（PMD 级 block descriptor）</p></li>
+<li><p>TTWL=2 → L1（PUD 级 block descriptor）</p></li>
+<li><p>TTWL=-4 →
+终止哨兵（<code>HDBSS_ENTRY_TTWL_RESV</code>），告诉硬件 hw_entries
+数组结束了</p></li>
+</ul>
+<p>在 patch 里固定用
+<code>HDBSS_ENTRY_TTWL(KVM_PGTABLE_LAST_LEVEL)</code>（最后一级）作为起始值，意味着软件期望
+PTE 都在最末级 —— 这通常是因为 dirty 跟踪只针对 4KB 页。</p>
+<h1 id="四dirty_bit_clear软件做的不是清-dirty">四、dirty_bit_clear：软件做的不是"清
+dirty"</h1>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">dirty_bit_clear</span><span class="params">(struct kvm *kvm, u64 *hw_entries, <span class="keyword">int</span> size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    u64 hcr_el2;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line"></span><br><span class="line">    preempt_disable();</span><br><span class="line"></span><br><span class="line">    hcr_el2 = read_sysreg(HCR_EL2);</span><br><span class="line">    write_sysreg(hcr_el2 | HCR_EL2_VM, HCR_EL2);  <span class="comment">// ← 进 stage-2 翻译</span></span><br><span class="line">    __load_stage2(&amp;kvm-&gt;arch.mmu);                 <span class="comment">// ← 加载 VM 的 stage-2 TTBR</span></span><br><span class="line"></span><br><span class="line">    hacdbs_start(hw_entries, size);                 <span class="comment">// ← ★ 配置 HACDBSBR_EL2 触发硬件</span></span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        wfi();                                      <span class="comment">// ← CPU 睡，让硬件干活</span></span><br><span class="line">    &#125; <span class="keyword">while</span> (this_cpu_read(hacdbs_pcp.status) == HACDBS_RUNNING);</span><br><span class="line"></span><br><span class="line">    ret = hacdbs_stop();                            <span class="comment">// ← 关 HACDBSBR_EL2.EN</span></span><br><span class="line">    write_sysreg(hcr_el2, HCR_EL2);                 <span class="comment">// ← 退出 stage-2 翻译</span></span><br><span class="line">    isb();</span><br><span class="line"></span><br><span class="line">    preempt_enable();</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">hacdbs_start</span><span class="params">(u64 *hw_entries, <span class="keyword">int</span> size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> size_b = size * <span class="keyword">sizeof</span>(hw_entries[<span class="number">0</span>]);</span><br><span class="line">    <span class="keyword">int</span> size_p2 = max(roundup_pow_of_two(size_b), PAGE_SIZE);</span><br><span class="line">    u64 br;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 不满时填个哨兵 entry（TTWL_RESV），告诉硬件数组结束 */</span></span><br><span class="line">    <span class="keyword">if</span> (size_b &lt; size_p2)</span><br><span class="line">        hw_entries[size] = HDBSS_ENTRY_VALID | HDBSS_ENTRY_TTWL_RESV;</span><br><span class="line"></span><br><span class="line">    sysreg_clear_set_s(SYS_HACDBSCONS_EL2,</span><br><span class="line">                       HACDBSCONS_EL2_ERR_REASON | HACDBSCONS_EL2_INDEX, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    br = (virt_to_phys(hw_entries) &amp; HACDBSBR_EL2_BADDR_MASK) |</span><br><span class="line">         FIELD_PREP(HACDBSBR_EL2_SZ, ilog2(size_p2) - <span class="number">12</span>) |</span><br><span class="line">         FIELD_PREP(HACDBSBR_EL2_EN, <span class="number">1</span>);        <span class="comment">// ← ★ EN=1 启动硬件 sweep</span></span><br><span class="line"></span><br><span class="line">    this_cpu_write(hacdbs_pcp.status, HACDBS_RUNNING);</span><br><span class="line">    this_cpu_write(hacdbs_pcp.size, size);</span><br><span class="line">    write_sysreg_s(br, SYS_HACDBSBR_EL2);</span><br><span class="line">    isb();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">hacdbs_stop</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    write_sysreg_s(<span class="number">0</span>, SYS_HACDBSBR_EL2);    <span class="comment">// ← 清 EN，关硬件</span></span><br><span class="line">    isb();</span><br><span class="line">    <span class="keyword">if</span> (this_cpu_read(hacdbs_pcp.status) == HACDBS_ERROR) &#123;</span><br><span class="line">        u64 cons = read_sysreg_s(SYS_HACDBSCONS_EL2);</span><br><span class="line">        <span class="keyword">int</span> idx = FIELD_GET(HACDBSCONS_EL2_INDEX, cons);</span><br><span class="line">        this_cpu_write(hacdbs_pcp.status, HACDBS_IDLE);</span><br><span class="line">        <span class="keyword">return</span> idx;                          <span class="comment">// 返回出错时的 entry index</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> this_cpu_read(hacdbs_pcp.size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>dirty_bit_clear 不是"清 dirty 的函数"，是"配置 +
+唤醒硬件的函数"：</strong></p>
+<ul>
+<li><p>✅ 它做的：写 HCR_EL2.VM、加载 stage-2、写
+HACDBSBR_EL2（BADDR+SZ+EN）、CPU WFI 等待、中断唤醒后清 EN</p></li>
+<li><p>❌ 它没做：任何 page walk、任何 PTE 修改、任何 dirty
+位翻转</p></li>
+</ul>
+<p><strong>真正"清 dirty"的代码是硬件跑的</strong>（PE 自动 stage-2 walk
+命中 PTE，原子做 <code>DBM 1→0 + W 0→1</code>）。软件只是触发器。</p>
+<p><strong>WFI（Wait For Interrupt）的意义：</strong></p>
+<p>CPU 进入 idle，释放流水线资源给硬件。HACDBS sweep 完成后通过
+<strong>HACDBS 中断</strong>唤醒 CPU：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">irqreturn_t</span> <span class="title">hacdbsirq_handler</span><span class="params">(<span class="keyword">int</span> irq, <span class="keyword">void</span> *pcpu)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    u64 cons = read_sysreg_s(SYS_HACDBSCONS_EL2);</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> err = FIELD_GET(HACDBSCONS_EL2_ERR_REASON, cons);</span><br><span class="line">    <span class="keyword">switch</span> (err) &#123;</span><br><span class="line">    <span class="keyword">case</span> HACDBSCONS_EL2_ERR_REASON_NOF:        <span class="comment">// 正常完成（No Fault）</span></span><br><span class="line">        this_cpu_write(hacdbs_pcp.status, HACDBS_IDLE);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> HACDBSCONS_EL2_ERR_REASON_IPAHACF:     <span class="comment">// IPA Hardware Access Fault</span></span><br><span class="line">        <span class="comment">/* ... */</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>wfi()</code> 退出时唤醒 CPU，进入
+<code>irq_handler</code>，检查 HACDBSCONS_EL2
+状态，决定成功还是回退。</p>
+<h1 id="五硬件-sweep-工作流程">五、硬件 sweep 工作流程</h1>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">软件触发 (CPU)</span><br><span class="line">  │</span><br><span class="line">  ├─ write_sysreg(SYS_HACDBSBR_EL2, BADDR | SZ | EN=1)</span><br><span class="line">  │   └─ 硬件识别到 EN=1，开始工作</span><br><span class="line">  │</span><br><span class="line">  └─ wfi()  ← CPU 睡</span><br><span class="line">       │</span><br><span class="line">       ▼</span><br><span class="line">  硬件自动执行：</span><br><span class="line">  │</span><br><span class="line">  ├─ 1. 读取 HACDBSBR_EL2.BADDR → 找到 hw_entries 物理地址</span><br><span class="line">  │</span><br><span class="line">  ├─ 2. 对每个 entry（直到 TTWL_RESV 哨兵）：</span><br><span class="line">  │     a. 取 IPA = entry[55:12]</span><br><span class="line">  │     b. 取 TTWL = entry[3:1]</span><br><span class="line">  │     c. 从 TTWL 级开始 stage-2 walk（L3 → L2 → L1 → L0）</span><br><span class="line">  │     d. 命中 PTE 后，原子操作：</span><br><span class="line">  │          PTE.DBM ← 0   ← 清硬件 dirty 标记</span><br><span class="line">  │          PTE.W   ← 1   ← 恢复可写</span><br><span class="line">  │     e. 写 HACDBSCONS_EL2.INDEX 汇报当前进度</span><br><span class="line">  │</span><br><span class="line">  ├─ 3. 所有 entry 处理完 → 触发 HACDBS 中断</span><br><span class="line">  │</span><br><span class="line">  └─ 4. 软件从 wfi 醒来</span><br><span class="line">       │</span><br><span class="line">       ▼</span><br><span class="line">  软件继续：</span><br><span class="line">  ├─ 检查 HACDBSCONS_EL2.ERR_REASON</span><br><span class="line">  ├─ 如果 NOF（成功）：ret = size（处理的 entry 数）</span><br><span class="line">  ├─ 如果出错：ret = HACDBSCONS_EL2.INDEX（出错时的 entry）</span><br><span class="line">  └─ 写_sysreg(SYS_HACDBSBR_EL2, 0) 关掉 EN</span><br></pre></td></tr></table></figure>
+<p><strong>关键原子操作：PTE.DBM 1→0 + PTE.W 0→1</strong></p>
+<p>这是<strong>硬件自动完成</strong>的，用户态/内核态软件完全不需要介入（除了写
+HACDBSBR_EL2）。这就是 HACDBS 名字的来源 —— <strong>H</strong>ardware
+<strong>A</strong>ccelerated <strong>C</strong>lean
+<strong>D</strong>irty <strong>B</strong>it <strong>S</strong>tate。</p>
+<p>结合 FEAT_HACDBS 的特性：</p>
+<ul>
+<li><p>guest 第一次写 PTE 时，硬件就<strong>自动做 DBM 0→1 + W
+1→0</strong>（无需 trap）</p></li>
+<li><p>software 想 reset 整批 dirty 时，调 dirty_bit_clear，硬件批量做
+<strong>DBM 1→0 + W 0→1</strong></p></li>
+<li><p>整个过程 hardware 维护 PTE，software 只读 PTE 状态就能知道哪些页
+dirty（DBM=1）</p></li>
+</ul>
+<p><strong>关于 dbm track 时机（KVM_GET_DIRTY_LOG 路径）：</strong></p>
+<p>实际上在 Leo Bras patch v2 里，<strong>dirty tracking 仍然依赖
+stage-2 page fault</strong>（guest 写触发的 DABT 路径），由
+<code>mark_page_dirty_in_slot()</code> 把脏位置入 memslot dirty
+bitmap。HACDBS/HDBSS 这次 patch 引入的 dirty_bit_clear 是<strong>reverse
+方向</strong> —— 当 software 已经知道哪些页 dirty（bitmap 里
+bit=1），想批量清除硬件记录的 dirty state 时，调用此函数让硬件做 DBM
+复位。</p>
+<p>所以三阶段分工：</p>
+<ol type="1">
+<li><p><strong>Dirty 标记阶段</strong>：guest 写 → DABT trap →
+<code>mark_page_dirty_in_slot()</code> → 置 memslot
+dirty_bitmap</p></li>
+<li><p><strong>Dirty 取走阶段</strong>：QEMU
+<code>ioctl(KVM_GET_DIRTY_LOG)</code> → xchg bitmap →
+copy_to_user</p></li>
+<li><p><strong>Dirty 复位阶段</strong>：<code>dirty_bit_clear()</code> →
+HACDBSBR_EL2 → 硬件批量清 PTE.DBM + 恢复 W</p></li>
+</ol>
+<h1 id="六hacdbs-vs-软件-page-walk-关键差异">六、HACDBS vs 软件 page
+walk 关键差异</h1>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>维度</th>
+<th>软件 walk（传统）</th>
+<th>HACDBS（patch v2）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>触发入口</td>
+<td><code>kvm_arch_mmu_enable_log_dirty_pt_masked()</code></td>
+<td><code>__kvm_arch_dirty_log_clear()</code></td>
+</tr>
+<tr>
+<td>路径</td>
+<td>软件逐 bit 软件 walk stage-2</td>
+<td>硬件批量扫整张 stage-2</td>
+</tr>
+<tr>
+<td>持锁</td>
+<td><code>mmu_lock</code> 长时间持有</td>
+<td>持锁时间短（清 DBM 期间硬件做，CPU WFI 中）</td>
+</tr>
+<tr>
+<td>vCPU 并发</td>
+<td>其他 vCPU 阻塞在 mmu_lock</td>
+<td>其他 vCPU 可以正常 schedule（preempt_disable 不影响）</td>
+</tr>
+<tr>
+<td>单次开销</td>
+<td>O(masks 数) × page walk depth（4 次内存读）</td>
+<td>O(N entries) / hardware sweep speed</td>
+</tr>
+<tr>
+<td>适用规模</td>
+<td>小范围 dirty 划算</td>
+<td>大范围 dirty 更划算</td>
+</tr>
+<tr>
+<td>错误处理</td>
+<td>简单（软件自己 try again）</td>
+<td>复杂（HACDBSCONS_EL2.ERR_REASON: NOF / IPAHACF...）</td>
+</tr>
+<tr>
+<td>WFI</td>
+<td>不用</td>
+<td>CPU 睡眠，硬件 async 干活</td>
+</tr>
+<tr>
+<td>PTE 修改</td>
+<td>软件改 W 位</td>
+<td>硬件原子做 DBM 1→0 + W 0→1</td>
+</tr>
+<tr>
+<td>hw_entries 内存</td>
+<td>不用</td>
+<td>kmalloc 一页（512 项）</td>
+</tr>
+<tr>
+<td>中断</td>
+<td>不用</td>
+<td>HACDBS 中断唤醒 WFI</td>
+</tr>
+</tbody>
+</table>
+<p><strong>最关键的差异：</strong>软件 walk 是一次一页（per-bit 软件
+page walk），HACDBS 是一次一批（per-batch 硬件
+sweep）。两者<strong>触发时机不同</strong>，不是替代关系：</p>
+<ul>
+<li><p><strong>软件 walk</strong>在 KVM_GET_DIRTY_LOG 里立即生效（mask +
+enable_log_dirty_pt_masked）</p></li>
+<li><p><strong>HACDBS</strong>在 KVM_GET_DIRTY_LOG
+后<strong>异步</strong>生效（dirty_bit_clear 写 HACDBSBR_EL2）</p></li>
+</ul>
+<p>实际上 Leo Bras patch 里，<code>__kvm_arch_dirty_log_clear()</code>
+是<strong>替换</strong>软件 walk 路径 —— 主框架代码不调用
+<code>kvm_arch_mmu_enable_log_dirty_pt_masked()</code>，而是调用
+arch-generic 的 <code>kvm_arch_dirty_log_clear()</code>，arm64
+实现里就走 HACDBS 路径。</p>
+<h1 id="七完整调用链基于-patch-v2">七、完整调用链（基于 patch v2）</h1>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">QEMU 迁移线程</span><br><span class="line">  │</span><br><span class="line">  └─ ioctl(KVM_GET_DIRTY_LOG)                  [QEMU 发起]</span><br><span class="line">       │</span><br><span class="line">       └─ kvm_vm_ioctl_get_dirty_log()          [virt/kvm/kvm_main.c 主框架]</span><br><span class="line">            │</span><br><span class="line">            └─ kvm_get_dirty_log_protect()      [主框架，未改]</span><br><span class="line">                 │</span><br><span class="line">                 ├─ kvm_arch_sync_dirty_log()       [arm64: 空操作]</span><br><span class="line">                 │</span><br><span class="line">                 ├─ mask = xchg(&amp;dirty_bitmap[i], 0)    ← 原子清零</span><br><span class="line">                 │</span><br><span class="line">                 └─ ★ kvm_arch_dirty_log_clear()       [新加 arch-generic 接口]</span><br><span class="line">                       │</span><br><span class="line">                       └─ __kvm_arch_dirty_log_clear()  [arm64 实现, dirty_bit.c]</span><br><span class="line">                            │</span><br><span class="line">                            ├─ hw_entries = kmalloc_objs(u64, 512)   ← 申请 hw_entries</span><br><span class="line">                            │</span><br><span class="line">                            ├─ write_lock(&amp;kvm-&gt;mmu_lock)</span><br><span class="line">                            │</span><br><span class="line">                            ├─ for i in [start, end):                 ← 遍历 bitmap 每个 long</span><br><span class="line">                            │     │</span><br><span class="line">                            │     ├─ mask = xchg(&amp;dirty_bitmap[i], 0)</span><br><span class="line">                            │     │</span><br><span class="line">                            │     └─ do &#123;</span><br><span class="line">                            │           idx = mask_to_hdbss(&amp;mask, hw_entries,</span><br><span class="line">                            │                                offset, ttwl, idx, entries_sz)</span><br><span class="line">                            │           if (idx &gt;= entries_sz) &#123;</span><br><span class="line">                            │               ret = dirty_bit_clear(kvm, hw_entries, idx);</span><br><span class="line">                            │               if (ret != idx) goto error;</span><br><span class="line">                            │               idx = 0;</span><br><span class="line">                            │           &#125;</span><br><span class="line">                            │       &#125; while (mask);</span><br><span class="line">                            │</span><br><span class="line">                            ├─ if (idx != 0)</span><br><span class="line">                            │     dirty_bit_clear(kvm, hw_entries, idx);</span><br><span class="line">                            │</span><br><span class="line">                            ├─ write_unlock(&amp;kvm-&gt;mmu_lock)</span><br><span class="line">                            │</span><br><span class="line">                            └─ kfree(hw_entries)</span><br><span class="line">                            │</span><br><span class="line">                            └─ dirty_bit_clear(kvm, hw_entries, idx)   ← ★ 触发硬件</span><br><span class="line">                                 │</span><br><span class="line">                                 ├─ preempt_disable()</span><br><span class="line">                                 │</span><br><span class="line">                                 ├─ hcr_el2 = read_sysreg(HCR_EL2)</span><br><span class="line">                                 │  write_sysreg(hcr_el2 | HCR_EL2_VM, HCR_EL2)</span><br><span class="line">                                 │  __load_stage2(&amp;kvm-&gt;arch.mmu)              ← 进 stage-2 翻译</span><br><span class="line">                                 │</span><br><span class="line">                                 ├─ hacdbs_start(hw_entries, size)</span><br><span class="line">                                 │   ├─ hw_entries[size] = TTWL_RESV (哨兵)</span><br><span class="line">                                 │   ├─ br = virt_to_phys(hw_entries) | SZ | EN=1</span><br><span class="line">                                 │   └─ write_sysreg_s(br, SYS_HACDBSBR_EL2)     ← ★ 启动硬件</span><br><span class="line">                                 │</span><br><span class="line">                                 ├─ wfi()                                          ← CPU 睡</span><br><span class="line">                                 │</span><br><span class="line">                                 │  ┌──────────────────────────────┐</span><br><span class="line">                                 │  │ 硬件自动 sweep（并行执行）: │</span><br><span class="line">                                 │  │  对每个 entry:               │</span><br><span class="line">                                 │  │    stage-2 walk → PTE        │</span><br><span class="line">                                 │  │    DBM 1→0 + W 0→1 (原子)   │</span><br><span class="line">                                 │  │    写 HACDBSCONS_EL2.INDEX  │</span><br><span class="line">                                 │  └──────────────────────────────┘</span><br><span class="line">                                 │</span><br><span class="line">                                 ├─ 硬件完成 → HACDBS 中断 → CPU 醒</span><br><span class="line">                                 │  hacdbsirq_handler() 读 HACDBSCONS_EL2.ERR_REASON</span><br><span class="line">                                 │</span><br><span class="line">                                 ├─ hacdbs_stop()</span><br><span class="line">                                 │  └─ write_sysreg_s(0, SYS_HACDBSBR_EL2)        ← 关硬件</span><br><span class="line">                                 │</span><br><span class="line">                                 ├─ write_sysreg(hcr_el2, HCR_EL2)                ← 退出 stage-2</span><br><span class="line">                                 ├─ isb()</span><br><span class="line">                                 └─ preempt_enable()</span><br><span class="line">                 │</span><br><span class="line">                 └─ copy_to_user()                                            ← 给 QEMU</span><br></pre></td></tr></table></figure>
+<p><strong>三个 ★ 标记的关键节点：</strong></p>
+<ul>
+<li><p><strong>★ 1（kvm_arch_dirty_log_clear）</strong>：patch v2 新加的
+arch-generic 入口，让 arm64 能用硬件加速</p></li>
+<li><p><strong>★ 2（mask_to_hdbss）</strong>：把 bitmap 的 index i
+换算成 IPA，编码进 hw_entries entry</p></li>
+<li><p><strong>★ 3（write_sysreg
+HACDBSBR_EL2）</strong>：唯一的硬件触发点，硬件从这一行开始
+sweep</p></li>
+</ul>
+<p>整条链里 software 主导的只有 ★ 1 → ★ 2 → ★
+3，之后就是硬件干活、软件睡觉等中断。</p>
+<h1 id="八三个核心问题的最终回答">八、三个核心问题的最终回答</h1>
+<h2 id="问题-1硬件会自动识别-dbmwritable-dirty-writable-clean-吗">问题
+1：硬件会自动识别 DBM+writable-dirty → writable-clean 吗？</h2>
+<p><strong>答：是的，但只在收到 HACDBSBR_EL2 触发后。</strong></p>
+<ul>
+<li><p><strong>触发时机</strong>：<code>write_sysreg(SYS_HACDBSBR_EL2, BADDR | SZ | EN=1)</code>
+之后</p></li>
+<li><p><strong>硬件行为</strong>：对 hw_entries 里每个 entry，stage-2
+walk 找到 PTE，<strong>原子操作</strong>做 <code>PTE.DBM ← 0</code> +
+<code>PTE.W ← 1</code>（即"writable-dirty → writable-clean"）</p></li>
+<li><p><strong>不是随时自动</strong>：硬件不会主动扫描 stage-2，必须
+software 显式触发</p></li>
+<li><p><strong>反向自动</strong>（FEAT_HACDBS 的另一面）：guest 第一次写
+PTE 时，硬件<strong>自动</strong>做 <code>DBM 0→1 + W 1→0</code>（无需
+trap）</p></li>
+</ul>
+<h2 id="问题-2hw_entries-存的是什么是否需要把-bitmapi-的-index-i-传给硬件">问题
+2：hw_entries 存的是什么？是否需要把 bitmap[i] 的 index i
+传给硬件？</h2>
+<p><strong>答：hw_entries 是显式的 IPA 数组，不直接传 index
+i。</strong></p>
+<ul>
+<li><p><strong>存储内容</strong>：每个 u64 entry 编码
+<code>&#123;IPA[55:12] + TTWL[3:1] + Valid[0]&#125;</code></p></li>
+<li><p><strong>为什么不用 bitmap[i]</strong>：硬件只知道 IPA，不知道
+memslot 的 base_gfn。software
+必须做算术换算：<code>index j → gfn = offset + j → IPA = gfn &lt;&lt; 12</code></p></li>
+<li><p><strong>换算函数</strong>：<code>mask_to_hdbss()</code>，对每个
+mask 里的 1 bit，<code>gfn_to_gpa(offset + __ffs(mask))</code> 转
+IPA，编码进 entry</p></li>
+<li><p><strong>内存</strong>：kmalloc 一页（512 项），物理连续，硬件直接
+DMA-style 读取</p></li>
+</ul>
+<h2 id="问题-3dirty_bit_clear-函数有什么用既然硬件可以自动识别和复位">问题
+3：dirty_bit_clear 函数有什么用？既然硬件可以自动识别和复位？</h2>
+<p><strong>答：dirty_bit_clear 不是"清 dirty 的函数"，是"配置 +
+触发硬件的函数"。</strong></p>
+<ul>
+<li><p><strong>它做的</strong>：写 HCR_EL2.VM、加载 stage-2、写
+HACDBSBR_EL2（BADDR + SZ + EN=1）、CPU WFI 等待、中断唤醒后清
+EN</p></li>
+<li><p><strong>它没做的</strong>：任何 page walk、任何 PTE 修改、任何
+dirty 位翻转</p></li>
+<li><p><strong>真正的 dirty 清理</strong>由硬件做（PE 自动 stage-2 walk
+命中 PTE，原子做 DBM 1→0 + W 0→1）</p></li>
+<li><p><strong>为什么需要这个软件函数</strong>：</p>
+<ul>
+<li><p>硬件不知道哪些页 dirty，必须 software 提供 hw_entries IPA
+列表</p></li>
+<li><p>软件需要配置 HCR_EL2.VM + 加载 stage-2 TTBR 来建立硬件 sweep
+的上下文</p></li>
+<li><p>软件需要写 HACDBSBR_EL2.EN=1 来启动硬件 sweep</p></li>
+<li><p>WFI + 中断机制是 software 和 hardware 的同步点</p></li>
+</ul></li>
+</ul>
+<p><strong>一句话总结：</strong></p>
+<p><code>dirty_bit_clear()</code> 把 <strong>bitmap 索引 i</strong>
+转换成 <strong>IPA 列表 hw_entries</strong>，写
+<strong>HACDBSBR_EL2.EN=1</strong> 触发硬件；硬件做 <strong>stage-2 walk
+→ PTE.DBM 1→0 + W 0→1</strong>（即 "writable-dirty →
+writable-clean"）；完成后 <strong>触发 HACDBS 中断唤醒
+CPU</strong>。</p>
+<h1 id="九为什么-hacdbs-只做-dirty-bit-clean-纯属性修改-vs-内存管理操作">九、为什么
+HACDBS 只做 dirty bit clean？—— 纯属性修改 vs 内存管理操作</h1>
+<p><strong>核心结论：</strong>HACDBS 只处理 PTE 的属性 bit（DBM +
+W），不涉及 HPA
+变化、内存分配、内存释放。这种<strong>纯属性修改</strong>操作最适合硬件
+MMU 加速。其他涉及 HPA 的 PTE 操作（如 map / unmap / split /
+move）必须由软件做。</p>
+<h2 id="纯属性修改的特征">9.1 纯属性修改的特征</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">操作前 PTE:           0x0000_0000_0040_0E01</span><br><span class="line">                    ─┬─ ─┬─ ─┬─ ─┬─ ─┬─ ─┬─</span><br><span class="line">                     │   │   │   │   │   └── bit[0]: Valid=1</span><br><span class="line">                     │   │   │   │   └────── bit[1]: Type=Page</span><br><span class="line">                     │   │   │   └────────── bit[2:5]: AttrIndx=0</span><br><span class="line">                     │   │   └────────────── bit[6]: S2AP[0]=0 (R)</span><br><span class="line">                     │   └────────────────── bit[7]: S2AP[1]=1 (W=1)</span><br><span class="line">                     └────────────────────── bit[51]: DBM=0</span><br><span class="line"></span><br><span class="line">修改后 PTE:           0x0000_0000_0080_0E01  ← bit[7] W 清 0，DBM 不变</span><br><span class="line">                    ─┬─ ─┬─ ─┬─ ─┬─ ─┬─ ─┬─</span><br><span class="line">                     │   │   │   │   │   │   │   ← bit[0..6,51] 全部不变</span><br><span class="line">                     │   │   │   │   │   └────── bit[1]: Type=Page (不变)</span><br><span class="line">                     │   │   │   │   └────────── bit[2:5]: AttrIndx=0 (不变)</span><br><span class="line">                     │   │   │   └────────────── bit[6]: S2AP[0]=0 (不变)</span><br><span class="line">                     │   │   └────────────────── bit[7]: S2AP[1]=0 (W=0 ← ★ 改这里)</span><br><span class="line">                     │   └────────────────────── bit[51]: DBM=0 (不变)</span><br><span class="line"></span><br><span class="line">HPA:                0x1234_5000  (★ 完全不变)</span><br></pre></td></tr></table></figure>
+<p><strong>纯属性修改的关键特征：</strong></p>
+<ul>
+<li><p>✅ <strong>HPA（指向的物理页）完全不变</strong></p></li>
+<li><p>✅ <strong>其他 bit 完全不变</strong></p></li>
+<li><p>❌ <strong>只动了 1~2 个 bit</strong>（W 位 / DBM 位 / AF
+位）</p></li>
+</ul>
+<p>这种操作本质就是"位翻转"，跟 HPA
+是什么没关系，<strong>硬件完全能做</strong>。</p>
+<h2 id="硬件做位翻转的流程">9.2 硬件做"位翻转"的流程</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">硬件拿到 IPA（要改哪个 GFN）</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">Stage-2 page walk：找到那个 IPA 对应的 PTE</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">硬件检查：PTE.DBM 是否 = 1？</span><br><span class="line">  │</span><br><span class="line">  ├─ 是 → 原子做：DBM 1→0 + W 0→1</span><br><span class="line">  │       ★ 这是 HACDBS 的目标操作</span><br><span class="line">  │</span><br><span class="line">  └─ 否 → 跳过（PTE 本来就是干净的，不需要改）</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">继续处理下一个 entry</span><br></pre></td></tr></table></figure>
+<p><strong>硬件做的四个优势：</strong></p>
+<ol type="1">
+<li><p><strong>Page walk 走 MMU
+内部加速器</strong>（不走系统总线）</p></li>
+<li><p><strong>原子 RMW</strong>（软件做不到，硬件微码保证）</p></li>
+<li><p><strong>批量处理</strong>（多个 entry 一次性 sweep）</p></li>
+<li><p><strong>CPU 睡觉</strong>（WFI，其他 vCPU 不阻塞）</p></li>
+</ol>
+<h2 id="哪些-pte-操作硬件做不了">9.3 哪些 PTE 操作硬件做不了</h2>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>软件做</th>
+<th>硬件做</th>
+<th>谁做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>改 PTE 的一个 bit（W / DBM / AF）</td>
+<td>慢但通用</td>
+<td>快但受限</td>
+<td><strong>硬件</strong></td>
+</tr>
+<tr>
+<td>修改 PTE 指向的物理页（HPA）</td>
+<td>必须</td>
+<td>❌ 不知道新 HPA</td>
+<td><strong>软件</strong></td>
+</tr>
+<tr>
+<td>创建新的 PTE（map 新页）</td>
+<td>必须</td>
+<td>❌ 需要新分配 HPA</td>
+<td><strong>软件</strong></td>
+</tr>
+<tr>
+<td>拆大页（block → 4K × 512）</td>
+<td>必须</td>
+<td>❌ 需要新表</td>
+<td><strong>软件</strong></td>
+</tr>
+<tr>
+<td>删 PTE（unmap）</td>
+<td>必须</td>
+<td>❌ 需要 put_page</td>
+<td><strong>软件</strong></td>
+</tr>
+<tr>
+<td>解决 TLB miss（自动 walk）</td>
+<td>不需要</td>
+<td>CPU 自动做</td>
+<td><strong>硬件</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="创建新-ptemap-必须软件做">9.3.1 创建新 PTE（map）——
+必须软件做</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">初始状态：L2 table[5] = 0  （没有 PTE，是无效 entry）</span><br><span class="line">目标：     L2 table[5] = 0x0000_0000_0040_0E01  （创建 PTE）</span><br><span class="line"></span><br><span class="line">需要的输入：</span><br><span class="line">  • L0/L1/L2 table 的物理地址（已有）</span><br><span class="line">  • IPA（用户给）</span><br><span class="line">  • HPA（新分配的物理页地址）         ← ★ 硬件不知道</span><br><span class="line">  • 权限位（用户给）                 ← ★ 硬件不知道</span><br><span class="line"></span><br><span class="line">硬件能自动获取吗？</span><br><span class="line">  • HPA → ❌ 硬件不知道 HPA，HPA 是 host 内核分配的</span><br><span class="line">  • 权限位 → ❌ 硬件不知道 KVM 想给什么权限</span><br></pre></td></tr></table></figure>
+<p><strong>为什么硬件做不了：</strong></p>
+<ul>
+<li><p>硬件不知道新分配的 HPA 是多少（host 内核 alloc_page
+出来的）</p></li>
+<li><p>硬件不知道 KVM 想设什么权限（这是软件策略决定）</p></li>
+<li><p><strong>结论：必须软件做</strong></p></li>
+</ul>
+<h3 id="拆大页split-block-descriptor-必须软件做">9.3.2 拆大页（split
+block descriptor）—— 必须软件做</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">初始状态：L1 table[3] = 0x0000_0001_2340_0C01  ← Block descriptor (1GB 页)</span><br><span class="line"></span><br><span class="line">目标：     L1 table[3] = new_L2_table_phys     ← 变成 table descriptor</span><br><span class="line">          new_L2_table:</span><br><span class="line">            L2[0]   = 0x0000_0001_2340_0C01   ← 拆分后的 4KB PTE #0</span><br><span class="line">            L2[1]   = 0x0000_0001_2350_0C01   ← 拆分后的 4KB PTE #1</span><br><span class="line">            ...</span><br><span class="line">            L2[511] = 0x0000_0001_1234_0C01   ← 拆分后的 4KB PTE #511</span><br></pre></td></tr></table></figure>
+<p><strong>为什么硬件做不了：</strong></p>
+<ul>
+<li><p>拆大页要 <strong>kmalloc 一张新的 L2
+table</strong>（软件内存分配）</p></li>
+<li><p>要把原来 block descriptor 的属性<strong>展开</strong>到 512 个新
+PTE（软件逻辑）</p></li>
+<li><p>要考虑 4KB 对齐、contiguous bit 等复杂属性（软件策略）</p></li>
+<li><p><strong>结论：必须软件做</strong></p></li>
+</ul>
+<h3 id="删除-pteunmap-必须软件做">9.3.3 删除 PTE（unmap）——
+必须软件做</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">初始状态：L2 table[5] = 0x0000_0000_0040_0E01  ← PTE 指向某页</span><br><span class="line">目标：     L2 table[5] = 0  ← 清空</span><br><span class="line"></span><br><span class="line">但是！需要做：</span><br><span class="line">  • 这个页可能被其他进程引用（refcount &gt; 0）</span><br><span class="line">  • 需要 put_page() 释放 host 物理页</span><br><span class="line">  • 需要 unmap 反向通知（mmu notifier）</span><br></pre></td></tr></table></figure>
+<p><strong>为什么硬件做不了：</strong></p>
+<ul>
+<li><p>释放物理页涉及 host 内核 refcount（软件语义）</p></li>
+<li><p>需要通知 page cache、文件系统等（软件回调）</p></li>
+<li><p><strong>结论：必须软件做</strong></p></li>
+</ul>
+<h3 id="修改-hpamove-page-必须软件做">9.3.4 修改 HPA（move page）——
+必须软件做</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">初始：L2 table[5] = 0x0000_0000_0040_0E01  ← HPA = 0x1234_5000</span><br><span class="line">目标：L2 table[5] = 0x0000_0000_00A0_0E01  ← HPA = 0x2345_0000 （换了物理页）</span><br></pre></td></tr></table></figure>
+<p><strong>为什么硬件做不了：</strong></p>
+<ul>
+<li><p>HPA 由 host 内核分配，硬件不知道新 HPA</p></li>
+<li><p>需要 copy 旧页内容到新页（软件 I/O）</p></li>
+<li><p><strong>结论：必须软件做</strong></p></li>
+</ul>
+<h2 id="一句话本质">9.4 一句话本质</h2>
+<p><strong>纯属性修改（HPA 不变，只动权限/状态 bit）→
+硬件做最划算</strong></p>
+<p><strong>涉及 HPA / 内存分配 / 内存释放 → 必须软件做</strong></p>
+<h2 id="对应到-hacdbs-的设计">9.5 对应到 HACDBS 的设计</h2>
+<p>Leo Bras patch v2 里，<strong>HACDBS 只用于 dirty bit
+clean</strong>，<strong>不是因为 dirty bit 简单</strong>，而是因为：</p>
+<ol type="1">
+<li><p><strong>dirty bit 翻转是纯属性修改</strong>（DBM 1→0 + W
+0→1）</p></li>
+<li><p><strong>PTE 指向的物理页不变</strong></p></li>
+<li><p><strong>不需要新分配内存</strong></p></li>
+<li><p><strong>不需要通知其他子系统</strong></p></li>
+<li><p><strong>只动 2 个 bit</strong>（DBM + W）</p></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>扩展</th>
+<th>操作</th>
+<th>PTE 改的 bit</th>
+<th>HPA 变吗</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FEAT_HAFDBS</td>
+<td>Access Flag 管理</td>
+<td>AF（1 bit）</td>
+<td>不变</td>
+</tr>
+<tr>
+<td>FEAT_HACDBS</td>
+<td>Dirty Bit Modifier</td>
+<td>DBM + W（2 bit）</td>
+<td>不变</td>
+</tr>
+<tr>
+<td>FEAT_HDBSS</td>
+<td>Dirty 批量扫描</td>
+<td>DBM + W（2 bit）</td>
+<td>不变</td>
+</tr>
+<tr>
+<td>FEAT_BTI</td>
+<td>Branch Target Identification</td>
+<td>PTE.PXN/UXN 语义</td>
+<td>不变</td>
+</tr>
+<tr>
+<td>FEAT_PAuth</td>
+<td>Pointer Authentication</td>
+<td>PTE.PAC 位</td>
+<td>不变</td>
+</tr>
+</tbody>
+</table>
+<p><strong>共同点：全是纯属性修改。</strong></p>
+<p>这是 ARM
+硬件扩展的<strong>通用模式</strong>：<strong>软件搞不定的"批量 + 一致性
++ 原子性"操作，硬件下沉到 MMU 做。</strong></p>
+<p>HACDBS
+不是"硬件替代软件做所有页表管理"，而是"硬件接管软件做不划算的那一类操作（纯属性
+bit 翻转）"。</p>
+<h1 id="十hw_entries-与-hdbss-的精确关系基于-patch-v2-真实数据流">十、hw_entries
+与 HDBSS 的精确关系（基于 patch v2 真实数据流）</h1>
+<p><strong>本章核心结论：</strong>hw_entries <strong>就是</strong>
+HDBSS（同一个东西的两个名字），二者不是"独立"也不是"无关"。HACDBS
+引擎通过 HACDBSBR_EL2.BADDR 拿到这段内存的物理地址，按 HDBSS
+协议消费里面的 entry。</p>
+<h2 id="命名直接对应">10.1 命名直接对应</h2>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>名称</th>
+<th>ARM 规范名</th>
+<th>patch v2 代码名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>内存中的 8-byte entry 结构</td>
+<td><strong>HDBSS</strong> (Hardware Dirty Bit State Structure)</td>
+<td><code>u64 *hw_entries</code> 数组</td>
+</tr>
+<tr>
+<td>entry 格式（IPA + TTWL + Valid）</td>
+<td>HDBSS entry format</td>
+<td><code>HDBSS_ENTRY_*</code> 宏</td>
+</tr>
+<tr>
+<td>基地址系统寄存器</td>
+<td>HACDBSBR_EL2 (HACDBS HDBSS Base Register)</td>
+<td><code>SYS_HACDBSBR_EL2</code></td>
+</tr>
+<tr>
+<td>硬件消费引擎</td>
+<td>FEAT_HACDBS mechanism</td>
+<td>HACDBS 微架构单元</td>
+</tr>
+<tr>
+<td>反向解析函数（hw_entries → bitmap）</td>
+<td>（非规范）</td>
+<td><code>hdbss_to_bitmap()</code></td>
+</tr>
+<tr>
+<td>正向填充函数（bitmap → hw_entries）</td>
+<td>（非规范）</td>
+<td><code>mask_to_hdbss()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键观察：</strong>代码里 <code>hdbss_to_bitmap()</code> 和
+<code>mask_to_hdbss()</code> 这两个函数名直接用了 "hdbss"，等同于在说
+"处理 HDBSS 的函数"。</p>
+<p>所以 <strong>hw_entries =
+HDBSS</strong>，是同一个内存结构在软件侧起的不同名字。</p>
+<h2 id="arm-arm-规范里-hdbss-的定义">10.2 ARM ARM 规范里 HDBSS
+的定义</h2>
+<p><strong>ARM ARM 原文：</strong></p>
+<blockquote>
+<p>"The HDBSS is a structure in memory that consists of a sequence of
+8-byte entries, each describing a translation table entry to be
+processed by the FEAT_HACDBS mechanism."</p>
+</blockquote>
+<p><strong>翻译：</strong>HDBSS 是<strong>内存中由 8 字节 entry
+组成的结构</strong>，每个 entry 描述一个要由 FEAT_HACDBS 处理的
+translation table entry。</p>
+<p>→ <code>u64 *hw_entries</code>
+数组<strong>完全符合这个定义</strong>，没有任何偏移。</p>
+<h2 id="hacdbsbr_el2-名字里的hdbss">10.3 HACDBSBR_EL2
+名字里的"HDBSS"</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 全名 = HACDBS HDBSS Base Register */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYS_HACDBSBR_EL2       ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 字段定义（来自 patch v2） */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HACDBSBR_EL2_BADDR_MASK    GENMASK_ULL(55, 12)   <span class="comment">// HDBSS 物理地址</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HACDBSBR_EL2_SZ            GENMASK_ULL(9, 0)     <span class="comment">// HDBSS 大小</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HACDBSBR_EL2_EN            BIT(0)                <span class="comment">// 启动 HACDBS 引擎</span></span></span><br></pre></td></tr></table></figure>
+<p><strong>注意：</strong><code>HACDBSBR_EL2</code>
+这个寄存器名字<strong>直接由 HACDBS + HDBSS 复合而成</strong>，全名 =
+"HACDBS HDBSS Base Register"。</p>
+<p>这说明在硬件实现层面，<strong>HACDBS 和 HDBSS
+是绑定的</strong>，不是一个独立一个可选 —— 启动 HACDBS 的同时必须提供
+HDBSS 的基地址。</p>
+<h2 id="hw_entries-的真实数据流两条路径">10.4 hw_entries
+的真实数据流（两条路径）</h2>
+<h3 id="路径-a从-dirty-bitmap-出发kvm_get_dirty_log">10.4.1 路径 A：从
+dirty bitmap 出发（KVM_GET_DIRTY_LOG）</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">memslot 的 dirty_bitmap (软件维护，1 bit/page, 紧凑)</span><br><span class="line">  │</span><br><span class="line">  │  mask_to_hdbss() 逐个 __ffs 找 1 bit</span><br><span class="line">  │  内部 while 循环: 把 mask 里的 1 bits 转成 IPA</span><br><span class="line">  │  写入 hw_entries[idx++]</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">hw_entries[]  ← 软件填充的 8-byte IPA 列表（HDBSS buffer）</span><br><span class="line">  │</span><br><span class="line">  │  循环复用：塞满 512 项触发一次</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">HACDBSBR_EL2.BADDR ← virt_to_phys(hw_entries)</span><br><span class="line">HACDBSBR_EL2.EN = 1</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">硬件 HACDBS 引擎</span><br><span class="line">  │  按 HDBSS 协议逐 entry 消费</span><br><span class="line">  │  stage-2 walk + atomic DBM 1→0 + W 0→1</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">PTE (硬件 atomic 修改)</span><br><span class="line">  │</span><br><span class="line">  │  HACDBS 中断唤醒 CPU</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">ret = 实际处理 entry 数</span><br><span class="line">  │</span><br><span class="line">  │  错误时: hdbss_to_bitmap() 把 hw_entries 反算回 dirty_bitmap</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">dirty_bitmap (错误恢复用)</span><br></pre></td></tr></table></figure>
+<h3 id="路径-b从-dirty-ring-出发kvm_dirty_ring">10.4.2 路径 B：从 dirty
+ring 出发（KVM_DIRTY_RING）</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">dirty_gfns[] ring (软件/硬件维护的 GFN 列表)</span><br><span class="line">  │</span><br><span class="line">  │  for 循环：把 dirty_gfns 转成 hw_entries</span><br><span class="line">  │  gfn = slot_offset + entry-&gt;offset</span><br><span class="line">  │  hw_entries[i] = gfn_to_gpa(gfn) | ttwl | Valid</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">hw_entries[]  ← 软件填充的 8-byte IPA 列表（HDBSS buffer）</span><br><span class="line">  │</span><br><span class="line">  │  满则触发</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">HACDBSBR_EL2.BADDR ← virt_to_phys(hw_entries)</span><br><span class="line">HACDBSBR_EL2.EN = 1</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">硬件 HACDBS 引擎消费（HDBSS 协议）</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">PTE atomic 修改</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">成功 entry 对应 dirty_gfns 标为 invalid</span><br><span class="line">ring-&gt;reset_index += ret</span><br></pre></td></tr></table></figure>
+<h2 id="真实调用节奏批量填充-满则触发">10.5 真实调用节奏：批量填充 +
+满则触发</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">hw_entries = kmalloc_objs(u64, <span class="number">512</span>, GFP_KERNEL);  <span class="comment">// 一次性分配</span></span><br><span class="line">write_lock(&amp;kvm-&gt;mmu_lock);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">long</span> i = start; i &lt; end; i++) &#123;   <span class="comment">// 遍历 bitmap 每个 long</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> mask = xchg(&amp;dirty_bitmap[i], <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="comment">// ★ 把 mask 里的 1 bits 填进 hw_entries</span></span><br><span class="line">        <span class="comment">// mask_to_hdbss 内部是 while 循环</span></span><br><span class="line">        idx = mask_to_hdbss(&amp;mask, hw_entries, offset, ttwl, idx, entries_sz);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ★ 塞满 512 项就立刻触发一次</span></span><br><span class="line">        <span class="keyword">if</span> (idx &gt;= entries_sz) &#123;</span><br><span class="line">            ret = dirty_bit_clear(kvm, hw_entries, idx);  <span class="comment">// 硬件 sweep</span></span><br><span class="line">            idx = <span class="number">0</span>;  <span class="comment">// 重置，继续往里塞</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">while</span> (mask);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 最后不满 512 项的也触发一次</span></span><br><span class="line"><span class="keyword">if</span> (idx != <span class="number">0</span>)</span><br><span class="line">    ret = dirty_bit_clear(kvm, hw_entries, idx);</span><br><span class="line"></span><br><span class="line">write_unlock(&amp;kvm-&gt;mmu_lock);</span><br><span class="line">kfree(hw_entries);  <span class="comment">// 一次性释放</span></span><br></pre></td></tr></table></figure>
+<p><strong>三个关键节奏：</strong></p>
+<ol type="1">
+<li><p><strong>批量填充</strong>：软件持续往 hw_entries 塞
+IPA（mask_to_hdbss 内部 while）</p></li>
+<li><p><strong>满则触发</strong>：塞满 512
+项才让硬件处理一次；如果总量是 2000 项，可能触发 4 次硬件
+sweep（512+512+512+464）</p></li>
+<li><p><strong>循环复用</strong>：整段 hw_entries
+<strong>不重新分配</strong>，触发后清零 idx 继续塞</p></li>
+</ol>
+<p><strong>三个常见误解：</strong></p>
+<ul>
+<li><p>❌ "软件一把填完再给硬件" ——
+<strong>错</strong>。是循环复用，每满 512 项就触发一次</p></li>
+<li><p>❌ "软件一条一条触发" —— <strong>错</strong>。是批量，per-bit
+触发开销太大</p></li>
+<li><p>❌ "hw_entries 跟 HDBSS 没关系" ——
+<strong>错</strong>。hw_entries 就是 HDBSS 在 patch v2
+里的代码命名</p></li>
+</ul>
+<h2 id="一句话总结">10.6 一句话总结</h2>
+<p><strong>hw_entries = HDBSS = 同一段物理内存</strong>，里面是 8-byte
+entry 数组，每个 entry 编码 {IPA + TTWL + Valid}。</p>
+<p><strong>软件的工作</strong>：从 dirty_bitmap 或 dirty_gfns ring
+抽出要清 dirty 的 PTE 列表，<strong>循环复用</strong>地填进 HDBSS
+buffer，<strong>满 512 项</strong>就把 HDBSS 物理地址写进
+HACDBSBR_EL2.BADDR 并置 EN=1，触发硬件 sweep。</p>
+<p><strong>硬件的工作</strong>：按 HDBSS 协议<strong>逐 entry
+消费</strong>，对每个 entry 做 stage-2 walk + atomic 改 PTE.DBM +
+PTE.W，完成后触发 HACDBS 中断唤醒 CPU。</p>
+<blockquote>
+<p>(注：内容由 AI 生成，请谨慎参考）</p>
+</blockquote>
+
+    </article>
+    <!-- license -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
+            <p>Link：<a href="https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">July 2nd 2026, 8:18:12 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">July 2nd 2026, 8:20:10 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/06/11/QEMU-Hotplug-ARMv8-%E5%AE%8C%E6%95%B4%E5%88%86%E6%9E%90/" title="QEMU Hotplug ARMv8 - 完整分析">
+                    <div class="prevTitle">QEMU Hotplug ARMv8 - 完整分析</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC81NjEyMS8zMjU4NA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活 JavaScript</noscript>
+    </div>
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:tianzheng_edu@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="https://github.com/akirazheng" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#hacdbs-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E5%9F%BA%E4%BA%8E-leo-bras-patch-v2"><span class="toc-text">HACDBS v2
+硬件脏位清理深度解析 — 基于 Leo Bras patch v2</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80pte.dbm-%E4%BD%8D%E7%9A%84%E7%9C%9F%E5%AE%9E%E4%BD%8D%E7%BD%AE"><span class="toc-text">一、PTE.DBM 位的真实位置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8Chw_entries-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A0%81"><span class="toc-text">二、hw_entries 数据结构与编码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89bitmap-index-ipamask_to_hdbss-%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90"><span class="toc-text">三、bitmap index →
+IPA：mask_to_hdbss 源码解析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9Bdirty_bit_clear%E8%BD%AF%E4%BB%B6%E5%81%9A%E7%9A%84%E4%B8%8D%E6%98%AF%E6%B8%85-dirty"><span class="toc-text">四、dirty_bit_clear：软件做的不是&quot;清
+dirty&quot;</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E7%A1%AC%E4%BB%B6-sweep-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">五、硬件 sweep 工作流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%ADhacdbs-vs-%E8%BD%AF%E4%BB%B6-page-walk-%E5%85%B3%E9%94%AE%E5%B7%AE%E5%BC%82"><span class="toc-text">六、HACDBS vs 软件 page
+walk 关键差异</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E9%93%BE%E5%9F%BA%E4%BA%8E-patch-v2"><span class="toc-text">七、完整调用链（基于 patch v2）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E4%B8%89%E4%B8%AA%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98%E7%9A%84%E6%9C%80%E7%BB%88%E5%9B%9E%E7%AD%94"><span class="toc-text">八、三个核心问题的最终回答</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98-1%E7%A1%AC%E4%BB%B6%E4%BC%9A%E8%87%AA%E5%8A%A8%E8%AF%86%E5%88%AB-dbmwritable-dirty-writable-clean-%E5%90%97"><span class="toc-text">问题
+1：硬件会自动识别 DBM+writable-dirty → writable-clean 吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98-2hw_entries-%E5%AD%98%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88%E6%98%AF%E5%90%A6%E9%9C%80%E8%A6%81%E6%8A%8A-bitmapi-%E7%9A%84-index-i-%E4%BC%A0%E7%BB%99%E7%A1%AC%E4%BB%B6"><span class="toc-text">问题
+2：hw_entries 存的是什么？是否需要把 bitmap[i] 的 index i
+传给硬件？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98-3dirty_bit_clear-%E5%87%BD%E6%95%B0%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8%E6%97%A2%E7%84%B6%E7%A1%AC%E4%BB%B6%E5%8F%AF%E4%BB%A5%E8%87%AA%E5%8A%A8%E8%AF%86%E5%88%AB%E5%92%8C%E5%A4%8D%E4%BD%8D"><span class="toc-text">问题
+3：dirty_bit_clear 函数有什么用？既然硬件可以自动识别和复位？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D%E4%B8%BA%E4%BB%80%E4%B9%88-hacdbs-%E5%8F%AA%E5%81%9A-dirty-bit-clean-%E7%BA%AF%E5%B1%9E%E6%80%A7%E4%BF%AE%E6%94%B9-vs-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%93%8D%E4%BD%9C"><span class="toc-text">九、为什么
+HACDBS 只做 dirty bit clean？—— 纯属性修改 vs 内存管理操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%AF%E5%B1%9E%E6%80%A7%E4%BF%AE%E6%94%B9%E7%9A%84%E7%89%B9%E5%BE%81"><span class="toc-text">9.1 纯属性修改的特征</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%81%9A%E4%BD%8D%E7%BF%BB%E8%BD%AC%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="toc-text">9.2 硬件做&quot;位翻转&quot;的流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%93%AA%E4%BA%9B-pte-%E6%93%8D%E4%BD%9C%E7%A1%AC%E4%BB%B6%E5%81%9A%E4%B8%8D%E4%BA%86"><span class="toc-text">9.3 哪些 PTE 操作硬件做不了</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%96%B0-ptemap-%E5%BF%85%E9%A1%BB%E8%BD%AF%E4%BB%B6%E5%81%9A"><span class="toc-text">9.3.1 创建新 PTE（map）——
+必须软件做</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8B%86%E5%A4%A7%E9%A1%B5split-block-descriptor-%E5%BF%85%E9%A1%BB%E8%BD%AF%E4%BB%B6%E5%81%9A"><span class="toc-text">9.3.2 拆大页（split
+block descriptor）—— 必须软件做</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4-pteunmap-%E5%BF%85%E9%A1%BB%E8%BD%AF%E4%BB%B6%E5%81%9A"><span class="toc-text">9.3.3 删除 PTE（unmap）——
+必须软件做</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9-hpamove-page-%E5%BF%85%E9%A1%BB%E8%BD%AF%E4%BB%B6%E5%81%9A"><span class="toc-text">9.3.4 修改 HPA（move page）——
+必须软件做</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%9C%AC%E8%B4%A8"><span class="toc-text">9.4 一句话本质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E5%BA%94%E5%88%B0-hacdbs-%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">9.5 对应到 HACDBS 的设计</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81hw_entries-%E4%B8%8E-hdbss-%E7%9A%84%E7%B2%BE%E7%A1%AE%E5%85%B3%E7%B3%BB%E5%9F%BA%E4%BA%8E-patch-v2-%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="toc-text">十、hw_entries
+与 HDBSS 的精确关系（基于 patch v2 真实数据流）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%91%BD%E5%90%8D%E7%9B%B4%E6%8E%A5%E5%AF%B9%E5%BA%94"><span class="toc-text">10.1 命名直接对应</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#arm-arm-%E8%A7%84%E8%8C%83%E9%87%8C-hdbss-%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-text">10.2 ARM ARM 规范里 HDBSS
+的定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hacdbsbr_el2-%E5%90%8D%E5%AD%97%E9%87%8C%E7%9A%84hdbss"><span class="toc-text">10.3 HACDBSBR_EL2
+名字里的&quot;HDBSS&quot;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hw_entries-%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE%E6%B5%81%E4%B8%A4%E6%9D%A1%E8%B7%AF%E5%BE%84"><span class="toc-text">10.4 hw_entries
+的真实数据流（两条路径）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84-a%E4%BB%8E-dirty-bitmap-%E5%87%BA%E5%8F%91kvm_get_dirty_log"><span class="toc-text">10.4.1 路径 A：从
+dirty bitmap 出发（KVM_GET_DIRTY_LOG）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84-b%E4%BB%8E-dirty-ring-%E5%87%BA%E5%8F%91kvm_dirty_ring"><span class="toc-text">10.4.2 路径 B：从 dirty
+ring 出发（KVM_DIRTY_RING）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9C%9F%E5%AE%9E%E8%B0%83%E7%94%A8%E8%8A%82%E5%A5%8F%E6%89%B9%E9%87%8F%E5%A1%AB%E5%85%85-%E6%BB%A1%E5%88%99%E8%A7%A6%E5%8F%91"><span class="toc-text">10.5 真实调用节奏：批量填充 +
+满则触发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93"><span class="toc-text">10.6 一句话总结</span></a></li></ol></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 87
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search site-search-loading popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/02</span>
+            <a class="archive-post-title" href="/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span>
+            <a class="archive-post-title" href="/2026/06/11/QEMU-Hotplug-ARMv8-%E5%AE%8C%E6%95%B4%E5%88%86%E6%9E%90/">QEMU Hotplug ARMv8 - 完整分析</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/Linux-early-param%E5%8F%82%E6%95%B0/">Linux内核学习：early_param机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">ARM64结构与编程:内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/06</span>
+            <a class="archive-post-title" href="/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/">Mac中配置使用claude</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/12</span>
+            <a class="archive-post-title" href="/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">linux文件系统</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/12</span>
+            <a class="archive-post-title" href="/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">虚拟化:VFIO传统热迁移</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/08</span>
+            <a class="archive-post-title" href="/2026/02/08/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86/">ARM64结构与编程:中断处理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span>
+            <a class="archive-post-title" href="/2026/01/26/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/">问题解决</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/11</span>
+            <a class="archive-post-title" href="/2026/01/11/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">ARM64结构与编程:异常处理</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span>
+            <a class="archive-post-title" href="/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">linux内核驱动debug方法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span>
+            <a class="archive-post-title" href="/2025/11/22/cacheLine%E7%AB%9E%E4%BA%89%E5%AF%B9%E6%80%A7%E8%83%BD%E7%9A%84%E5%BD%B1%E5%93%8D/">cacheLine竞争对性能的影响</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span>
+            <a class="archive-post-title" href="/2025/11/20/FIELD-PREP%E5%92%8CFIELD-GET%E6%9B%BF%E4%BB%A3%E6%89%8B%E5%8A%A8%E4%BD%8D%E7%A7%BB/">FIELD_PREP和FIELD_GET替代手动位移</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span>
+            <a class="archive-post-title" href="/2025/11/04/ARM64%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">ARM64基础知识</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">驱动学习2：字符设备驱动(fd,ioctl)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/Linux-%E5%86%85%E6%A0%B8%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6/">Linux:内核通知机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/">ARM64结构与编程:加载和存储指令</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">ARM64结构与编程:QEMU_BenOS环境搭建</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：CPU虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">linux常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">git常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span>
+            <a class="archive-post-title" href="/2025/09/02/TLB%E7%89%B9%E6%80%A7%E5%AD%A6%E4%B9%A0/">TLB特性学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span>
+            <a class="archive-post-title" href="/2025/08/23/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F2%EF%BC%9A%E7%BC%96%E5%86%99MBR%E4%B8%BB%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA/">手写操作系统2：编写MBR主引导扇区</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span>
+            <a class="archive-post-title" href="/2025/08/22/%E8%BF%9B%E5%88%B6%E8%BD%AC%E6%8D%A2CPP%E7%89%88/">进制转换CPP版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/21</span>
+            <a class="archive-post-title" href="/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/">驱动学习1：驱动demo练习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span>
+            <a class="archive-post-title" href="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/">openeluer安装与内核替换</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/">推广搜6：传统推荐模型之阿里LS-PLM模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/">推广搜5：传统推荐模型之GBDT+LR模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span>
+            <a class="archive-post-title" href="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C4%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">推广搜4：传统推荐模型之FM模型</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C3%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜3：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span>
+            <a class="archive-post-title" href="/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C2%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/">推广搜2：传统推荐模型之协同过滤算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span>
+            <a class="archive-post-title" href="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C1%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/">推广搜1：基础知识及学习路线篇</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span>
+            <a class="archive-post-title" href="/2024/12/18/%E7%88%AC%E8%99%AB%E5%AE%9E%E7%8E%B0QQ%E7%BE%A4%E4%BD%9C%E4%B8%9A%E7%9A%84%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD/">爬虫实现QQ群作业的批量下载</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">手写操作系统1：项目环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/23</span>
+            <a class="archive-post-title" href="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/">计算机网络层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span>
+            <a class="archive-post-title" href="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">计算机网络传输层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span>
+            <a class="archive-post-title" href="/2024/09/21/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Redis数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">调度项目6：worker开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2024/09/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE5%EF%BC%9Aflowsvr%E5%BC%80%E5%8F%91/">调度项目5：flowsvr开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/18</span>
+            <a class="archive-post-title" href="/2024/08/18/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE4%EF%BC%9AWorker%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目4：Worker的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/">分布式Kafka学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span>
+            <a class="archive-post-title" href="/2024/06/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">调度项目1：环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3%E7%9A%84Linux%E6%93%8D%E4%BD%9C/">操作系统相关的Linux操作</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">文件描述符</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span>
+            <a class="archive-post-title" href="/2024/05/17/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">操作系统内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/15</span>
+            <a class="archive-post-title" href="/2024/05/15/%E5%A4%A7%E9%A1%B6%E5%A0%86-%E5%B0%8F%E9%A1%B6%E5%A0%86%EF%BC%88CPP%EF%BC%89/">大顶堆/小顶堆（CPP）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/01</span>
+            <a class="archive-post-title" href="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">高并发系统设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span>
+            <a class="archive-post-title" href="/2024/04/29/KMP%E7%AE%97%E6%B3%95/">KMP算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span>
+            <a class="archive-post-title" href="/2024/04/26/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/">动态规划-背包问题</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/25</span>
+            <a class="archive-post-title" href="/2024/04/25/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">操作系统结构及进程管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span>
+            <a class="archive-post-title" href="/2024/04/20/C-%E5%BA%95%E5%B1%82%E5%AD%A6%E4%B9%A0/">C++底层学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Mysql数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span>
+            <a class="archive-post-title" href="/2024/04/03/%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0/">排序实现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">WebServer学习9：WebBench压力测试</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A08%EF%BC%9A%E9%80%9A%E7%94%A8%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1/">WebServer学习8：通用日志系统的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span>
+            <a class="archive-post-title" href="/2024/03/26/WebServer%E5%AD%A6%E4%B9%A07%EF%BC%9A%E5%AE%9A%E6%97%B6%E5%99%A8%E6%8E%A7%E5%88%B6%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4/">WebServer学习7：定时器控制客户端存活时间</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2024/03/11/WebServer%E5%AD%A6%E4%B9%A06%EF%BC%9AHTTP%E8%BF%9E%E6%8E%A5%E5%A4%84%E7%90%86%E5%8F%8A%E6%8A%A5%E6%96%87%E6%9C%BA%E5%88%B6/">WebServer学习6：HTTP连接处理及报文机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/">HTTP协议的迭代（HTTP：应用层）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%AD%A6%E4%B9%A0/">C++基础知识学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/WebServer%E5%AD%A6%E4%B9%A05%EF%BC%9A%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%AE%BE%E8%AE%A1/">WebServer学习5：线程池与数据库连接池设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/05</span>
+            <a class="archive-post-title" href="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/">WebServer学习4：并发事件驱动模式Reactor和Proactor</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span>
+            <a class="archive-post-title" href="/2024/03/04/WebServer%E5%AD%A6%E4%B9%A03%EF%BC%9Asocket%E7%BC%96%E7%A8%8B%E4%B8%8Eepoll%E5%AE%9E%E7%8E%B0I-O%E5%A4%8D%E7%94%A8/">WebServer学习3：socket编程与epoll实现I/O复用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/03</span>
+            <a class="archive-post-title" href="/2024/03/03/WebServer%E5%AD%A6%E4%B9%A02%EF%BC%9A%E4%BB%8EConfig%E6%96%87%E4%BB%B6%E4%BA%86%E8%A7%A3Makefile%E7%BC%96%E8%AF%91/">WebServer学习2：从Config文件了解Makefile编译</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span>
+            <a class="archive-post-title" href="/2024/02/28/WebServer%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C/">WebServer学习1：部署运行</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F6%EF%BC%9A%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/">设计模式6：策略模式</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F5%EF%BC%9A%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95/">设计模式5：模板方法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/08</span>
+            <a class="archive-post-title" href="/2024/02/08/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F0%EF%BC%9A%E9%9D%A2%E5%AF%B9%E5%AF%B9%E8%B1%A1%E7%9A%848%E5%A4%A7%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86/">设计模式0：面对对象的8大设计原理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/07</span>
+            <a class="archive-post-title" href="/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/">从0开始实现线程池(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F4%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">设计模式4：代理模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F3%EF%BC%9A%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/">设计模式3：抽象工厂模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">设计模式2：工厂方法模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span>
+            <a class="archive-post-title" href="/2024/01/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F1%EF%BC%9A%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">设计模式1：单例模式(C++)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span>
+            <a class="archive-post-title" href="/2023/03/18/QT%E7%BC%96%E7%A8%8B%E7%BB%8F%E9%AA%8C/">QT编程经验</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span>
+            <a class="archive-post-title" href="/2022/12/08/SolveProgramLearningProblem/">SolveProgramLearningProblem</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/04</span>
+            <a class="archive-post-title" href="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/">Mine-重装系统后软件相关设置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/24</span>
+            <a class="archive-post-title" href="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/">快捷键方式整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/15</span>
+            <a class="archive-post-title" href="/2022/11/15/LOVE/">LOVE_打火机与公主裙</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2022/04/17/%E5%8A%A8%E6%89%8B%E5%AD%A6%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A001/">动手学深度学习01</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/">搭建Conda虚拟环境</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/13</span>
+            <a class="archive-post-title" href="/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">部署colab利用GPU资源训练深度学习模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">重装系统后Hexo博客部署教程</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/">DELL系统重装教程</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="计算机">
+                <span class="iconfont-archer">&#xe606;</span>
+                计算机
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="杂货铺-休闲">
+                <span class="iconfont-archer">&#xe606;</span>
+                杂货铺-休闲
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="环境配置">
+                <span class="iconfont-archer">&#xe606;</span>
+                环境配置
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="深度学习">
+                <span class="iconfont-archer">&#xe606;</span>
+                深度学习
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="任务调度项目">
+                <span class="iconfont-archer">&#xe606;</span>
+                任务调度项目
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Linux内核基础">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核基础
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
+            <span class="iconfont-archer">&#xe60a;</span>
+            ARM64结构与编程实操
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络">
+            <span class="iconfont-archer">&#xe60a;</span>
+            计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据结构与算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据库">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据库
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="WebServer项目（C++）">
+            <span class="iconfont-archer">&#xe60a;</span>
+            WebServer项目（C++）
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="系统设计">
+            <span class="iconfont-archer">&#xe60a;</span>
+            系统设计
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="深度学习算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            深度学习算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统">
+            <span class="iconfont-archer">&#xe60a;</span>
+            操作系统
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="虚拟化">
+            <span class="iconfont-archer">&#xe60a;</span>
+            虚拟化
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="设计模式">
+            <span class="iconfont-archer">&#xe60a;</span>
+            设计模式
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="任务调度项目">
+            <span class="iconfont-archer">&#xe60a;</span>
+            任务调度项目
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核驱动">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核驱动
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://AkiraZheng.github.io",
+        root: siteMetaRoot,
+        author: "AkiraZheng"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+            <div class="site-search site-search-loading">
+    <div class="algolia-popup popup">
+        <div class="algolia-search">
+            <div class="algolia-search-input-icon">
+                <i class="fa fa-search"></i>
+            </div>
+            <div class="algolia-search-input" id="algolia-search-input"></div>
+            <div class="popup-btn-close">
+                <i class="iconfont-archer">&#xe609;</i>
+            </div>
+        </div>
+
+        <div class="algolia-results">
+            <div id="algolia-stats" class="algolia-stats"></div>
+            <div id="algolia-hits"></div>
+            <div id="algolia-pagination" class="algolia-pagination"></div>
+        </div>
+    </div>
+</div>
+            <script src="/scripts/search.js?v=20211217" defer></script>
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js'></script>
+            <script>
+                if (window.mermaid) {
+                    mermaid.initialize({theme: 'neutral'});
+                }
+            </script>
+        
+    </body>
+</html>
