@@ -154,8 +154,8 @@ claude exit
     "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
     "API_TIMEOUT_MS": "3000000",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-chat",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-chat"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-v4-pro"
   }
 }
 ```
@@ -280,4 +280,102 @@ npx skills add forrestchang/andrej-karpathy-skills@karpathy-guidelines -g -y
   │ Goal-Driven Execution │ 测试优先、可验证的成功标准       │
   └───────────────────────┴──────────────────────────────────┘  
 ```
+
+## superpower
+
+> [superpower教程](https://www.cnblogs.com/gyc567/p/19510203)
+
+## agent-browser
+
+claude 本身不能浏览网页，加上这个skill就可以让他找网站内容了
+
+# 开放权限给 agent
+
+# way1
+
+```shell
+claude --allowedTools bash,write,edit
+```
+
+# way2：使用 settings.json 配置（真正高阶）
+
+## 1. 创建配置目录和文件
+
+```shell
+mkdir -p ~/.claude
+vim ~/.claude/settings.json
+```
+
+写入以下内容：
+
+```json
+{
+  "allowedTools": [
+    "Bash(git:*)",
+    "Bash(make:*)",
+    "Bash(grep:*)",
+    "Bash(rg:*)",
+    "Bash(find:*)",
+    "Bash(sed:*)",
+    "Bash(awk:*)",
+    "Bash(qemu-system-*:*)",
+    "Edit(*)",
+    "Write(*)"
+  ]
+}
+```
+
+## 2. 启动 Claude
+
+直接运行：
+
+```shell
+claude
+```
+
+不需要 ` --allowedTools` 参数了。
+
+## 3. 效果
+
+以下命令不会再询问确认：
+
+- `git log`
+- `git diff`
+- `git grep`
+- `make`
+- `grep`
+- `rg`
+- `find`
+- `sed`
+- `awk`
+- `qemu-system-*`（QEMU 启动相关）
+
+## 4. 仍需确认的命令
+
+以下高风险命令仍会触发确认，无法通过 `allowedTools` 完全绕过：
+
+- `git reset --hard`
+- `git clean -fdx`
+- `rm -rf`
+- `dd`
+- `mkfs`
+- `reboot`
+
+这是 Claude 内部的 hardcoded dangerous command classifier，不是 settings 配置能控制的。
+
+## 5. 验证是否生效
+
+启动 Claude 后，执行：
+
+```shell
+git log --oneline -5
+```
+
+如果不弹确认直接执行，说明配置生效。
+
+## 6. root 用户注意
+
+即使配置了 `allowedTools`，在 root 用户下某些 shell command 仍可能要求确认，因为 Claude 有 hardcoded dangerous command classifier。
+
+但对于 `git/make/grep` 这类开发命令，已经能基本无感自动化了。
 

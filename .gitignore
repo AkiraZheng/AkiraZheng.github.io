@@ -7,3 +7,5 @@ public/
 .deploy*/
 _multiconfig.yml
 _config.yml
+.claude/
+.opencode/

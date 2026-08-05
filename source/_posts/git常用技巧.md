@@ -81,6 +81,8 @@ git checkout old_branch # 切换到旧分支old_branch中
 
 有两种方法可以切换到某次提交中：`git checkout <commit-hash>` 或者 `git reset --hard <commit-hash>`
 
+注意，切换到某次提交后，可能会有 git status后会有很多标红色的文件信息，这是因为太早的版本`.gitignore`文件没那么完善，可以用`git clean -fd`把没有被git跟踪的文件全删了就行。
+
 （其中要注意，切换到后面的提交后`git log`就看不到最新的commit id了，所以最好是创建一个分支，或者先把最新的commit id记下，可以通过`git tag`给commit打标签）
 
 ```shell
@@ -392,17 +394,26 @@ git format-patch --numbered -n --cover-letter --subject-prefix='PATCH' -v2
 
 生成patches后打开 0/5 这个 patch 修改里面的信息。
 
+# 合入代码到另一个仓库中-保留`[]`的title
+
+```shell
+# 生成 patch，空主题前缀会去掉 [PATCH x/x]
+git format-patch -4 --subject-prefix=""  --no-numbered
+# 使用 -k 保留 [BigDipperV5R9][Virtualization]
+git am --3way -k ./*.patch
+```
+
 # 用 linux 工具检查 patch 是否符合内核编码风格（如缩进、注释、空行、函数命名等）
 
-`scripts/checkpatch.pl --strict --file xxx.patch`
+`scripts/checkpatch.pl --strict --file *.patch`
 
 查出问题可以手动修复，也可以尝试用 linux 自带的工具进行修复：
 
-`scripts/checkpatch.pl --fix-inplace xxx.patch`
+`scripts/checkpatch.pl --fix-inplace *.patch`
 
 经常会出现末尾带一个空格的问题，所以可以通过下面的指令删除：
 
-`sed -i 's/[[:space:]]*$//' xxx.patch`
+`sed -i 's/[[:space:]]*$//' *.patch`
 
 ## 回合同步主线
 

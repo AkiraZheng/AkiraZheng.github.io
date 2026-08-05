@@ -583,6 +583,362 @@ gdb ./my_program
 (gdb) run
 ```
 
+## gdb 调试 qemu
+
+单纯调试用户态qemu代码的话，可以直接在 host 上用 gdb 调试 qemu 进程：
+
+```shell
+gdb --args <普通的启动起虚机指令>
+(gdb) b main
+(gdb) r
+(gdb) bt full        # 查看完整调用栈和局部变量
+(gdb) disassemble    # 查看汇编代码
+(gdb) info locals    # 查看局部变量
+```
+
+示例：
+
+```shell
+[root@localhost kernel]# gdb --args ./qemu_build/qemu-system-aarch64 -accel kvm -machine virt,kernel_irqchip=on,gic-version=3,nvdimm=on -net none -nographic -kernel Image -initrd minifs.cpio.gz -bios QEMU_EFI_2403_SP1.fd -cpu host -m 3G -smp cpus=1,maxcpus=2 -append 'rdinit=init console=ttyAMA0 earlycon=pl011,0x9000000 cpufreq.off=1 kpti=off acpi=on kernel.hardlockup_panic=0 disable_sdei_nmi_watchdog nosoftlockup'
+GNU gdb (GDB) openEuler 14.1-4.oe2403sp2
+Copyright (C) 2023 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "aarch64-openEuler-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./qemu_build/qemu-system-aarch64...
+(gdb) b kvm_arm_vcpu_init
+Breakpoint 1 at 0x79d464: file ../target/arm/kvm.c, line 100.
+(gdb) r
+Starting program: /home/zt/kernel/qemu_build/qemu-system-aarch64 -accel kvm -machine virt,kernel_irqchip=on,gic-version=3,nvdimm=on -net none -nographic -kernel Image -initrd minifs.cpio.gz -bios QEMU_EFI_2403_SP1.fd -cpu host -m 3G -smp cpus=1,maxcpus=2 -append rdinit=init\ console=ttyAMA0\ earlycon=pl011,0x9000000\ cpufreq.off=1\ kpti=off\ acpi=on\ kernel.hardlockup_panic=0\ disable_sdei_nmi_watchdog\ nosoftlockup
+Missing separate debuginfos, use: dnf debuginfo-install glibc-2.38-59.oe2403sp2.aarch64
+Missing separate debuginfo for /home/zt/kernel/CMC_B191/lib64/libbpf.so.0.
+The debuginfo package for this file is probably broken.
+Missing separate debuginfo for /home/zt/kernel/CMC_B191/lib64/liburing.so.1.
+The debuginfo package for this file is probably broken.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib64/libthread_db.so.1".
+[New Thread 0xfffff627ec80 (LWP 3059187)]
+33 base 0x4000000000 size 0x4000000 enable 1 highmem_compact 1
+34 base 0x4010000000 size 0x10000000 enable 1 highmem_compact 1
+35 base 0x8000000000 size 0x8000000000 enable 1 highmem_compact 1
+36 base 0x10000000000 size 0x1000 enable 1 highmem_compact 1
+37 base 0x10001000000 size 0x1000000 enable 1 highmem_compact 1
+38 base 0x18000000000 size 0x8000000000 enable 1 highmem_compact 1
+39 base 0x20000000000 size 0x8000000000 enable 1 highmem_compact 1
+40 base 0x28000000000 size 0x100000000 enable 1 highmem_compact 1
+41 base 0x28100000000 size 0x300 enable 1 highmem_compact 1
+42 base 0x40000000000 size 0x20000000000 enable 1 highmem_compact 1
+43 base 0x60000000000 size 0x20000000000 enable 1 highmem_compact 1
+configure accelerator virt-8.2 start
+machine init start
+TLBID: KVM_CAP_ARM_TLBIDOMAIN not supported, hack max_vdomains=32
+cpu init start
+[New Thread 0xfffff5368c80 (LWP 3059189)]
+[Switching to Thread 0xfffff5368c80 (LWP 3059189)]
+
+Thread 3 "qemu-system-aar" hit Breakpoint 1, kvm_arm_vcpu_init (cs=cs@entry=0xaaaaacb28d60) at ../target/arm/kvm.c:100
+warning: 100    ../target/arm/kvm.c: No such file or directory
+Missing separate debuginfos, use: dnf debuginfo-install brotli-1.1.0-1.oe2403sp2.aarch64 bzip2-1.0.8-8.oe2403sp2.aarch64 cyrus-sasl-lib-2.1.28-5.oe2403sp2.aarch64 daxctl-libs-78-2.oe2403sp2.aarch64 dtc-1.7.0-3.oe2403sp2.aarch64 e2fsprogs-1.47.0-8.oe2403sp2.aarch64 elfutils-libelf-0.190-10.oe2403sp2.aarch64 elfutils-libs-0.190-10.oe2403sp2.aarch64 glib2-2.78.3-8.oe2403sp2.aarch64 keyutils-libs-1.6.3-9.oe2403sp2.aarch64 kmod-libs-30-4.oe2403sp2.aarch64 krb5-libs-1.21.2-15.oe2403sp2.aarch64 libatomic-12.3.1-95.oe2403sp2.aarch64 libblkid-2.39.1-22.oe2403sp2.aarch64 libcap-2.69-5.oe2403sp2.aarch64 libcurl-8.4.0-18.oe2403sp2.aarch64 libffi-3.4.4-4.oe2403sp2.aarch64 libidn2-2.3.4-1.oe2403sp2.aarch64 libmount-2.39.1-22.oe2403sp2.aarch64 libnghttp2-1.58.0-2.oe2403sp2.aarch64 libnl3-3.7.0-5.oe2403sp2.aarch64 libpsl-0.21.2-1.oe2403sp2.aarch64 libselinux-3.5-4.oe2403sp2.aarch64 libssh-0.10.5-3.oe2403sp2.aarch64 libunistring-1.1-2.oe2403sp2.aarch64 libuuid-2.39.1-22.oe2403sp2.aarch64 libxcrypt-4.4.36-3.oe2403sp2.aarch64 ncurses-libs-6.4-9.oe2403sp2.aarch64 openldap-2.6.5-6.oe2403sp2.aarch64 openssl-libs-3.0.12-17.oe2403sp2.aarch64 pcre2-10.42-13.oe2403sp2.aarch64 systemd-libs-255-43.oe2403sp2.aarch64 xz-libs-5.4.7-6.oe2403sp2.aarch64 zlib-1.2.13-4.oe2403sp2.aarch64 zstd-1.5.5-3.oe2403sp2.aarch64
+(gdb) p cs->cpu_index
+$1 = 0
+(gdb) bt full
+#0  kvm_arm_vcpu_init (cs=cs@entry=0xaaaaacb28d60) at ../target/arm/kvm.c:100
+        cpu = <optimized out>
+        init = {target = 2871283072, features = {43690, 2897382752, 43690, 2897382752, 43690, 2897394016, 43690}}
+#1  0x0000aaaaab241b34 in kvm_arch_init_vcpu (cs=cs@entry=0xaaaaacb28d60) at ../target/arm/kvm64.c:943
+        ret = 0
+        mpidr = 281474795733568
+        cpu = 0xaaaaacb28d60
+        env = 0xaaaaacb2b9b0
+        psciver = 281474795733568
+        __PRETTY_FUNCTION__ = "kvm_arch_init_vcpu"
+#2  0x0000aaaaab4b4f3c in kvm_init_vcpu (cpu=cpu@entry=0xaaaaacb28d60, errp=0xaaaaac6d00d8 <error_fatal>) at ../accel/kvm/kvm-all.c:498
+        s = 0xaaaaac79a430
+        mmap_size = <optimized out>
+        ret = <optimized out>
+        __func__ = "kvm_init_vcpu"
+#3  0x0000aaaaab4b6ab8 in kvm_vcpu_thread_fn (arg=arg@entry=0xaaaaacb28d60) at ../accel/kvm/kvm-accel-ops.c:42
+        cpu = 0xaaaaacb28d60
+        r = <optimized out>
+#4  0x0000aaaaab6545ec in qemu_thread_start (args=<optimized out>) at ../util/qemu-thread-posix.c:541
+        __cancel_buf = {__cancel_jmp_buf = {{__cancel_jmp_buf = {187650018900256, 187650018900576, 960, 281474841998080, 281474829188608, 19, 281474787287040, 281474830368768, 0, 281474795736192,
+                281474795734032, 14877629996790952176, 0, 14877536904344532532, 0, 0, 0, 0, 0, 0, 0, 0}, __mask_was_saved = 0}}, __pad = {0xfffff5368440, 0x0, 0x0, 0x0}}
+        __cancel_routine = 0xaaaaab654650 <qemu_thread_atexit_notify>
+        __cancel_arg = <optimized out>
+        __not_first_call = <optimized out>
+        qemu_thread_args = <optimized out>
+        start_routine = 0xaaaaab4b6a50 <kvm_vcpu_thread_fn>
+        arg = 0xaaaaacb28d60
+        r = <optimized out>
+#5  0x0000fffff73500e4 in ?? () from /usr/lib64/libc.so.6
+No symbol table info available.
+#6  0x0000fffff73b80cc in ?? () from /usr/lib64/libc.so.6
+No symbol table info available.
+(gdb) c
+Continuing.
+[Switching to Thread 0xfffff7f86bc0 (LWP 3059185)]
+
+Thread 1 "qemu-system-aar" hit Breakpoint 1, kvm_arm_vcpu_init (cs=cs@entry=0xaaaaacb28d60) at ../target/arm/kvm.c:100
+100     in ../target/arm/kvm.c
+(gdb) p cs->cpu_index
+$2 = 0
+(gdb) bt full
+#0  kvm_arm_vcpu_init (cs=cs@entry=0xaaaaacb28d60) at ../target/arm/kvm.c:100
+        cpu = <optimized out>
+        init = {target = 2875641344, features = {43690, 4294961184, 65535, 2871123740, 43690, 2897679344, 43690}}
+#1  0x0000aaaaab23e810 in kvm_arm_reset_vcpu (cpu=cpu@entry=0xaaaaacb28d60) at ../target/arm/kvm.c:901
+        ret = <optimized out>
+        cs = 0xaaaaacb28d60
+#2  0x0000aaaaab21eaa4 in arm_cpu_reset_hold (obj=<optimized out>) at ../target/arm/cpu.c:567
+        s = <optimized out>
+        cpu = 0xaaaaacb28d60
+        acc = <optimized out>
+        env = 0xaaaaacb2b9b0
+#3  0x0000aaaaab4c2774 in resettable_phase_hold (obj=obj@entry=0xaaaaacb28d60, opaque=opaque@entry=0x0, type=type@entry=RESET_TYPE_COLD) at ../hw/core/resettable.c:184
+        tr_func = <optimized out>
+        rc = 0xaaaaacaacdb0
+        s = 0xaaaaacb28de4
+        obj_typename = 0xaaaaac77d4d0 "host-arm-cpu"
+        __PRETTY_FUNCTION__ = "resettable_phase_hold"
+#4  0x0000aaaaab4c2ae8 in resettable_assert_reset (obj=obj@entry=0xaaaaacb28d60, type=type@entry=RESET_TYPE_COLD) at ../hw/core/resettable.c:60
+        __PRETTY_FUNCTION__ = "resettable_assert_reset"
+#5  0x0000aaaaab4c2ed8 in resettable_reset (obj=0xaaaaacb28d60, type=type@entry=RESET_TYPE_COLD) at ../hw/core/resettable.c:45
+No locals.
+#6  0x0000aaaaab4c1748 in device_cold_reset (dev=<optimized out>) at ../hw/core/qdev.c:255
+No locals.
+#7  0x0000aaaaaae52c34 in cpu_reset (cpu=cpu@entry=0xaaaaacb28d60) at ../hw/core/cpu-common.c:114
+No locals.
+#8  0x0000aaaaab221a18 in arm_cpu_realizefn (dev=0xaaaaacb28d60, errp=0xffffffffeac0) at ../target/arm/cpu.c:2399
+        cs = 0xaaaaacb28d60
+        cpu = 0xaaaaacb28d60
+        isar = 0xaaaaacb3ee40
+        acc = 0xaaaaacaac700
+        env = 0xaaaaacb2b9b0
+        pagebits = <optimized out>
+        local_err = 0x0
+        __func__ = "arm_cpu_realizefn"
+        __PRETTY_FUNCTION__ = "arm_cpu_realizefn"
+        ms = <optimized out>
+        smp_cpus = 1
+        has_secure = <optimized out>
+#9  0x0000aaaaab4c0e90 in device_set_realized (obj=0xaaaaacb28d60, value=<optimized out>, errp=0xffffffffeb78) at ../hw/core/qdev.c:510
+        dev = 0xaaaaacb28d60
+        dc = 0xaaaaacaac700
+        hotplug_ctrl = 0xaaaaacae6de0
+        bus = <optimized out>
+        ncl = <optimized out>
+        local_err = 0x0
+        unattached_parent = true
+        unattached_count = 1
+        __func__ = "device_set_realized"
+        __PRETTY_FUNCTION__ = "device_set_realized"
+#10 0x0000aaaaab4c4e74 in property_set_bool (obj=0xaaaaacb28d60, v=<optimized out>, name=<optimized out>, opaque=0xaaaaac79e500, errp=0xffffffffeb78) at ../qom/object.c:2305
+        prop = 0xaaaaac79e500
+        value = true
+#11 0x0000aaaaab4c86d0 in object_property_set (obj=obj@entry=0xaaaaacb28d60, name=name@entry=0xaaaaab7d35d8 "realized", v=v@entry=0xaaaaacb489a0, errp=0xffffffffeb78, errp@entry=0xaaaaac6d00d8 <error_fatal>)
+    at ../qom/object.c:1435
+        _auto_errp_prop = {local_err = 0x0, errp = 0xaaaaac6d00d8 <error_fatal>}
+        prop = <optimized out>
+        __func__ = "object_property_set"
+#12 0x0000aaaaab4cc03c in object_property_set_qobject (obj=obj@entry=0xaaaaacb28d60, name=name@entry=0xaaaaab7d35d8 "realized", value=value@entry=0xaaaaacb48980, errp=errp@entry=0xaaaaac6d00d8 <error_fatal>)
+    at ../qom/qom-qobject.c:28
+        v = 0xaaaaacb489a0
+        ok = <optimized out>
+#13 0x0000aaaaab4c8e00 in object_property_set_bool (obj=0xaaaaacb28d60, name=0xaaaaab7d35d8 "realized", value=<optimized out>, errp=0xaaaaac6d00d8 <error_fatal>) at ../qom/object.c:1504
+        qbool = 0xaaaaacb48980
+        ok = <optimized out>
+--Type <RET> for more, q to quit, c to continue without paging--
+        _obj5 = <optimized out>
+        __mptr = <optimized out>
+#14 0x0000aaaaab1b7bf0 in machvirt_init (machine=0xaaaaacae6de0) at ../hw/arm/virt.c:2941
+        cpuobj = 0xaaaaacb28d60
+        cs = 0xaaaaacb28d60
+        vms = 0xaaaaacae6de0
+        vmc = 0xaaaaacabe410
+        mc = <optimized out>
+        possible_cpus = <optimized out>
+        secure_tag_sysmem = 0x0
+        secure_sysmem = <optimized out>
+        tag_sysmem = 0x0
+        sysmem = 0xaaaaacaef520
+        n = 0
+        virt_max_cpus = <optimized out>
+        firmware_loaded = <optimized out>
+        aarch64 = true
+        has_ged = true
+        smp_cpus = <optimized out>
+        max_cpus = 2
+        cpu_class = <optimized out>
+        __PRETTY_FUNCTION__ = "machvirt_init"
+#15 0x0000aaaaaaec1acc in machine_run_board_init (machine=0xaaaaacae6de0, mem_path=<optimized out>, errp=<optimized out>, errp@entry=0xaaaaac6d00d8 <error_fatal>) at ../hw/core/machine.c:1511
+        _auto_errp_prop = {local_err = 0x0, errp = 0xaaaaac6d00d8 <error_fatal>}
+        machine_class = 0xaaaaacabe410
+        oc = <optimized out>
+        cc = <optimized out>
+        __func__ = "machine_run_board_init"
+#16 0x0000aaaaab1281ec in qemu_init_board () at ../system/vl.c:2697
+No locals.
+#17 qmp_x_exit_preconfig (errp=<optimized out>) at ../system/vl.c:2789
+        __func__ = "qmp_x_exit_preconfig"
+#18 0x0000aaaaab12bb74 in qmp_x_exit_preconfig (errp=<optimized out>) at ../system/vl.c:2784
+        __func__ = "qmp_x_exit_preconfig"
+        local_err = <optimized out>
+#19 qemu_init (argc=<optimized out>, argv=<optimized out>) at ../system/vl.c:3867
+        opts = <optimized out>
+        icount_opts = <optimized out>
+        accel_opts = <optimized out>
+        olist = <optimized out>
+        optind = 22
+        optarg = 0xfffffffff652 "rdinit=init console=ttyAMA0 earlycon=pl011,0x9000000 cpufreq.off=1 kpti=off acpi=on kernel.hardlockup_panic=0 disable_sdei_nmi_watchdog nosoftlockup"
+        machine_class = 0xaaaaacabe410
+        userconfig = <optimized out>
+        vmstate_dump_file = <optimized out>
+        __PRETTY_FUNCTION__ = "qemu_init"
+#20 0x0000aaaaaae513ac in main (argc=<optimized out>, argv=<optimized out>) at ../system/main.c:49
+No locals.
+(gdb) c
+Continuing.
+
+Thread 1 "qemu-system-aar" hit Breakpoint 1, kvm_arm_vcpu_init (cs=cs@entry=0xaaaaacb84a70) at ../target/arm/kvm.c:100
+100     in ../target/arm/kvm.c
+(gdb) p cs->cpu_index
+$3 = 1
+(gdb) bt full
+#0  kvm_arm_vcpu_init (cs=cs@entry=0xaaaaacb84a70) at ../target/arm/kvm.c:100
+        cpu = <optimized out>
+        init = {target = 2871283072, features = {43690, 2897758832, 43690, 2897758832, 43690, 2897770096, 43690}}
+#1  0x0000aaaaab241b34 in kvm_arch_init_vcpu (cs=cs@entry=0xaaaaacb84a70) at ../target/arm/kvm64.c:943
+        ret = 0
+        mpidr = 187649994985712
+        cpu = 0xaaaaacb84a70
+        env = 0xaaaaacb876c0
+        psciver = 187
+        __PRETTY_FUNCTION__ = "kvm_arch_init_vcpu"
+#2  0x0000aaaaab23ea54 in kvm_arm_create_host_vcpu (cpu=0xaaaaacb84a70) at ../target/arm/kvm.c:952
+        cs = 0xaaaaacb84a70
+        vcpu_id = 1
+        ret = <optimized out>
+#3  0x0000aaaaab1b9168 in machvirt_init (machine=0xaaaaacae6de0) at ../hw/arm/virt.c:2965
+        cpu_slot = 0xaaaaac79cce8
+        cpuobj = 0xaaaaacb84a70
+        cs = 0xaaaaacb84a70
+        vms = 0xaaaaacae6de0
+        vmc = 0xaaaaacabe410
+        mc = <optimized out>
+        possible_cpus = <optimized out>
+        secure_tag_sysmem = 0x0
+        secure_sysmem = <optimized out>
+        tag_sysmem = 0x0
+        sysmem = 0xaaaaacaef520
+        n = 1
+        virt_max_cpus = <optimized out>
+        firmware_loaded = <optimized out>
+        aarch64 = true
+        has_ged = true
+        smp_cpus = <optimized out>
+        max_cpus = 2
+        cpu_class = <optimized out>
+        __PRETTY_FUNCTION__ = "machvirt_init"
+#4  0x0000aaaaaaec1acc in machine_run_board_init (machine=0xaaaaacae6de0, mem_path=<optimized out>, errp=<optimized out>, errp@entry=0xaaaaac6d00d8 <error_fatal>) at ../hw/core/machine.c:1511
+        _auto_errp_prop = {local_err = 0x0, errp = 0xaaaaac6d00d8 <error_fatal>}
+        machine_class = 0xaaaaacabe410
+        oc = <optimized out>
+        cc = <optimized out>
+        __func__ = "machine_run_board_init"
+#5  0x0000aaaaab1281ec in qemu_init_board () at ../system/vl.c:2697
+No locals.
+#6  qmp_x_exit_preconfig (errp=<optimized out>) at ../system/vl.c:2789
+        __func__ = "qmp_x_exit_preconfig"
+#7  0x0000aaaaab12bb74 in qmp_x_exit_preconfig (errp=<optimized out>) at ../system/vl.c:2784
+        __func__ = "qmp_x_exit_preconfig"
+        local_err = <optimized out>
+#8  qemu_init (argc=<optimized out>, argv=<optimized out>) at ../system/vl.c:3867
+        opts = <optimized out>
+        icount_opts = <optimized out>
+        accel_opts = <optimized out>
+        olist = <optimized out>
+        optind = 22
+        optarg = 0xfffffffff652 "rdinit=init console=ttyAMA0 earlycon=pl011,0x9000000 cpufreq.off=1 kpti=off acpi=on kernel.hardlockup_panic=0 disable_sdei_nmi_watchdog nosoftlockup"
+        machine_class = 0xaaaaacabe410
+        userconfig = <optimized out>
+        vmstate_dump_file = <optimized out>
+        __PRETTY_FUNCTION__ = "qemu_init"
+#9  0x0000aaaaaae513ac in main (argc=<optimized out>, argv=<optimized out>) at ../system/main.c:49
+No locals.
+(gdb) c
+Continuing.
+memory_region_add_reservation 0x28100000000 size 768 round up 4096
+create fdt for ubios-information-table 0x28100000000
+ubios_info_tables=0x28100000000, ubc_tables_addr=0x28100000040,ubios table size=4096, UBIOS_UBC_TABLE_CNT 1,UBIOS_UMMU_TABLE_CNT 1
+ubios root total_size 64
+bus controller total_size 440
+init ub cluster mode 0
+ub_feature sysfs not available, all features disabled
+MAR0 decode_addr 0x280030d0000, cc ba 0x400000 size 0x80000, nc ba 0x600000 size 0x80000
+MAR1 decode_addr 0x280060d0000, cc ba 0x0 size 0x0, nc ba 0x0 size 0x0
+MAR2 decode_addr 0x280080d0000, cc ba 0x0 size 0x0, nc ba 0x0 size 0x0
+MAR3 decode_addr 0x2800a0d0000, cc ba 0x480000 size 0x80000, nc ba 0x680000 size 0x80000
+MAR4 decode_addr 0x2800c0d0000, cc ba 0x500000 size 0x100000, nc ba 0x700000 size 0x100000
+init ubc_table[0]=0x18000000000, interrupt_id=[0x1fff-0x2ffe]
+ubc ubios->tables[0] = 0x28100000040 ubc_table = 0xfffff4a00040
+ummu total_size 200
+ummu vendor info reg_base=0x2800e800000
+init ummu_table[0]=0x28040000000,pmu_addr=0x28040005000,pmu_size=0x1000,pmu_interrupt_id=0x898a
+ummu ubios->tables[1] = 0x28100000200 ummu_table=0xfffff4a00200
+rsv_mem total_size 64
+each ub-dev emulated ub cfg size is 0x43800 bytes
+alloc ub reg mem size: msgq_reg 1048576, fm_msgq_reg 1048576
+ummu disabled.
+load the kernel
+device init start
+
+Thread 3 "qemu-system-aar" received signal SIGUSR1, User defined signal 1.
+[Switching to Thread 0xfffff5368c80 (LWP 3059189)]
+0x0000fffff734cac8 in ?? () from /usr/lib64/libc.so.6
+(gdb) p cs->cpu_index
+No symbol "cs" in current context.
+(gdb)
+```
+
+## gdb + qemu 调试内核
+
+此时需要内核的 vmlinux 文件，并且需要在编译内核的时候添加`CONFIG_DEBUG_INFO=y`编译选项，这样才能在 gdb 中看到内核的函数名和行号等信息。
+
+起虚机指令：
+
+```shell
+qemu-system-aarch64 \
+-machine virt,gic-version=3 \
+-enable-kvm -cpu host -m 4G -smp 4 -net none -nographic \
+-kernel Image -initrd minifs.cpio.gz \
+-bios QEMU_EFI.fd \
+-append "rdinit=init root=init console=ttyAMA0 earlycon=pl011,0x9000000" \
+-s -S
+```
+
+一定要加上`-s -S`参数，这样虚机才会在启动后停在第一行，等待 gdb 连接。
+
+接着开启一个新的ssh界面，使用gdb连接到虚机并调试内核：
+
+```shell
+gdb vmlinux
+(gdb) target remote localhost:1234
+# (gdb) b kernel_main 
+# (gdb) c
+(gdb) b start_kernel 
+(gdb) c
+```
+
 # 4. qemu 使用
 
 ## 将虚机 log 存到文件中
