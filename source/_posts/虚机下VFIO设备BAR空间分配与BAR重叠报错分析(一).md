@@ -1062,8 +1062,8 @@ end note
 
 - **HVA 的唯一来源**：`mmaps[i].mmap` → 经 `memory_region_init_ram_device_ptr()` 存入 `L3.ram_block->host`
 - **GPA 的来源**：Guest 分配（PCI 枚举）→ 写 BAR 寄存器 → QEMU `pci_update_mappings()` 读出，缓存到 `r->addr`，挂入 GPEX io_mmio → 展平后在 `FlatRange.addr.start`
-- **只有 L3 级叶子节点 进 FlatView**：`render_memory_region` 先渲染 subregions，L3 占满区域后 L1/L2 无空隙可填（IO级别的L2叶子节点也不进FlatView）
-- **只有 L3 进 kvm的memslot**：`kvm_set_phys_mem` 检查 `memory_region_is_ram()`，L2 的 `ram=false` 直接跳过
+- **FlatView 的叶子节点**：`render_memory_region` 先渲染 subregions，被 subregions 占满的区域不再渲染父 MR。正常 vfio-pci 场景下只有 L3（ram_device）进 FlatView（L3 占满 L2，L2 无空隙可填）。mmap 失败时 L2 变为叶子节点（IO 类型，`terminates=true`），**也会进** FlatView——`render_memory_region` 中只检查 `terminates`，不检查 `mr->ram`
+- **只有 ram_device 类型进 memslot**：`kvm_set_phys_mem` 检查 `memory_region_is_ram()`，IO 类型（`ram=false`）直接跳过。进 FlatView ≠ 进 memslot，两道独立的关卡
 
 从 MR 树到 KVM S2 页表的 L3→FlatRange→KVMSlot→kvm_memory_slot 数据流 ASCII 图见[附录 D](#附录-d从-l3-到-kvm-s2-页表的-ascii-数据流图)。
 
