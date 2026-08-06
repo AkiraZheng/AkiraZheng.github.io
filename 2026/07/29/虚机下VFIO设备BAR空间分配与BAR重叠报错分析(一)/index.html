@@ -19,20 +19,20 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="0. 背景 VFIO 设备直通让虚拟机直接访问物理 PCI 设备，绕开 QEMU 的软件模拟以获得接近原生的 I&#x2F;O 性能。但&quot;直接访问&quot;四个字的背后，是 QEMU、KVM、Host 内核三套系统协同维护的复杂映射关系——Guest 看到的只是一个 PCI BAR 地址，这个地址要经过两层页表翻译才能到达物理设备。 ARM64 64KB PAGE_SIZE 环境下，这个问题更加棘手：页大小与 BA">
+    <meta name="description" content="0. 本文定位 VFIO 设备直通让虚拟机直接访问物理 PCI 设备，绕过 QEMU 的软件模拟以获得接近原生的 I&#x2F;O 性能。但&quot;直接访问&quot;四个字的背后，是 QEMU、KVM、Host 内核三套系统协同维护的复杂映射关系——Guest 看到的只是一个 PCI BAR 地址，这个地址要经过两层页表翻译才能到达物理设备。 本文是这个分析系列的第一篇：基础参考文章。定位是只讲正常链路——把 QEMU">
 <meta property="og:type" content="article">
-<meta property="og:title" content="虚机下 VFIO 设备 BAR 空间分配与 BAR 重叠报错分析(一)">
+<meta property="og:title" content="VFIO 设备直通基础：地址空间、页表与 QEMU&#x2F;KVM 数据结构详解(一)">
 <meta property="og:url" content="https://akirazheng.github.io/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="0. 背景 VFIO 设备直通让虚拟机直接访问物理 PCI 设备，绕开 QEMU 的软件模拟以获得接近原生的 I&#x2F;O 性能。但&quot;直接访问&quot;四个字的背后，是 QEMU、KVM、Host 内核三套系统协同维护的复杂映射关系——Guest 看到的只是一个 PCI BAR 地址，这个地址要经过两层页表翻译才能到达物理设备。 ARM64 64KB PAGE_SIZE 环境下，这个问题更加棘手：页大小与 BA">
+<meta property="og:description" content="0. 本文定位 VFIO 设备直通让虚拟机直接访问物理 PCI 设备，绕过 QEMU 的软件模拟以获得接近原生的 I&#x2F;O 性能。但&quot;直接访问&quot;四个字的背后，是 QEMU、KVM、Host 内核三套系统协同维护的复杂映射关系——Guest 看到的只是一个 PCI BAR 地址，这个地址要经过两层页表翻译才能到达物理设备。 本文是这个分析系列的第一篇：基础参考文章。定位是只讲正常链路——把 QEMU">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/dPNVQXD15CRlzoaExKs5HdU2YXUrz8zk2H8Q8XIXBMMJdIH3ipjXTf9OfL31rePQQwrO6Ye4AX9JhUY5fbhmNKfsqrpv2ivci-qcZJKr43RPxpjpVYVpxMJ4v2hZMJqjcVF4oAXCrI6cnkUJZ6ODRPocAODyYd3iqpMSKBDfhb23toUFC23a4msguJ7ADCpSuluRpPVFeJ96y-sYn0bFOnYA3OUZO9SsxRKjkx3v-wXeRvSWIYc726KSSYROkuMp6qFNOiEIb16uQX93Nxjvm2uiEUuf1QpbBxKV-p0HkVi029tJTKAlz46_eYYt51aUIz2aXZvpmUHOdzEnJjd2Z35WbmwjWqDhfopSgWb2HastvzVLU2gG8unV5NFD6DFHqV1iqoc-8fzl8ZGkrD2aAoP9l4tqKOcUaV4GXCEXIQXNjgsDFRTpCeCVUgszkZiu9yFOQ5GM-yK2mpeJBLnQE5vvvI3CQJX7udWGWk4njxKcn-IkYmJ_lSZDw_VELWbshe8kZOBEew3Bew0MogBalfq98J2T8fg6ZLb6aYaUy82TotdDvN0ktRIWjEXFc3zz8c6VDshLYfEmHl5r_VrFQxTSN_jOtr-362EQACWJGwFvPjPaaJNbKbaBzforu7_4ATWH9sSiPogvnUwGpHXgcgZc86GOeOpmXTl8RPcHJwilYcFxlirwjQSRVr4A_rRh9M-nAptgYHvreqUzqQDkzAWtUjH1xuNM-JqxioVSJlGCoZ74AETK1vhmyYuEokDYoMaAZMVhraQfiVUYiVEXUHu2rAhlMh6i5v-wP2APrildjUgIE0H7MraGJff8c9X3ustfvDUclVqDbBJAfmZEWxrQiTzyah2XWODm3iGRnY7PtGBhe60jbzsde4KnaSKc1sjrfR6ytksf41Q7lrPThnqLJxwNMxV1MlbQhppnTHuH7yKVr1y0">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/jLLRRn9H47xdLupoGfDIOQcM4Y421JNLQApfYngomA7TbDqbkuVMIqogrbkrqHWJB_KIcnglq6AgnQBmNmo7NP_y2yxPfUnMJ9_qRPQPC_FDVDyCXtGgQhGi5ptwZAIKH4sK8IlcPgOqjQpaasfHrM1kMgB4vS-JWbWkqhIgq0df8e5WqEEX4YqIE9YDJQQFde14_1GSFmNj-ghnPibeB1YDc-pxIcV-ogzlJsLPB47drdss-19cTR0-sMhDt7XzS5ysvl5e94T5PGgpxNM7_hZn05ZhWxcvnfeBu6lNRxFQLImoi1UywK0wdGx09G-0wpLW8ve_9ci0PnM0Oy48iEfNzkJj860NqO9Or8djqijPZKn9gg97pzZ6a4paSu0vH1qE1y6R2gVtfqR_cjzvqAqZHE3eYK5GItfqjY2f6JiWWz_zrNY7-fd0kHtr1F0cmwa3oTthkLvs2uSYlB5CdinAEM8tIRLojqVkoHRLt8m_Dgtg5A9mP3BU1yXujmK-TkyBgzpVCx2D9mJU-Fwn0_4H3mB2QVZpwfpYZt6W4IZbfA5S91WE2cSLCP_Fz9BnMC693M7iD2cMYAPZ_F38y9_XVpOxFdaSi3Uzg59WcvzOOyluSCS6pBKm8S39qodBD5vzR3U-6CiRPhEvZNaSlE5WSYGyp66471ZZdilz4hFbP-NgN5zn9BRgaXWAxFz9B17a5LA1LE2VImmPtUDCpRpvdctMs7gjytZDfXaJyLNjuX0uZkJOcC3fI3XK9tQdUZVkslKbLddCdhrrKA2Nd9UePNFCRFc5kNxDyPSq8kRtbUOql3lWGqfwMamWhwdqQ7mqpl4vyafOl2egncTLIbKPr0BoZa4xziHuMEEuLEt2ziWaHQ8PPsio9Qhv1e3TMaQzuMkpsZI-Lu4IJPOKaHBTsgX1rvvPFs0adZwpzGJ7Qb-cTht27g8zttbsks_tZASBE7Fht14b3nns7_Y4q0NlLkUEPdg3jQRVKmXFxl0FxTRppjqhxVeM2e7lGfaW0BFQ-lceQdvUv-Fd-i9nszFkwPzN5yzdn5oEw7f6npiV3GEhF38Nhxf07q8J_pn-0m00">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/ZLRTKnDN57_Vl-ACVKb6625Q7pB2672X34HeeanRu-niDfUmGt8ttRiBjPtEe2Cn4L3QeXRnetGKSHJ5yQC82lyBaxj9dlelzDox6qoY3yq34yuzlz_vFYUdcQFRZflFAMpAf0NTrlEGresfh6svDDDlvImRPYPDXpIzPyY4xkQS0OiwIVDd0jtTJO-C_EWIQf0uOKpFabZEp58m27M8tQI5VntJC0iwTVeiEqDitz9NNylF5-XYjctDd9iqZIcAn11H5CTqSWHEfNl71uP6eI-MWChk3VXMZPy7NhhFdyppXTkyj0N92DJNtjRMDlZkJlNPF1pCBWEVs_3UNgvkp7kpkxKdfLF7qhsAqkGJ71bq2NDIDAIET8UFWCv02bfrX2rK-SPY3gWZNRwU4BQgoVTXObEIGstfxJ4O7ezt82ZYW_0_HUdfWR59dM4-esrXG4XQ1xxqab_VuEN5CFJqA8fKwkmLQ8Y2QHbEJj9hPzJneNvL6rJFQGbrS6Zqh3PqTc0qh0Z5JWH8O1JhR0CJ1GpnzIjmF3BS5sudpUVrWk_oHAP393aIi3GKv5kGsV5uJAHZF0QrgtUzyhptu5q7oEYJtJ1sJiK2BLQsTwfFTpvpnIQEQrD0x2SFWgU0N1PukynVNO5u8aM5O-2LblZrXt1G_1smLxGCcJODZ6RaEF2Rx_ZcKlZV3mkyk8Ais0XvkxAz6G3verUrDuyb4DqFZKGQWC-ChptZStCoIz4KFRGFHsNW2P8rBHgurGuj6APcemB3pjSmrQ5mYlBL7L7EiVuXDBXLUxCE8RkpLzRWACpaTJOLRkg3IDJlEgdlFRXRsTwJTVU5JKuMLsHw-CkhVFDFlh81FQB3OG12tes_lRT-ylYZ9tphPYD2HFiqKQZjB_FL1xvvlnMwVXh0JtzNLvTCKT0PXsORGE_6XdTxiuaSxGhTppLvgLYVMuJ1iHY42ccNQJfZk1SmFynoROEmyFyA2l5DwJaUZ4d2fOwPnxeBTQoDjt25ppt6oQxkx4l_-QjR_Frh-JLFyYndEQtp4rYSdZ0jJLHjniPzfnaMdJ2pAGeIAEHk8QFZ0pPGmQHP9WeAq68KFLI_mqdKyddJ-Y8_SzDQ0VUYw8WsGfzFv8Y_V5__k2JjUkMd_CDVmeBOPITF3FSrb2hRYqrwbVtxti9bF_rjTZ5coxuaUz6YccFhbEc68xuR5lhf-7RhrnPnqc0WfplZ9fcHfDNbXpXYKfRGQPPSkDZEFJMTRn3hcOm42H4ZZbQOlCGqj2t8XKmNbm1VfEcea48GQ6Lx6GxAZs4iDgXgoQ4VLCbJdxrRsxyMw2sjyzAA5DV-UOtYBoy__AubSUcTJwe9BQx6HnFV1mkmG_3yWcdh43kcGmxqhsshZ9TMHGQ4hq7AHAlWq1PNH6c3rc4NBe9tQwkwUpL5yVY8Agmz4qS65vou8n2A9U8dJ-2HpEiqqobgdMaUwXEDeQwlt_QUhzLUxDVll80G4dWBvVgzMN_TXLi7lJ57fcKJiP4naB3VscZRV_HNx2U87rEB4KIbg40b7VIgCmBoZ2kjMN0PhYkCLTFJbXtqXlUm9No-TqTkwXRSvBIkEJW_4_82I5WMkq3IYIGmpQKvovWYcSDtuKhZF4XN6iB3IHJBMfDFeKE42Bdfg4I5ApxLM9jBefA5hAEdSqHZ8kI863MVwLFHedAQ0W88dP57f9CEqeJQlFI27YakjkHJuf27__PHNfVgslFAxhlgwflQtbwr_BIwLAozsEEFhi71lJyKvJIX6VofzHy0">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/nLTjJnj74FxkNx4GgRLf863QAZg15MXDOiM610DAYz7fm6lxnBrOTsSGhIBH90JIE2dDQvCq2Ms2H1ErIKgZEe64_r9nP_jJ_a9dT--EFMDJHQrKV_3BxRmyCplppFYOQKc6LLALa3ahQqN9a5GqBStCvWszf6K_qnNTGFC5sSBSUHRdf99Y3UcQbPQ_mgYdcpkSKIJJ7DIDB3QOzg5FwAjHX6fR2mf6qxgIvKwBu5tAuu29e_J52Kc6eSy7xOSisG9hVTEnYQ7421eS64NsqePpvvbpyxbpvRVgrdNdmGLxQREwkMNVU_jkUyKfBzUlhQ0v4zcBstPvoLvzIdumSUVbD_Rgz--sB_KTcOw5GYuer7xgimIOFS-4sj7N8SJ2GN2G61d5ULdNw5E4Fa8cP4T0nHbvkcIA5kf7dtvySj0zax9P8t1s_DI0UwHYLJSM19IYdync1wU6JLCq0H7UBt8sT9O3In81k3x7S_8CHc5mrbM8yA230XxiQSam9-6nE3oU4aVZnnCZm-afWGf3LgcNW0MIwhw-SFgmRaXQ7aTYiOOCaFV6-5MZUO3MGX4qIh9c7HKjzvb19HW29hqVX9lwzyU1rUP0L5Kgcind2hvwZpL3T4y8njuejTUp7m_HQOLcdq_EfO3cT3dhUTDpEHDR0lcaZheFZ2Tu-wbHvAn12Q_iLYxPByxPByls-csKxFdhuhLabBprGddprT2Ux178vNV6LACTiFC8EVJGVo2cwmeuXcxBIOg9QPVunsAM5fGlHKMuusb5dvaLqF1uCkd5IHBA_RQmeSgQP67JDs8P9S-6MPfc9G6dfyS64idJmVot9wE2MpGG2rR_Zs3cSh8kCWmYFFYFukeLM5rETazrlLTWnCl1SJKNSgCR7KWDacyT__g-m0rMYzO22YjOohL5N7_1qcNqQgzUhJvznbUe1yEFig2RbjinB8GJ4mDS1AnDI1o4Drktof0YMHCodaVsYvlsgqtUfN_a9rRNhUQCeG6bbJHJpciuwwSGMX-Y9bP6oVV9gU2L-WTxv62qPdu13S0xbGyGX2XheaUIXNaY6VJ2sqlZ6OiVKgtyvUO4F_YEG3uJcjKJFHe4C2zR1G3HC9uuB7owJqwa20UQYcxngOR7QNW4DNqwdXhdsPliA29B03FPP5wAZPVDDu9N8L0Udas5N2DGU31JitEgwDbZM0XO--AIirO1H8VYy1eQuaQbYSLy3j8ERxvBM5BehNl5W1HToxjd9HCRD3jkF1xRqmnzY3exE-du82xhvpVOleB2mGs5BYuH8XiAJl0ELvjCP87DyIcotK0_LRSkXBmZJyoTcHvNqZq8fiJIkY_PsHbh60j0G0OA1mecaj4A6AQTf41led1UrF1yToGKubmmEusiB92hQpJMgEOFKvVwtF1PI1ajx0ta_fx3g7x_0OBa6YOc-vyBWIgJa9lG9qFWnmtcXaV6K567ki166nXeeaD0-KGaxB4aB5YM4GdvHrrT0V24glgX_f1pVxss_2IZ4QkejdF3llS007YNpwOsHvc83UxwzRVqmeEtqIglU-eP3UfCz7-7av2cxiCe6Os4zYioSqsoT82zABNtGR8tueL0TcHdSQlwUiSfdwkzUKDny_jniwhgObq7FUe-p6YmhugbOXQcYWXmYhAMDyDGQohyCx6GfGC3nCyWcBAgAklxxVEdr460coY1nCymNHTtmnIWiFrd7Qu08sl1PNRaTjRUISiKTgc4jPAzK6FyvIwjE9NVdOVNCngiPaUIKUJSNgl-yhf-zuxztJFxfwUGrMRi_OzkW3DMotk88osj-162RcuExLQ-tQrSTcujszitgpSslDouT8sSpGtxOfccffb1KlCUZGkKJCbmA1OMJCAguGY2PDKUBMKqOE_-0qP7HeDEwVTRgpD6kYVaMIPU6eaQk5oViPGmo8Zf-9WudewFYgbuQcJq2_S_39IEHzVzu3uMEpLmF2wcJoI6nZ9Qa9P9dtgHEuyMdOVhrNEldBLbY9w6hkaMXWeimlJpmWKAX_LZj_9uj_AajhFiR3q65S7THNeYgCq5www4iYb2T67e6WHtG7TAyWLCr1VlWhw_n23eC5Hx-RosSwU-N0xqQnTOwETLQtzkkgeHq8r6Q98a1MOGN0Ez8CyXsO9Q-NDMdZYtVeNb2_KXbgB4bt4Yt1rmWoRRsgQOBwnb4Kb9Y2N6aFC5YwGcqECiGNnNTd5zKBttXtDr7VW2ki350j9xJ09_OEhtVwx-U7ctSiLUUGxyTIJPwmf2WknhPLBppW_FGD-TdTMx5_RJA8Vr67mjgShV">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLPjJzjM5FxkNt7MVN5GII6i_H0AA-rSG0k39HJjHPDbafjW4Tl8TegwQHBRI61gWBGTPT2gX8ss5DP0HrzI8k2_LBcEyozsxhL3aehbGvJudfVddESvz_YQPIkcdT7IWZMjwZEAgMWmgSIdKwQHqHCtZBHXmkoKQfEMymH9AfcqVTFGxPZw8u7khfP39MwhjrNxpdN3J13J2_3fPVvfjJ9DOxRzKB1LEqtWwcH_jR8CNqiZjs0a2axn7bqyW2ydHY0MWlhM6tThfxOnJqjvP_MrithWB9Ng3qxST_iWEiK5vt078jsN8g5BaPx0rKkJ_OB0wnE4S4T7f2UCfPcT_IP9gOOUr3Hbnlg-wuUWHhIE3X0HbvmWjzKu2GY88iZ-JwQD-7Hd_vHXsT07GnC3F6ZG9gQcwefDB7ngcnbo4O9MPj8Bp9uHRSQ-qoi8kc4JCDNKb2q0AotI_I5tFn9YNpr0t-JfqpMQFQmTLdXSGF0WSeoQUH4GG5zIILiOdPRUq_MT05e0e3D4GhvTenQYjTaFZtgsldKFYAtLSbE_LeozyfQ-B0G4T1WSaxu1rP0rJJMWzkYri_pKoV-AgF1ixCOmE7ELsj4fNTcjFRvBJzOOC_oCDnoSF_TP0JINhV-s0otzy0eLY9u0rX11G14WstW65swc5Nj29RD0NwtIzuSWSkQbI5VW0lo4eSCckX5JHjY6UKVsGegiklhSVNfyl_xB4btEGLjZcwbxMLLj970QdFA_pkO3z_ayNLp7rl3GmNZuocTNEgzS3WLyCW2wWq2pYvvrQq6YbzlhSGYDSaj-o8LTzsWF-r9xSLJVM1Uu0QEw4GNRlLHqAbketcfvb-QFwEQcPyHa2qrXzJ5PGVKuvwmLlM1qPPzkxPr9W3KkgkWfWWJkkgK3UhoAcV2usMO0DGbYjRoDgU3wG1Jv7O3wmX9TANuU07kAw3WrIDg7ZQ9NIXXxGmlB7bGSC-xa_hNdBEuw3r-UjUKiTL199CoWnIw1gpYj_5SlWu0Y194Mdi67nm_yqESvzRKvwGaroK27QtziEek5PXflTeAQYGwH7WQZNSyiGrjKMdfINyzYT-jhh-dsStgmqYlyt2Qx68dp7rugNsgMzr1EceOc9p6xRBBqN6sivIDSA54k0Z_0UT1e8T_4ph7viCvf0JiraacBsFAiQa-fkioEY6N9remIPqx8sSVWiMGhRTY0rntDvK6SlgtvWy6yETIuWJDiyndoPV19smJ9geN5QQ9c1bgbWF9yXlCUQih1VNVedYvSX6fvYLQEm4zz9eNXKQYzgj0dTw5v4u680S1zS-2UhjSNyhtSqBADcNPbU1TJVMu3umTQ-MTeMKbAMatfiayAj-_wVzasS3RCVL6E3GnAScpuE-aCiTYcQLGx_Vr5zNWTwtFV7bRBSpWhk6O2_uVwCOxm-R33jSgy-tUMxQeOjeZppfOFPzGZaZtpQV0bWQde_llwSO41uKfbDcn5za4xOId2vAZ9CxOfiat2nHRW5rnODU9sMiJ4SamQbs_5fAWy8esCHh-LezBWyEXNWOyLnFOftjDEiKotvsk578X3RCL9I9m_2uo01bIcDRhu2Fbdu2OLYyYffEwL1FtzVfE7Xc-EitDSyIc-6B4stD3iKSOY9jTpenUuIJtad6SpFYLxWZtdccTrCt-PXnNHip6EpkPJuB1Zk3N7nwz7ksJ9aouxTPVVqPM7C3JcPs9NszOUpMRPYyJOk0JY1FFXBhuuM3dC5Nr0_8AlnqvzK8zANl_2Wnc2sTpIQNsjn0qn4hrtN2s_vFzgM_zKAsznRRed9sxfX6ulzBBt3rIGS0rLWYzP_m40">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/fLPjRzjK5FxkNt5OlpXIgxafBrMqH4iXIQikj2HP94IGvJhNgLNxEjWtQJQ4j44fb3B6naHXJ43G6D6sjWDfNRMAzRzKTPB-2-wzjbExIU43ZfGulizvkSzpphc-x1359WtJ49mL7TSLMp5XIL5NQhRLmDMtBSEoONLP9oYqNaMQqZ18riAag5z7C2c55XtqKGDX5UMHuoWrb3Rq6WOLOOBi48f-4rtLwmecCvPTHRONQUmDVermbxPjQxMqhAihc3g6k20GdHW8BYsbZlSttD-tJjhF--sEU_2ozsIp-_nchxC9ukAouj3qZjRlJiNWUF-R_k6t_VRNtQsz_ixXoTREfOjBAK48fG8NSWtaa0eMCrScOnT0SO0_Y6BUo-IlKiYivH38N94y77iOXV7rUMHZP9oYux4ABcVd5k0Yp9Vpt9B-2a8o2Nwo2UuAJ5EfW-Xj1yhvz3Xm3yL9S0_s-eU_n22P50GEdKWn7v3WDc9JqorPgux3JBeGZmcAIlIcGX0Fms03D4-ZQkjDP2Sgk6ag4wccATThbgP1ablBiujfIALWCPtBoCNPkMpf56VL7OhYmUggBhFGx9aNWiRWcIN0HgHXOvWjfobQQhsbQPhSefSiqKkeeaXw0hRedQtNbWcCPQVPHm2cS7Vx8HMjzzLUzyRD15SDuEZ6RumNS5_yvRCaiYYsWci8ZjRlyHq0tK7C1mVyBPOopAVxx7xtmMFFbBa4qL2kNml0lUsDaqVVTv-slKfX9VF78_Vs7Lgur3qlVm7XAh2CG-h54vnSzykVg6CmaUaO5g7Pt0Mt_GIASHvyM3ZTKeaXqdkvc2d9LukPWfpFv1SAxyk5J6vkuTtn2luujyXge4o_7DfpoJTVdv_vvD_aNQ4YARQwBAkMQUf4fibOzZNPHZNTmc9C45Y7rw66YDnma2spZJcCGaP1nDEgOgmCs1DBfPc29BDAFekZf8OvDdN7USqNAu8xfP0p4wqX_bmSyaqXDcBhTGtBN6EHSn6KwNybizJG3S9BXzSYYqkjk8IS1o5A7cM5hVEQbQObYPUhLxCHdAORHY2hM6RKS6PeFr6vgEqqCuipEoc8EUInWXL2R1hg7TJKLJI1SxYG-T-j4Tfy8hnbE7hm7OZzjVlTZStkptlHveXxS9Px51xCpLxxwJ4TFozstLThWIcVa8DG8pfhLADC9NmxtUAw3aPTuCsRRzu_IhTtm-jWYTad0qEHzmNhXjWmMZ4CIuMSFtmqDdou8geIg3bamXKDRych-4cPdGXCLvzA6lPyKI8dqkUTayywxhC_UmUFG_eCGeJTGyWxO_wCEE4AEolI6Tb3RJf2_kFzM-xwhUE_3tltEh6eF8K69hg90dcyyUVDKj5JltTuqD-zCmxThL_f00RKqiavOXbL6rhIE7pGclgG7e6jAIe3s-6m55EI5FFfjEXvv7iOoqhPR5RoE2qIDZReyJZW2yH1iVZ4dkkyWWDMGpt9LqAxFmtFcfi5f-73mUbq7oW0eg_A8FO8vrxOeQO_B-o8NS_wAlTtNhaFl_1qS7VNtEqVt1yx8DApsg6ZIcen0lr4HfG0CC5lVnf-0_9K3ALncTxIry1_0000">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/fLTjRzDM5FxkNt46Nsmf23Tb34Mq8cL9Ma5ebeHAqpfTESbDQjMni-kR4fWcbOtN0UDbRDq0CJeng7ZVfXMqQlI_L7MI_ekTU-saTfF21nmfTUpddfVdEUVSsoCkDnXlrYt5dJVjXi6CEfICydoDEKsxSjIn70QdvanEG-yhj6eqBPvsR5umpr0OqKClNVfLazfbcgMkQzHeqZ9hDfIfpIaBeV2RcsMpOTXymc4LodnFUp-Mrn1pISQSKyKvipnles68AmetkKNXS6byyyrbxu-bhUL_kiihtjg_dQTNsl-SxQnS0JKtPxWOtiQ5MwCQRBxveRj-exjyjRsqsdsnlhNqul3-qhYYX4A1FPacTVcihQQEZsXxm711FeXYFajbJo9aqd4vf8xhFauyZCBa-sEKsTJQHiUrMNicFJKD--7OJ5QknB-ACZO6GR09QGhgTQC1gfyEp6IJCP0M2YFWhQrsrt_JO6nCKIHqtxYm0GcvHbsecWwfLc8maSp7DSKeStF1u5Iw4R0-MePHOUO2PObPUw5kx1jVg9D6pQbMOKok9fEv98oFGowPIP72v5Iwk8rp6YwYfBD6sIJ2jNZckq0VCh84CCgRp8R9cIIYzTOdrMgLjF0YEbvAXKR2Ksm7xvXPc-EmDtr8V1GG2hUVFqJHEj-ljXVF9gHg01kBlmjUm7lzLy2IAhmmmwvHsBXmMsO0c84MW7lyvOefOTDxTQTzxuc_L9W4rJBEdEw1EyylRptwkVrisQyKKJAF7tdNRsBXedbP_WgrAo0Y3gaNDnAINU_INRGCTLftBOU3khbsllrWUUl9rHYMuJLl-IaKuYAGOIgQJfbRAjwJGgf8JXPIUP9DPQVpdvDyAZCrVI8sQt-ToOc2cC4l5njmxE21OnFVl4lhULJCOEKvqc0KYvGIZCnXfmcZDTEnLIsA5ZtL2zZd-CQbzjy_jHSV2wAmc9FvxC438XEWI0U3K48VhAa8DOXESYVqzTbKIqWngLNj6DX21ZS6JPSojs6KAJ4g5JP4wSGmgIEm-FjWcsyMlKiNiI3yMG13ws9eCPH0pJTjRjQfbXYo6Alqbl0lgqd-sEPHreM_f2zBs09OZb7PxtA7KS1YcBN5SioXm96OVO5Dlwmvmqd27Jbytb4YWaf1F35A3kCgpgcv1ODmRE-gBJfBKnIn9pIWHZcHOAa1QTgMKvwd5Hy3435woh3c-tAenU94NYSoZXquZ3pSddNJTJyA98ZWjhjFyXKTF_AvEc0R8OoAzvW8aUD1bPtJct3l2wRKD2qkArIECU4NLqd19I5Ab4Ua1tBf4n97f4_1uTnfLyLxx7Un62UXVaZNvH3q9-50jpPgt2XPbBX2q3WHanqbQJ3iY3418xbCCJbnF4Lo-UaY-JGrCtKqDT35GIrLJSkY5L1dX02I_uJVo1aPoY4HHLo4eVUo6mXmrZOuP-ZQzqJiZ9tVuO_Yh8Vk-ctlxlrWr_pGKH3fun3ti77lHr2xv-wqBrzftr_LXlMpI2qAx-tzdULdcxY5ldxflJtNM-gtrhj6nf3-7ksrfEd80kjlrprhMhIB_HjPa6AI8Pd1GbMESp74jK6qOM5_GIROGAjY0vM2bOrUxGmi4Nf7Kl9RRuI8KmtkzPc0IdIxkoYHKzNvbQtlLhnNVtRMdeJqwRi8cuUGTS7y3d72HRXJf1soX-R54Fd5FdhXskP_wvtRArfKdc3ezkG9fgqy3wY--ftrjUxBcp5eBpt03Gveo-IxY6LL6BJq67pH6lqITxxMACeWCXoKObJNjO1E1yzKWOMzQJsTJki-ft8wYoDUdozG-yKI4BkhSN_6xsXP-IQK_RPxqPJ2EReFEu_ZmQ-d0AY1AdtVGupxRWTcmcvkXsGz6QZSVV7MUtZHry5xUSvx_eltwmgeUDvqSNBeBK5W4CYG4f07f-lVXa_nlegXC8xWBVuhypy0">
 <meta property="article:published_time" content="2026-07-29T06:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-05T16:31:42.807Z">
+<meta property="article:modified_time" content="2026-08-06T13:46:33.187Z">
 <meta property="article:author" content="AkiraZheng">
 <meta property="article:tag" content="VFIO">
 <meta property="article:tag" content="KVM">
@@ -45,7 +45,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>虚机下 VFIO 设备 BAR 空间分配与 BAR 重叠报错分析(一) · AkiraZheng&#39;s Time</title>
+    <title>VFIO 设备直通基础：地址空间、页表与 QEMU/KVM 数据结构详解(一) · AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -283,7 +283,7 @@
                 <a href="/">AkiraZheng&#39;s Time.</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">虚机下 VFIO 设备 BAR 空间分配与 BAR 重叠报错分析(一)</a>
+                <a href="#" class="post-name">VFIO 设备直通基础：地址空间、页表与 QEMU/KVM 数据结构详解(一)</a>
             </div>
         </div>
     
@@ -329,7 +329,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                虚机下 VFIO 设备 BAR 空间分配与 BAR 重叠报错分析(一)
+                VFIO 设备直通基础：地址空间、页表与 QEMU/KVM 数据结构详解(一)
             <!-- 404 -->
             
         </h1>
@@ -376,7 +376,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">5.5k</span>Reading time: <span class="post-count reading-time">24 min</span></span>
+                        <span>Word count: <span class="post-count word-count">8k</span>Reading time: <span class="post-count reading-time">35 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -537,23 +537,27 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h2 id="背景">0. 背景</h2>
-<p>VFIO 设备直通让虚拟机直接访问物理 PCI 设备，绕开 QEMU
+        <h1 id="本文定位">0. 本文定位</h1>
+<p>VFIO 设备直通让虚拟机直接访问物理 PCI 设备，绕过 QEMU
 的软件模拟以获得接近原生的 I/O 性能。但"直接访问"四个字的背后，是
 QEMU、KVM、Host 内核三套系统协同维护的复杂映射关系——Guest 看到的只是一个
 PCI BAR 地址，这个地址要经过两层页表翻译才能到达物理设备。</p>
-<p>ARM64 64KB PAGE_SIZE 环境下，这个问题更加棘手：页大小与 BAR
-空间大小恰好同级（64KB），一旦多个 VF 的 BAR 被分配到相邻 GPA
-区间，就容易出现空间重叠，导致 FlatView 渲染时 BAR 被截断、memslot
-注册失败，最终 Guest 访问设备时触发 kernel panic。</p>
-<p>本文是这个分析系列的第一篇，目标是<strong>把正常场景下的数据结构链路梳理清楚</strong>——四种地址空间的定义、三套页表的协作关系、QEMU
-与 KVM
-各自维护的关键结构体及其关联方式。只有先理清"正常情况下每一步发生了什么"，才能在后续文章中分析"BAR
-重叠时在哪一步出了什么问题"。</p>
+<p>本文是这个分析系列的<strong>第一篇：基础参考文章</strong>。定位是只讲正常链路——把
+QEMU 和 KVM 各自维护的数据结构、它们之间的关联方式、以及从 BAR mmap 到
+S2 页表建立的完整流程梳理清楚。内容包括：</p>
+<ul>
+<li>四种地址空间（GVA/GPA/HVA/HPA）的定义与区别</li>
+<li>三套页表（Guest S1、Host S1、Host S2）的协作关系与时序</li>
+<li>QEMU 的 MemoryRegion 树与 VFIO BAR 的三层 MR 嵌套结构</li>
+<li>FlatView 展平机制与 KVM memslot 注册流程</li>
+<li>各数据结构的 size 字段在正常场景下的取值</li>
+</ul>
+<p><strong>本文不涉及</strong> BAR
+空间重叠的异常场景分析——那是下一篇的内容。如果你是从问题文章索引过来的，可以直接跳到相关章节查阅数据结构定义或流程步骤。</p>
 <p>代码引用来自 openEuler QEMU（<code>openeuler_qemu</code>）和
 openEuler
 Kernel（<code>openeuler/kernel</code>），已逐一对照源码验证。</p>
-<h2 id="四种地址空间">1. 四种地址空间</h2>
+<h1 id="四种地址空间">1. 四种地址空间</h1>
 <p>VFIO PCI 直通场景涉及四种地址，分属 Guest、QEMU、Host
 内核三个主体管理。理解它们的区别是后续所有分析的前提。</p>
 <table>
@@ -607,29 +611,24 @@ Kernel（<code>openeuler/kernel</code>），已逐一对照源码验证。</p>
 <p>以 Guest 驱动访问设备 BAR2 内偏移 <code>0x300</code>
 的寄存器为例，一条简单的 <code>ldr</code> 指令需要经过两次页表翻译：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Guest 指令: ldr x0, [x3]        (x3 = io_base + 0x300)</span><br><span class="line"></span><br><span class="line">  GVA 0xffff_8000_ca00_0300</span><br><span class="line">    ↓ Guest S1 (TTBR1_EL1)        ← Guest OS 管理</span><br><span class="line">  GPA 0x8000_2000_0300</span><br><span class="line">    ↓ Host S2 (VTTBR_EL2)         ← KVM 管理</span><br><span class="line">  HPA 0x0800_0000_0300</span><br><span class="line">    ↓ 物理总线</span><br><span class="line">  设备寄存器</span><br></pre></td></tr></table></figure>
-<p>四种地址的高位含义各自独立，互相之间没有数值上的映射关系——GVA
-的高位来自 Guest 内核的 vmalloc 区，GPA 来自 QEMU 分配的 Guest
-物理地址空间布局，HVA 来自 Host 进程的 mmap 区域，HPA 来自 Host
-的物理内存布局。唯一不变的是低 16 位（64KB
-页内偏移），在四级翻译中保持一致。</p>
-<h2 id="三套页表的协作">2. 三套页表的协作</h2>
-<p>四种地址需要三套页表来完成翻译。VHE 模式下 Host 内核运行在 EL2，Guest
-运行在 EL1，运行时 Guest 访问设备需要 Guest S1 + Host S2 两套页表。但
-KVM 建立 S2 时，还需要第三套——Host S1 用户页表——作为"脚手架"。</p>
-<p><strong>为什么要这个脚手架？</strong> KVM 不直接知道 HPA。QEMU 通过
-<code>ioctl(KVM_SET_USER_MEMORY_REGION)</code> 把
-<code>&#123;GPA, HVA, size&#125;</code> 三元组传给 KVM 后，KVM 拿到的是
-HVA，必须调用 <code>get_user_pages()</code> 走 Host S1
-页表（TTBR0_EL2）查到设备 BAR 的 HPA，才能把 <code>GPA → HPA</code> 填入
-S2 PTE。如果 Host S1 尚未建立（mmap 后首次访问），会触发 page fault，由
-VFIO 驱动的 fault 回调 <code>io_remap_pfn_range</code> 建立 Host S1
-PTE。</p>
+<p>四种地址的高位含义各自独立，<strong>互相之间没有数值上的映射关系</strong>：</p>
+<ul>
+<li>GVA 的高位来自 Guest 内核的 vmalloc 区</li>
+<li>GPA 的高位来自 QEMU 分配的 Guest 物理地址空间布局</li>
+<li>HVA 的高位来自 Host 进程的 mmap 区域</li>
+<li>HPA 的高位来自 Host 的物理内存布局</li>
+<li>唯一不变的是<strong>低 16 位</strong>（64KB
+页内偏移），在四层翻译中保持一致</li>
+</ul>
+<h1 id="三套页表">2. 三套页表</h1>
+<p>VFIO 直通场景涉及三套页表，VHE 模式下 Host 运行在 EL2，Guest 运行在
+EL1。</p>
 <table>
 <thead>
 <tr>
 <th>寄存器</th>
-<th>翻译关系</th>
-<th>页表由谁管理</th>
+<th>翻译</th>
+<th>管理者</th>
 <th>角色</th>
 </tr>
 </thead>
@@ -638,46 +637,70 @@ PTE。</p>
 <td>TTBR1_EL1</td>
 <td>GVA → GPA</td>
 <td>Guest OS</td>
-<td>Guest 自己的翻译</td>
+<td>Guest 自己的页表</td>
 </tr>
 <tr>
 <td>TTBR0_EL2</td>
 <td>HVA → HPA</td>
 <td>Host 内核</td>
-<td>S2 的"脚手架"</td>
+<td>KVM 解析 HPA 时的"脚手架"</td>
 </tr>
 <tr>
 <td>VTTBR_EL2</td>
 <td>GPA → HPA</td>
-<td>KVM (Host 内核)</td>
-<td>Guest 运行时的硬件路径</td>
+<td>KVM</td>
+<td>硬件 Stage-2 翻译</td>
 </tr>
 </tbody>
 </table>
+<h2 id="关键认知arm64-s2-是-demand-paged">2.1 关键认知：ARM64 S2 是
+Demand-paged</h2>
+<p><code>ioctl(KVM_SET_USER_MEMORY_REGION)</code> 创建 memslot 时，KVM
+<strong>仅校验 HVA/VMA 合法性，不填 S2 PTE</strong>。真正的 S2 PTE 在
+Guest 首次访问 GPA 时，由 Stage-2 fault handler 按需建立。</p>
+<h2 id="runtime-翻译路径">2.2 Runtime 翻译路径</h2>
+<p>Guest 访问设备时硬件走两阶段翻译，<strong>Host S1
+不参与运行时翻译</strong>：</p>
+<ul>
+<li><strong>Stage 1</strong> (TTBR1_EL1)：GVA → GPA，由 Guest OS 的
+ioremap 建立</li>
+<li><strong>Stage 2</strong> (VTTBR_EL2)：GPA → HPA，由 KVM
+管理（demand-paged）</li>
+</ul>
+<p>Host S1 (TTBR0_EL2) 唯一被用到的时刻：KVM 处理 Stage-2 fault 需要解析
+HPA 时，通过 <code>get_user_pages_unlocked(HVA)</code> 沿 Host S1
+查到物理页帧号。（即，只在建立S2页表的时候有用）</p>
+<h2 id="页表建立时序">2.3 页表建立时序</h2>
 <p>三套页表的建立有严格的先后顺序：</p>
-<p><strong>Phase 1</strong> — QEMU mmap 获取 HVA（只建 VMA，Host S1
-延迟建立） <strong>Phase 2</strong> — KVM 建 memslot 时通过
-<code>get_user_pages</code> 触发 Host S1 建立，再填 S2 PTE <strong>Phase
-3</strong> — Guest 内部执行 ioremap 建立 Guest S1</p>
-<p>运行时只有 Guest S1 + Host S2 参与翻译，Host S1 不参与。详细流程见<a href="#附录-a三套页表建立流程与运行时关系">附录 A</a>。</p>
-<h2 id="qemu-侧memoryregion-树">3. QEMU 侧：MemoryRegion 树</h2>
+<ul>
+<li><strong>Phase 1</strong>：QEMU <code>mmap(VFIO fd)</code> → Host
+建立 VMA，Host S1 PTE 仍为空（lazy）</li>
+<li><strong>Phase 2</strong>：QEMU
+<code>ioctl(KVM_SET_USER_MEMORY_REGION)</code> → KVM 利用Host VMA 创建
+memslot，仅校验，不填 S2 页表，S2 页表等fault的时候按需建立。</li>
+<li><strong>Phase 3</strong>：Guest 内 <code>ioremap(GPA)</code> → 填
+Guest S1 PTE</li>
+<li><strong>Runtime</strong>：Guest 首次访问 GPA → Stage-2 fault：
+<ol type="1">
+<li><code>user_mem_abort()</code> 查 memslot 得 HVA</li>
+<li><code>get_user_pages_unlocked(HVA)</code> → Host S1 page fault →
+<code>vfio_pci_mmap_fault()</code> 填 Host S1 PTE</li>
+<li><code>kvm_pgtable_stage2_map()</code> 填 S2 PTE（属性
+<code>DEVICE_nGnRE</code>）</li>
+</ol></li>
+</ul>
+<p>详细时序见<a href="#附录-a三套页表建立流程与运行时关系">附录
+A</a>。</p>
+<h1 id="qemu-侧memoryregion-树">3. QEMU 侧：MemoryRegion 树</h1>
 <p>从本节开始，我们自顶向下梳理 QEMU 进程中维护的数据结构。QEMU 使用一棵
 <strong>MemoryRegion 树</strong>（以下简称 MR 树）来描述 Guest
-的整个物理地址空间。理解这棵树的结构是理解 BAR 空间分配的关键。</p>
-<h3 id="mr-的三种类型">3.1 MR 的三种类型</h3>
+的整个物理地址空间。</p>
+<p><strong>MR 树拓扑对比：</strong></p>
+<p><img src="http://www.plantuml.com/plantuml/svg/dPNVQXD15CRlzoaExKs5HdU2YXUrz8zk2H8Q8XIXBMMJdIH3ipjXTf9OfL31rePQQwrO6Ye4AX9JhUY5fbhmNKfsqrpv2ivci-qcZJKr43RPxpjpVYVpxMJ4v2hZMJqjcVF4oAXCrI6cnkUJZ6ODRPocAODyYd3iqpMSKBDfhb23toUFC23a4msguJ7ADCpSuluRpPVFeJ96y-sYn0bFOnYA3OUZO9SsxRKjkx3v-wXeRvSWIYc726KSSYROkuMp6qFNOiEIb16uQX93Nxjvm2uiEUuf1QpbBxKV-p0HkVi029tJTKAlz46_eYYt51aUIz2aXZvpmUHOdzEnJjd2Z35WbmwjWqDhfopSgWb2HastvzVLU2gG8unV5NFD6DFHqV1iqoc-8fzl8ZGkrD2aAoP9l4tqKOcUaV4GXCEXIQXNjgsDFRTpCeCVUgszkZiu9yFOQ5GM-yK2mpeJBLnQE5vvvI3CQJX7udWGWk4njxKcn-IkYmJ_lSZDw_VELWbshe8kZOBEew3Bew0MogBalfq98J2T8fg6ZLb6aYaUy82TotdDvN0ktRIWjEXFc3zz8c6VDshLYfEmHl5r_VrFQxTSN_jOtr-362EQACWJGwFvPjPaaJNbKbaBzforu7_4ATWH9sSiPogvnUwGpHXgcgZc86GOeOpmXTl8RPcHJwilYcFxlirwjQSRVr4A_rRh9M-nAptgYHvreqUzqQDkzAWtUjH1xuNM-JqxioVSJlGCoZ74AETK1vhmyYuEokDYoMaAZMVhraQfiVUYiVEXUHu2rAhlMh6i5v-wP2APrildjUgIE0H7MraGJff8c9X3ustfvDUclVqDbBJAfmZEWxrQiTzyah2XWODm3iGRnY7PtGBhe60jbzsde4KnaSKc1sjrfR6ytksf41Q7lrPThnqLJxwNMxV1MlbQhppnTHuH7yKVr1y0" alt="plantuml diagram"></p>
+<h2 id="mr-的三种类型">3.1 MR 的三种类型</h2>
 <p>每个 <code>MemoryRegion</code> 描述 GPA
 空间中的一段区域，核心字段如下（<code>include/exec/memory.h</code>）：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MemoryRegion</span> &#123;</span></span><br><span class="line">    <span class="keyword">char</span> *name;                 <span class="comment">// &quot;mach-virt.ram&quot;, &quot;0000:00:01.0 base BAR 4&quot;</span></span><br><span class="line">    hwaddr addr;                <span class="comment">// 在父 MR 内的偏移 (GPA = 父 MR 基址 + addr)</span></span><br><span class="line">    Int128 size;                <span class="comment">// 区域大小 (被 sub_page_bar 修改的就是这个字段)</span></span><br><span class="line">    <span class="keyword">bool</span> ram;                   <span class="comment">// RAM 类型? (QEMU 可分配后端内存)</span></span><br><span class="line">    <span class="keyword">bool</span> ram_device;            <span class="comment">// ram_device? (VFIO mmap 的 BAR)</span></span><br><span class="line">    <span class="keyword">int32_t</span> priority;           <span class="comment">// 在父的子链表中的优先级 (pci_update_mappings=1, sub_page_bar=0)</span></span><br><span class="line">    QTAILQ_HEAD(, MemoryRegion) subregions;  <span class="comment">// 子 MR 链表 (树拓扑)</span></span><br><span class="line">    RAMBlock *ram_block;        <span class="comment">// 如果 ram=true, 指向后端 RAM 块 (.host = HVA)</span></span><br><span class="line">    <span class="keyword">const</span> MemoryRegionOps *ops; <span class="comment">// 如果 ram=false, 指向 IO 回调函数表 (没有 HVA)</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>MR树是一个三层结构，叶子节点才存着实际的region内容。待会下面会讲三层结构<a href="#4-qemu-侧vfio-bar-的三层-mr-嵌套">MemoryRegions树三层结构</a>。</p>
-<p>这里有一个容易混淆的地方：<code>subregions</code> 和
-<code>ram_block</code> 是两个独立的维度，分别对应"拓扑"和"存储"：</p>
-<ul>
-<li><strong><code>subregions</code></strong> → 树结构：QTAILQ 链表，存子
-MR。负责"这个 GPA 区间包含哪些子区域"</li>
-<li><strong><code>ram_block</code></strong> →
-数据后端：<code>ram_block-&gt;host</code> 是 HVA
-指针。负责"实际数据在宿主机的哪个地址"</li>
-</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MemoryRegion</span> &#123;</span></span><br><span class="line">    <span class="keyword">char</span> *name;                 <span class="comment">// &quot;mach-virt.ram&quot;, &quot;0000:00:01.0 base BAR 4&quot;</span></span><br><span class="line">    hwaddr addr;                <span class="comment">// 在父 MR 内的偏移 (GPA = 父 MR 基址 + addr)</span></span><br><span class="line">    Int128 size;                <span class="comment">// 区域大小 (被 sub_page_bar 修改的就是这个字段)</span></span><br><span class="line">    <span class="keyword">bool</span> ram;                   <span class="comment">// QEMU 可分配后端内存</span></span><br><span class="line">    <span class="keyword">bool</span> ram_device;            <span class="comment">// VFIO mmap 的 BAR 空间</span></span><br><span class="line">    <span class="keyword">int32_t</span> priority;           <span class="comment">// 在父 MR 的 subregions 链表中的排序权重</span></span><br><span class="line">    QTAILQ_HEAD(, MemoryRegion) subregions;  <span class="comment">// 子 MR 链表 (树拓扑)</span></span><br><span class="line">    RAMBlock *ram_block;        <span class="comment">// 如果 ram=true, 指向后端 RAM 块 (.host = HVA)</span></span><br><span class="line">    <span class="keyword">const</span> MemoryRegionOps *ops; <span class="comment">// 如果 ram=false, 指向 IO 回调函数表 (没有 HVA)</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <table>
 <colgroup>
 <col style="width: 25%">
@@ -695,23 +718,11 @@ MR。负责"这个 GPA 区间包含哪些子区域"</li>
 </thead>
 <tbody>
 <tr>
-<td>有</td>
-<td>无</td>
-<td><code>bar-&gt;mr</code>, <code>region.mem</code></td>
-<td>纯容器/IO 层，通过子 MR 定义内容</td>
-</tr>
-<tr>
 <td>无</td>
 <td>有</td>
 <td><code>mmaps[0].mem</code>, <code>mach-virt.ram</code></td>
 <td><strong>叶子节点</strong>，<code>ram_block-&gt;host</code> =
 HVA</td>
-</tr>
-<tr>
-<td>有</td>
-<td>有</td>
-<td>被 overlay 切割的 RAM</td>
-<td>罕见</td>
 </tr>
 <tr>
 <td>无</td>
@@ -720,15 +731,36 @@ HVA</td>
 <td><strong>纯 IO MR 的叶子节点</strong>只通过 <code>ops</code> 回调处理
 MMIO</td>
 </tr>
+<tr>
+<td>有</td>
+<td>无</td>
+<td><code>bar-&gt;mr</code>, <code>region.mem</code></td>
+<td>纯容器/IO 层，通过子 MR 定义内容</td>
+</tr>
+<tr>
+<td>有</td>
+<td>有</td>
+<td>被 overlay 切割的 RAM</td>
+<td>罕见</td>
+</tr>
 </tbody>
 </table>
 <p><strong>只有叶子 ram_device MR 才能触发 KVM memslot
 注册，也只有叶子节点才不会再挂有subregions</strong>——中间的容器
 MR、alias MR、IO MR 没有 <code>ram_block</code>，在 memslot
 创建阶段会被直接跳过。</p>
-<p>按 <code>ram</code>、<code>ram_device</code>、<code>ops</code>
-三个标志的组合，MR 叶子节点（L3） 分为三种核心类型，它们从根本上决定了
-Guest 访问该区域时的处理路径：</p>
+<ul>
+<li><strong><code>subregions</code></strong> →
+树结构：这里是因为，每个MR都是三级结构，所以只有叶子MR才会存这个MR的实际数据，也只有叶子MR的<code>subregions</code>才会是空的。负责"这个
+GPA 区间包含哪些子区域"</li>
+<li><strong><code>ram_block</code></strong> →
+数据后端：<code>ram_block-&gt;host</code> 是 HVA
+指针。负责"实际数据在宿主机的哪个地址"</li>
+</ul>
+<p>MR 叶子节点（L3） 按
+<code>ram</code>、<code>ram_device</code>、<code>ops</code>
+三个标志的组合分为三种核心类型，它们从根本上决定了 Guest
+访问该区域时的处理路径：</p>
 <table>
 <colgroup>
 <col style="width: 11%">
@@ -762,15 +794,15 @@ Guest 访问该区域时的处理路径：</p>
 <td>S2 命中 → 硬件直达</td>
 </tr>
 <tr>
-<td>IO</td>
-<td><code>ops != NULL, ram=false</code></td>
-<td>没有</td>
-<td>否</td>
-<td>S2 miss → VM exit → QEMU ops 回调</td>
+<td><strong>IO</strong></td>
+<td><strong><code>ops != NULL, ram=false</code></strong></td>
+<td><strong>没有</strong></td>
+<td><strong>否</strong></td>
+<td><strong>S2 miss → VM exit → QEMU ops 回调</strong></td>
 </tr>
 </tbody>
 </table>
-<h3 id="mr-树完整拓扑">3.2 MR 树完整拓扑</h3>
+<h2 id="mr-树完整拓扑">3.2 MR 树完整拓扑</h2>
 <p>下面展示从根到叶子的完整 MR
 树。注意这棵树的每一层对应一个概念层级，我们分层阅读：</p>
 <p><strong>第一层：根容器</strong></p>
@@ -788,106 +820,79 @@ MR 定义内容。</p>
 <code>system_memory</code> 的高地址区间。</p>
 <p><strong>第三层：PCI 设备 BAR</strong></p>
 <p>这一层的结构取决于是否配置了 PCIe Root Port，两者有本质区别：</p>
-<p><em>无 Root Port 时</em>——所有 VF 直接挂在 bus 0 上，BAR MR 都是 GPEX
-<code>io_mmio</code> 的同级子区域。Guest 为各 BAR 分配的 GPA
-如果间隔不够，MR 在 GPA 空间中就会重叠：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">pcie-mmio → GPEX io_mmio</span><br><span class="line">  ├── Dev0 BAR0 bar-&gt;mr  [offset 0x000000]  → region.mem → mmaps[0].mem (ram_device, 2MB)</span><br><span class="line">  ├── Dev0 BAR2 bar-&gt;mr  [offset 0x200000]  → region.mem → mmaps[0].mem (ram_device, 64KB)</span><br><span class="line">  ├── Dev1 BAR0 bar-&gt;mr  [offset 0x400000]  → region.mem → mmaps[0].mem (ram_device, 2MB)</span><br><span class="line">  ├── Dev1 BAR2 bar-&gt;mr  [offset 0x208000]  → region.mem → mmaps[0].mem (ram_device, 64KB)</span><br><span class="line">  │   (pci_update_mappings 逐个遍历 PCI_NUM_REGIONS, 每个 BAR 独立挂入 GPEX io_mmio)</span><br><span class="line">  │   (两个 VF 的 BAR2 offset 可能靠太近 → GPA 重叠)</span><br></pre></td></tr></table></figure>
-<p><em>有 Root Port 时</em>——每个 Root Port 是一个 PCI
-Bridge（<code>pci_bridge.c:382</code>），拥有独立的
+<p><em>无 Root Port 时</em>：</p>
+<p>所有 VF 直接挂在 bus 0 上，BAR MR 都是 GPEX <code>io_mmio</code>
+的同级子区域</p>
+<p>从bar-&gt;mr 到 bar.region.mem 到
+bar.region.mem.mmaps[0].mem，就是ram_device MR树的三层结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pcie-mmio → GPEX io_mmio</span><br><span class="line">  ├── Dev0 BAR0 bar-&gt;mr  [offset 0x000000]  → region.mem → mmaps[0].mem (ram_device, 2MB)</span><br><span class="line">  ├── Dev0 BAR2 bar-&gt;mr  [offset 0x200000]  → region.mem → mmaps[0].mem (ram_device, 64KB)</span><br><span class="line">  ├── Dev1 BAR0 bar-&gt;mr  [offset 0x400000]  → region.mem → mmaps[0].mem (ram_device, 2MB)</span><br><span class="line">  └── Dev1 BAR2 bar-&gt;mr  [offset 0x208000]  → region.mem → mmaps[0].mem (ram_device, 64KB)</span><br></pre></td></tr></table></figure>
+<p><em>有 Root Port 时</em>：</p>
+<p>每个 Root Port 是一个 PCI Bridge，拥有独立的
 <code>sec_bus.address_space_mem</code>。Bridge 通过
-<code>pci_bridge_init_alias</code>（<code>pci_bridge.c:161</code>）在父总线地址空间中创建一个
-alias MR（bridge window），映射到自己的
-<code>sec_bus.address_space_mem</code>。Guest 为每个 Root Port
-分配独立的 bridge window，window 之间不重叠，因此不同 Root Port 下的 VF
-BAR 不会在 GPA 空间中冲突：</p>
+<code>pci_bridge_init_alias</code>在父总线地址空间中创建一个 alias
+MR（bridge window），映射到自己的
+<code>sec_bus.address_space_mem</code>。</p>
+<p>Guest 为每个 Root Port 分配独立的 bridge window，window
+之间不重叠，因此不同 Root Port 下的 VF BAR 不会在 GPA 空间中冲突：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">pcie-mmio → GPEX io_mmio</span><br><span class="line">  └── RootPort0 bridge_mem (alias)  [offset = bridge window base]</span><br><span class="line">        │   pci_bridge_init_alias 创建的 alias, priority=1</span><br><span class="line">        └── → RootPort0 sec_bus.address_space_mem</span><br><span class="line">              └── Dev0 bar-&gt;mr  → ... → mmaps[0].mem (ram_device)</span><br><span class="line"></span><br><span class="line">  └── RootPort1 bridge_mem (alias)  [offset = 另一个 bridge window base]</span><br><span class="line">        └── → RootPort1 sec_bus.address_space_mem</span><br><span class="line">              └── Dev1 bar-&gt;mr  → ... → mmaps[0].mem (ram_device)</span><br></pre></td></tr></table></figure>
-<p><strong>这一拓扑差异是后续多 VF 场景中 BAR
-重叠问题的前置条件</strong>：无 Root Port 时，多个 VF 的 BAR 在同一个
-GPA 窗口中竞争空间；有 Root Port 时，每个 VF 被隔离在独立的 bridge
-window 中。</p>
-<p><strong>MR 树拓扑对比（PlantUML）：</strong></p>
-<p><img src="http://www.plantuml.com/plantuml/svg/dPNVQXD15CRlzoaExKs5HdU2YXUrz8zk2H8Q8XIXBMMJdIH3ipjXTf9OfL31rePQQwrO6Ye4AX9JhUY5fbhmNKfsqrpv2ivci-qcZJKr43RPxpjpVYVpxMJ4v2hZMJqjcVF4oAXCrI6cnkUJZ6ODRPocAODyYd3iqpMSKBDfhb23toUFC23a4msguJ7ADCpSuluRpPVFeJ96y-sYn0bFOnYA3OUZO9SsxRKjkx3v-wXeRvSWIYc726KSSYROkuMp6qFNOiEIb16uQX93Nxjvm2uiEUuf1QpbBxKV-p0HkVi029tJTKAlz46_eYYt51aUIz2aXZvpmUHOdzEnJjd2Z35WbmwjWqDhfopSgWb2HastvzVLU2gG8unV5NFD6DFHqV1iqoc-8fzl8ZGkrD2aAoP9l4tqKOcUaV4GXCEXIQXNjgsDFRTpCeCVUgszkZiu9yFOQ5GM-yK2mpeJBLnQE5vvvI3CQJX7udWGWk4njxKcn-IkYmJ_lSZDw_VELWbshe8kZOBEew3Bew0MogBalfq98J2T8fg6ZLb6aYaUy82TotdDvN0ktRIWjEXFc3zz8c6VDshLYfEmHl5r_VrFQxTSN_jOtr-362EQACWJGwFvPjPaaJNbKbaBzforu7_4ATWH9sSiPogvnUwGpHXgcgZc86GOeOpmXTl8RPcHJwilYcFxlirwjQSRVr4A_rRh9M-nAptgYHvreqUzqQDkzAWtUjH1xuNM-JqxioVSJlGCoZ74AETK1vhmyYuEokDYoMaAZMVhraQfiVUYiVEXUHu2rAhlMh6i5v-wP2APrildjUgIE0H7MraGJff8c9X3ustfvDUclVqDbBJAfmZEWxrQiTzyah2XWODm3iGRnY7PtGBhe60jbzsde4KnaSKc1sjrfR6ytksf41Q7lrPThnqLJxwNMxV1MlbQhppnTHuH7yKVr1y0" alt="plantuml diagram"></p>
-<h2 id="qemu-侧vfio-bar-的三层-mr-嵌套">4. QEMU 侧：VFIO BAR 的三层 MR
-嵌套</h2>
-<p>理解 VFIO BAR 数据结构的关键是<strong>区分两样东西</strong>：</p>
+<p>两种拓扑的核心差异在于：无 Root Port 时，多个 VF 的 BAR 在同一个 GPA
+窗口中竞争空间；有 Root Port 时，每个 VF 被隔离在独立的 bridge window
+中。</p>
+<h1 id="qemu-侧vfio-bar-的三层-mr-嵌套">4. QEMU 侧：VFIO BAR 的三层 MR
+嵌套</h1>
+<p>VFIO BAR 的数据结构包含 <code>VFIOBAR</code> →
+<code>VFIORegion</code> → <code>VFIOMmap</code> 三层，正好对应
+<code>subregions</code> 链上由浅入深的三个 MR 节点（L1→L2→L3）：</p>
 <ul>
-<li><strong>C 结构体</strong>（<code>VFIOBAR</code> /
-<code>VFIORegion</code> /
-<code>VFIOMmap</code>）——它们是数据的<strong>容器</strong>，定义谁拥有谁</li>
-<li><strong>MemoryRegion</strong>（MR 树节点）——它们定义 GPA
-空间的拓扑，通过 <code>subregions</code> 链表形成父子关系</li>
+<li><code>VFIOBAR</code>：持有 <code>bar-&gt;mr</code>（L1，纯容器，无
+ram_block，无 ops）</li>
+<li><code>VFIORegion</code>：持有 <code>region-&gt;mem</code>（L2，IO
+层，<code>ops=vfio_region_ops</code>，无 ram_block）</li>
+<li><code>VFIOMmap</code>：内嵌
+<code>mmaps[0].mem</code>（L3，ram_device
+叶子，<code>ram_block-&gt;host=HVA</code>，真正与 KVM memslot
+对接的一层）</li>
 </ul>
-<p>容易混淆的根源是命名：<code>mr</code>、<code>mem</code>、<code>mmap</code>、<code>ram_block</code>
-看起来相似但分属不同层级。</p>
-<h3 id="subregions-链一个-bar-的三个-mr-如何串联">4.1 subregions
-链：一个 BAR 的三个 MR 如何串联</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">VFIOBAR</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">MemoryRegion</span> *<span class="title">mr</span>;</span> <span class="comment">// L1 MR</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">VFIORegion</span> <span class="title">region</span>;</span></span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">VFIORegion</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">MemoryRegion</span> *<span class="title">mem</span>;</span> <span class="comment">// L2 MR</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">VFIOMmap</span> *<span class="title">mmaps</span>;</span> <span class="comment">//mmaps[0].mem挂着 L3 MR</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">VFIOMmap</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">MemoryRegion</span> *<span class="title">mem</span>;</span> <span class="comment">// L3 MR，叶子节点，存这段数据的实际属性</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="subregions-链一个-bar-的三个-mr-如何串联">4.1 subregions
+链：一个 BAR 的三个 MR 如何串联</h2>
 <p>下面以 VF 的 BAR2（64KB，非 sparse）为例，展示三个 MR 如何通过
 <code>subregions</code> 和指针形成父子链。</p>
 <p><strong>图 A：指针/值 与 subregions 嵌套</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">VFIOPCIDevice (pci.h:137)</span><br><span class="line">  └── .bars[2]  ──────────── VFIOBAR (值包含) ────────</span><br><span class="line">       │</span><br><span class="line">       ├── .mr ───────────────→ [bar-&gt;mr]  ● L1</span><br><span class="line">       │   (MemoryRegion *,       堆分配</span><br><span class="line">       │     pci.c:1806 g_new0)   .ram = false</span><br><span class="line">       │                          .ram_device = false</span><br><span class="line">       │                          .ram_block = NULL</span><br><span class="line">       │                          .subregions ──┐</span><br><span class="line">       │                                        │  ② 指针引用[bar.region.mem]</span><br><span class="line">       │    ┌───────────────────────────────────┘</span><br><span class="line">       │    │  pci.c:1812</span><br><span class="line">       │    │  memory_region_add_subregion(bar-&gt;mr, 0, bar-&gt;region.mem)</span><br><span class="line">       │    │</span><br><span class="line">       └── .region ─────────── VFIORegion (值包含) ──</span><br><span class="line">            │</span><br><span class="line">            ├── .mem ──────────→ [region.mem]  ● L2</span><br><span class="line">            │   (MemoryRegion *,    堆分配</span><br><span class="line">            │     helpers.c:164     .ram = false</span><br><span class="line">            │     init_io)          .ram_device = false</span><br><span class="line">            │                       .ram_block = NULL</span><br><span class="line">            │                       .ops = vfio_region_ops</span><br><span class="line">            │                       .subregions ──┐</span><br><span class="line">            │                                     │  ② 指针引用[bar.region.mem.mmaps[i].mem]</span><br><span class="line">            │     ┌───────────────────────────────┘</span><br><span class="line">            │     │  helpers.c:474</span><br><span class="line">            │     │  memory_region_add_subregion(region-&gt;mem,</span><br><span class="line">            │     │       region-&gt;mmaps[i].offset,</span><br><span class="line">            │     │       &amp;region-&gt;mmaps[i].mem)</span><br><span class="line">            │     │</span><br><span class="line">            └── .mmaps ─────────→ [VFIOMmap 数组]</span><br><span class="line">                  │                (g_new0, helpers.c:386)</span><br><span class="line">                  │</span><br><span class="line">                  ├── mmaps[0] ── VFIOMmap (值包含) ──</span><br><span class="line">                  │   ├── .mmap = 0x7fff_xxxx ←──── mmap() 返回值 (HVA)</span><br><span class="line">                  │   │                  ③ 值嵌入 (不是指针!)</span><br><span class="line">                  │   └── .mem ─── [mmaps[0].mem]  ● L3</span><br><span class="line">                  │                     .ram = true</span><br><span class="line">                  │                     .ram_device = true</span><br><span class="line">                  │                     .ops = NULL</span><br><span class="line">                  │                     .ram_block ──→ RAMBlock</span><br><span class="line">                  │                     .terminates    .host = HVA ✓</span><br><span class="line">                  │                     = true         .size = 64KB</span><br><span class="line">                  │                     .subregions = 空 ← 叶子!</span><br><span class="line">                  │</span><br><span class="line">                  └── mmaps[1] ── VFIOMmap (值包含) ──  ← 仅 sparse BAR</span><br><span class="line">                      ├── .mmap = 0x7fff_yyyy              存在 (nr_mmaps&gt;1)</span><br><span class="line">                      └── .mem ─── [mmaps[1].mem]  ● L3&#x27;</span><br><span class="line">                                    (同上, 另一个叶子 MR)</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p><strong>关于 mmaps 数量</strong>：绝大多数 PCI BAR
-是连续的可映射区域，此时
-<code>nr_mmaps = 1</code>，<code>mmaps[0]</code> 覆盖整个 BAR（无论 BAR
-多大——64KB、128KB、2MB 都只有一个 mmaps 条目）。多个 mmaps 仅出现在
-<strong>sparse BAR</strong> 场景——某些设备的 BAR
-内部存在不连续的可映射区域（如 GPU 的 VRAM 被寄存器窗口打断），此时每个
-sparse area 各自对应一个 mmaps 条目。本文后续讨论均以
+<p><strong>关于 mmaps 数量</strong>：</p>
+<p>绝大多数 PCI BAR 是连续的，此时 <code>nr_mmaps = 1</code>，单个
+<code>mmaps[0]</code> 覆盖整个 BAR。</p>
+<p>多个 mmaps 仅出现在 <strong>sparse BAR</strong> 场景（BAR
+内部存在不连续的可映射区域，如 GPU VRAM 被寄存器窗口打断）。本文后续均以
 <code>nr_mmaps = 1</code> 为前提。</p>
 </blockquote>
-<p><strong>关键点</strong>：</p>
-<table>
-<colgroup>
-<col style="width: 28%">
-<col style="width: 28%">
-<col style="width: 42%">
-</colgroup>
-<thead>
-<tr>
-<th>连接</th>
-<th>方式</th>
-<th>代码位置</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>① <code>bar-&gt;mr</code> → L1 MR</td>
-<td>指针 (<code>g_new0</code> 堆分配)</td>
-<td><code>pci.c:1806</code></td>
-</tr>
-<tr>
-<td>② L1.subregions 挂 L2</td>
-<td><code>memory_region_add_subregion(bar-&gt;mr, 0, bar-&gt;region.mem)</code></td>
-<td><code>pci.c:1812</code></td>
-</tr>
-<tr>
-<td>③ <code>bar-&gt;region.mem</code> → L2 MR</td>
-<td>指针 (堆分配)</td>
-<td><code>helpers.c:164</code></td>
-</tr>
-<tr>
-<td>④ L2.subregions 挂 L3</td>
-<td><code>memory_region_add_subregion(region-&gt;mem, offset, &amp;mmaps[i].mem)</code></td>
-<td><code>helpers.c:474</code></td>
-</tr>
-<tr>
-<td>⑤ <code>mmaps[i].mem</code> → L3 MR</td>
-<td><strong>值包含</strong> (嵌入 VFIOMmap 内部)</td>
-<td><code>helpers.c:469</code></td>
-</tr>
-<tr>
-<td>⑥ L3.ram_block→HVA</td>
-<td><code>mmaps[i].mmap</code> 赋给 <code>ram_block-&gt;host</code></td>
-<td><code>helpers.c:469-472</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>mmaps[1] 存在吗？</strong> 是的——当 BAR 是 <strong>sparse
-类型</strong>时（<code>nr_mmaps &gt; 1</code>），每个 sparse area 独立
-mmap，各自生成一个叶子 MR 挂在 <code>region.mem</code> 的
-<code>subregions</code> 下。非 sparse 时 <code>nr_mmaps = 1</code>。</p>
-<h3 id="mmap-成功-vs-失败-bar-结构的两种形态">4.2 mmap 成功 vs 失败 ——
-BAR 结构的两种形态</h3>
+<h2 id="mmap-成功-vs-失败-bar-结构的两种形态">4.2 mmap 成功 vs 失败 ——
+BAR 结构的两种形态</h2>
+<p>QEMU mmap BAR的时候，可能会成功，也可能失败：</p>
+<ul>
+<li>BAR mmap 成功时，BAR 的 MR 会有三层 MR，且 <code>mmaps[0].mem</code>
+挂载了 <code>ram_block</code>。
+<ul>
+<li>也就是会存 Host VMA 返回的 HVA。可以用于后面引导建立 S2 映射。</li>
+<li>可以直接执行 BAR 的 read/write，由 guest
+驱动通过系统调用直接访问。</li>
+</ul></li>
+<li>BAR mmap 失败时，BAR 的 MR 只有两层 MR，且 <code>mmaps[0].mem</code>
+挂载了 <code>ram_block</code>。
+<ul>
+<li>也就是会存 <code>NULL</code>。不能用于引导建立 S2 映射</li>
+<li>此时的叶子节点<code>ops</code>变量注册了
+<code>ops-&gt;read/write</code>回调函数，guest 驱动访问 BAR 时会触发 VM
+exit，由 QEMU 通过 pread/pwrite 借助 host vfio
+的<code>pread(VFIO_FD)/pwrite(VFIO_FD)</code>走慢路径访问设备。</li>
+</ul></li>
+</ul>
+<p>叶子节点的各种属性和处理流程参考<a href="#31-mr-的三种类型">3.1 MR
+的三种类型</a>。</p>
+<p>MMIO 快/慢 路径访问流程参考<a href="#附录-bops-回调与-mmio-慢路径派发">附录 B：ops 回调与 MMIO
+慢路径派发</a>。</p>
 <p><img src="http://www.plantuml.com/plantuml/svg/jLLRRn9H47xdLupoGfDIOQcM4Y421JNLQApfYngomA7TbDqbkuVMIqogrbkrqHWJB_KIcnglq6AgnQBmNmo7NP_y2yxPfUnMJ9_qRPQPC_FDVDyCXtGgQhGi5ptwZAIKH4sK8IlcPgOqjQpaasfHrM1kMgB4vS-JWbWkqhIgq0df8e5WqEEX4YqIE9YDJQQFde14_1GSFmNj-ghnPibeB1YDc-pxIcV-ogzlJsLPB47drdss-19cTR0-sMhDt7XzS5ysvl5e94T5PGgpxNM7_hZn05ZhWxcvnfeBu6lNRxFQLImoi1UywK0wdGx09G-0wpLW8ve_9ci0PnM0Oy48iEfNzkJj860NqO9Or8djqijPZKn9gg97pzZ6a4paSu0vH1qE1y6R2gVtfqR_cjzvqAqZHE3eYK5GItfqjY2f6JiWWz_zrNY7-fd0kHtr1F0cmwa3oTthkLvs2uSYlB5CdinAEM8tIRLojqVkoHRLt8m_Dgtg5A9mP3BU1yXujmK-TkyBgzpVCx2D9mJU-Fwn0_4H3mB2QVZpwfpYZt6W4IZbfA5S91WE2cSLCP_Fz9BnMC693M7iD2cMYAPZ_F38y9_XVpOxFdaSi3Uzg59WcvzOOyluSCS6pBKm8S39qodBD5vzR3U-6CiRPhEvZNaSlE5WSYGyp66471ZZdilz4hFbP-NgN5zn9BRgaXWAxFz9B17a5LA1LE2VImmPtUDCpRpvdctMs7gjytZDfXaJyLNjuX0uZkJOcC3fI3XK9tQdUZVkslKbLddCdhrrKA2Nd9UePNFCRFc5kNxDyPSq8kRtbUOql3lWGqfwMamWhwdqQ7mqpl4vyafOl2egncTLIbKPr0BoZa4xziHuMEEuLEt2ziWaHQ8PPsio9Qhv1e3TMaQzuMkpsZI-Lu4IJPOKaHBTsgX1rvvPFs0adZwpzGJ7Qb-cTht27g8zttbsks_tZASBE7Fht14b3nns7_Y4q0NlLkUEPdg3jQRVKmXFxl0FxTRppjqhxVeM2e7lGfaW0BFQ-lceQdvUv-Fd-i9nszFkwPzN5yzdn5oEw7f6npiV3GEhF38Nhxf07q8J_pn-0m00" alt="plantuml diagram"></p>
 <blockquote>
 <p><strong>注意</strong>：<code>bar-&gt;mr</code> 虽然调用
@@ -895,96 +900,280 @@ BAR 结构的两种形态</h3>
 L1 是没有 IO 回调的纯容器。真正有 IO 回调的是 L2
 <code>bar-&gt;region.mem</code>（<code>ops=vfio_region_ops</code>）。</p>
 </blockquote>
-<h3 id="bar-如何挂入-pci-总线-mr-树">4.3 BAR 如何挂入 PCI 总线 MR
-树</h3>
+<h2 id="bar-如何挂入-pci-总线-mr-树">4.3 BAR 如何挂入 PCI 总线 MR
+树</h2>
 <p>三个 MR 的内部嵌套（L1→L2→L3）建立后，L1 <code>bar-&gt;mr</code>
-还需要挂入 PCI 总线的 MMIO 地址空间。这一步由
-<code>pci_update_mappings()</code>（<code>hw/pci/pci.c:1559</code>）在
-Guest 写入 BAR 寄存器时触发：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// r = &amp;d-&gt;io_regions[i]  — PCIIORegion</span></span><br><span class="line"><span class="comment">// r-&gt;address_space = GPEX io_mmio (或 bridge 的 address_space_mem)</span></span><br><span class="line"><span class="comment">// r-&gt;memory        = bar-&gt;mr (L1)</span></span><br><span class="line"><span class="comment">// r-&gt;addr          = Guest 分配的 GPA 基址</span></span><br><span class="line">memory_region_add_subregion_overlap(r-&gt;address_space, r-&gt;addr, r-&gt;memory, <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-<p><code>PCIIORegion</code> 是 BAR 的"台账"——记录 BAR 的大小和 GPA
-地址。它在
-<code>pci_register_bar()</code>（<code>pci.c:1323</code>）中初始化：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">r-&gt;size  = memory_region_size(bar-&gt;mr);  <span class="comment">// = 64KB, 之后不再改变</span></span><br><span class="line">r-&gt;addr  = PCI_BAR_UNMAPPED;            <span class="comment">// 尚未分配 GPA</span></span><br><span class="line">wmask    = ~(size - <span class="number">1</span>);                 <span class="comment">// 0xFFFFFFFFFFFF0000</span></span><br></pre></td></tr></table></figure>
-<p>Guest PCI 枚举时写 BAR=全 1，QEMU 返回
-<code>val &amp; wmask</code>，Guest 由此推断 BAR
-大小。<strong><code>r-&gt;size</code> 决定了 Guest 为 BAR 保留的 GPA
-窗口大小，也决定了多个 BAR 的 GPA 间隔——这是后续 BAR
-重叠问题的根源。</strong></p>
-<h2 id="qemu-侧flatview-展平与-memslot-注册">5. QEMU 侧：FlatView 展平与
-memslot 注册</h2>
-<h3 id="flatview-与-flatrange">5.1 FlatView 与 FlatRange</h3>
-<p>MR 树是嵌套结构，但 KVM 需要按 GPA 线性查找。QEMU 的解决方案是：把 MR
-树<strong>展开</strong>成 FlatView——一组按 GPA 排序、互不重叠的
-<code>FlatRange</code> 数组。</p>
-<p><code>FlatView</code> 是容器，<code>FlatRange</code>
-是数组元素。两者是一对多关系：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// memory.h:1278 — FlatView = FlatRange[] + 元数据</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FlatView</span> &#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> ref;</span><br><span class="line">    FlatRange *ranges;       <span class="comment">// 数组指针</span></span><br><span class="line">    <span class="keyword">unsigned</span> nr;             <span class="comment">// 有效元素个数</span></span><br><span class="line">    <span class="keyword">unsigned</span> nr_allocated;   <span class="comment">// 已分配容量</span></span><br><span class="line">    MemoryRegion *root;      <span class="comment">// 根 MR</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// memory.c:222 — FlatRange = 一个 GPA 区段</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FlatRange</span> &#123;</span></span><br><span class="line">    MemoryRegion *mr;           <span class="comment">// 指向对应的 MR</span></span><br><span class="line">    hwaddr offset_in_region;    <span class="comment">// 在 MR 内部的偏移</span></span><br><span class="line">    AddrRange addr;             <span class="comment">// &#123;start: GPA, size: 字节数&#125;</span></span><br><span class="line">    <span class="keyword">uint8_t</span> dirty_log_mask;</span><br><span class="line">    <span class="keyword">bool</span> romd_mode;</span><br><span class="line">    <span class="keyword">bool</span> readonly;</span><br><span class="line">    <span class="keyword">bool</span> nonvolatile;</span><br><span class="line">    <span class="keyword">bool</span> unmergeable;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p><code>generate_memory_topology()</code>（<code>memory.c:756</code>）调用
-<code>render_memory_region()</code> 递归遍历 MR 树的
-<code>subregions</code> 链表，生成 <code>FlatRange[]</code> 数组，再调用
-<code>flatview_simplify()</code> 合并相邻同类区间。</p>
-<h3 id="flatview-渲染规则与-bar-重叠截断">5.2 FlatView 渲染规则与 BAR
-重叠截断</h3>
-<p>FlatView 渲染时，子 MR 按 QTAILQ
-链表顺序遍历（<code>memory.c:646</code>），高 priority 的先渲染占据
-GPA，低 priority 的只填空隙（<code>memory.c:666</code>
-注释：<code>Render the region itself into any gaps left by the current view</code>）。</p>
-<p>QTAILQ 排序规则（<code>memory.c:2699-2701</code>）：priority 降序，同
-priority 时后插入的排前面（运算符是 <code>&gt;=</code>，配合
-<code>INSERT_BEFORE</code>）。</p>
-<p><strong>后续多 VF 场景中 BAR 重叠截断就发生在 FlatView
-渲染这一步</strong>——当两个 BAR 的 GPA 区间重叠时，先渲染的 BAR
-占据空间，后渲染的 BAR 被截断，导致 FlatRange 中的
-<code>addr.size &lt; mr-&gt;size</code>。</p>
-<h3 id="从-flatview-到-kvm-memslot-的完整调用链">5.3 从 FlatView 到 KVM
-memslot 的完整调用链</h3>
-<p><strong>FlatView 本身不直接参与 KVM memslot 创建——它通过
-MemoryRegionSection 作为中介。</strong></p>
-<p>当 MR 树发生变更时，QEMU 重新生成 FlatView，然后 diff 新旧两个
-FlatView，将差异转化为 MemoryRegionSection，派发给所有
-MemoryListener（KVM 是其中一个）。调用链如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">MR 树变更</span><br><span class="line">  ↓</span><br><span class="line">generate_memory_topology()              [memory.c:756]</span><br><span class="line">  新 FlatView = render_memory_region() 遍历 subregions → FlatRange[]</span><br><span class="line">  ↓</span><br><span class="line">address_space_update_topology_pass()    [memory.c:953]</span><br><span class="line">  旧 FlatView vs 新 FlatView diff:</span><br><span class="line">    • frold-&gt;addr 不在 frnew 中 → MEMORY_LISTENER_CALL(region_del)</span><br><span class="line">    • frnew-&gt;addr 不在 frold 中 → MEMORY_LISTENER_CALL(region_add)</span><br><span class="line">  ↓</span><br><span class="line">section_from_flat_range(fr, fv)        [memory.c:237]</span><br><span class="line">  FlatRange → MemoryRegionSection &#123;</span><br><span class="line">    .mr       = fr-&gt;mr,                          // 数据来源</span><br><span class="line">    .fv       = fv,                              // 上下文（哪个 FlatView 产生的）</span><br><span class="line">    .size     = fr-&gt;addr.size,                   // 区间大小（可能被截断!）</span><br><span class="line">    .offset_within_address_space = fr-&gt;addr.start // = GPA 基址</span><br><span class="line">  &#125;</span><br><span class="line">  ↓</span><br><span class="line">MEMORY_LISTENER_UPDATE_REGION()          [memory.c:160]</span><br><span class="line">  → 遍历 AddressSpace-&gt;listeners 链表, 调用 listener-&gt;region_add()</span><br><span class="line">  ↓</span><br><span class="line">kvm_region_add(listener, &amp;section)      [kvm-all.c:1584]</span><br><span class="line">  → 将 section 排队到 kml-&gt;transaction_add 链表 (先不执行!)</span><br><span class="line">  ↓</span><br><span class="line">kvm_region_commit(listener)             [kvm-all.c:1632]</span><br><span class="line">  → 先 DEL 后 ADD, 事务性提交</span><br><span class="line">  ↓</span><br><span class="line">kvm_set_phys_mem(kml, &amp;section, add)   [kvm-all.c:1338]</span><br><span class="line">  │  1. !memory_region_is_ram(mr)? → 跳过 (IO 类型, 无 memslot)</span><br><span class="line">  │  2. kvm_align_section → 0?     → 跳过 (截断后 &lt; PAGE_SIZE)</span><br><span class="line">  │  3. ram = memory_region_get_ram_ptr(mr)  → 取 HVA</span><br><span class="line">  │  4. 组装 KVMSlot &#123;start_addr=GPA, memory_size, ram=HVA&#125;</span><br><span class="line">  ↓</span><br><span class="line">ioctl(KVM_SET_USER_MEMORY_REGION)       [kvm-all.c:318]</span><br><span class="line">  → KVM 内核: 建立 kvm_memory_slot → 填 S2 PTE</span><br></pre></td></tr></table></figure>
-<p><strong>关键结论</strong>：</p>
-<ul>
-<li><strong>FlatView 和 KVMSlot 没有直接引用关系</strong>。FlatView
-决定"哪些 GPA 区间该映射"，KVMSlot 负责"把数据打包发给内核"。中间的
-<code>MemoryRegionSection</code> 是桥梁——它同时持有
-<code>FlatView *fv</code>（上下文）和组装 KVMSlot
-所需的全部字段（<code>mr</code>, <code>size</code>,
-<code>offset_within_address_space</code>）</li>
-<li><strong>kvm_region_add() 只排队、不执行</strong>——它把 section 塞进
-<code>transaction_add</code> 链表就返回了。真正的 memslot 创建发生在
-<code>kvm_region_commit()</code>，按"先删除后添加"的顺序批量提交</li>
-</ul>
-<h3 id="两个关键过滤点">5.4 两个关键过滤点</h3>
-<p>链路中有两个位置可能导致 ram_device MR 被跳过、memslot 不被创建：</p>
+还需要挂入 PCI 总线的 MMIO 地址空间。这个流程分三个阶段，横跨 QEMU
+初始化和 Guest 运行时。</p>
+<h3 id="qemu-el0-pci_register_barpci-台账固化">4.3.1 [QEMU EL0]
+pci_register_bar：PCI 台账固化</h3>
+<p>QEMU 初始化时，<code>vfio_bar_register</code> 的最后一步调用
+<code>pci_register_bar</code>。此时 Guest
+尚未启动，这一步只做<strong>元数据记录</strong>——不涉及任何 GPA
+分配，bar-&gt;mr 还挂在"空中"。</p>
+<p>每个 PCI BAR 对应一个
+<code>PCIIORegion</code>（<code>hw/pci/pci.c:1321-1333</code>）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pcibus_t</span> size = memory_region_size(bar-&gt;mr);  <span class="comment">// 从已建好的 MR 读大小</span></span><br><span class="line"></span><br><span class="line">r = &amp;pci_dev-&gt;io_regions[BAR2];</span><br><span class="line">r-&gt;size          = size;                  </span><br><span class="line">r-&gt;addr          = PCI_BAR_UNMAPPED;     <span class="comment">// GPA 尚未分配</span></span><br><span class="line">r-&gt;memory        = bar-&gt;mr;              <span class="comment">// → L1 (内含 L2→L3)</span></span><br><span class="line">r-&gt;address_space = bus-&gt;address_space_mem; <span class="comment">// → GPEX io_mmio</span></span><br><span class="line">wmask = ~(size - <span class="number">1</span>);                     <span class="comment">// 0xFFFFFFFFFFFF0000，guest就靠这个mask去感知BAR的大小</span></span><br></pre></td></tr></table></figure>
+<p><code>r-&gt;size</code> 的值来自【Host
+VFIO】驱动的<code>VFIO_DEVICE_GET_REGION_INFO</code>，赋值后不再改变（不受后续
+MR size 变化的影响）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[QEMU EL0]</span><br><span class="line">+-&gt; ioctl(VFIO_DEVICE_GET_REGION_INFO)   ← QEMU 向 Host VFIO 驱动查询 BAR 信息</span><br><span class="line">  +-&gt; info-&gt;size = 32KB</span><br><span class="line"></span><br><span class="line">+-&gt; vfio_region_setup()               </span><br><span class="line">  +-&gt; bar-&gt;region.size = info-&gt;size = 32KB</span><br><span class="line"></span><br><span class="line">+-&gt; vfio_bar_prepare()                  </span><br><span class="line">  +-&gt; bar-&gt;size = bar-&gt;region.size = 32KB</span><br><span class="line"></span><br><span class="line">+-&gt; vfio_bar_register()                  </span><br><span class="line">  +-&gt; memory_region_init_io(bar-&gt;mr, ..., bar-&gt;size)</span><br><span class="line">  +-&gt; bar-&gt;mr.size = 32KB //预填，vfio_bar_register 时用原始 BAR 大小初始化，后续 vfio_sub_page_bar_update_mapping 如果发现 BAR 基地址 64KB 对齐，会调用 memory_region_set_size</span><br><span class="line">  把它扩成 64KB</span><br><span class="line"></span><br><span class="line">+-&gt; pci_register_bar()  </span><br><span class="line">  +-&gt; r-&gt;size = memory_region_size(bar-&gt;mr) = 32KB</span><br></pre></td></tr></table></figure>
+<p><code>wmask</code> 写入虚拟 PCI 配置空间后，Guest 可通过 PCI 协议探测
+BAR 大小。</p>
+<h3 id="guest-el1-pci-枚举读大小-分配-gpa-写-bar">4.3.2 [Guest EL1] PCI
+枚举：读大小 + 分配 GPA + 写 BAR</h3>
+<p>Guest OS 启动后，PCI 子系统扫描总线，对每个 BAR 执行三步：</p>
 <ol type="1">
-<li><strong><code>!memory_region_is_ram(mr)</code></strong>（<code>kvm-all.c:1349</code>）：IO
-类型 MR（<code>ram=false</code>）直接跳过——这解释了为什么 mmap 失败时
-<code>bar-&gt;region.mem</code>（L2）不会触发 memslot 注册</li>
-<li><strong><code>kvm_align_section → 0</code></strong>（<code>kvm-all.c:266</code>）：section
-size 小于 PAGE_SIZE 时返回 0——如果 BAR 被 FlatView
-截断后剩余区间不足一个页，memslot 就不会被创建</li>
+<li><strong>读 BAR 大小</strong>：写全 1 到 BAR 配置寄存器 → VM exit →
+QEMU 模拟硬件写0的行为，返回 <code>val &amp; wmask</code> → Guest 推断
+BAR = 32KB</li>
+<li><strong>分配 GPA</strong>：<code>pbus_assign_resources_sorted</code>
+→ <code>pci_assign_resource</code> → 在 PCI MMIO 窗口内找对齐的可用区间
+→ 算出 GPA</li>
+<li><strong>写 BAR
+寄存器</strong>：<code>pci_write_config_dword(dev, BAR2, GPA)</code> →
+VM exit → QEMU</li>
 </ol>
-<p>QEMU 内部用 <code>KVMSlot</code> 结构缓存已注册的 memslot 信息：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">KVMSlot</span> &#123;</span></span><br><span class="line">    hwaddr start_addr;       <span class="comment">// GPA (来自 section-&gt;offset_within_address_space)</span></span><br><span class="line">    <span class="keyword">ram_addr_t</span> memory_size;  <span class="comment">// 大小, 页对齐后 (来自 kvm_align_section)</span></span><br><span class="line">    <span class="keyword">void</span> *ram;               <span class="comment">// HVA (来自 memory_region_get_ram_ptr(section-&gt;mr))</span></span><br><span class="line">    <span class="keyword">int</span> slot;                <span class="comment">// KVM memslot ID</span></span><br><span class="line">    <span class="keyword">int</span> flags;</span><br><span class="line">&#125; KVMSlot;</span><br></pre></td></tr></table></figure>
-<p><code>KVMSlot</code> 不存 FlatView 指针，也不存 FlatRange
-引用——它是"快照"，记录的是 <code>ioctl</code> 发送到内核的那一刻的
-GPA/HVA/size 三元组。</p>
-<h2 id="kvm-侧memslot-与-s2-页表">6. KVM 侧：memslot 与 S2 页表</h2>
-<p>Host 内核（EL2）中，<code>kvm_memory_slot</code> 是内核侧的
-memslot，存
-<code>base_gfn</code>（GPA&gt;&gt;PAGE_SHIFT）、<code>npages</code>（页数）、<code>userspace_addr</code>（HVA）。</p>
-<p>memslot 不存 HPA——KVM 需要 HPA 时通过
-<code>get_user_pages(userspace_addr)</code> 动态查 Host S1
-页表获取。每个 memslot 对应 S2 页表中的一段 GPA→HPA 映射，KVM 在创建
-memslot 的同时填入 S2 PTE。</p>
-<h2 id="完整数据链路">7. 完整数据链路</h2>
-<p>从 QEMU MR 树到 KVM S2
-页表的完整关联链路。先把全部数据结构的关系画在一张 PlantUML
-类图上，再看数据如何从 L3 一步步流向 KVM：</p>
-<p><strong>全量数据结构关系图（PlantUML 类图）：</strong></p>
+<h3 id="qemu-el0-pci_update_mappingsbar-mr-挂入-gpa">4.3.3 [QEMU EL0]
+pci_update_mappings：BAR MR 挂入 GPA</h3>
+<p>Guest 写 BAR 寄存器触发 VM exit，QEMU 的
+<code>pci_default_write_config</code> 更新配置空间后调用
+<code>pci_update_mappings()</code>（<code>hw/pci/pci.c:1511-1553</code>）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">new_addr = pci_bar_address(d, i, r-&gt;type, r-&gt;size);  <span class="comment">// 读 Guest 写的 GPA + 对齐校验</span></span><br><span class="line"><span class="keyword">if</span> (new_addr == r-&gt;addr) <span class="keyword">continue</span>;                     <span class="comment">// 没变就跳过</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 删旧映射</span></span><br><span class="line"><span class="keyword">if</span> (r-&gt;addr != PCI_BAR_UNMAPPED)</span><br><span class="line">    memory_region_del_subregion(r-&gt;address_space, r-&gt;memory);</span><br><span class="line"></span><br><span class="line">r-&gt;addr = new_addr;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 挂入 PCI 地址空间</span></span><br><span class="line">memory_region_add_subregion_overlap(</span><br><span class="line">    r-&gt;address_space,   <span class="comment">// GPEX io_mmio</span></span><br><span class="line">    r-&gt;addr,            <span class="comment">// offset = GPA - MMIO base</span></span><br><span class="line">    r-&gt;memory,          <span class="comment">// bar-&gt;mr (L1, 内含 L2→L3)</span></span><br><span class="line">    <span class="number">1</span>);                 <span class="comment">// priority=1</span></span><br></pre></td></tr></table></figure>
+<p><strong>pci_register_bar 是初始化时"建台账"，pci_update_mappings
+是运行时"挂牌子"——前者记录元数据，后者把 bar-&gt;mr 挂到 Guest 分配的
+GPA 区间上。</strong> MR 树变化后标记 FlatView 脏，下一节讲后续的
+FlatView 重建和 memslot 注册。</p>
+<h1 id="qemu-侧flatview-展平与-memslot-注册">5. QEMU 侧：FlatView 展平与
+memslot 注册</h1>
+<p>MR 树经 <code>pci_update_mappings</code> 挂入 GPA
+后，只是标记了"脏"，真正的 FlatView 重建和 memslot 注册由后续的
+<code>vfio_sub_page_bar_update_mapping</code> →
+<code>memory_region_transaction_commit</code> 触发。</p>
+<p>本节自底向上讲三层逻辑：FlatView 怎样渲染、渲染前 MR 能否扩张、渲染后
+section 怎样进入 KVM。</p>
+<p>包括渲染-&gt;MR扩展-&gt;重叠处理-&gt;构建section-&gt;KVM
+MemorySlot的流程见<a href="#附录-cbar-重叠场景下的完整调用链">附录
+C</a>。</p>
+<h2 id="flatview-与-flatrange">5.1 FlatView 与 FlatRange</h2>
+<p>MR 树是嵌套结构，KVM 需要按 GPA 线性查找。</p>
+<p>QEMU 将 MR 树<strong>展开</strong>为 FlatView，FlatVIew是一组按 GPA
+排序、互不重叠的 <code>FlatRange</code> 数组。</p>
+<p>这里相当于把MR作为脚手架来创建
+FlatRange。然后FlatRange再产生ADD/DEL事件，生成对应的section，section再注册到KVM创建kvm
+MemorySlot。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// memory.h:1278</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FlatView</span> &#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> ref;</span><br><span class="line">    FlatRange *ranges;       <span class="comment">// 数组指针</span></span><br><span class="line">    <span class="keyword">unsigned</span> nr;             <span class="comment">// 有效元素个数</span></span><br><span class="line">    <span class="keyword">unsigned</span> nr_allocated;   <span class="comment">// 已分配容量</span></span><br><span class="line">    MemoryRegion *root;      <span class="comment">// 根 MR</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// memory.c:222</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FlatRange</span> &#123;</span></span><br><span class="line">    MemoryRegion *mr;           <span class="comment">// 指向对应的 MR</span></span><br><span class="line">    hwaddr offset_in_region;    <span class="comment">// 在 MR 内部的偏移</span></span><br><span class="line">    AddrRange addr;             <span class="comment">// &#123;start: GPA, size: 字节数&#125;</span></span><br><span class="line">    <span class="keyword">uint8_t</span> dirty_log_mask;</span><br><span class="line">    <span class="keyword">bool</span> romd_mode;</span><br><span class="line">    <span class="keyword">bool</span> readonly;</span><br><span class="line">    <span class="keyword">bool</span> nonvolatile;</span><br><span class="line">    <span class="keyword">bool</span> unmergeable;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>qemu自动监听发现MR树更改了，会调用<code>generate_memory_topology()</code>
+递归遍历 MR 树 → <code>render_memory_region()</code> 渲染生成
+<code>FlatRange[]</code> → <code>flatview_simplify()</code>
+合并相邻同类区间（也就是截断重叠部分）。</p>
+<h2 id="flatview-渲染">5.2 FlatView 渲染</h2>
+<p><code>render_memory_region()</code>保证 FlatRange
+数组互不重叠，且该函数在构建 FlatView
+时，用的是<code>mr size</code>来构建，而不是<code>vfio size</code>。渲染一个
+MR 时：</p>
+<ol type="1">
+<li><strong>先递归渲染 subregions</strong>（QTAILQ 顺序，同 priority
+时后插入的排前面）</li>
+<li><strong>再渲染自身到空隙</strong>（gap-filling：<code>Render the region itself into any gaps left by the current view</code>）</li>
+</ol>
+<p><strong>场景一：BAR 不重叠</strong></p>
+<p>两个 VF 的 BAR2 GPA 区间互不干扰。以 VF0 BAR2=32KB@0x8000_200000、VF1
+BAR2=32KB@0x8000_400000 为例（间隔 2MB，无重叠）。</p>
+<p>MR 树： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GPEX io_mmio</span><br><span class="line">  ├── VF0 BAR2  [GPA 0x8000_200000, size=32KB]  (MR)</span><br><span class="line">  └── VF1 BAR2  [GPA 0x8000_400000, size=32KB]  (MR)</span><br></pre></td></tr></table></figure></p>
+<p>render_memory_region() 遍历 subregions 后，生成的 FlatRange 数组：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FlatRange[0]: &#123; .mr=VF0 BAR2, .addr=&#123;start=0x8000_200000, size=32KB&#125; &#125;</span><br><span class="line">FlatRange[1]: &#123; .mr=VF1 BAR2, .addr=&#123;start=0x8000_400000, size=32KB&#125; &#125;</span><br></pre></td></tr></table></figure> 两个 FlatRange 互不重叠，各自完整，size = MR.size。</p>
+<p><strong>场景二：BAR 重叠 — 裁剪</strong></p>
+<p>两个 VF 的 BAR2 GPA 区间有交集。假定在64KB的PAGESIZE环境下，有：</p>
+<ul>
+<li>VF0：BAR2 物理大小 32KB，GPA=0x8000_200000（GPA 64KB 对齐）→
+<code>vfio_sub_page_bar_update_mapping</code> 扩张 MR 到 64KB，范围
+[0x8000_200000, 0x8000_20ffff]</li>
+<li>VF1：BAR2 物理大小 32KB，GPA=0x8000_208000（低 16
+位=0x8000，不对齐）→ 不扩张，MR 保持 32KB，范围 [0x8000_208000,
+0x8000_20ffff]</li>
+</ul>
+<p>重叠区间：[0x8000_208000, 0x8000_20ffff] = 32KB。</p>
+<p>VF1 后插入（Guest 枚举顺序），在 QTAILQ 头部，先渲染。</p>
+<p>MR 树： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GPEX io_mmio</span><br><span class="line">  ├── VF1 BAR2  [GPA 0x8000_208000, size=32KB]  (后插入→QTAILQ头部, 未扩张)</span><br><span class="line">  └── VF0 BAR2  [GPA 0x8000_200000, size=64KB]  (先插入→QTAILQ尾部, 已扩张)</span><br></pre></td></tr></table></figure></p>
+<p>render_memory_region() 先渲染 VF1（QTAILQ 头部），再渲染 VF0 到空隙：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Step 1: 渲染 VF1 BAR2 → FlatRange[0]: &#123; .mr=VF1, .addr=&#123;0x8000_208000, 32KB&#125; &#125;</span><br><span class="line">Step 2: 渲染 VF0 BAR2 → gap-filling:</span><br><span class="line">         [0x8000_200000, 0x8000_208000) 是空隙 → FlatRange[1]: &#123; .mr=VF0, .addr=&#123;0x8000_200000, 32KB&#125; &#125;</span><br><span class="line">         0x8000_208000 之后已被 VF1 占用 → VF0 其余 32KB 被裁剪!</span><br></pre></td></tr></table></figure></p>
+<p>最终 FlatRange 数组： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FlatRange[0]: &#123; .mr=VF1 BAR2, .addr=&#123;start=0x8000_208000, size=32KB&#125; &#125;  ← 完整, MR.size=32KB</span><br><span class="line">FlatRange[1]: &#123; .mr=VF0 BAR2, .addr=&#123;start=0x8000_200000, size=32KB&#125; &#125;  ← 被裁剪! MR.size=64KB, FlatRange.size=32KB</span><br></pre></td></tr></table></figure></p>
+<p><strong>关键</strong>：</p>
+<p>VF0 MR 的 size 仍是 64KB，但 FlatRange 的 <code>addr.size</code>
+已经是裁剪后的值（32KB）。后续 <code>MemoryRegionSection</code> 的 size
+来自 FlatRange，不是来自 MR，所以也是 32KB。</p>
+<p><strong>这个时候，如果PAGESIZE是64KB的话就有问题了，后续的
+kvm_align_section 会把这个 section 过滤掉，导致 memslot
+没有创建</strong></p>
+<h2 id="vfio_sub_page_bar_update_mappingflatview-重建前的扩张机会">5.3
+vfio_sub_page_bar_update_mapping：FlatView 重建前的扩张机会</h2>
+<p>在 <code>memory_region_transaction_commit</code> 触发 FlatView
+重建<strong>之前</strong>，还有一次修改 MR size 的机会：</p>
+<p><code>vfio_pci_write_config</code> 在
+<code>pci_default_write_config</code>之后调用
+<code>vfio_sub_page_bar_update_mapping()</code>尝试扩展BAR 的 MR
+size到64KB：</p>
+<p>核心逻辑：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (bar_addr != PCI_BAR_UNMAPPED &amp;&amp;</span><br><span class="line">    !(bar_addr &amp; ~qemu_real_host_page_mask())) &#123;   <span class="comment">// BAR 基地址是否 64KB 对齐?</span></span><br><span class="line">    size = qemu_real_host_page_size();             <span class="comment">// → 64KB</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 否则 size 保持 region-&gt;size = 32KB</span></span><br></pre></td></tr></table></figure>
+<p>扩展成功的话，通过 <code>memory_region_set_size</code> 将新 size=64KB
+写入三级 MR：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">memory_region_transaction_begin();</span><br><span class="line">memory_region_set_size(base_mr, size);    <span class="comment">// bar-&gt;mr (L1) -&gt; 64KB</span></span><br><span class="line">memory_region_set_size(region_mr, size);  <span class="comment">// region-&gt;mem (L2) -&gt; 64KB</span></span><br><span class="line">memory_region_set_size(mmap_mr, size);    <span class="comment">// mmaps[0].mem (L3)  -&gt; 64KB</span></span><br><span class="line">memory_region_transaction_commit();       <span class="comment">// → 触发 FlatView 重建，用的就是MR size=64KB</span></span><br></pre></td></tr></table></figure>
+<p><strong>两种情况：</strong></p>
+<ul>
+<li><strong>BAR 基地址 64KB 对齐</strong>（如
+<code>0x8000_200000</code>）：扩张成功 → 三级 MR 的 size 全部变为 64KB →
+FlatView 渲染后 FlatRange 也是 64KB</li>
+<li><strong>BAR 基地址不对齐</strong>（如 <code>0x8000_208000</code>，低
+16 位 = <code>0x8000</code> ≠
+0）：<code>!(bar_addr &amp; ~PAGE_MASK)</code> 为 false → size 保持 32KB
+→ 三级 MR 的 size 仍是 32KB</li>
+</ul>
+<blockquote>
+<p><strong>关于
+<code>qemu_real_host_page_size()</code></strong>：这个值来自 Host 内核的
+<code>PAGE_SIZE</code>（<code>sysconf(_SC_PAGESIZE)</code>），ARM64 64KB
+页内核下固定返回 <strong>64KB</strong>。它和 BAR
+本身的大小无关——它代表着"Host 能管理的最小内存页粒度"，也是 KVM memslot
+的最小粒度。</p>
+</blockquote>
+<p>注意 <code>r-&gt;size</code>（PCIIORegion）不受影响——它在
+<code>pci_register_bar</code> 时就固化了，之后的 MR size
+变化不会回写给它。</p>
+<h2 id="kvm_align_section决定-section-是否进入-kvm-memslot">5.4
+kvm_align_section：决定 section 是否进入 KVM memslot</h2>
+<p><code>memory_region_transaction_commit</code> 触发 FlatView
+重建后，QEMU 对比新旧 FlatView，通过 <strong>MemoryListener</strong>
+机制将差异派发给 KVM：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">transaction commit</span><br><span class="line">  → generate_memory_topology()       // 重建 FlatView</span><br><span class="line">  → address_space_update_topology    // diff old vs new</span><br><span class="line">    → region_del → kvm_region_del()  // 旧 section 入队</span><br><span class="line">    → region_add → kvm_region_add()  // 新 section 入队</span><br><span class="line">  → kvm_region_commit()              // 批量提交</span><br><span class="line">    → kvm_set_phys_mem(section, add=true/false)</span><br></pre></td></tr></table></figure>
+<p><code>kvm_set_phys_mem()</code>有两个过滤点：</p>
+<p><strong>过滤点 1：<code>!memory_region_is_ram(mr)</code></strong></p>
+<p>IO 类型 MR（如 L2
+<code>region.mem</code>，<code>ram=false</code>）直接跳过——mmap 失败时
+BAR 只剩 IO MR，不会注册 memslot 给 KVM。</p>
+<p><strong>过滤点
+2：<code>kvm_align_section</code>（<code>kvm-all.c:266</code>）</strong></p>
+<p>将 section 的 GPA 向上对齐到 PAGE_SIZE 边界，截断超出部分：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">aligned = ROUND_UP(section-&gt;offset_within_address_space, qemu_real_host_page_size());</span><br><span class="line">delta   = aligned - section-&gt;offset_within_address_space;   <span class="comment">// 对齐所需的 padding</span></span><br><span class="line">*start  = aligned;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (delta &gt; size) &#123;      <span class="comment">// 比如 bar size是32KB，不够PAGESIZE，无法扩展</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;            <span class="comment">// → 跳过! 不建 memslot</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> (size - delta) &amp; qemu_real_host_page_mask();  <span class="comment">// 对齐后的有效大小</span></span><br></pre></td></tr></table></figure>
+<p>这里<code>kvm_align_section</code>失败后还有一次扩展尝试，扩展失败后才是真的不能创建
+memslot：</p>
+<p><strong>两种典型结果：</strong></p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 28%">
+<col style="width: 28%">
+<col style="width: 15%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr>
+<th>场景</th>
+<th>section.size</th>
+<th>section GPA</th>
+<th>delta</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>扩张成功</td>
+<td>64KB</td>
+<td>64KB 对齐 (0x8000_200000)</td>
+<td>0</td>
+<td>返回 64KB → <strong>通过</strong></td>
+</tr>
+<tr>
+<td>扩张失败</td>
+<td>32KB</td>
+<td>不对齐 (0x8000_208000)</td>
+<td>0x8000 = 32KB</td>
+<td>delta ≥ size → 返回 0 → <strong>跳过</strong></td>
+</tr>
+</tbody>
+</table>
+<p>通过<code>kvm_align_section</code>过滤后，QEMU 组装
+<code>KVMSlot</code> 发起
+<code>ioctl(KVM_SET_USER_MEMORY_REGION)</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">KVMSlot</span> &#123;</span></span><br><span class="line">    hwaddr start_addr;       <span class="comment">// aligned GPA</span></span><br><span class="line">    <span class="keyword">ram_addr_t</span> memory_size;  <span class="comment">// kvm_align_section 返回值</span></span><br><span class="line">    <span class="keyword">void</span> *ram;               <span class="comment">// HVA = L3.ram_block-&gt;host</span></span><br><span class="line">    <span class="keyword">int</span> slot;                <span class="comment">// KVM memslot ID</span></span><br><span class="line">&#125; KVMSlot;</span><br><span class="line"><span class="comment">// → ioctl(KVM_SET_USER_MEMORY_REGION, &#123;GPA, HVA, size&#125;)</span></span><br></pre></td></tr></table></figure>
+<p><code>KVMSlot</code> 是快照——记录 ioctl 发送到内核那一刻的
+GPA/HVA/size 三元组，不持有 FlatView 或 FlatRange 的引用。</p>
+<h1 id="kvm-侧memslot-与-s2-页表">6. KVM 侧：memslot 与 S2 页表</h1>
+<p>上一章从 QEMU 侧梳理了 MR 树 → FlatView → KVMSlot 的链路。KVMSlot
+通过 <code>ioctl(KVM_SET_USER_MEMORY_REGION)</code> 发送到内核后，由 KVM
+接管。本章说明 KVM 如何组织这些 memslot 以及它们如何驱动 S2
+页表的建立。</p>
+<h2 id="kvm-memslot-的三级嵌套结构">6.1 KVM memslot 的三级嵌套结构</h2>
+<p>KVM 中 memslot 的组织形式是三层嵌套：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">struct kvm (一个 VM 实例)</span><br><span class="line">  │</span><br><span class="line">  └─ struct kvm_memslots *memslots[KVM_ADDRESS_SPACE_NUM]</span><br><span class="line">       │</span><br><span class="line">       │  KVM_ADDRESS_SPACE_NUM = 1 (普通 VM, 无 SMMU 多地址空间)</span><br><span class="line">       │</span><br><span class="line">       └─ memslots[0] → struct kvm_memslots  (容器, 只有一个)</span><br><span class="line">            ├─ int used_slots            ← 实际使用的 memslot 数量</span><br><span class="line">            ├─ u64 generation            ← 版本号 (RCU 无锁读)</span><br><span class="line">            │</span><br><span class="line">            └─ struct kvm_memory_slot memslots[32767]  ← 大数组!</span><br><span class="line">                 │  (每个元素: base_gfn=GPA&gt;&gt;16, npages=页数, userspace_addr=HVA)</span><br><span class="line">                 │</span><br><span class="line">                 ├─ [0]: &#123;base_gfn=0x0,        npages=32768, userspace_addr=HVA_ram&#125;    RAM (2GB)</span><br><span class="line">                 ├─ [1]: &#123;base_gfn=0x8000_0000, npages=32,    userspace_addr=HVA_bar4&#125;   VF0 BAR4 (2MB)</span><br><span class="line">                 ├─ [2]: &#123;base_gfn=0x8000_2000, npages=1,     userspace_addr=HVA_bar2&#125;   VF0 BAR2 (64KB)</span><br><span class="line">                 ├─ [3]: &#123;base_gfn=0x8000_4000, npages=32,    userspace_addr=HVA_bar4_2&#125; VF1 BAR4 (2MB)</span><br><span class="line">                 ├─ [4]: 空</span><br><span class="line">                 └─ ...</span><br></pre></td></tr></table></figure>
+<p>三层结构的职责：</p>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>层</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kvm-&gt;memslots[]</code></td>
+<td>指针数组，通常 1 个元素</td>
+<td><code>memslots[0]</code> 指向唯一的 <code>kvm_memslots</code>
+容器</td>
+</tr>
+<tr>
+<td><code>kvm_memslots</code></td>
+<td>容器结构体</td>
+<td>内含 memslot 数组 + <code>used_slots</code> 计数 +
+<code>generation</code> 版本号</td>
+</tr>
+<tr>
+<td><code>kvm_memory_slot</code></td>
+<td>单个 memslot</td>
+<td>描述一段连续 GPA 区间</td>
+</tr>
+</tbody>
+</table>
+<p>memslot 数量上限：<code>KVM_MEM_SLOTS_NUM = 32767</code>。每个 VM
+可以有最多 32767 个 memslot，远超实际需要。</p>
+<h2 id="kvm_memory_slot-结构体">6.2 kvm_memory_slot 结构体</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">kvm_memory_slot</span> &#123;</span></span><br><span class="line">    <span class="keyword">gfn_t</span> base_gfn;                <span class="comment">// 起始 GPA &gt;&gt; PAGE_SHIFT (16)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> npages;          <span class="comment">// 页数 (GPA 区间大小 = npages × PAGE_SIZE)</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> userspace_addr;  <span class="comment">// HVA (QEMU 用户态地址) — 不是 HPA!</span></span><br><span class="line">    u32 flags;                     <span class="comment">// KVM_MEM_READONLY 等 (热迁移标脏中很重要)</span></span><br><span class="line">    <span class="keyword">int</span> id;                        <span class="comment">// slot ID</span></span><br><span class="line">    u16 as_id;                     <span class="comment">// address space ID</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>以 VF0 BAR2 为例（GPA=0x8000_200000，size=64KB）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">base_gfn       = 0x8000_2000,                // GPA 0x8000_200000 &gt;&gt; 16</span><br><span class="line">npages         = 1,                           // 64KB / 64KB = 1 页</span><br><span class="line">userspace_addr = 0x7fff_yyyy_0000,            // QEMU mmap 返回的 HVA</span><br><span class="line">flags          = 0,</span><br></pre></td></tr></table></figure>
+<p><strong>memslot 不存 HPA，存的是 HVA。</strong> KVM 需要 HPA 时通过
+<code>get_user_pages(userspace_addr)</code> 动态查 Host
+S1（TTBR0_EL2）页表获取。</p>
+<h2 id="memslot-与-s2-页表的关系">6.3 memslot 与 S2 页表的关系</h2>
+<p><code>ioctl(KVM_SET_USER_MEMORY_REGION)</code> 只是创建 KVM memslot
+数据结构——<strong>它不填 S2 PTE</strong>。实际建立 GPA→HPA 的 S2
+页表发生在 S2 fault 时，以 memslot 为脚手架：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ioctl(KVM_SET_USER_MEMORY_REGION, &#123;GPA, HVA, size&#125;)</span><br><span class="line">  → __kvm_set_memory_region()</span><br><span class="line">    → kvm_set_memslot()              // 创建 kvm_memory_slot, 写入 memslots[] 数组</span><br><span class="line">    → kvm_arch_commit_memory_region() // ARM64 架构回调 — 不填 S2 PTE!</span><br><span class="line"></span><br><span class="line">... Guest 首次访问 GPA ...</span><br><span class="line"></span><br><span class="line">Stage-2 fault</span><br><span class="line">  → user_mem_abort()</span><br><span class="line">    → 查 memslots[] 得 kvm_memory_slot</span><br><span class="line">    → get_user_pages(userspace_addr) // 沿 Host S1 (TTBR0_EL2) 查 HPA</span><br><span class="line">    → HPA = 0x0800_0000_0000</span><br><span class="line">    → kvm_pgtable_stage2_map()       // 填 S2 PTE (VTTBR_EL2):</span><br><span class="line">        GPA 0x8000_2000_0000 → HPA 0x0800_0000_0000 (Device-nGnRE)</span><br></pre></td></tr></table></figure>
+<p>每个 memslot 对应 S2 页表中的一段 GPA→HPA 映射区间。注意这个过程与 <a href="#23-页表建立时序">2.3 页表建立时序</a> 的 Phase 2 和 Runtime
+阶段一致——memslot 创建时只是"登记"，真正的页表建立由 Guest
+访问触发。</p>
+<h2 id="qemu-kvmslot-vs-kvm-kvm_memory_slot">6.4 QEMU KVMSlot vs KVM
+kvm_memory_slot</h2>
+<p>QEMU 内部也维护了一份 memslot 缓存叫 <code>KVMSlot</code>，与内核的
+<code>kvm_memory_slot</code> 通过 ioctl 同步：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">QEMU [EL0] KVMSlot (缓存):            KVM [EL2] kvm_memory_slot (权威):</span><br><span class="line">  ┌─────────────────────┐            ┌──────────────────────────┐</span><br><span class="line">  │ start_addr  (GPA)   │  ioctl    │ base_gfn    (GPA&gt;&gt;16)   │</span><br><span class="line">  │ memory_size (64KB)  │ ───────→  │ npages      (页数)      │</span><br><span class="line">  │ ram         (HVA)   │ KVM_SET   │ userspace_addr (HVA)    │</span><br><span class="line">  │ flags       (0)     │           │ flags                   │</span><br><span class="line">  │ dirty_bmap  (...)   │           │                          │</span><br><span class="line">  └─────────────────────┘            └──────────────────────────┘</span><br></pre></td></tr></table></figure>
+<p>QEMU 的 <code>KVMSlot</code> 只是本地缓存——QEMU
+不需要每次都查内核状态，直接用缓存的 <code>start_addr</code> +
+<code>memory_size</code> 就知道当前 memslot 的 GPA 范围，用于后续比对
+FlatView 变化。</p>
+<h1 id="完整数据链路">7. 完整数据链路</h1>
+<p>前面的章节是"纵向"的——每章聚焦一层（QEMU MR 树、FlatView、KVM
+memslot）。本章做"横向"串联，把从 QEMU 初始化到 S2
+页表建立的完整流程按时间顺序串起来。</p>
+<h2 id="流程概览">7.1 流程概览</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">【qemu】QEMU侧向host发起ioctl(VFIO_DEVICE_GET_REGION_INFO)</span><br><span class="line">    【host】VFIO返回bar size</span><br><span class="line">        【host】QEMU根据这个bar size发起mmap，host vfio处理这个mmap建立VMA（HVA脚手架，Host S1 PTE仍为空）</span><br><span class="line">        【qemu】QEMU利用mmap结果建立设备MR：返回HVA → 三层ram_device MR；未返回HVA → 二层IO MR</span><br><span class="line">        【qemu】利用bar size填充三层MR的size，以及VFIORegion三层（VFIOBAR/VFIORegion/VFIOMmap）的size</span><br><span class="line">        【qemu】pci_register_bar()：利用bar size填充PCIIORegion的size作为PCI固化台账（含wmask供guest推测bar大小）</span><br><span class="line">    【guest】Guest探测PCI设备，写全F向QEMU拿BAR size，QEMU通过wmask返回（如0xFFFFC000代表32KB）</span><br><span class="line">        【guest】Guest拿到bar大小后分配GPA，写BAR寄存器</span><br><span class="line">    【qemu】vfio_pci_write_config → pci_default_write_config → pci_update_mappings()：BAR MR挂入PCI总线</span><br><span class="line">        【qemu】vfio_sub_page_bar_update_mapping()：检查BAR基地址是否PAGESIZE对齐，对齐则把三级MR的size扩张到host_page_size（64KB），不对齐则保持原值</span><br><span class="line">        【qemu】memory_region_transaction_commit()：重建FlatView，render_memory_region()把BAR的MR展平成FlatRange，生成ADD/DEL事件</span><br><span class="line">        【qemu】kvm_region_add → kvm_set_phys_mem：kvm_align_section检查section是否PAGESIZE对齐，不对齐或比PAGESIZE小的跳过，不投给kvm</span><br><span class="line">        【qemu】通过检查后，生成KVMSlot(GPA, HVA, size)，通过ioctl(KVM_SET_USER_MEMORY_REGION)让host kvm创建kvm_memory_slot</span><br><span class="line">    【host】等s2 fault时，KVM根据kvm_memory_slot为脚手架，通过get_user_pages_unlocked(HVA)从host获取HPA，建立S2 PTE</span><br><span class="line"></span><br><span class="line">至此，S2建立，Guest正常访问BAR空间。</span><br></pre></td></tr></table></figure>
+<p><img src="http://www.plantuml.com/plantuml/svg/ZLRTKnDN57_Vl-ACVKb6625Q7pB2672X34HeeanRu-niDfUmGt8ttRiBjPtEe2Cn4L3QeXRnetGKSHJ5yQC82lyBaxj9dlelzDox6qoY3yq34yuzlz_vFYUdcQFRZflFAMpAf0NTrlEGresfh6svDDDlvImRPYPDXpIzPyY4xkQS0OiwIVDd0jtTJO-C_EWIQf0uOKpFabZEp58m27M8tQI5VntJC0iwTVeiEqDitz9NNylF5-XYjctDd9iqZIcAn11H5CTqSWHEfNl71uP6eI-MWChk3VXMZPy7NhhFdyppXTkyj0N92DJNtjRMDlZkJlNPF1pCBWEVs_3UNgvkp7kpkxKdfLF7qhsAqkGJ71bq2NDIDAIET8UFWCv02bfrX2rK-SPY3gWZNRwU4BQgoVTXObEIGstfxJ4O7ezt82ZYW_0_HUdfWR59dM4-esrXG4XQ1xxqab_VuEN5CFJqA8fKwkmLQ8Y2QHbEJj9hPzJneNvL6rJFQGbrS6Zqh3PqTc0qh0Z5JWH8O1JhR0CJ1GpnzIjmF3BS5sudpUVrWk_oHAP393aIi3GKv5kGsV5uJAHZF0QrgtUzyhptu5q7oEYJtJ1sJiK2BLQsTwfFTpvpnIQEQrD0x2SFWgU0N1PukynVNO5u8aM5O-2LblZrXt1G_1smLxGCcJODZ6RaEF2Rx_ZcKlZV3mkyk8Ais0XvkxAz6G3verUrDuyb4DqFZKGQWC-ChptZStCoIz4KFRGFHsNW2P8rBHgurGuj6APcemB3pjSmrQ5mYlBL7L7EiVuXDBXLUxCE8RkpLzRWACpaTJOLRkg3IDJlEgdlFRXRsTwJTVU5JKuMLsHw-CkhVFDFlh81FQB3OG12tes_lRT-ylYZ9tphPYD2HFiqKQZjB_FL1xvvlnMwVXh0JtzNLvTCKT0PXsORGE_6XdTxiuaSxGhTppLvgLYVMuJ1iHY42ccNQJfZk1SmFynoROEmyFyA2l5DwJaUZ4d2fOwPnxeBTQoDjt25ppt6oQxkx4l_-QjR_Frh-JLFyYndEQtp4rYSdZ0jJLHjniPzfnaMdJ2pAGeIAEHk8QFZ0pPGmQHP9WeAq68KFLI_mqdKyddJ-Y8_SzDQ0VUYw8WsGfzFv8Y_V5__k2JjUkMd_CDVmeBOPITF3FSrb2hRYqrwbVtxti9bF_rjTZ5coxuaUz6YccFhbEc68xuR5lhf-7RhrnPnqc0WfplZ9fcHfDNbXpXYKfRGQPPSkDZEFJMTRn3hcOm42H4ZZbQOlCGqj2t8XKmNbm1VfEcea48GQ6Lx6GxAZs4iDgXgoQ4VLCbJdxrRsxyMw2sjyzAA5DV-UOtYBoy__AubSUcTJwe9BQx6HnFV1mkmG_3yWcdh43kcGmxqhsshZ9TMHGQ4hq7AHAlWq1PNH6c3rc4NBe9tQwkwUpL5yVY8Agmz4qS65vou8n2A9U8dJ-2HpEiqqobgdMaUwXEDeQwlt_QUhzLUxDVll80G4dWBvVgzMN_TXLi7lJ57fcKJiP4naB3VscZRV_HNx2U87rEB4KIbg40b7VIgCmBoZ2kjMN0PhYkCLTFJbXtqXlUm9No-TqTkwXRSvBIkEJW_4_82I5WMkq3IYIGmpQKvovWYcSDtuKhZF4XN6iB3IHJBMfDFeKE42Bdfg4I5ApxLM9jBefA5hAEdSqHZ8kI863MVwLFHedAQ0W88dP57f9CEqeJQlFI27YakjkHJuf27__PHNfVgslFAxhlgwflQtbwr_BIwLAozsEEFhi71lJyKvJIX6VofzHy0" alt="plantuml diagram"></p>
+<h2 id="全量数据结构关系图">7.2 全量数据结构关系图</h2>
 <p><img src="http://www.plantuml.com/plantuml/svg/nLTjJnj74FxkNx4GgRLf863QAZg15MXDOiM610DAYz7fm6lxnBrOTsSGhIBH90JIE2dDQvCq2Ms2H1ErIKgZEe64_r9nP_jJ_a9dT--EFMDJHQrKV_3BxRmyCplppFYOQKc6LLALa3ahQqN9a5GqBStCvWszf6K_qnNTGFC5sSBSUHRdf99Y3UcQbPQ_mgYdcpkSKIJJ7DIDB3QOzg5FwAjHX6fR2mf6qxgIvKwBu5tAuu29e_J52Kc6eSy7xOSisG9hVTEnYQ7421eS64NsqePpvvbpyxbpvRVgrdNdmGLxQREwkMNVU_jkUyKfBzUlhQ0v4zcBstPvoLvzIdumSUVbD_Rgz--sB_KTcOw5GYuer7xgimIOFS-4sj7N8SJ2GN2G61d5ULdNw5E4Fa8cP4T0nHbvkcIA5kf7dtvySj0zax9P8t1s_DI0UwHYLJSM19IYdync1wU6JLCq0H7UBt8sT9O3In81k3x7S_8CHc5mrbM8yA230XxiQSam9-6nE3oU4aVZnnCZm-afWGf3LgcNW0MIwhw-SFgmRaXQ7aTYiOOCaFV6-5MZUO3MGX4qIh9c7HKjzvb19HW29hqVX9lwzyU1rUP0L5Kgcind2hvwZpL3T4y8njuejTUp7m_HQOLcdq_EfO3cT3dhUTDpEHDR0lcaZheFZ2Tu-wbHvAn12Q_iLYxPByxPByls-csKxFdhuhLabBprGddprT2Ux178vNV6LACTiFC8EVJGVo2cwmeuXcxBIOg9QPVunsAM5fGlHKMuusb5dvaLqF1uCkd5IHBA_RQmeSgQP67JDs8P9S-6MPfc9G6dfyS64idJmVot9wE2MpGG2rR_Zs3cSh8kCWmYFFYFukeLM5rETazrlLTWnCl1SJKNSgCR7KWDacyT__g-m0rMYzO22YjOohL5N7_1qcNqQgzUhJvznbUe1yEFig2RbjinB8GJ4mDS1AnDI1o4Drktof0YMHCodaVsYvlsgqtUfN_a9rRNhUQCeG6bbJHJpciuwwSGMX-Y9bP6oVV9gU2L-WTxv62qPdu13S0xbGyGX2XheaUIXNaY6VJ2sqlZ6OiVKgtyvUO4F_YEG3uJcjKJFHe4C2zR1G3HC9uuB7owJqwa20UQYcxngOR7QNW4DNqwdXhdsPliA29B03FPP5wAZPVDDu9N8L0Udas5N2DGU31JitEgwDbZM0XO--AIirO1H8VYy1eQuaQbYSLy3j8ERxvBM5BehNl5W1HToxjd9HCRD3jkF1xRqmnzY3exE-du82xhvpVOleB2mGs5BYuH8XiAJl0ELvjCP87DyIcotK0_LRSkXBmZJyoTcHvNqZq8fiJIkY_PsHbh60j0G0OA1mecaj4A6AQTf41led1UrF1yToGKubmmEusiB92hQpJMgEOFKvVwtF1PI1ajx0ta_fx3g7x_0OBa6YOc-vyBWIgJa9lG9qFWnmtcXaV6K567ki166nXeeaD0-KGaxB4aB5YM4GdvHrrT0V24glgX_f1pVxss_2IZ4QkejdF3llS007YNpwOsHvc83UxwzRVqmeEtqIglU-eP3UfCz7-7av2cxiCe6Os4zYioSqsoT82zABNtGR8tueL0TcHdSQlwUiSfdwkzUKDny_jniwhgObq7FUe-p6YmhugbOXQcYWXmYhAMDyDGQohyCx6GfGC3nCyWcBAgAklxxVEdr460coY1nCymNHTtmnIWiFrd7Qu08sl1PNRaTjRUISiKTgc4jPAzK6FyvIwjE9NVdOVNCngiPaUIKUJSNgl-yhf-zuxztJFxfwUGrMRi_OzkW3DMotk88osj-162RcuExLQ-tQrSTcujszitgpSslDouT8sSpGtxOfccffb1KlCUZGkKJCbmA1OMJCAguGY2PDKUBMKqOE_-0qP7HeDEwVTRgpD6kYVaMIPU6eaQk5oViPGmo8Zf-9WudewFYgbuQcJq2_S_39IEHzVzu3uMEpLmF2wcJoI6nZ9Qa9P9dtgHEuyMdOVhrNEldBLbY9w6hkaMXWeimlJpmWKAX_LZj_9uj_AajhFiR3q65S7THNeYgCq5www4iYb2T67e6WHtG7TAyWLCr1VlWhw_n23eC5Hx-RosSwU-N0xqQnTOwETLQtzkkgeHq8r6Q98a1MOGN0Ez8CyXsO9Q-NDMdZYtVeNb2_KXbgB4bt4Yt1rmWoRRsgQOBwnb4Kb9Y2N6aFC5YwGcqECiGNnNTd5zKBttXtDr7VW2ki350j9xJ09_OEhtVwx-U7ctSiLUUGxyTIJPwmf2WknhPLBppW_FGD-TdTMx5_RJA8Vr67mjgShV" alt="plantuml diagram"></p>
 <p><strong>关键区分</strong>：</p>
 <table>
@@ -1022,136 +1211,51 @@ memslot 的同时填入 S2 PTE。</p>
 </tr>
 </tbody>
 </table>
-<p><strong>核心要点</strong>：</p>
+<p><strong>关键要点</strong>（均在 7.1 流程中对应）：</p>
 <ul>
 <li><strong>HVA 的唯一来源</strong>：<code>mmaps[i].mmap</code> → 经
 <code>memory_region_init_ram_device_ptr()</code> 存入
 <code>L3.ram_block-&gt;host</code></li>
-<li><strong>GPA 的来源</strong>：<code>PCIIORegion.addr</code> →
-<code>pci_update_mappings()</code> 挂入 GPEX io_mmio → 展平后在
+<li><strong>GPA 的来源</strong>：Guest 分配（PCI 枚举）→ 写 BAR 寄存器 →
+QEMU <code>pci_update_mappings()</code> 读出，缓存到
+<code>r-&gt;addr</code>，挂入 GPEX io_mmio → 展平后在
 <code>FlatRange.addr.start</code></li>
-<li><strong>只有 L3 进
+<li><strong>只有 L3 级叶子节点 进
 FlatView</strong>：<code>render_memory_region</code> 先渲染
-subregions，L3 占满区域后 L1/L2 无空隙可填</li>
-<li><strong>只有 L3 进 memslot</strong>：<code>kvm_set_phys_mem</code>
-检查 <code>memory_region_is_ram()</code>，L2 的 <code>ram=false</code>
+subregions，L3 占满区域后 L1/L2
+无空隙可填（IO级别的L2叶子节点也不进FlatView）</li>
+<li><strong>只有 L3 进
+kvm的memslot</strong>：<code>kvm_set_phys_mem</code> 检查
+<code>memory_region_is_ram()</code>，L2 的 <code>ram=false</code>
 直接跳过</li>
-<li><strong>BAR 重叠的破坏链</strong>：两个 BAR 的 GPA 太近 →
-<code>render_memory_region()</code> 截断后渲染者 →
-<code>FlatRange.addr.size &lt; MR.size</code> →
-<code>kvm_align_section</code> 返回 0 → memslot 不创建</li>
 </ul>
-<p>下面用 ASCII 流程图展示数据如何从 L3 一步步流向 KVM：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">QEMU EL0                                              KVM EL2</span><br><span class="line">─────────────                                         ─────────</span><br><span class="line"></span><br><span class="line">VFIO BAR 三层 MR (L1→L2→L3)</span><br><span class="line">  bar-&gt;mr (L1, 容器, ram=false)           ← GPEX io_mmio 直接挂的就是它</span><br><span class="line">    └─ subregions:</span><br><span class="line">       bar-&gt;region.mem (L2, IO, ram=false, ops=vfio_region_ops)</span><br><span class="line">         └─ subregions:</span><br><span class="line">            bar-&gt;region.mmaps[0].mem (L3, ram_device, ram=true)</span><br><span class="line">              .ram_block-&gt;host = HVA              ← HVA 的唯一来源 (mmap 返回值)</span><br><span class="line">              .subregions = empty                  ← 叶子节点, terminates=true</span><br><span class="line">       │</span><br><span class="line">       ↓ render_memory_region (递归渲染)</span><br><span class="line">       │   L3 先渲染占满区域, L1/L2 无空隙可填</span><br><span class="line">       │   → FlatRange 只记录 L3</span><br><span class="line">FlatRange</span><br><span class="line">  .mr = L3 (mmaps[0].mem, ram_device)</span><br><span class="line">  .addr.size = 实际区间大小</span><br><span class="line">       │</span><br><span class="line">       ↓ section_from_flat_range (memory.c:237)</span><br><span class="line">MemoryRegionSection</span><br><span class="line">  .mr = L3 (同 FlatRange.mr, ram_device)</span><br><span class="line">  .size = FlatRange.addr.size</span><br><span class="line">  .offset_within_address_space = GPA</span><br><span class="line">       │</span><br><span class="line">       ↓ kvm_region_add → kvm_region_commit</span><br><span class="line">       │   (先 DEL 后 ADD, 事务性提交)</span><br><span class="line">       ↓ kvm_set_phys_mem (kvm-all.c:1338)</span><br><span class="line">       │</span><br><span class="line">       ├─ !memory_region_is_ram(mr)?  → 跳过 (L2 走这条路, 因为 L2.ram=false)</span><br><span class="line">       ├─ kvm_align_section → 0?      → 跳过 (小于 PAGE_SIZE)</span><br><span class="line">       │</span><br><span class="line">       │  L3 通过两个检查:</span><br><span class="line">       │    memory_region_is_ram(L3) = true  (ram_device)</span><br><span class="line">       │    kvm_align_section → 64KB (≥ PAGE_SIZE)</span><br><span class="line">       │</span><br><span class="line">       ↓ 组装 KVMSlot</span><br><span class="line">KVMSlot</span><br><span class="line">  .start_addr = GPA</span><br><span class="line">  .memory_size = 页对齐后大小</span><br><span class="line">  .ram = memory_region_get_ram_ptr(L3) → HVA    ← 从 L3.ram_block-&gt;host 取出</span><br><span class="line">       │</span><br><span class="line">       ↓ ioctl(KVM_SET_USER_MEMORY_REGION)</span><br><span class="line">       │</span><br><span class="line">                                            kvm_memory_slot</span><br><span class="line">                                              .base_gfn = GPA &gt;&gt; PAGE_SHIFT</span><br><span class="line">                                              .npages = 页数</span><br><span class="line">                                              .userspace_addr = HVA</span><br><span class="line">                                                   │</span><br><span class="line">                                                   ↓ kvm_arch_commit_memory_region</span><br><span class="line">                                                   │   get_user_pages(HVA)</span><br><span class="line">                                                   │   → 查 Host S1 (TTBR0_EL2)</span><br><span class="line">                                                   │   → HPA</span><br><span class="line">                                                   ↓ 填 S2 PTE (VTTBR_EL2)</span><br><span class="line">                                              GPA → HPA (Device-nGnRE)</span><br></pre></td></tr></table></figure>
-<p>这条链路中，<strong>FlatView
-渲染是第一个可能出问题的环节</strong>：如果 BAR 重叠导致 FlatRange
-被截断，后续的 section size 就会小于预期，进而被
-<code>kvm_align_section</code> 过滤掉，最终 memslot 不完整或缺失。</p>
-<p><strong>数据链路活动图：</strong></p>
-<p><img src="http://www.plantuml.com/plantuml/svg/TLPjJzjM5FxkNt7MVN5GII6i_H0AA-rSG0k39HJjHPDbafjW4Tl8TegwQHBRI61gWBGTPT2gX8ss5DP0HrzI8k2_LBcEyozsxhL3aehbGvJudfVddESvz_YQPIkcdT7IWZMjwZEAgMWmgSIdKwQHqHCtZBHXmkoKQfEMymH9AfcqVTFGxPZw8u7khfP39MwhjrNxpdN3J13J2_3fPVvfjJ9DOxRzKB1LEqtWwcH_jR8CNqiZjs0a2axn7bqyW2ydHY0MWlhM6tThfxOnJqjvP_MrithWB9Ng3qxST_iWEiK5vt078jsN8g5BaPx0rKkJ_OB0wnE4S4T7f2UCfPcT_IP9gOOUr3Hbnlg-wuUWHhIE3X0HbvmWjzKu2GY88iZ-JwQD-7Hd_vHXsT07GnC3F6ZG9gQcwefDB7ngcnbo4O9MPj8Bp9uHRSQ-qoi8kc4JCDNKb2q0AotI_I5tFn9YNpr0t-JfqpMQFQmTLdXSGF0WSeoQUH4GG5zIILiOdPRUq_MT05e0e3D4GhvTenQYjTaFZtgsldKFYAtLSbE_LeozyfQ-B0G4T1WSaxu1rP0rJJMWzkYri_pKoV-AgF1ixCOmE7ELsj4fNTcjFRvBJzOOC_oCDnoSF_TP0JINhV-s0otzy0eLY9u0rX11G14WstW65swc5Nj29RD0NwtIzuSWSkQbI5VW0lo4eSCckX5JHjY6UKVsGegiklhSVNfyl_xB4btEGLjZcwbxMLLj970QdFA_pkO3z_ayNLp7rl3GmNZuocTNEgzS3WLyCW2wWq2pYvvrQq6YbzlhSGYDSaj-o8LTzsWF-r9xSLJVM1Uu0QEw4GNRlLHqAbketcfvb-QFwEQcPyHa2qrXzJ5PGVKuvwmLlM1qPPzkxPr9W3KkgkWfWWJkkgK3UhoAcV2usMO0DGbYjRoDgU3wG1Jv7O3wmX9TANuU07kAw3WrIDg7ZQ9NIXXxGmlB7bGSC-xa_hNdBEuw3r-UjUKiTL199CoWnIw1gpYj_5SlWu0Y194Mdi67nm_yqESvzRKvwGaroK27QtziEek5PXflTeAQYGwH7WQZNSyiGrjKMdfINyzYT-jhh-dsStgmqYlyt2Qx68dp7rugNsgMzr1EceOc9p6xRBBqN6sivIDSA54k0Z_0UT1e8T_4ph7viCvf0JiraacBsFAiQa-fkioEY6N9remIPqx8sSVWiMGhRTY0rntDvK6SlgtvWy6yETIuWJDiyndoPV19smJ9geN5QQ9c1bgbWF9yXlCUQih1VNVedYvSX6fvYLQEm4zz9eNXKQYzgj0dTw5v4u680S1zS-2UhjSNyhtSqBADcNPbU1TJVMu3umTQ-MTeMKbAMatfiayAj-_wVzasS3RCVL6E3GnAScpuE-aCiTYcQLGx_Vr5zNWTwtFV7bRBSpWhk6O2_uVwCOxm-R33jSgy-tUMxQeOjeZppfOFPzGZaZtpQV0bWQde_llwSO41uKfbDcn5za4xOId2vAZ9CxOfiat2nHRW5rnODU9sMiJ4SamQbs_5fAWy8esCHh-LezBWyEXNWOyLnFOftjDEiKotvsk578X3RCL9I9m_2uo01bIcDRhu2Fbdu2OLYyYffEwL1FtzVfE7Xc-EitDSyIc-6B4stD3iKSOY9jTpenUuIJtad6SpFYLxWZtdccTrCt-PXnNHip6EpkPJuB1Zk3N7nwz7ksJ9aouxTPVVqPM7C3JcPs9NszOUpMRPYyJOk0JY1FFXBhuuM3dC5Nr0_8AlnqvzK8zANl_2Wnc2sTpIQNsjn0qn4hrtN2s_vFzgM_zKAsznRRed9sxfX6ulzBBt3rIGS0rLWYzP_m40" alt="plantuml diagram"></p>
-<h2 id="实例正常场景下的取值">8. 实例：正常场景下的取值</h2>
-<p>以 <code>vfio-pci</code> 驱动绑定一个 BAR2 物理大小为 64KB
-的设备为例，64KB PAGE_SIZE 环境下，QEMU 启动后各结构体的 size
-字段值全部一致：</p>
-<table>
-<colgroup>
-<col style="width: 25%">
-<col style="width: 19%">
-<col style="width: 19%">
-<col style="width: 16%">
-<col style="width: 19%">
-</colgroup>
-<thead>
-<tr>
-<th>结构体</th>
-<th>字段</th>
-<th>类型</th>
-<th>值</th>
-<th>来源</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>VFIORegion</code></td>
-<td><code>.size</code></td>
-<td><code>size_t</code></td>
-<td>64KB (0x10000)</td>
-<td><code>ioctl</code> 返回的 <code>info.size</code></td>
-</tr>
-<tr>
-<td><code>VFIOBAR</code></td>
-<td><code>.size</code></td>
-<td><code>size_t</code></td>
-<td>64KB</td>
-<td><code>bar-&gt;size = bar-&gt;region.size</code> (pci.c:1785)</td>
-</tr>
-<tr>
-<td><code>VFIOMmap</code></td>
-<td><code>.size</code></td>
-<td><code>size_t</code></td>
-<td>64KB</td>
-<td><code>mmaps[0].size = region-&gt;size</code> (helpers.c:388)</td>
-</tr>
-<tr>
-<td><code>MemoryRegion</code> (bar-&gt;mr)</td>
-<td><code>.size</code></td>
-<td><code>Int128</code></td>
-<td>64KB</td>
-<td><code>memory_region_init_io(..., bar-&gt;size)</code>
-(pci.c:1808)</td>
-</tr>
-<tr>
-<td><code>MemoryRegion</code> (region-&gt;mem)</td>
-<td><code>.size</code></td>
-<td><code>Int128</code></td>
-<td>64KB</td>
-<td>region setup 时设定</td>
-</tr>
-<tr>
-<td><code>MemoryRegion</code> (mmaps[0].mem)</td>
-<td><code>.size</code></td>
-<td><code>Int128</code></td>
-<td>64KB</td>
-<td><code>memory_region_init_ram_device_ptr(..., mmaps[0].size)</code>
-(helpers.c:469)</td>
-</tr>
-<tr>
-<td><code>RAMBlock</code></td>
-<td><code>.size</code></td>
-<td><code>ram_addr_t</code></td>
-<td>64KB</td>
-<td><code>qemu_ram_alloc_from_ptr(size=64KB, ...)</code>
-(memory.c:1719)</td>
-</tr>
-<tr>
-<td><code>PCIIORegion</code></td>
-<td><code>.size</code></td>
-<td><code>pcibus_t</code></td>
-<td>64KB</td>
-<td><code>r-&gt;size = memory_region_size(bar-&gt;mr)</code>
-(pci.c:1323)</td>
-</tr>
-<tr>
-<td>wmask</td>
-<td>—</td>
-<td><code>uint64_t</code></td>
-<td>0xFFFFFFFFFFFF0000</td>
-<td><code>~(64KB - 1)</code> (pci.c:1330)</td>
-</tr>
-</tbody>
-</table>
-<p>正常场景下，所有 size 字段均为 64KB，mmap 成功，ram_device MR
-创建，FlatView 渲染完整，KVM memslot 建立，S2 页表就绪。Guest 访问 BAR2
-时 S2 命中，硬件直达设备，无 VM exit。</p>
-<p>后续文章将分析：<strong>当多个 VF 的 BAR 分配到相邻
-GPA、且间隔不足以容纳完整 BAR
-空间时，上述链路中的哪一步会出现异常、如何一步一步导致 Guest kernel
-panic。</strong></p>
+<p>从 MR 树到 KVM S2 页表的 L3→FlatRange→KVMSlot→kvm_memory_slot 数据流
+ASCII 图见<a href="#附录-d从-l3-到-kvm-s2-页表的-ascii-数据流图">附录
+D</a>。</p>
+<h1 id="正常场景走一遍">8. 正常场景走一遍</h1>
+<p>以单 VF、vfio-pci 驱动、BAR2 物理大小 64KB、Host PAGE_SIZE=64KB
+为例，按时间顺序走一遍完整链路。原理细节引用前文章节。</p>
+<p><strong>① QEMU 初始化</strong>（<a href="#431-qemu-el0-pci_register_barpci-台账固化">4.3.1</a>）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ioctl(VFIO_DEVICE_GET_REGION_INFO) → info.size=64KB</span><br><span class="line">mmap(VFIO_fd, 64KB) → HVA, Host 建 VMA（Host S1 PTE 仍空）</span><br><span class="line">vfio_region_setup → 创建三层 MR:</span><br><span class="line">  bar-&gt;mr → region.mem → mmaps[0].mem (ram_device, ram_block-&gt;host=HVA)</span><br><span class="line">pci_register_bar → r-&gt;size=64KB, wmask=0xFFFF_FFFF_FFFF_0000 写入虚拟 PCI 配置空间</span><br></pre></td></tr></table></figure>
+<p><strong>② Guest PCI 枚举</strong>（<a href="#432-guest-el1-pci-枚举读大小--分配-gpa--写-bar">4.3.2</a>）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Guest 写 BAR = 全 F → QEMU 返回 wmask → Guest 推断 BAR2=64KB</span><br><span class="line">Guest 分配 GPA=0x8000_200000（64KB 对齐）</span><br><span class="line">Guest 写 BAR 寄存器 = 0x8000_200000 → VM exit → QEMU 拦截</span><br></pre></td></tr></table></figure>
+<p><strong>③ BAR MR 挂入 PCI 总线 + 扩张</strong>（<a href="#433-qemu-el0-pci_update_mappingsbar-mr-挂入-gpa">4.3.3</a> + <a href="#53-vfio_sub_page_bar_update_mappingflatview-重建前的扩张机会">5.3</a>）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vfio_pci_write_config → pci_default_write_config → pci_update_mappings()</span><br><span class="line">  → bar-&gt;mr 挂入 GPEX io_mmio, offset=0x200000</span><br><span class="line"></span><br><span class="line">vfio_sub_page_bar_update_mapping()</span><br><span class="line">  → bar_addr=0x8000_200000, 64KB 对齐 → 扩张! 三级 MR size → 64KB</span><br><span class="line">  → memory_region_transaction_commit() 触发 FlatView 重建</span><br></pre></td></tr></table></figure>
+<p><strong>④ FlatView 展平 + KVM memslot 注册</strong>（<a href="#52-flatview-渲染">5.2</a> + <a href="#54-kvm_align_section决定-section-是否进入-kvm-memslot">5.4</a>）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">render_memory_region() → FlatRange: &#123;.mr=L3, .addr=&#123;0x8000_200000, 64KB&#125;&#125;</span><br><span class="line">新旧 FlatView diff → ADD 事件</span><br><span class="line">kvm_set_phys_mem:</span><br><span class="line">  memory_region_is_ram(L3) = true ✓</span><br><span class="line">  kvm_align_section: GPA 已对齐, delta=0 → 返回 64KB ✓</span><br><span class="line">  → KVMSlot&#123;GPA=0x8000_200000, HVA, size=64KB&#125;</span><br><span class="line">  → ioctl(KVM_SET_USER_MEMORY_REGION)</span><br></pre></td></tr></table></figure>
+<p><strong>⑤ KVM 创建 memslot</strong>（<a href="#61-kvm-memslot-的三级嵌套结构">6.1</a> + <a href="#21-关键认知arm64-s2-是-demand-paged">2.1</a>）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">__kvm_set_memory_region → kvm_check_memslot_overlap → 无重叠 ✓</span><br><span class="line">kvm_memory_slot&#123;base_gfn=0x8000_2000, npages=1, userspace_addr=HVA&#125;</span><br><span class="line">仅校验 VMA, 不填 S2 PTE（ARM64 demand-paged）</span><br></pre></td></tr></table></figure>
+<p><strong>⑥ Guest 首次访问 → S2 按需建立</strong>（<a href="#23-页表建立时序">2.3</a> + <a href="#63-memslot-与-s2-页表的关系">6.3</a>）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Guest: ioremap(GPA 0x8000_200000) → 填 Guest S1 PTE (TTBR1_EL1)</span><br><span class="line">Guest: ldr [GVA] → Stage-1 命中, Stage-2 miss → VM exit</span><br><span class="line"></span><br><span class="line">KVM user_mem_abort():</span><br><span class="line">  查 memslots[] → HVA</span><br><span class="line">  get_user_pages_unlocked(HVA) → Host S1 fault → vfio_pci_mmap_fault()</span><br><span class="line">    → io_remap_pfn_range → 填 Host S1 PTE: HVA → HPA</span><br><span class="line">  kvm_pgtable_stage2_map() → 填 S2 PTE: GPA 0x8000_200000 → HPA (Device-nGnRE)</span><br></pre></td></tr></table></figure>
+<p><strong>⑦ 正常访问</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Guest 再次 ldr [GVA]:</span><br><span class="line">  Guest S1 (TTBR1_EL1):  GVA → GPA</span><br><span class="line">  Host S2  (VTTBR_EL2):  GPA → HPA → 设备寄存器</span><br><span class="line">全程无 VM exit, 硬件直达 ✓</span><br></pre></td></tr></table></figure>
+<p>正常场景下所有 size 字段均为 64KB（详见 <a href="#72-全量数据结构关系图">7.2</a> 类图标注），mmap 成功，ram_device
+MR 创建，扩张生效，FlatView 完整，memslot 建立，S2 就绪。</p>
 <hr>
 <h1 id="附录-a三套页表建立流程与运行时关系">附录
 A：三套页表建立流程与运行时关系</h1>
 <p><strong>时序图：</strong></p>
-<p><img src="http://www.plantuml.com/plantuml/svg/fLPjRzjK5FxkNt5OlpXIgxafBrMqH4iXIQikj2HP94IGvJhNgLNxEjWtQJQ4j44fb3B6naHXJ43G6D6sjWDfNRMAzRzKTPB-2-wzjbExIU43ZfGulizvkSzpphc-x1359WtJ49mL7TSLMp5XIL5NQhRLmDMtBSEoONLP9oYqNaMQqZ18riAag5z7C2c55XtqKGDX5UMHuoWrb3Rq6WOLOOBi48f-4rtLwmecCvPTHRONQUmDVermbxPjQxMqhAihc3g6k20GdHW8BYsbZlSttD-tJjhF--sEU_2ozsIp-_nchxC9ukAouj3qZjRlJiNWUF-R_k6t_VRNtQsz_ixXoTREfOjBAK48fG8NSWtaa0eMCrScOnT0SO0_Y6BUo-IlKiYivH38N94y77iOXV7rUMHZP9oYux4ABcVd5k0Yp9Vpt9B-2a8o2Nwo2UuAJ5EfW-Xj1yhvz3Xm3yL9S0_s-eU_n22P50GEdKWn7v3WDc9JqorPgux3JBeGZmcAIlIcGX0Fms03D4-ZQkjDP2Sgk6ag4wccATThbgP1ablBiujfIALWCPtBoCNPkMpf56VL7OhYmUggBhFGx9aNWiRWcIN0HgHXOvWjfobQQhsbQPhSefSiqKkeeaXw0hRedQtNbWcCPQVPHm2cS7Vx8HMjzzLUzyRD15SDuEZ6RumNS5_yvRCaiYYsWci8ZjRlyHq0tK7C1mVyBPOopAVxx7xtmMFFbBa4qL2kNml0lUsDaqVVTv-slKfX9VF78_Vs7Lgur3qlVm7XAh2CG-h54vnSzykVg6CmaUaO5g7Pt0Mt_GIASHvyM3ZTKeaXqdkvc2d9LukPWfpFv1SAxyk5J6vkuTtn2luujyXge4o_7DfpoJTVdv_vvD_aNQ4YARQwBAkMQUf4fibOzZNPHZNTmc9C45Y7rw66YDnma2spZJcCGaP1nDEgOgmCs1DBfPc29BDAFekZf8OvDdN7USqNAu8xfP0p4wqX_bmSyaqXDcBhTGtBN6EHSn6KwNybizJG3S9BXzSYYqkjk8IS1o5A7cM5hVEQbQObYPUhLxCHdAORHY2hM6RKS6PeFr6vgEqqCuipEoc8EUInWXL2R1hg7TJKLJI1SxYG-T-j4Tfy8hnbE7hm7OZzjVlTZStkptlHveXxS9Px51xCpLxxwJ4TFozstLThWIcVa8DG8pfhLADC9NmxtUAw3aPTuCsRRzu_IhTtm-jWYTad0qEHzmNhXjWmMZ4CIuMSFtmqDdou8geIg3bamXKDRych-4cPdGXCLvzA6lPyKI8dqkUTayywxhC_UmUFG_eCGeJTGyWxO_wCEE4AEolI6Tb3RJf2_kFzM-xwhUE_3tltEh6eF8K69hg90dcyyUVDKj5JltTuqD-zCmxThL_f00RKqiavOXbL6rhIE7pGclgG7e6jAIe3s-6m55EI5FFfjEXvv7iOoqhPR5RoE2qIDZReyJZW2yH1iVZ4dkkyWWDMGpt9LqAxFmtFcfi5f-73mUbq7oW0eg_A8FO8vrxOeQO_B-o8NS_wAlTtNhaFl_1qS7VNtEqVt1yx8DApsg6ZIcen0lr4HfG0CC5lVnf-0_9K3ALncTxIry1_0000" alt="plantuml diagram"></p>
+<p><img src="http://www.plantuml.com/plantuml/svg/fLTjRzDM5FxkNt46Nsmf23Tb34Mq8cL9Ma5ebeHAqpfTESbDQjMni-kR4fWcbOtN0UDbRDq0CJeng7ZVfXMqQlI_L7MI_ekTU-saTfF21nmfTUpddfVdEUVSsoCkDnXlrYt5dJVjXi6CEfICydoDEKsxSjIn70QdvanEG-yhj6eqBPvsR5umpr0OqKClNVfLazfbcgMkQzHeqZ9hDfIfpIaBeV2RcsMpOTXymc4LodnFUp-Mrn1pISQSKyKvipnles68AmetkKNXS6byyyrbxu-bhUL_kiihtjg_dQTNsl-SxQnS0JKtPxWOtiQ5MwCQRBxveRj-exjyjRsqsdsnlhNqul3-qhYYX4A1FPacTVcihQQEZsXxm711FeXYFajbJo9aqd4vf8xhFauyZCBa-sEKsTJQHiUrMNicFJKD--7OJ5QknB-ACZO6GR09QGhgTQC1gfyEp6IJCP0M2YFWhQrsrt_JO6nCKIHqtxYm0GcvHbsecWwfLc8maSp7DSKeStF1u5Iw4R0-MePHOUO2PObPUw5kx1jVg9D6pQbMOKok9fEv98oFGowPIP72v5Iwk8rp6YwYfBD6sIJ2jNZckq0VCh84CCgRp8R9cIIYzTOdrMgLjF0YEbvAXKR2Ksm7xvXPc-EmDtr8V1GG2hUVFqJHEj-ljXVF9gHg01kBlmjUm7lzLy2IAhmmmwvHsBXmMsO0c84MW7lyvOefOTDxTQTzxuc_L9W4rJBEdEw1EyylRptwkVrisQyKKJAF7tdNRsBXedbP_WgrAo0Y3gaNDnAINU_INRGCTLftBOU3khbsllrWUUl9rHYMuJLl-IaKuYAGOIgQJfbRAjwJGgf8JXPIUP9DPQVpdvDyAZCrVI8sQt-ToOc2cC4l5njmxE21OnFVl4lhULJCOEKvqc0KYvGIZCnXfmcZDTEnLIsA5ZtL2zZd-CQbzjy_jHSV2wAmc9FvxC438XEWI0U3K48VhAa8DOXESYVqzTbKIqWngLNj6DX21ZS6JPSojs6KAJ4g5JP4wSGmgIEm-FjWcsyMlKiNiI3yMG13ws9eCPH0pJTjRjQfbXYo6Alqbl0lgqd-sEPHreM_f2zBs09OZb7PxtA7KS1YcBN5SioXm96OVO5Dlwmvmqd27Jbytb4YWaf1F35A3kCgpgcv1ODmRE-gBJfBKnIn9pIWHZcHOAa1QTgMKvwd5Hy3435woh3c-tAenU94NYSoZXquZ3pSddNJTJyA98ZWjhjFyXKTF_AvEc0R8OoAzvW8aUD1bPtJct3l2wRKD2qkArIECU4NLqd19I5Ab4Ua1tBf4n97f4_1uTnfLyLxx7Un62UXVaZNvH3q9-50jpPgt2XPbBX2q3WHanqbQJ3iY3418xbCCJbnF4Lo-UaY-JGrCtKqDT35GIrLJSkY5L1dX02I_uJVo1aPoY4HHLo4eVUo6mXmrZOuP-ZQzqJiZ9tVuO_Yh8Vk-ctlxlrWr_pGKH3fun3ti77lHr2xv-wqBrzftr_LXlMpI2qAx-tzdULdcxY5ldxflJtNM-gtrhj6nf3-7ksrfEd80kjlrprhMhIB_HjPa6AI8Pd1GbMESp74jK6qOM5_GIROGAjY0vM2bOrUxGmi4Nf7Kl9RRuI8KmtkzPc0IdIxkoYHKzNvbQtlLhnNVtRMdeJqwRi8cuUGTS7y3d72HRXJf1soX-R54Fd5FdhXskP_wvtRArfKdc3ezkG9fgqy3wY--ftrjUxBcp5eBpt03Gveo-IxY6LL6BJq67pH6lqITxxMACeWCXoKObJNjO1E1yzKWOMzQJsTJki-ft8wYoDUdozG-yKI4BkhSN_6xsXP-IQK_RPxqPJ2EReFEu_ZmQ-d0AY1AdtVGupxRWTcmcvkXsGz6QZSVV7MUtZHry5xUSvx_eltwmgeUDvqSNBeBK5W4CYG4f07f-lVXa_nlegXC8xWBVuhypy0" alt="plantuml diagram"></p>
 <h1 id="附录-bops-回调与-mmio-慢路径派发">附录 B：ops 回调与 MMIO
 慢路径派发</h1>
 <p><code>ops</code>（<code>MemoryRegionOps *</code>）定义了该 MR 的 MMIO
@@ -1221,6 +1325,19 @@ KVM，KVM 通过 <code>kvm_run</code> 结构体把 MMIO 请求返回给 QEMU：<
 region ops 的最大粒度，KVM 的 ISV=0 也无法解码指令 → 只能向 Guest 注入
 SEA → kernel panic。</p>
 </blockquote>
+<hr>
+<h1 id="附录-cbar-重叠场景下的完整调用链">附录 C：BAR
+重叠场景下的完整调用链</h1>
+<p>以下是以 Guest 写入 VF2 BAR2 基地址 <code>0x8000408000</code>（不对齐
+64KB）为例的完整调用链，展示了 BAR 重叠时 memslot
+注册失败的每一步。本篇为基础文章，此附录供后续问题篇索引。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">Guest 写入 VF2 BAR2 配置空间</span><br><span class="line">  │</span><br><span class="line">  └─→ vfio_pci_write_config()                    ← pci.c:1339</span><br><span class="line">      │</span><br><span class="line">      ├─→ pci_default_write_config()</span><br><span class="line">      │   └─→ pci_update_mappings(VF2)</span><br><span class="line">      │       │  VF2 BAR2 addr: UNMAPPED → 0x8000408000</span><br><span class="line">      │       └─→ memory_region_add_subregion_overlap()</span><br><span class="line">      │          (VF2 bar-&gt;mr 挂入 PCI 地址空间, 设 update_pending=true)</span><br><span class="line">      │          (不触发 FlatView 重建 — 仅标记 dirty)</span><br><span class="line">      │</span><br><span class="line">      ├─→ vfio_sub_page_bar_update_mapping(VF2)  ← pci.c:1345/1171</span><br><span class="line">      │   │  if (bar_addr 页对齐?) → size=64KB : size=32KB</span><br><span class="line">      │   │  0x8000408000 不对齐 → size=32KB, 不扩张!</span><br><span class="line">      │   │</span><br><span class="line">      │   ├─→ memory_region_transaction_begin()   ← depth: 0→1</span><br><span class="line">      │   │   (扩张逻辑: set_size MR, 但 VF2 不对齐→跳过)</span><br><span class="line">      │   │   (memory_region_update_pending 仍为 true)</span><br><span class="line">      │   │</span><br><span class="line">      │   └─→ memory_region_transaction_commit()  ← depth: 1→0, 触发!</span><br><span class="line">      │       │</span><br><span class="line">      │       └─→ memory_region_commit()           ← memory.c:1137</span><br><span class="line">      │           │</span><br><span class="line">      │           ├─→ flatviews_reset()            ← 清 FlatView 缓存</span><br><span class="line">      │           │</span><br><span class="line">      │           ├─→ MEMORY_LISTENER_CALL_GLOBAL(begin)</span><br><span class="line">      │           │</span><br><span class="line">      │           ├─→ address_space_set_flatview() ← memory.c:1064</span><br><span class="line">      │           │   │</span><br><span class="line">      │           │   ├─→ generate_memory_topology()</span><br><span class="line">      │           │   │   └─→ render_memory_region()</span><br><span class="line">      │           │   │       递归遍历 subregions → disjoint FlatRange[]</span><br><span class="line">      │           │   │       (最新插入的 MR 先渲染 → 重叠时后者被 gap-filling 裁剪)</span><br><span class="line">      │           │   │</span><br><span class="line">      │           │   ├─→ flatview_simplify()      ← 合并相邻同类区间</span><br><span class="line">      │           │   │</span><br><span class="line">      │           │   ├─→ address_space_update_topology_pass(false) ← DEL</span><br><span class="line">      │           │   │   │  old_view vs new_view diff</span><br><span class="line">      │           │   │   │  old 有 new 无/不同 →</span><br><span class="line">      │           │   │   └─→ MEMORY_LISTENER_CALL(region_del)</span><br><span class="line">      │           │   │       └─→ kvm_region_del()  ← 深拷贝 section, 入队 transaction_del</span><br><span class="line">      │           │   │</span><br><span class="line">      │           │   └─→ address_space_update_topology_pass(true)  ← ADD</span><br><span class="line">      │           │       │  new 有 old 无 →</span><br><span class="line">      │           │       └─→ MEMORY_LISTENER_CALL(region_add)</span><br><span class="line">      │           │           └─→ kvm_region_add()  ← 深拷贝 section, 入队 transaction_add</span><br><span class="line">      │           │</span><br><span class="line">      │           └─→ MEMORY_LISTENER_CALL_GLOBAL(commit)</span><br><span class="line">      │               │</span><br><span class="line">      │               └─→ kvm_region_commit()       ← kvm-all.c:1632</span><br><span class="line">      │                   │  先全部 DEL, 再全部 ADD (批量原子)</span><br><span class="line">      │                   │</span><br><span class="line">      │                   ├─→ for each DEL:</span><br><span class="line">      │                   │   └─→ kvm_set_phys_mem(section, add=false)</span><br><span class="line">      │                   │       │  !memory_region_is_ram(mr)? → skip</span><br><span class="line">      │                   │       │  kvm_align_section → &lt; PAGE_SIZE? → skip</span><br><span class="line">      │                   │       └─→ ioctl(KVM_SET_USER_MEMORY_REGION, slot=0)</span><br><span class="line">      │                   │</span><br><span class="line">      │                   └─→ for each ADD:</span><br><span class="line">      │                       └─→ kvm_set_phys_mem(section, add=true)</span><br><span class="line">      │                           │  !memory_region_is_ram(mr)? → skip</span><br><span class="line">      │                           │  kvm_align_section → 32KB &lt; 64KB → return 0 → SKIP!</span><br><span class="line">      │                           └─ (不到达 ioctl)</span><br><span class="line">      │</span><br><span class="line">      └────── 结果: DEL 删了旧 memslot, ADD 全被 kvm_align_section 裁掉</span><br><span class="line">              → 两个 VF 都没有 S2 页表</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="附录-d从-l3-到-kvm-s2-页表的-ascii-数据流图">附录 D：从 L3 到
+KVM S2 页表的 ASCII 数据流图</h1>
+<p>以下 ASCII 流程图展示正常场景下（BAR 扩张成功，64KB
+对齐），数据如何从 QEMU 的 L3 MR 叶子节点一步步流到 KVM 的 S2 PTE：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">QEMU EL0                                              KVM EL2</span><br><span class="line">─────────────                                         ─────────</span><br><span class="line"></span><br><span class="line">VFIO BAR 三层 MR (L1→L2→L3)</span><br><span class="line">  bar-&gt;mr (L1, 容器, ram=false)           ← GPEX io_mmio 直接挂的就是它</span><br><span class="line">    └─ subregions:</span><br><span class="line">       bar-&gt;region.mem (L2, IO, ram=false, ops=vfio_region_ops)</span><br><span class="line">         └─ subregions:</span><br><span class="line">            bar-&gt;region.mmaps[0].mem (L3, ram_device, ram=true)</span><br><span class="line">              .ram_block-&gt;host = HVA              ← HVA 的唯一来源 (mmap 返回值)</span><br><span class="line">              .subregions = empty                  ← 叶子节点, terminates=true</span><br><span class="line">       │</span><br><span class="line">       ↓ render_memory_region (递归渲染)</span><br><span class="line">       │   L3 先渲染占满区域, L1/L2 无空隙可填</span><br><span class="line">       │   → FlatRange 只记录 L3</span><br><span class="line">FlatRange</span><br><span class="line">  .mr = L3 (mmaps[0].mem, ram_device)</span><br><span class="line">  .addr.size = 实际区间大小</span><br><span class="line">       │</span><br><span class="line">       ↓ section_from_flat_range (memory.c:237)</span><br><span class="line">MemoryRegionSection</span><br><span class="line">  .mr = L3 (同 FlatRange.mr, ram_device)</span><br><span class="line">  .size = FlatRange.addr.size</span><br><span class="line">  .offset_within_address_space = GPA</span><br><span class="line">       │</span><br><span class="line">       ↓ kvm_region_add → kvm_region_commit</span><br><span class="line">       │   (先 DEL 后 ADD, 事务性提交)</span><br><span class="line">       ↓ kvm_set_phys_mem (kvm-all.c:1338)</span><br><span class="line">       │</span><br><span class="line">       ├─ !memory_region_is_ram(mr)?  → 跳过 (L2 走这条路, 因为 L2.ram=false)</span><br><span class="line">       ├─ kvm_align_section → 0?      → 跳过 (小于 PAGE_SIZE)</span><br><span class="line">       │</span><br><span class="line">       │  L3 通过两个检查:</span><br><span class="line">       │    memory_region_is_ram(L3) = true  (ram_device)</span><br><span class="line">       │    kvm_align_section → 64KB (≥ PAGE_SIZE)</span><br><span class="line">       │</span><br><span class="line">       ↓ 组装 KVMSlot</span><br><span class="line">KVMSlot</span><br><span class="line">  .start_addr = GPA</span><br><span class="line">  .memory_size = 页对齐后大小</span><br><span class="line">  .ram = memory_region_get_ram_ptr(L3) → HVA    ← 从 L3.ram_block-&gt;host 取出</span><br><span class="line">       │</span><br><span class="line">       ↓ ioctl(KVM_SET_USER_MEMORY_REGION)</span><br><span class="line">       │</span><br><span class="line">                                            kvm_memory_slot &lt;b&gt;创建&lt;/b&gt;</span><br><span class="line">                                              .base_gfn = GPA &gt;&gt; PAGE_SHIFT</span><br><span class="line">                                              .npages = 页数</span><br><span class="line">                                              .userspace_addr = HVA</span><br><span class="line">                                                   │</span><br><span class="line">                                                   │  &lt;b&gt;S2 PTE 尚未建立!&lt;/b&gt;</span><br><span class="line">                                                   │  ARM64 S2 是 demand-paged</span><br><span class="line">                                                   │  等 Guest 首次访问才触发 fault</span><br><span class="line">                                                   │</span><br><span class="line">                                            ─ ─ ─ ─ Guest 首次访问 GPA ─ ─ ─ ─</span><br><span class="line">                                                   │</span><br><span class="line">                                                   ↓ Stage-2 fault → user_mem_abort()</span><br><span class="line">                                                   │   hva_to_pfn(HVA)</span><br><span class="line">                                                   │   ├─ hva_to_pfn_fast(): follow_page()</span><br><span class="line">                                                   │   │  → 查 Host S1 (TTBR0_EL2)</span><br><span class="line">                                                   │   │  → Host S1 PTE miss!</span><br><span class="line">                                                   │   └─ hva_to_pfn_slow(): get_user_pages_unlocked()</span><br><span class="line">                                                   │      → page fault → vfio_pci_mmap_fault()</span><br><span class="line">                                                   │      → io_remap_pfn_range(HVA, HPA)</span><br><span class="line">                                                   │      → Host S1 PTE built: HVA → HPA</span><br><span class="line">                                                   │</span><br><span class="line">                                                   ↓ kvm_pgtable_stage2_map()</span><br><span class="line">                                                   │   __pfn_to_phys(pfn), prot=DEVICE</span><br><span class="line">                                                   ↓ 填 S2 PTE (VTTBR_EL2)</span><br><span class="line">                                              GPA → HPA (DEVICE_nGnRE)</span><br></pre></td></tr></table></figure>
 
     </article>
     <!-- license -->
@@ -1229,13 +1346,18 @@ SEA → kernel panic。</p>
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/">https://akirazheng.github.io/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/">July 29th 2026, 2:00:00 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/">August 6th 2026, 12:31:42 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/">August 6th 2026, 9:46:33 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
     <!-- paginator -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2026/08/06/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%BA%8C)/" title="虚机下VFIO设备BAR空间分配与BAR重叠报错分析">
+                    <div class="nextTitle">虚机下VFIO设备BAR空间分配与BAR重叠报错分析</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -1390,16 +1512,23 @@ SEA → kernel panic。</p>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text">0. 背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E7%A7%8D%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text">1. 四种地址空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E5%A5%97%E9%A1%B5%E8%A1%A8%E7%9A%84%E5%8D%8F%E4%BD%9C"><span class="toc-text">2. 三套页表的协作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu-%E4%BE%A7memoryregion-%E6%A0%91"><span class="toc-text">3. QEMU 侧：MemoryRegion 树</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mr-%E7%9A%84%E4%B8%89%E7%A7%8D%E7%B1%BB%E5%9E%8B"><span class="toc-text">3.1 MR 的三种类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mr-%E6%A0%91%E5%AE%8C%E6%95%B4%E6%8B%93%E6%89%91"><span class="toc-text">3.2 MR 树完整拓扑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu-%E4%BE%A7vfio-bar-%E7%9A%84%E4%B8%89%E5%B1%82-mr-%E5%B5%8C%E5%A5%97"><span class="toc-text">4. QEMU 侧：VFIO BAR 的三层 MR
-嵌套</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#subregions-%E9%93%BE%E4%B8%80%E4%B8%AA-bar-%E7%9A%84%E4%B8%89%E4%B8%AA-mr-%E5%A6%82%E4%BD%95%E4%B8%B2%E8%81%94"><span class="toc-text">4.1 subregions
-链：一个 BAR 的三个 MR 如何串联</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mmap-%E6%88%90%E5%8A%9F-vs-%E5%A4%B1%E8%B4%A5-bar-%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%BD%A2%E6%80%81"><span class="toc-text">4.2 mmap 成功 vs 失败 ——
-BAR 结构的两种形态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bar-%E5%A6%82%E4%BD%95%E6%8C%82%E5%85%A5-pci-%E6%80%BB%E7%BA%BF-mr-%E6%A0%91"><span class="toc-text">4.3 BAR 如何挂入 PCI 总线 MR
-树</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu-%E4%BE%A7flatview-%E5%B1%95%E5%B9%B3%E4%B8%8E-memslot-%E6%B3%A8%E5%86%8C"><span class="toc-text">5. QEMU 侧：FlatView 展平与
-memslot 注册</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#flatview-%E4%B8%8E-flatrange"><span class="toc-text">5.1 FlatView 与 FlatRange</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#flatview-%E6%B8%B2%E6%9F%93%E8%A7%84%E5%88%99%E4%B8%8E-bar-%E9%87%8D%E5%8F%A0%E6%88%AA%E6%96%AD"><span class="toc-text">5.2 FlatView 渲染规则与 BAR
-重叠截断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E-flatview-%E5%88%B0-kvm-memslot-%E7%9A%84%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E9%93%BE"><span class="toc-text">5.3 从 FlatView 到 KVM
-memslot 的完整调用链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E5%85%B3%E9%94%AE%E8%BF%87%E6%BB%A4%E7%82%B9"><span class="toc-text">5.4 两个关键过滤点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#kvm-%E4%BE%A7memslot-%E4%B8%8E-s2-%E9%A1%B5%E8%A1%A8"><span class="toc-text">6. KVM 侧：memslot 与 S2 页表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF"><span class="toc-text">7. 完整数据链路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E4%BE%8B%E6%AD%A3%E5%B8%B8%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84%E5%8F%96%E5%80%BC"><span class="toc-text">8. 实例：正常场景下的取值</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%99%84%E5%BD%95-a%E4%B8%89%E5%A5%97%E9%A1%B5%E8%A1%A8%E5%BB%BA%E7%AB%8B%E6%B5%81%E7%A8%8B%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%97%B6%E5%85%B3%E7%B3%BB"><span class="toc-text">附录
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%AC%E6%96%87%E5%AE%9A%E4%BD%8D"><span class="toc-text">0. 本文定位</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E7%A7%8D%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text">1. 四种地址空间</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E5%A5%97%E9%A1%B5%E8%A1%A8"><span class="toc-text">2. 三套页表</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E8%AE%A4%E7%9F%A5arm64-s2-%E6%98%AF-demand-paged"><span class="toc-text">2.1 关键认知：ARM64 S2 是
+Demand-paged</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#runtime-%E7%BF%BB%E8%AF%91%E8%B7%AF%E5%BE%84"><span class="toc-text">2.2 Runtime 翻译路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E8%A1%A8%E5%BB%BA%E7%AB%8B%E6%97%B6%E5%BA%8F"><span class="toc-text">2.3 页表建立时序</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#qemu-%E4%BE%A7memoryregion-%E6%A0%91"><span class="toc-text">3. QEMU 侧：MemoryRegion 树</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#mr-%E7%9A%84%E4%B8%89%E7%A7%8D%E7%B1%BB%E5%9E%8B"><span class="toc-text">3.1 MR 的三种类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mr-%E6%A0%91%E5%AE%8C%E6%95%B4%E6%8B%93%E6%89%91"><span class="toc-text">3.2 MR 树完整拓扑</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#qemu-%E4%BE%A7vfio-bar-%E7%9A%84%E4%B8%89%E5%B1%82-mr-%E5%B5%8C%E5%A5%97"><span class="toc-text">4. QEMU 侧：VFIO BAR 的三层 MR
+嵌套</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#subregions-%E9%93%BE%E4%B8%80%E4%B8%AA-bar-%E7%9A%84%E4%B8%89%E4%B8%AA-mr-%E5%A6%82%E4%BD%95%E4%B8%B2%E8%81%94"><span class="toc-text">4.1 subregions
+链：一个 BAR 的三个 MR 如何串联</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mmap-%E6%88%90%E5%8A%9F-vs-%E5%A4%B1%E8%B4%A5-bar-%E7%BB%93%E6%9E%84%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%BD%A2%E6%80%81"><span class="toc-text">4.2 mmap 成功 vs 失败 ——
+BAR 结构的两种形态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bar-%E5%A6%82%E4%BD%95%E6%8C%82%E5%85%A5-pci-%E6%80%BB%E7%BA%BF-mr-%E6%A0%91"><span class="toc-text">4.3 BAR 如何挂入 PCI 总线 MR
+树</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#qemu-el0-pci_register_barpci-%E5%8F%B0%E8%B4%A6%E5%9B%BA%E5%8C%96"><span class="toc-text">4.3.1 [QEMU EL0]
+pci_register_bar：PCI 台账固化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#guest-el1-pci-%E6%9E%9A%E4%B8%BE%E8%AF%BB%E5%A4%A7%E5%B0%8F-%E5%88%86%E9%85%8D-gpa-%E5%86%99-bar"><span class="toc-text">4.3.2 [Guest EL1] PCI
+枚举：读大小 + 分配 GPA + 写 BAR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#qemu-el0-pci_update_mappingsbar-mr-%E6%8C%82%E5%85%A5-gpa"><span class="toc-text">4.3.3 [QEMU EL0]
+pci_update_mappings：BAR MR 挂入 GPA</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#qemu-%E4%BE%A7flatview-%E5%B1%95%E5%B9%B3%E4%B8%8E-memslot-%E6%B3%A8%E5%86%8C"><span class="toc-text">5. QEMU 侧：FlatView 展平与
+memslot 注册</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#flatview-%E4%B8%8E-flatrange"><span class="toc-text">5.1 FlatView 与 FlatRange</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#flatview-%E6%B8%B2%E6%9F%93"><span class="toc-text">5.2 FlatView 渲染</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vfio_sub_page_bar_update_mappingflatview-%E9%87%8D%E5%BB%BA%E5%89%8D%E7%9A%84%E6%89%A9%E5%BC%A0%E6%9C%BA%E4%BC%9A"><span class="toc-text">5.3
+vfio_sub_page_bar_update_mapping：FlatView 重建前的扩张机会</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#kvm_align_section%E5%86%B3%E5%AE%9A-section-%E6%98%AF%E5%90%A6%E8%BF%9B%E5%85%A5-kvm-memslot"><span class="toc-text">5.4
+kvm_align_section：决定 section 是否进入 KVM memslot</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#kvm-%E4%BE%A7memslot-%E4%B8%8E-s2-%E9%A1%B5%E8%A1%A8"><span class="toc-text">6. KVM 侧：memslot 与 S2 页表</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#kvm-memslot-%E7%9A%84%E4%B8%89%E7%BA%A7%E5%B5%8C%E5%A5%97%E7%BB%93%E6%9E%84"><span class="toc-text">6.1 KVM memslot 的三级嵌套结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#kvm_memory_slot-%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-text">6.2 kvm_memory_slot 结构体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#memslot-%E4%B8%8E-s2-%E9%A1%B5%E8%A1%A8%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">6.3 memslot 与 S2 页表的关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu-kvmslot-vs-kvm-kvm_memory_slot"><span class="toc-text">6.4 QEMU KVMSlot vs KVM
+kvm_memory_slot</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF"><span class="toc-text">7. 完整数据链路</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B%E6%A6%82%E8%A7%88"><span class="toc-text">7.1 流程概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A8%E9%87%8F%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%85%B3%E7%B3%BB%E5%9B%BE"><span class="toc-text">7.2 全量数据结构关系图</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E5%B8%B8%E5%9C%BA%E6%99%AF%E8%B5%B0%E4%B8%80%E9%81%8D"><span class="toc-text">8. 正常场景走一遍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%99%84%E5%BD%95-a%E4%B8%89%E5%A5%97%E9%A1%B5%E8%A1%A8%E5%BB%BA%E7%AB%8B%E6%B5%81%E7%A8%8B%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%97%B6%E5%85%B3%E7%B3%BB"><span class="toc-text">附录
 A：三套页表建立流程与运行时关系</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%99%84%E5%BD%95-bops-%E5%9B%9E%E8%B0%83%E4%B8%8E-mmio-%E6%85%A2%E8%B7%AF%E5%BE%84%E6%B4%BE%E5%8F%91"><span class="toc-text">附录 B：ops 回调与 MMIO
-慢路径派发</span></a>
+慢路径派发</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%99%84%E5%BD%95-cbar-%E9%87%8D%E5%8F%A0%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E9%93%BE"><span class="toc-text">附录 C：BAR
+重叠场景下的完整调用链</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%99%84%E5%BD%95-d%E4%BB%8E-l3-%E5%88%B0-kvm-s2-%E9%A1%B5%E8%A1%A8%E7%9A%84-ascii-%E6%95%B0%E6%8D%AE%E6%B5%81%E5%9B%BE"><span class="toc-text">附录 D：从 L3 到
+KVM S2 页表的 ASCII 数据流图</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1853,7 +1982,24 @@ A：三套页表建立流程与运行时关系</span></a></li><li class="toc-ite
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -2764,7 +2910,7 @@ A：三套页表建立流程与运行时关系</span></a></li><li class="toc-ite
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 88
+        Total : 89
         </div>
         <!-- search  -->
         
@@ -2784,8 +2930,14 @@ A：三套页表建立流程与运行时关系</span></a></li><li class="toc-ite
             
         
         <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span>
+            <a class="archive-post-title" href="/2026/08/06/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%BA%8C)/">虚机下VFIO设备BAR空间分配与BAR重叠报错分析</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
             <span class="archive-post-date">07/29</span>
-            <a class="archive-post-title" href="/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/">虚机下 VFIO 设备 BAR 空间分配与 BAR 重叠报错分析(一)</a>
+            <a class="archive-post-title" href="/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/">VFIO 设备直通基础：地址空间、页表与 QEMU/KVM 数据结构详解(一)</a>
         </li>
     
         
