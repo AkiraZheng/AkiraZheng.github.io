@@ -1,5 +1,5 @@
 ---
-title: 虚机下 VFIO 设备 BAR 空间分配与 BAR 重叠报错分析(一)
+title: VFIO 设备直通基础：地址空间、页表与 QEMU/KVM 数据结构详解(一)
 date: 2026-07-29 14:00:00
 categories: 虚拟化
 tags:
@@ -10,7 +10,7 @@ tags:
   - PCI
 ---
 
-## 0. 背景
+# 0. 背景
 
 VFIO 设备直通让虚拟机直接访问物理 PCI 设备，绕开 QEMU 的软件模拟以获得接近原生的 I/O 性能。但"直接访问"四个字的背后，是 QEMU、KVM、Host 内核三套系统协同维护的复杂映射关系——Guest 看到的只是一个 PCI BAR 地址，这个地址要经过两层页表翻译才能到达物理设备。
 
@@ -20,7 +20,7 @@ ARM64 64KB PAGE_SIZE 环境下，这个问题更加棘手：页大小与 BAR 空
 
 代码引用来自 openEuler QEMU（`openeuler_qemu`）和 openEuler Kernel（`openeuler/kernel`），已逐一对照源码验证。
 
-## 1. 四种地址空间
+# 1. 四种地址空间
 
 VFIO PCI 直通场景涉及四种地址，分属 Guest、QEMU、Host 内核三个主体管理。理解它们的区别是后续所有分析的前提。
 
@@ -47,31 +47,40 @@ Guest 指令: ldr x0, [x3]        (x3 = io_base + 0x300)
 
 四种地址的高位含义各自独立，互相之间没有数值上的映射关系——GVA 的高位来自 Guest 内核的 vmalloc 区，GPA 来自 QEMU 分配的 Guest 物理地址空间布局，HVA 来自 Host 进程的 mmap 区域，HPA 来自 Host 的物理内存布局。唯一不变的是低 16 位（64KB 页内偏移），在四级翻译中保持一致。
 
-## 2. 三套页表的协作
+# 2. 三套页表的协作
 
-四种地址需要三套页表来完成翻译。VHE 模式下 Host 内核运行在 EL2，Guest 运行在 EL1，运行时 Guest 访问设备需要 Guest S1 + Host S2 两套页表。但 KVM 建立 S2 时，还需要第三套——Host S1 用户页表——作为"脚手架"。
+四种地址需要三套页表来完成翻译。VHE 模式下 Host 内核运行在 EL2，Guest 运行在 EL1。运行时 Guest 访问设备需要 Guest S1 + Host S2 两套页表，**这两套都是按需建立（demand-paged）**。
 
-**为什么要这个脚手架？** KVM 不直接知道 HPA。QEMU 通过 `ioctl(KVM_SET_USER_MEMORY_REGION)` 把 `{GPA, HVA, size}` 三元组传给 KVM 后，KVM 拿到的是 HVA，必须调用 `get_user_pages()` 走 Host S1 页表（TTBR0_EL2）查到设备 BAR 的 HPA，才能把 `GPA → HPA` 填入 S2 PTE。如果 Host S1 尚未建立（mmap 后首次访问），会触发 page fault，由 VFIO 驱动的 fault 回调 `io_remap_pfn_range` 建立 Host S1 PTE。
+此外还有第三套——Host S1 用户页表（TTBR0_EL2）——作为 KVM 解析 HPA 时的"脚手架"。
+
+**为什么要这个脚手架？** KVM 不直接知道 HPA。当 Guest 首次访问某个 GPA 时触发 Stage-2 page fault，KVM 的 fault handler `user_mem_abort()`（`arch/arm64/kvm/mmu.c:1472`）负责处理：
+1. 通过 memslot 找到对应的 HVA
+2. 调用 `__gfn_to_pfn_memslot()` → `hva_to_pfn()` 解析 HVA 对应的物理页帧号
+3. `hva_to_pfn()` 先走快路径（`follow_page` 查 Host S1 PTE），若 PTE 未建立则走慢路径（`get_user_pages_unlocked()` 触发 Host S1 page fault → VFIO 驱动的 `vfio_pci_mmap_fault()` → `io_remap_pfn_range()` 建立 Host S1 PTE → 拿到 HPA）
+4. 最后调用 `kvm_pgtable_stage2_map()` 将 `GPA → HPA` 填入 S2 PTE，页表属性设为 `DEVICE_nGnRE`
+
+**注意**：和 x86 不同，ARM64 的 S2 PTE **不是在 `ioctl(KVM_SET_USER_MEMORY_REGION)` 时立即建立的**。`kvm_arch_prepare_memory_region()` 只校验 HVA 有效性和 VMA 存在性，`kvm_arch_commit_memory_region()` 只处理 dirty logging。真正的 S2 PTE 建立发生在 Guest 首次访问时的 Stage-2 fault 路径中。
 
 | 寄存器 | 翻译关系 | 页表由谁管理 | 角色 |
 |--------|---------|------------|------|
 | TTBR1_EL1 | GVA → GPA | Guest OS | Guest 自己的翻译 |
-| TTBR0_EL2 | HVA → HPA | Host 内核 | S2 的"脚手架" |
+| TTBR0_EL2 | HVA → HPA | Host 内核 | S2 fault 解析 HPA 时的"脚手架" |
 | VTTBR_EL2 | GPA → HPA | KVM (Host 内核) | Guest 运行时的硬件路径 |
 
 三套页表的建立有严格的先后顺序：
 
-**Phase 1** — QEMU mmap 获取 HVA（只建 VMA，Host S1 延迟建立）
-**Phase 2** — KVM 建 memslot 时通过 `get_user_pages` 触发 Host S1 建立，再填 S2 PTE
+**Phase 1** — QEMU mmap 获取 HVA（只建 VMA，Host S1 PTE 延迟建立）
+**Phase 2** — QEMU `ioctl(KVM_SET_USER_MEMORY_REGION)` → KVM 创建 `kvm_memory_slot`（S2 PTE **尚未建立**，仍是 demand-paged）
 **Phase 3** — Guest 内部执行 ioremap 建立 Guest S1
+**Runtime** — Guest 首次访问 GPA → Stage-2 fault → `user_mem_abort()` → `get_user_pages_unlocked()` 触发 Host S1 PTE 建立 → `kvm_pgtable_stage2_map()` 填 S2 PTE
 
 运行时只有 Guest S1 + Host S2 参与翻译，Host S1 不参与。详细流程见[附录 A](#附录-a三套页表建立流程与运行时关系)。
 
-## 3. QEMU 侧：MemoryRegion 树
+# 3. QEMU 侧：MemoryRegion 树
 
 从本节开始，我们自顶向下梳理 QEMU 进程中维护的数据结构。QEMU 使用一棵 **MemoryRegion 树**（以下简称 MR 树）来描述 Guest 的整个物理地址空间。理解这棵树的结构是理解 BAR 空间分配的关键。
 
-### 3.1 MR 的三种类型
+## 3.1 MR 的三种类型
 
 每个 `MemoryRegion` 描述 GPA 空间中的一段区域，核心字段如下（`include/exec/memory.h`）：
 
@@ -88,8 +97,6 @@ struct MemoryRegion {
     const MemoryRegionOps *ops; // 如果 ram=false, 指向 IO 回调函数表 (没有 HVA)
 };
 ```
-
-MR树是一个三层结构，叶子节点才存着实际的region内容。待会下面会讲三层结构[MemoryRegions树三层结构](#4-qemu-侧vfio-bar-的三层-mr-嵌套)。
 
 这里有一个容易混淆的地方：`subregions` 和 `ram_block` 是两个独立的维度，分别对应"拓扑"和"存储"：
 
@@ -114,7 +121,7 @@ MR树是一个三层结构，叶子节点才存着实际的region内容。待会
 | IO | `ops != NULL, ram=false` | 没有 | 否 | S2 miss → VM exit → QEMU ops 回调 |
 
 
-### 3.2 MR 树完整拓扑
+## 3.2 MR 树完整拓扑
 
 下面展示从根到叶子的完整 MR 树。注意这棵树的每一层对应一个概念层级，我们分层阅读：
 
@@ -231,7 +238,7 @@ end note
 @enduml
 ```
 
-## 4. QEMU 侧：VFIO BAR 的三层 MR 嵌套
+# 4. QEMU 侧：VFIO BAR 的三层 MR 嵌套
 
 理解 VFIO BAR 数据结构的关键是**区分两样东西**：
 
@@ -240,7 +247,7 @@ end note
 
 容易混淆的根源是命名：`mr`、`mem`、`mmap`、`ram_block` 看起来相似但分属不同层级。
 
-### 4.1 subregions 链：一个 BAR 的三个 MR 如何串联
+## 4.1 subregions 链：一个 BAR 的三个 MR 如何串联
 
 下面以 VF 的 BAR2（64KB，非 sparse）为例，展示三个 MR 如何通过 `subregions` 和指针形成父子链。
 
@@ -313,7 +320,7 @@ VFIOPCIDevice (pci.h:137)
 
 **mmaps[1] 存在吗？** 是的——当 BAR 是 **sparse 类型**时（`nr_mmaps > 1`），每个 sparse area 独立 mmap，各自生成一个叶子 MR 挂在 `region.mem` 的 `subregions` 下。非 sparse 时 `nr_mmaps = 1`。
 
-### 4.2 mmap 成功 vs 失败 —— BAR 结构的两种形态
+## 4.2 mmap 成功 vs 失败 —— BAR 结构的两种形态
 
 ```plantuml
 @startuml
@@ -362,7 +369,7 @@ end note
 
 > **注意**：`bar->mr` 虽然调用 `memory_region_init_io()` 但传入 `ops=NULL`，所以 L1 是没有 IO 回调的纯容器。真正有 IO 回调的是 L2 `bar->region.mem`（`ops=vfio_region_ops`）。
 
-### 4.3 BAR 如何挂入 PCI 总线 MR 树
+## 4.3 BAR 如何挂入 PCI 总线 MR 树
 
 三个 MR 的内部嵌套（L1→L2→L3）建立后，L1 `bar->mr` 还需要挂入 PCI 总线的 MMIO 地址空间。这一步由 `pci_update_mappings()`（`hw/pci/pci.c:1559`）在 Guest 写入 BAR 寄存器时触发：
 
@@ -384,9 +391,9 @@ wmask    = ~(size - 1);                 // 0xFFFFFFFFFFFF0000
 
 Guest PCI 枚举时写 BAR=全 1，QEMU 返回 `val & wmask`，Guest 由此推断 BAR 大小。**`r->size` 决定了 Guest 为 BAR 保留的 GPA 窗口大小，也决定了多个 BAR 的 GPA 间隔——这是后续 BAR 重叠问题的根源。**
 
-## 5. QEMU 侧：FlatView 展平与 memslot 注册
+# 5. QEMU 侧：FlatView 展平与 memslot 注册
 
-### 5.1 FlatView 与 FlatRange
+## 5.1 FlatView 与 FlatRange
 
 MR 树是嵌套结构，但 KVM 需要按 GPA 线性查找。QEMU 的解决方案是：把 MR 树**展开**成 FlatView——一组按 GPA 排序、互不重叠的 `FlatRange` 数组。
 
@@ -417,64 +424,97 @@ struct FlatRange {
 
 `generate_memory_topology()`（`memory.c:756`）调用 `render_memory_region()` 递归遍历 MR 树的 `subregions` 链表，生成 `FlatRange[]` 数组，再调用 `flatview_simplify()` 合并相邻同类区间。
 
-### 5.2 FlatView 渲染规则与 BAR 重叠截断
+## 5.2 FlatView 渲染规则与 BAR 重叠截断
 
-FlatView 渲染时，子 MR 按 QTAILQ 链表顺序遍历（`memory.c:646`），高 priority 的先渲染占据 GPA，低 priority 的只填空隙（`memory.c:666` 注释：`Render the region itself into any gaps left by the current view`）。
+FlatView 的 FlatRange 数组是 **disjoint（互不重叠）** 的，这是 `render_memory_region()`（`memory.c:604`）的核心保证。渲染一条 MR 时：
 
-QTAILQ 排序规则（`memory.c:2699-2701`）：priority 降序，同 priority 时后插入的排前面（运算符是 `>=`，配合 `INSERT_BEFORE`）。
+1. **先递归渲染 subregions**（`memory.c:646`，QTAILQ 顺序——同 priority 时后插入的排前面）
+2. **再渲染自身到空隙**（`memory.c:666`，gap-filling：`Render the region itself into any gaps left by the current view`）
 
-**后续多 VF 场景中 BAR 重叠截断就发生在 FlatView 渲染这一步**——当两个 BAR 的 GPA 区间重叠时，先渲染的 BAR 占据空间，后渲染的 BAR 被截断，导致 FlatRange 中的 `addr.size < mr->size`。
+因此当两个 BAR 的 GPA 区间重叠时，subregion 链表中靠前的 BAR 先占满空间，靠后的 BAR 被 gap-filling 裁剪，FlatRange 的 `addr.size < mr->size`——**BAR 重叠截断就发生在这一步。**
 
-### 5.3 从 FlatView 到 KVM memslot 的完整调用链
+## 5.3 从 FlatView 到 KVM memslot 的完整调用链
 
-**FlatView 本身不直接参与 KVM memslot 创建——它通过 MemoryRegionSection 作为中介。**
+**QEMU 通过 MemoryListener 机制监听 MR 树变更。** KVM 注册了一个 `KVMMemoryListener`（`kvm-all.c`），其 `region_add`/`region_del` 回调会在 FlatView 变化时被调用。FlatView 本身不直接参与 KVM memslot 创建——它通过 `MemoryRegionSection` 作为中介。
 
-当 MR 树发生变更时，QEMU 重新生成 FlatView，然后 diff 新旧两个 FlatView，将差异转化为 MemoryRegionSection，派发给所有 MemoryListener（KVM 是其中一个）。调用链如下：
+以 **Guest 写 VF2 BAR 基地址** 这个典型触发场景为例，完整调用链如下：
 
 ```
-MR 树变更
-  ↓
-generate_memory_topology()              [memory.c:756]
-  新 FlatView = render_memory_region() 遍历 subregions → FlatRange[]
-  ↓
-address_space_update_topology_pass()    [memory.c:953]
-  旧 FlatView vs 新 FlatView diff:
-    • frold->addr 不在 frnew 中 → MEMORY_LISTENER_CALL(region_del)
-    • frnew->addr 不在 frold 中 → MEMORY_LISTENER_CALL(region_add)
-  ↓
-section_from_flat_range(fr, fv)        [memory.c:237]
-  FlatRange → MemoryRegionSection {
-    .mr       = fr->mr,                          // 数据来源
-    .fv       = fv,                              // 上下文（哪个 FlatView 产生的）
-    .size     = fr->addr.size,                   // 区间大小（可能被截断!）
-    .offset_within_address_space = fr->addr.start // = GPA 基址
-  }
-  ↓
-MEMORY_LISTENER_UPDATE_REGION()          [memory.c:160]
-  → 遍历 AddressSpace->listeners 链表, 调用 listener->region_add()
-  ↓
-kvm_region_add(listener, &section)      [kvm-all.c:1584]
-  → 将 section 排队到 kml->transaction_add 链表 (先不执行!)
-  ↓
-kvm_region_commit(listener)             [kvm-all.c:1632]
-  → 先 DEL 后 ADD, 事务性提交
-  ↓
-kvm_set_phys_mem(kml, &section, add)   [kvm-all.c:1338]
-  │  1. !memory_region_is_ram(mr)? → 跳过 (IO 类型, 无 memslot)
-  │  2. kvm_align_section → 0?     → 跳过 (截断后 < PAGE_SIZE)
-  │  3. ram = memory_region_get_ram_ptr(mr)  → 取 HVA
-  │  4. 组装 KVMSlot {start_addr=GPA, memory_size, ram=HVA}
-  ↓
-ioctl(KVM_SET_USER_MEMORY_REGION)       [kvm-all.c:318]
-  → KVM 内核: 建立 kvm_memory_slot → 填 S2 PTE
+Guest 写入 VF2 BAR2 配置空间
+  │
+  └─→ vfio_pci_write_config()                    ← pci.c:1339
+      │
+      ├─→ pci_default_write_config()
+      │   └─→ pci_update_mappings(VF2)
+      │       │  VF2 BAR2 addr: UNMAPPED → 0x8000408000
+      │       └─→ memory_region_add_subregion_overlap()
+      │          (VF2 bar->mr 挂入 PCI 地址空间, 设 update_pending=true)
+      │          (不触发 FlatView 重建 — 仅标记 dirty)
+      │
+      ├─→ vfio_sub_page_bar_update_mapping(VF2)  ← pci.c:1345/1171
+      │   │  if (bar_addr 页对齐?) → size=64KB : size=32KB
+      │   │  0x8000408000 不对齐 → size=32KB, 不扩张!
+      │   │
+      │   ├─→ memory_region_transaction_begin()   ← depth: 0→1
+      │   │   (扩张逻辑: set_size MR, 但 VF2 不对齐→跳过)
+      │   │   (memory_region_update_pending 仍为 true)
+      │   │
+      │   └─→ memory_region_transaction_commit()  ← depth: 1→0, 触发!
+      │       │
+      │       └─→ memory_region_commit()           ← memory.c:1137
+      │           │
+      │           ├─→ flatviews_reset()            ← 清 FlatView 缓存
+      │           │
+      │           ├─→ MEMORY_LISTENER_CALL_GLOBAL(begin)
+      │           │
+      │           ├─→ address_space_set_flatview() ← memory.c:1064
+      │           │   │
+      │           │   ├─→ generate_memory_topology()
+      │           │   │   └─→ render_memory_region()
+      │           │   │       递归遍历 subregions → disjoint FlatRange[]
+      │           │   │       (最新插入的 MR 先渲染 → 重叠时后者被 gap-filling 裁剪)
+      │           │   │
+      │           │   ├─→ flatview_simplify()      ← 合并相邻同类区间
+      │           │   │
+      │           │   ├─→ address_space_update_topology_pass(false) ← DEL
+      │           │   │   │  old_view vs new_view diff
+      │           │   │   │  old 有 new 无/不同 →
+      │           │   │   └─→ MEMORY_LISTENER_CALL(region_del)
+      │           │   │       └─→ kvm_region_del()  ← 深拷贝 section, 入队 transaction_del
+      │           │   │
+      │           │   └─→ address_space_update_topology_pass(true)  ← ADD
+      │           │       │  new 有 old 无 →
+      │           │       └─→ MEMORY_LISTENER_CALL(region_add)
+      │           │           └─→ kvm_region_add()  ← 深拷贝 section, 入队 transaction_add
+      │           │
+      │           └─→ MEMORY_LISTENER_CALL_GLOBAL(commit)
+      │               │
+      │               └─→ kvm_region_commit()       ← kvm-all.c:1632
+      │                   │  先全部 DEL, 再全部 ADD (批量原子)
+      │                   │
+      │                   ├─→ for each DEL:
+      │                   │   └─→ kvm_set_phys_mem(section, add=false)
+      │                   │       │  !memory_region_is_ram(mr)? → skip
+      │                   │       │  kvm_align_section → < PAGE_SIZE? → skip
+      │                   │       └─→ ioctl(KVM_SET_USER_MEMORY_REGION, slot=0)
+      │                   │
+      │                   └─→ for each ADD:
+      │                       └─→ kvm_set_phys_mem(section, add=true)
+      │                           │  !memory_region_is_ram(mr)? → skip
+      │                           │  kvm_align_section → 32KB < 64KB → return 0 → SKIP!
+      │                           └─ (不到达 ioctl)
+      │
+      └────── 结果: DEL 删了旧 memslot, ADD 全被 kvm_align_section 裁掉
+              → 两个 VF 都没有 S2 页表
 ```
 
 **关键结论**：
 
-- **FlatView 和 KVMSlot 没有直接引用关系**。FlatView 决定"哪些 GPA 区间该映射"，KVMSlot 负责"把数据打包发给内核"。中间的 `MemoryRegionSection` 是桥梁——它同时持有 `FlatView *fv`（上下文）和组装 KVMSlot 所需的全部字段（`mr`, `size`, `offset_within_address_space`）
-- **kvm_region_add() 只排队、不执行**——它把 section 塞进 `transaction_add` 链表就返回了。真正的 memslot 创建发生在 `kvm_region_commit()`，按"先删除后添加"的顺序批量提交
+- **MemoryListener 是桥梁**：MR 树变更 → FlatView diff → `region_add`/`region_del` 回调派发给所有 listener。KVM 的 `KVMMemoryListener` 收到回调后**只排队不执行**，真正的 memslot 创建在 `kvm_region_commit()` 中批量提交
+- **`section->size` 来自 FlatRange 裁剪后大小**：`section_from_flat_range()`（`memory.c:237`）取的是 `fr->addr.size`，不是 `mr->size`。MR 可能是 64KB，但 FlatRange 被 gap-filling 裁剪后只剩 32KB，section 也就只有 32KB
+- **`vfio_sub_page_bar_update_mapping` 是扩张的最后机会**：它在 transaction commit 之前执行，如果 BAR 基地址 64KB 对齐就扩张 MR 到 64KB；不对齐就保持原样，后续 `kvm_align_section` 必然裁掉
 
-### 5.4 两个关键过滤点
+## 5.4 两个关键过滤点
 
 链路中有两个位置可能导致 ram_device MR 被跳过、memslot 不被创建：
 
@@ -495,13 +535,13 @@ typedef struct KVMSlot {
 
 `KVMSlot` 不存 FlatView 指针，也不存 FlatRange 引用——它是"快照"，记录的是 `ioctl` 发送到内核的那一刻的 GPA/HVA/size 三元组。
 
-## 6. KVM 侧：memslot 与 S2 页表
+# 6. KVM 侧：memslot 与 S2 页表
 
 Host 内核（EL2）中，`kvm_memory_slot` 是内核侧的 memslot，存 `base_gfn`（GPA>>PAGE_SHIFT）、`npages`（页数）、`userspace_addr`（HVA）。
 
 memslot 不存 HPA——KVM 需要 HPA 时通过 `get_user_pages(userspace_addr)` 动态查 Host S1 页表获取。每个 memslot 对应 S2 页表中的一段 GPA→HPA 映射，KVM 在创建 memslot 的同时填入 S2 PTE。
 
-## 7. 完整数据链路
+# 7. 完整数据链路
 
 从 QEMU MR 树到 KVM S2 页表的完整关联链路。先把全部数据结构的关系画在一张 PlantUML 类图上，再看数据如何从 L3 一步步流向 KVM：
 
@@ -740,17 +780,31 @@ KVMSlot
        │
        ↓ ioctl(KVM_SET_USER_MEMORY_REGION)
        │
-                                            kvm_memory_slot
+                                            kvm_memory_slot <b>创建</b>
                                               .base_gfn = GPA >> PAGE_SHIFT
                                               .npages = 页数
                                               .userspace_addr = HVA
                                                    │
-                                                   ↓ kvm_arch_commit_memory_region
-                                                   │   get_user_pages(HVA)
-                                                   │   → 查 Host S1 (TTBR0_EL2)
-                                                   │   → HPA
+                                                   │  <b>S2 PTE 尚未建立!</b>
+                                                   │  ARM64 S2 是 demand-paged
+                                                   │  等 Guest 首次访问才触发 fault
+                                                   │
+                                            ─ ─ ─ ─ Guest 首次访问 GPA ─ ─ ─ ─
+                                                   │
+                                                   ↓ Stage-2 fault → user_mem_abort()
+                                                   │   hva_to_pfn(HVA)
+                                                   │   ├─ hva_to_pfn_fast(): follow_page()
+                                                   │   │  → 查 Host S1 (TTBR0_EL2)
+                                                   │   │  → Host S1 PTE miss!
+                                                   │   └─ hva_to_pfn_slow(): get_user_pages_unlocked()
+                                                   │      → page fault → vfio_pci_mmap_fault()
+                                                   │      → io_remap_pfn_range(HVA, HPA)
+                                                   │      → Host S1 PTE built: HVA → HPA
+                                                   │
+                                                   ↓ kvm_pgtable_stage2_map()
+                                                   │   __pfn_to_phys(pfn), prot=DEVICE
                                                    ↓ 填 S2 PTE (VTTBR_EL2)
-                                              GPA → HPA (Device-nGnRE)
+                                              GPA → HPA (DEVICE_nGnRE)
 ```
 
 这条链路中，**FlatView 渲染是第一个可能出问题的环节**：如果 BAR 重叠导致 FlatRange 被截断，后续的 section size 就会小于预期，进而被 `kvm_align_section` 过滤掉，最终 memslot 不完整或缺失。
@@ -841,19 +895,53 @@ partition "memslot 注册 (kvm_region_add → commit)" {
   :ioctl(KVM_SET_USER_MEMORY_REGION);
 }
 
-partition "KVM 内核处理 (Host EL2)" {
+partition "KVM 内核: memslot 创建 (Host EL2)" {
   :kvm_memory_slot 创建
   .base_gfn = GPA >> PAGE_SHIFT
   .npages = 页数
   .userspace_addr = HVA;
 
-  :kvm_arch_commit_memory_region()
-  get_user_pages(HVA)
-  → 查 Host S1 (TTBR0_EL2)
-  → 获取 HPA;
+  :kvm_arch_prepare_memory_region()
+  <b>仅校验 VMA 合法性</b>
+  (ARM64 不 eager 填 S2 PTE);
 
-  :<b>填充 S2 PTE (VTTBR_EL2)</b>
-  GPA → HPA (Device-nGnRE);
+  note right
+    <b>ARM64 与 x86 的区别</b>
+    x86: kvm_arch_commit_memory_region()
+         → get_user_pages() → fill S2 PTE
+         (eager, 建 memslot 时即填)
+
+    ARM64: S2 PTE <b>延迟创建</b>
+          → Guest 首次访问时
+          → Stage-2 fault 再填
+  end note
+}
+
+partition "KVM 内核: S2 缺页处理 (Host EL2, Runtime)" {
+  :Guest 首次访问 GPA
+  → Stage-2 fault (trap to EL2);
+
+  :user_mem_abort()
+  hva_to_pfn(HVA);
+
+  :hva_to_pfn_fast() → follow_page()
+  → 查 Host S1 (TTBR0_EL2)
+  → Host S1 PTE miss!;
+
+  :hva_to_pfn_slow()
+  get_user_pages_unlocked(HVA);
+
+  :Host page fault
+  → vfio_pci_mmap_fault()
+  → io_remap_pfn_range(HVA, BAR2_HPA)
+  → <b>Host S1 PTE built:</b> HVA → HPA;
+
+  :kvm_pgtable_stage2_map()
+  __pfn_to_phys(pfn)
+  prot = DEVICE (KVM_PGTABLE_PROT_DEVICE);
+
+  :<b>S2 PTE filled (VTTBR_EL2)</b>
+  GPA → HPA (DEVICE_nGnRE);
 }
 
 :Guest 访问 → S2 命中 → 硬件直达设备;
@@ -863,7 +951,7 @@ stop
 @enduml
 ```
 
-## 8. 实例：正常场景下的取值
+# 8. 实例：正常场景下的取值
 
 以 `vfio-pci` 驱动绑定一个 BAR2 物理大小为 64KB 的设备为例，64KB PAGE_SIZE 环境下，QEMU 启动后各结构体的 size 字段值全部一致：
 
@@ -918,13 +1006,29 @@ note right #F8F8F8
   • 等首次访问时触发 page fault
 end note
 
-== Phase 2: KVM 创建 memslot → 填 S2 PTE ==
+== Phase 2a: KVM 创建 memslot (仅校验, 不填 S2 PTE) ==
 
 QEMU -> KVM : ioctl(KVM_SET_USER_MEMORY_REGION,\n{GPA, HVA, size=64KB})
 activate KVM
-KVM -> KVM : kvm_arch_commit_memory_region()
+KVM -> KVM : kvm_arch_prepare_memory_region()
+KVM -> KVM : <b>仅校验 VMA 合法性</b>\n(ARM64 不 eager 填 S2 PTE)
+deactivate KVM
 
-group get_user_pages(HVA)
+note right #F8F8F8
+  <b>此时状态:</b>
+  • kvm_memory_slot 已创建 (base_gfn, npages, userspace_addr)
+  • Host S1 PTE: <b>尚未建立</b>
+  • Host S2 PTE: <b>尚未建立</b>
+  • 一切等 Guest 首次访问时触发
+end note
+
+== Phase 2b (Runtime): Guest 首次访问 → S2 fault → 填 S2 PTE ==
+
+Guest -> KVM : Guest 首次 load/store GPA\n→ <b>Stage-2 fault</b> (trap to EL2)
+activate KVM
+KVM -> KVM : user_mem_abort()\nhva_to_pfn(HVA)
+
+group get_user_pages_unlocked(HVA)
   KVM -> KVM : walk Host S1 (TTBR0_EL2)
   KVM -> KVM : <b>Host S1 PTE miss!</b>
   KVM -> KVM : page fault → vfio_pci_mmap_fault()
@@ -932,8 +1036,10 @@ group get_user_pages(HVA)
   KVM -> KVM : <b>Host S1 PTE built:</b> HVA → HPA
 end group
 
-KVM -> KVM : get HPA = 0x0800_0000_0000
-KVM -> KVM : fill S2 PTE (VTTBR_EL2):\nGPA 0x8000_200000 → HPA 0x0800_0000_0000\nattr = Device-nGnRE
+KVM -> KVM : get PFN → __pfn_to_phys(pfn) = HPA 0x0800_0000_0000
+KVM -> KVM : kvm_pgtable_stage2_map()\nprot = KVM_PGTABLE_PROT_DEVICE
+KVM -> KVM : <b>S2 PTE filled (VTTBR_EL2):</b>\nGPA 0x8000_200000 → HPA 0x0800_0000_0000\nattr = DEVICE_nGnRE
+KVM -> KVM : eret 返回 Guest
 deactivate KVM
 
 note right #F8F8F8
