@@ -19,25 +19,22 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="前言  本文中所有设计模式Github代码 其中本文工厂方法模式-简单工厂相关代码在FactoryMethod_SimpleFactory.h文件中 本文工厂方法模式-工厂方法相关代码在FactoryMethod.h文件中   工厂方法中，一般一个应用中每一个工厂系列只需要一个ConcreteFactory类的实例，因此设计工厂类时，通常将其设计为单例模式  一、简单工厂 1. 什么是简单工厂 简">
-<meta property="og:type" content="article">
-<meta property="og:title" content="设计模式2：工厂方法模式(C++)">
-<meta property="og:url" content="https://akirazheng.github.io/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/index.html">
+    <meta name="description" content="伙伴系统动画  * { margin: 0; padding: 0; box-sizing: border-box; } body {     font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, sans-serif;     background: #1a1a2e; color: #eee; padding: 12px">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="https://akirazheng.github.io/buddy-animation/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="前言  本文中所有设计模式Github代码 其中本文工厂方法模式-简单工厂相关代码在FactoryMethod_SimpleFactory.h文件中 本文工厂方法模式-工厂方法相关代码在FactoryMethod.h文件中   工厂方法中，一般一个应用中每一个工厂系列只需要一个ConcreteFactory类的实例，因此设计工厂类时，通常将其设计为单例模式  一、简单工厂 1. 什么是简单工厂 简">
+<meta property="og:description" content="伙伴系统动画  * { margin: 0; padding: 0; box-sizing: border-box; } body {     font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, sans-serif;     background: #1a1a2e; color: #eee; padding: 12px">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://akirazheng.github.io/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/SimpleFactory.png">
-<meta property="og:image" content="https://akirazheng.github.io/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/FactoryMethod.png">
-<meta property="article:published_time" content="2024-02-02T04:27:14.000Z">
-<meta property="article:modified_time" content="2025-11-22T18:47:28.279Z">
+<meta property="article:published_time" content="2026-08-21T20:04:44.669Z">
+<meta property="article:modified_time" content="2026-08-21T20:04:44.669Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://akirazheng.github.io/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/SimpleFactory.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>设计模式2：工厂方法模式(C++) · AkiraZheng&#39;s Time</title>
+    <title>AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -237,8 +234,6 @@
         }
     </script>
     
-        <body class="post-body">
-    
         <!-- header -->
         <header class="header header-mobile">
     <!-- top read progress line -->
@@ -268,17 +263,6 @@
     </div>
     <!-- toggle banner for post layout -->
     
-        
-            <div class="banner">
-        
-            <div class="blog-title header-element">
-                <a href="/">AkiraZheng&#39;s Time.</a>
-            </div>
-            <div class="post-title header-element">
-                <a href="#" class="post-name">设计模式2：工厂方法模式(C++)</a>
-            </div>
-        </div>
-    
 </header>
 
         <!-- fixed footer -->
@@ -305,71 +289,24 @@
 
 
 
-    height:50vh;
-
 ">
     
     <!-- 主页  -->
-    
-        
-    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
-            
-                设计模式2：工厂方法模式(C++)
-            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
-                
-            <!-- 404 -->
-            
         </p>
         <!-- 文章页 meta -->
-        
-            <div class="post-intros">
-                <!-- 文章页标签  -->
-                
-                
-                    <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">1.3k</span>Reading time: <span class="post-count reading-time">5 min</span></span>
-                    </div>
-                
-                <div class="post-intro-meta">
-                    <!-- 撰写日期 -->
-                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2024/02/02</span>
-                    <!-- busuanzi -->
-                    
-                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
-                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
-                            <span id="busuanzi_value_page_pv"></span>
-                        </span>
-                    
-                    <!-- 文章分享 -->
-                    <span class="share-wrapper">
-                        <span class="iconfont-archer share-icon">&#xe71d;</span>
-                        <span class="share-text">Share</span>
-                        <ul class="share-list">
-                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
-                                <div class="share-qrcode"></div>
-                            </li>
-                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
-                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
-                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
-                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
-                        </ul>
-                    </span>
-                </div>
-            </div>
         
     </div>
 </div>
@@ -501,72 +438,221 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h2 id="前言">前言</h2>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/AkiraZheng/designPattern/tree/master/designPattern">本文中所有设计模式Github代码</a>
-其中本文<strong>工厂方法模式-简单工厂</strong>相关代码在<code>FactoryMethod_SimpleFactory.h</code>文件中
-本文<strong>工厂方法模式-工厂方法</strong>相关代码在<code>FactoryMethod.h</code>文件中</p>
-</blockquote>
-<blockquote>
-<p>工厂方法中，一般一个应用中每一个工厂系列只需要一个ConcreteFactory类的实例，因此设计工厂类时，通常将其设计为单例模式</p>
-</blockquote>
-<h2 id="一简单工厂">一、简单工厂</h2>
-<h3 id="什么是简单工厂">1. 什么是简单工厂</h3>
-<p>简单工厂中，设计的核心思想是<strong>将对象的创建和使用分离</strong>，即将对象的创建交给工厂类（非抽象类），而将对象的使用交给客户端。</p>
-<p>在<strong>简单工厂</strong>设计中，工厂类采用通常使用<strong>switch-case</strong>语句来根据不同的条件创建不同的对象，这样的设计是<strong>不符合开闭原则</strong>的，因为每次添加新的产品都需要修改工厂类的代码(在switch-case语句中加入新产品的create代码)，代码灵活性很差。</p>
-<p>因此需要将简单工厂的设计升级为工厂方法模式，在工厂类中使用纯虚函数方法(createProduct方法)将其设计成抽象类。</p>
-<blockquote>
-<p>开闭原则：对扩展开放、对修改关闭；
-也就是说，我们可以添加代码，但是添加代码的时候<strong>不能够对现有的代码进行修改</strong></p>
-</blockquote>
-<h3 id="简单工厂的代码">2. 简单工厂的代码</h3>
-<ul>
-<li>代码UML类图
-<img src="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/SimpleFactory.png" width="90%" heigh="90%"></li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*产品类的设计：抽象基类*/</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Phone</span>&#123;</span></span><br><span class="line">    <span class="comment">// 产品基类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Phone</span>(string name):_phone_name(name)&#123;&#125;;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">show</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~<span class="built_in">Phone</span>()&#123;&#125;; <span class="comment">//基类应该被声明为虚析构函数</span></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    string _phone_name;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Iphone</span>:</span><span class="keyword">public</span> Phone&#123;</span><br><span class="line">    <span class="comment">// 产品派生类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Iphone</span>(string name):<span class="built_in">Phone</span>(name)&#123;&#125;;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">show</span><span class="params">()</span></span>&#123;</span><br><span class="line">        cout &lt;&lt; <span class="string">&quot;I have a phone named: &quot;</span> &lt;&lt; _phone_name &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HuaWei</span>:</span><span class="keyword">public</span> Phone&#123;</span><br><span class="line">    <span class="comment">// 产品派生类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">HuaWei</span>(string name):<span class="built_in">Phone</span>(name)&#123;&#125;;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">show</span><span class="params">()</span></span>&#123;</span><br><span class="line">        cout &lt;&lt; <span class="string">&quot;I have a phone named: &quot;</span> &lt;&lt; _phone_name &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*工厂类的设计：非抽象类*/</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PhoneFactory</span>&#123;</span></span><br><span class="line">    <span class="comment">// 工厂类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="class"><span class="keyword">enum</span> <span class="title">phone_type</span>&#123;</span></span><br><span class="line">        IPHONE,</span><br><span class="line">        HUAWEI</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="function">Phone* <span class="title">createPhone</span><span class="params">(<span class="keyword">int</span> type)</span></span>&#123;</span><br><span class="line">        <span class="built_in"><span class="keyword">switch</span></span> (type)</span><br><span class="line">        &#123;</span><br><span class="line">        <span class="keyword">case</span> IPHONE:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Iphone</span>(<span class="string">&quot;iphone&quot;</span>);</span><br><span class="line">        <span class="keyword">case</span> HUAWEI:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">HuaWei</span>(<span class="string">&quot;huawei&quot;</span>);</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*测试函数*/</span></span><br><span class="line"><span class="comment">/*测试函数*/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">testFactory_simpleFactory</span><span class="params">()</span></span>&#123;</span><br><span class="line">    PhoneFactory factory;</span><br><span class="line">    Phone* p1 = factory.<span class="built_in">createPhone</span>(PhoneFactory::IPHONE);</span><br><span class="line">    Phone* p2 = factory.<span class="built_in">createPhone</span>(PhoneFactory::HUAWEI);</span><br><span class="line">    p1-&gt;<span class="built_in">show</span>();</span><br><span class="line">    p2-&gt;<span class="built_in">show</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="二工厂方法模式">二、工厂方法模式</h2>
-<ol type="1">
-<li><p>工厂方法相较于简单工厂的改进</p>
-<ul>
-<li>简单工厂中，<strong>产品基类</strong>是<strong>抽象</strong>的，而<strong>工厂类</strong>是<strong>非抽象</strong>的，这样的设计是不符合开闭原则的</li>
-<li>工厂模式将<strong>工厂基类</strong>也设计成一个<strong>抽象</strong>的，并针对不同的产品类型设计不同的<strong>工厂派生类</strong>，这样在用户使用的时候可以很有目的性地选择对应的工厂派生类进行初始化，而不是简单工厂中的switch-case语句的随机性选择。</li>
-</ul></li>
-<li><p>工厂方法的缺点</p>
-<ul>
-<li>工厂方法模式的缺点是<strong>每增加一个产品，就需要增加一个产品工厂类</strong>，这样会导致工厂类的数量增加，增加了系统的复杂度。</li>
-<li>工厂方法中的工厂类<strong>只有一个create方法</strong>，因此当产品不断增加时，需要的工厂派生类也不断增加，这样不利于管理，因此需要将工厂方法模式升级为<strong>抽象工厂模式</strong>。</li>
-</ul></li>
-</ol>
-<h2 id="三工厂方法模式的实现代码c">三、工厂方法模式的实现代码（C++）</h2>
-<blockquote>
-<p>tips:使用智能指针需要引入头文件<code>#include &lt;memory&gt;</code>，使用普通指针<strong>new</strong>之后记得<strong>delete</strong></p>
-</blockquote>
-<ul>
-<li>代码UML类图
-<img src="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/FactoryMethod.png" width="90%" heigh="90%"></li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*产品类的设计：抽象基类*/</span></span><br><span class="line"><span class="comment">//1. 产品抽象基类</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Phone</span>&#123;</span></span><br><span class="line">    <span class="comment">// 产品基类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Phone</span>(string name):_phone_name(name)&#123;&#125;;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">show</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~<span class="built_in">Phone</span>()&#123;&#125;; <span class="comment">//基类应该被声明为虚析构函数</span></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    string _phone_name;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//2. 产品派生具体类</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Iphone</span>:</span><span class="keyword">public</span> Phone&#123;</span><br><span class="line">    <span class="comment">// 产品派生类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Iphone</span>(string name):<span class="built_in">Phone</span>(name)&#123;&#125;;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">show</span><span class="params">()</span></span>&#123;</span><br><span class="line">        cout &lt;&lt; <span class="string">&quot;I have a phone named: &quot;</span> &lt;&lt; _phone_name &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HuaWei</span>:</span><span class="keyword">public</span> Phone&#123;</span><br><span class="line">    <span class="comment">// 产品派生类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">HuaWei</span>(string name):<span class="built_in">Phone</span>(name)&#123;&#125;;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">show</span><span class="params">()</span></span>&#123;</span><br><span class="line">        cout &lt;&lt; <span class="string">&quot;I have a phone named: &quot;</span> &lt;&lt; _phone_name &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>说明：在工厂抽象类设计时，具体工厂一一对应用于new一个具体产品，当具体工厂类创建时，不同具体产品要求的的参数不同时，可以将参数也设计成一个抽象基类，这样在具体工厂类中可以根据不同的参数创建不同的产品。
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*工厂类的设计：抽象基类*/</span></span><br><span class="line"><span class="comment">//1. 工厂抽象基类</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PhoneFactory</span>&#123;</span></span><br><span class="line">    <span class="comment">// 工厂类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> Phone* <span class="title">createPhone</span><span class="params">(string name)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~<span class="built_in">PhoneFactory</span>()&#123;&#125;; <span class="comment">//基类应该被声明为虚析构函数</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//2. 工厂派生具体类</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">IphoneFactory</span>:</span><span class="keyword">public</span> PhoneFactory&#123;</span><br><span class="line">    <span class="comment">// 工厂派生类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">Phone* <span class="title">createPhone</span><span class="params">(string name)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Iphone</span>(name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HuaWeiFactory</span>:</span><span class="keyword">public</span> PhoneFactory&#123;</span><br><span class="line">    <span class="comment">// 工厂派生类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">Phone* <span class="title">createPhone</span><span class="params">(string name)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">HuaWei</span>(name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure> <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*测试函数*/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">testFactory_factoryMethod</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="function">unique_ptr&lt;PhoneFactory&gt; <span class="title">iPhoneFactory</span><span class="params">(<span class="keyword">new</span> IphoneFactory())</span></span>;</span><br><span class="line">    <span class="function">unique_ptr&lt;PhoneFactory&gt; <span class="title">huaweiFactory</span><span class="params">(<span class="keyword">new</span> HuaWeiFactory())</span></span>;</span><br><span class="line">    <span class="function">unique_ptr&lt;Phone&gt; <span class="title">iphone</span><span class="params">(iPhoneFactory-&gt;createPhone(<span class="string">&quot;iphone&quot;</span>))</span></span>;<span class="comment">//通过单独的Iphone工厂创建对应产品</span></span><br><span class="line">    <span class="function">unique_ptr&lt;Phone&gt; <span class="title">huawei</span><span class="params">(huaweiFactory-&gt;createPhone(<span class="string">&quot;huawei&quot;</span>))</span></span>;<span class="comment">//通过单独的HuaWei工厂创建对应产品</span></span><br><span class="line">    iphone-&gt;<span class="built_in">show</span>();</span><br><span class="line">    huawei-&gt;<span class="built_in">show</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="四reference">四、Reference</h2>
-<ol type="1">
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_46308273/article/details/117126962">C++工厂模式（简单工厂、工厂方法、抽象工厂）</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/youngyangyang04/kama-DesignPattern/blob/main/DesignPattern/2-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F.md">工厂方法模式</a></li>
-</ol>
+        <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>伙伴系统动画</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a1a2e; color: #eee; padding: 12px 14px;
+    display: flex; flex-direction: column; align-items: center;
+}
+.container { width: 100%; max-width: 920px; }
+h2 { text-align: center; margin-bottom: 10px; font-size: 16px; color: #e94560; }
+.step-label {
+    text-align: center; font-size: 14px; font-weight: bold; color: #ffffff;
+    margin: 8px 0 8px 0; padding: 8px 14px; border-radius: 6px;
+    background: #0d1b2a; border: 1px solid #1b2838; min-height: 36px;
+    white-space: pre-line; line-height: 1.4;
+}
+.buddy-rows { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; align-items: center; }
+.buddy-row {
+    display: flex; gap: 4px; align-items: center; justify-content: center;
+    min-height: 48px; padding: 4px 10px; border-radius: 6px;
+    background: rgba(15,52,96,0.12); border: 1px solid rgba(15,52,96,0.3);
+}
+.row-label {
+    font-size: 11px; color: #5e88b8; min-width: 56px; text-align: right;
+    padding-right: 8px;
+}
+.blocks-row { display: flex; gap: 4px; align-items: center; }
+.page-block {
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px; font-weight: bold; border: 2px solid transparent;
+    transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+    font-size: 12px; white-space: nowrap; overflow: hidden;
+}
+.free { background: #0f3460; color: #a3d5ff; border-color: #1a5276; }
+.allocated { background: #e94560; color: #fff; border-color: #c81e45; }
+.buddy-check { background: #f39c12; color: #fff; border-color: #d68910; }
+.merging { background: #27ae60; color: #fff; border-color: #1e8449; }
+.empty-slot {
+    display: flex; align-items: center; justify-content: center;
+    border: 2px dashed #333; border-radius: 4px; color: #444; font-size: 10px;
+}
+.controls { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+.controls button {
+    padding: 7px 18px; border: none; border-radius: 5px; font-size: 13px;
+    cursor: pointer; transition: all 0.3s; font-weight: bold;
+}
+.btn-play { background: #e94560; color: #fff; }
+.btn-play:hover { background: #c81e45; }
+.btn-step { background: #0f3460; color: #a3d5ff; }
+.btn-step:hover { background: #1a5276; }
+.btn-step:disabled { background: #333; color: #666; cursor: not-allowed; }
+.btn-reset { background: #2d2d44; color: #ccc; }
+.btn-reset:hover { background: #3d3d55; }
+.step-indicator { text-align: center; font-size: 12px; color: #888; margin-top: 6px; }
+.code-hint {
+    background: #16213e; border: 1px solid #0f3460; border-radius: 6px;
+    padding: 8px 14px; margin-top: 10px; font-family: 'Courier New', monospace;
+    font-size: 12px; color: #a3d5ff; line-height: 1.6;
+}
+.code-hint .keyword { color: #e94560; }
+.code-hint .comment { color: #666; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>伙伴系统 Buddy System - 分配与合并动画</h2>
+    <div class="step-label" id="stepLabel">初始状态</div>
+    <div class="buddy-rows" id="buddyRows"></div>
+    <div class="controls">
+        <button class="btn-step" id="btnPrev" onclick="prevStep()">◀ 上一步</button>
+        <button class="btn-play" id="btnPlay" onclick="playAnimation()">▶ 自动播放</button>
+        <button class="btn-step" id="btnNext" onclick="nextStep()">下一步 ▶</button>
+        <button class="btn-reset" onclick="resetAnimation()">↻ 重置</button>
+    </div>
+    <div class="step-indicator" id="stepIndicator">步骤 1 / 14</div>
+    <div class="code-hint">
+        <span class="comment">// 伙伴查找：XOR 运算</span><br>
+        buddy_pfn = pfn ^ (1 << order)<br>
+        buddy_page = <span class="keyword">mem_map</span>[buddy_pfn]<br>
+        <span class="comment">// 伙伴空闲则合并，递归向上</span>
+    </div>
+</div>
+<script>
+const BASE_W = 52;
+const BLOCK_H = 40;
+
+let pageStates = {};
+
+function initState() {
+    pageStates = {};
+    for (let i = 0; i < 8; i++) pageStates[i] = { state: 'free', order: 3 };
+}
+
+function renderRows() {
+    const container = document.getElementById('buddyRows');
+    container.innerHTML = '';
+    for (let order = 3; order >= 0; order--) {
+        const row = document.createElement('div');
+        row.className = 'buddy-row';
+        const label = document.createElement('div');
+        label.className = 'row-label';
+        label.textContent = 'order ' + order;
+        row.appendChild(label);
+        const blocksDiv = document.createElement('div');
+        blocksDiv.className = 'blocks-row';
+        const numBlocks = 8 / Math.pow(2, order);
+        const blockWidth = BASE_W * Math.pow(2, order);
+        for (let b = 0; b < numBlocks; b++) {
+            const pfn = b * Math.pow(2, order);
+            const block = document.createElement('div');
+            block.style.height = BLOCK_H + 'px';
+            const ps = pageStates[pfn];
+            if (ps && ps.order === order) {
+                block.className = 'page-block ' + ps.state;
+                block.style.width = blockWidth + 'px';
+                let text = order === 0 ? 'PFN ' + pfn : 'PFN ' + pfn + '~' + (pfn + Math.pow(2, order) - 1);
+                if (ps.state === 'allocated') text += '\n已分配';
+                block.textContent = text;
+                block.style.whiteSpace = 'pre-line';
+                block.style.textAlign = 'center';
+            } else {
+                block.className = 'empty-slot';
+                block.style.width = blockWidth + 'px';
+            }
+            blocksDiv.appendChild(block);
+        }
+        row.appendChild(blocksDiv);
+        container.appendChild(row);
+    }
+}
+
+const steps = [
+    { label: '初始状态：1 个 order 3 空闲块（PFN 0~7）\n注：假设 order 0/1/2 链表均为空，只能从 order 3 拆分',
+      apply: () => { initState(); } },
+    { label: '分配请求：1 页 (order 0) → order 0 链表为空，向上查找...', apply: () => {} },
+    { label: 'order 0/1/2 均为空 → 从 order 3 取 PFN 0~7，准备拆分', apply: () => { initState(); } },
+    { label: '拆分 order 3 → 两个 order 2：PFN 0~3（待用）/ PFN 4~7（空闲挂链表）',
+      apply: () => { initState(); pageStates[0] = { state: 'free', order: 2 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '拆分 order 2 (PFN 0~3) → 两个 order 1：PFN 0~1（待用）/ PFN 2~3（空闲挂链表）',
+      apply: () => { initState(); pageStates[0] = { state: 'free', order: 1 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '拆分 order 1 (PFN 0~1) → 两个 order 0：PFN 0（分配）/ PFN 1（空闲挂链表）',
+      apply: () => { initState(); pageStates[0] = { state: 'allocated', order: 0 }; pageStates[1] = { state: 'free', order: 0 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '✅ 分配完成！PFN 0 已分配\n空闲链表：order 0: PFN 1 | order 1: PFN 2~3 | order 2: PFN 4~7', apply: () => {} },
+    { label: '释放 PFN 0 → 伙伴 PFN = 0 ^ (1<<0) = 1，检查是否空闲...',
+      apply: () => { initState(); pageStates[0] = { state: 'buddy-check', order: 0 }; pageStates[1] = { state: 'free', order: 0 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: 'PFN 1 空闲 ✓ → 合并 PFN 0 + PFN 1 → order 1 (PFN 0~1)',
+      apply: () => { initState(); pageStates[0] = { state: 'merging', order: 1 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '合并完成 → PFN 0~1 (order 1)，继续找伙伴\n伙伴 PFN = 0 ^ (1<<1) = 2，检查是否空闲...',
+      apply: () => { initState(); pageStates[0] = { state: 'buddy-check', order: 1 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: 'PFN 2~3 空闲 ✓ → 合并 PFN 0~1 + PFN 2~3 → order 2 (PFN 0~3)',
+      apply: () => { initState(); pageStates[0] = { state: 'merging', order: 2 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '合并完成 → PFN 0~3 (order 2)，继续找伙伴\n伙伴 PFN = 0 ^ (1<<2) = 4，检查是否空闲...',
+      apply: () => { initState(); pageStates[0] = { state: 'buddy-check', order: 2 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: 'PFN 4~7 空闲 ✓ → 合并 PFN 0~3 + PFN 4~7 → order 3 (PFN 0~7)',
+      apply: () => { initState(); pageStates[0] = { state: 'merging', order: 3 }; } },
+    { label: '✅ 全部合并完成！恢复初始状态：1 个 order 3 空闲块（PFN 0~7）', apply: () => { initState(); } },
+];
+
+let currentStep = 0;
+let isPlaying = false;
+let playTimer = null;
+
+function applyStep(index) {
+    const step = steps[index];
+    if (!step) return;
+    document.getElementById('stepLabel').textContent = step.label;
+    step.apply();
+    renderRows();
+    document.getElementById('stepIndicator').textContent = '步骤 ' + (index + 1) + ' / ' + steps.length;
+    document.getElementById('btnPrev').disabled = (index === 0);
+    document.getElementById('btnNext').disabled = (index === steps.length - 1);
+}
+
+function nextStep() { if (currentStep < steps.length - 1) { currentStep++; applyStep(currentStep); } }
+function prevStep() { if (currentStep > 0) { currentStep--; applyStep(currentStep); } }
+
+function playAnimation() {
+    if (isPlaying) { stopPlay(); return; }
+    isPlaying = true;
+    document.getElementById('btnPlay').textContent = '⏸ 暂停';
+    currentStep = 0; applyStep(0);
+    playTimer = setInterval(() => {
+        if (currentStep < steps.length - 1) { currentStep++; applyStep(currentStep); }
+        else { stopPlay(); }
+    }, 2000);
+}
+
+function stopPlay() {
+    isPlaying = false;
+    if (playTimer) { clearInterval(playTimer); playTimer = null; }
+    document.getElementById('btnPlay').textContent = '▶ 自动播放';
+}
+
+function resetAnimation() { stopPlay(); currentStep = 0; applyStep(0); }
+
+initState();
+renderRows();
+applyStep(0);
+</script>
+</body>
+</html>
 
     </article>
     <!-- license -->
     
         <div class="license-wrapper">
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
-            <p>Link：<a href="https://akirazheng.github.io/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">https://akirazheng.github.io/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/</a>
-            <p>Publish date：<a href="https://akirazheng.github.io/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">February 2nd 2024, 12:27:14 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">November 23rd 2025, 2:47:28 am</a>
+            <p>Link：<a href="https://akirazheng.github.io/buddy-animation/index.html">https://akirazheng.github.io/buddy-animation/index.html</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/buddy-animation/index.html">August 22nd 2026, 4:04:44 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/buddy-animation/index.html">August 22nd 2026, 4:04:44 am</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -574,18 +660,8 @@
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F3%EF%BC%9A%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/" title="设计模式3：抽象工厂模式(C++)">
-                    <div class="nextTitle">设计模式3：抽象工厂模式(C++)</div>
-                </a>
-            
         </li>
         <li class="previous">
-            
-                <div class="prevSlogan">Previous Post</div>
-                <a href="/2024/01/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F1%EF%BC%9A%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" title="设计模式1：单例模式(C++)">
-                    <div class="prevTitle">设计模式1：单例模式(C++)</div>
-                </a>
             
         </li>
     </ul>
@@ -717,23 +793,6 @@
 
         </div>
         <!-- toc -->
-        
-            <div class="toc-wrapper toc-wrapper-loding" style=
-
-
-
-
-
-
-
-    top:50vh;
-
->
-                <div class="toc-catalog">
-                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
-                </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82"><span class="toc-text">一、简单工厂</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82"><span class="toc-text">1. 什么是简单工厂</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82%E7%9A%84%E4%BB%A3%E7%A0%81"><span class="toc-text">2. 简单工厂的代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="toc-text">二、工厂方法模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%BB%A3%E7%A0%81c"><span class="toc-text">三、工厂方法模式的实现代码（C++）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9Breference"><span class="toc-text">四、Reference</span></a></li></ol>
-            </div>
         
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
@@ -2917,16 +2976,7 @@
         
         <!-- async load share.js -->
         
-            <script src="/scripts/share.js?v=20211217" async></script>
-        
         <!-- mermaid -->
-        
-            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js'></script>
-            <script>
-                if (window.mermaid) {
-                    mermaid.initialize({theme: 'neutral'});
-                }
-            </script>
         
     </body>
 </html>
