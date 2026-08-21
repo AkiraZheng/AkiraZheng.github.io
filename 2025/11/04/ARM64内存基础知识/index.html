@@ -1,0 +1,3285 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="AkiraZheng">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="AkiraZheng">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta name="description" content="ARM64内存虚拟化   ARM内存屏障 DMB  DSB SY：数据屏障指令，多核数据同步问题，主要解决内存数据还未写入，就被乱序的指令读取的问题。  dsb(sy) 会等待其他核的广播应答后，才算完成  ISB：指令屏障，清空 ISB 后面的指令，并把还没执行的指令丢掉，重新取值（比如让CPU重新读取寄存器状态）。ISB 不会管TLB缓存是否一致，只管指令状态，所以只用 ISB 会存在缓存一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ARM64内存基础知识">
+<meta property="og:url" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="ARM64内存虚拟化   ARM内存屏障 DMB  DSB SY：数据屏障指令，多核数据同步问题，主要解决内存数据还未写入，就被乱序的指令读取的问题。  dsb(sy) 会等待其他核的广播应答后，才算完成  ISB：指令屏障，清空 ISB 后面的指令，并把还没执行的指令丢掉，重新取值（比如让CPU重新读取寄存器状态）。ISB 不会管TLB缓存是否一致，只管指令状态，所以只用 ISB 会存在缓存一">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-08-21-23-42-24.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-08-21-23-44-10.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-21-02-04-39.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-21-02-29-12.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-20-00-41-42.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-21-02-38-05.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-20-01-29-29.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-08-22-01-01-10.png">
+<meta property="og:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-08-22-00-56-12.png">
+<meta property="article:published_time" content="2025-11-04T02:31:15.000Z">
+<meta property="article:modified_time" content="2026-08-21T17:11:53.860Z">
+<meta property="article:author" content="AkiraZheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-08-21-23-42-24.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/yueyue.jpg">
+    
+    <title>ARM64内存基础知识 · AkiraZheng&#39;s Time</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+        <script>
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"We did not find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'OG7KZ1ED66',
+                apiKey: '8daa81c36784d89945ec12e46f72de54',
+                indexName: 'hexo_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>AkiraZheng's Time.</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">AkiraZheng&#39;s Time.</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">ARM64内存基础知识</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                ARM64内存基础知识
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.6k</span>Reading time: <span class="post-count reading-time">17 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2025/11/04</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/LoyenWang/p/13584020.html">ARM64内存虚拟化</a></p>
+</blockquote>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/601037646">ARM内存屏障
+DMB</a></p>
+</blockquote>
+<p>DSB
+SY：数据屏障指令，多核数据同步问题，主要解决内存数据还未写入，就被乱序的指令读取的问题。</p>
+<ul>
+<li>dsb(sy) 会等待其他核的广播应答后，才算完成</li>
+</ul>
+<p>ISB：指令屏障，清空 ISB
+后面的指令，并把还没执行的指令丢掉，重新取值（比如让CPU重新读取寄存器状态）。ISB
+不会管TLB缓存是否一致，只管指令状态，所以只用 ISB
+会存在缓存一致性问题。</p>
+<ul>
+<li>ISB不会等广播应答</li>
+</ul>
+<h1 id="内存基础知识">内存基础知识</h1>
+<p><img src="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-08-21-23-42-24.png"></p>
+<p><strong>内存是什么？</strong></p>
+<ul>
+<li>内存又称主存，是 CPU 能直接寻址的存储空间，由半导体器件制成；</li>
+<li>内存的特点是存取速率快，断电一般不保存数据，非持久化设备；</li>
+</ul>
+<p><strong>内存的作用</strong></p>
+<ul>
+<li>暂时存放 cpu 的运算数据</li>
+<li>硬盘等外部存储器交换的数据</li>
+<li>保障 cpu 计算机的稳定性和高性能</li>
+</ul>
+<p><img src="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-08-21-23-44-10.png"></p>
+<p>在linux内核中，内存管理子系统可以抽象为下面的模块：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">用户空间进程</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">系统调用接口</span><br><span class="line">    │</span><br><span class="line">    ├── mmap() ──┐</span><br><span class="line">    ├── brk()   │</span><br><span class="line">    ├── malloc()│</span><br><span class="line">    └── 其他内存相关系统调用</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">虚拟内存管理器 (Virtual Memory Manager)</span><br><span class="line">    ├── 地址空间管理 (mm_struct)</span><br><span class="line">    ├── 虚拟内存区域管理 (vm_area_struct)</span><br><span class="line">    ├── 页表管理</span><br><span class="line">    ├── 缺页异常处理</span><br><span class="line">    └── 页面回收与换出 (LRU / Swap / Watermark)</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">物理内存管理器</span><br><span class="line">    ├── 伙伴系统 (Buddy System)</span><br><span class="line">    ├── SLAB/SLUB分配器</span><br><span class="line">    ├── 每CPU页框缓存</span><br><span class="line">    └── 内存区域管理 (ZONE)</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">硬件抽象层</span><br><span class="line">    ├── MMU接口</span><br><span class="line">    ├── TLB管理</span><br><span class="line">    └── 架构特定代码</span><br></pre></td></tr></table></figure>
+<h1 id="内存管理篇">内存管理篇</h1>
+<h2 id="多进程内存分配">多进程内存分配</h2>
+<p><img src="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-21-02-04-39.png"></p>
+<ul>
+<li>虚拟存储器：操作系统为每个进程提供的抽象内存空间。它让每个进程都认为自己拥有连续、独占的大块内存（通常从0到最大地址），实际上这些数据可能分散在物理内存的不同位置，甚至暂时存储在磁盘上。</li>
+<li>虚拟地址空间：每个进程独立的地址视图。两个进程可以使用相同的虚拟地址，但它们映射到不同的物理内存区域。</li>
+<li>物理存储器：计算机实际的硬件内存（RAM）。这是数据真正存储的地方，由物理地址直接访问。</li>
+<li>页帧：物理内存被划分的固定大小块。例如4KB、2MB或1MB。每个页帧有一个唯一的物理页帧号（PFN）。</li>
+<li>虚拟页帧号（VPN）：<strong>由虚拟地址中的高 N
+位组成</strong>，用于页表翻译时的查表。<strong>虚拟地址 = VPN +
+偏移量（Offset）</strong>。例如在4KB分页、48位虚拟地址的系统中：
+<ul>
+<li>高36位：VPN</li>
+<li>低12位：偏移量（0-4095）</li>
+</ul></li>
+<li>物理页帧号（PFN）：物理内存中页帧的编号。物理地址 = PFN +
+偏移量。VPN通过页表映射到PFN。</li>
+<li>页表
+PT：<strong>存储虚拟地址到物理地址映射关系的数据结构。每个进程都有自己的页表。页表本质是一个数组，索引是VPN，元素是页表项。</strong></li>
+<li>页表项 PTE：页表中的每个条目，包含：
+<ul>
+<li>PFN：对应的物理页帧号</li>
+<li>有效位：该页是否在物理内存中</li>
+<li>读/写/执行权限位：控制访问权限</li>
+<li>脏位：页是否被修改过</li>
+<li>访问位：页是否被访问过</li>
+<li>其他控制位：如缓存策略、用户/内核模式等</li>
+</ul></li>
+</ul>
+<p>他们之间的结构关系为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">页表（PT）</span><br><span class="line">  ├── PTE[0] ──&gt; PFN: 123  (VPN 0映射到物理页帧123)</span><br><span class="line">  ├── PTE[1] ──&gt; PFN: 456  (VPN 1映射到物理页帧456)</span><br><span class="line">  ├── PTE[2] ──&gt; 无效位=1 (该页不在内存中)</span><br><span class="line">  └── PTE[n] ──&gt; PFN: 789  (VPN n映射到物理页帧789)</span><br></pre></td></tr></table></figure>
+<p>查找过程 1. VPN作为索引：用虚拟页帧号（VPN）直接访问页表数组</p>
+<ol start="2" type="1">
+<li><p>从PTE中提取PFN：页表项中存储了物理页帧号</p></li>
+<li><p>组合成物理地址：PFN + 偏移量</p></li>
+</ol>
+<p>查找过程可以概括为以下的过程：</p>
+<p><img src="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-21-02-29-12.png"></p>
+<h2 id="虚拟地址翻译流程">虚拟地址翻译流程</h2>
+<p><img src="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-20-00-41-42.png"></p>
+<p>虚拟地址到物理地址的映射由 MMU
+来实现，是纯硬件实现的，它的地址翻译流程如下所示，这里只画出了二级页表的情况，实际上现代系统普遍使用多级页表，ARM64
+架构通常支持三级或四级页表（取决于虚拟地址位数和配置）：</p>
+<!-- <img src=2026-03-20-00-48-43.png> -->
+<p><img src="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-21-02-38-05.png"></p>
+<p>现代 Linux 内核在 ARM64 上默认使用 <strong>四级页表（PGD → PUD → PMD
+→ PTE）</strong>。</p>
+<p>假设目前有一个页，它的64bit虚拟地址是[VFN=0xffff018140e09]+[offset=0x000]。由于内存是字节寻址的，因此我们可以以字节的形式进行访问，所以这个例子是:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">访问这个页的第一个字节，地址是[0xffff018140e09]000</span><br><span class="line"></span><br><span class="line">访问这个页的第二个字节，地址是[0xffff018140e09]001</span><br><span class="line"></span><br><span class="line">访问这个页的第二个字节，地址是[0xffff018140e09]002</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>这一整个PTE页所有 entry 的高 36 位都是一样的。</p>
+<p>虽然地址翻译由 MMU
+硬件完成，但页表由操作系统软件管理。需要通过软件维护页表，比如创建页表、更新页表项、通过设置页表项中的权限位来控制访问权限（如读写权限、用户态/内核态权限等）.</p>
+<h2 id="用户内核空间页面管理">用户/内核空间页面管理</h2>
+<p>linux
+系统把地址空间分为<strong>用户空间和内核空间两部分</strong>，用户空间的地址由用户态程序使用，内核空间的地址由操作系统内核使用。</p>
+<ul>
+<li>较低的地址范围用于用户空间（0~3GB）</li>
+<li>较高的地址范围用于内核空间（3GB~4GB）</li>
+</ul>
+<p><img src="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-03-20-01-29-29.png"></p>
+<!-- <img src=2026-03-20-01-31-00.png> -->
+<pre class="mermaid">flowchart LR
+    A[VMA查找触发场景] --> B[缺页中断处理]
+    A --> C[内存分配与映射]
+    A --> D[内存保护与权限检查]
+    A --> E[进程信息查询与调试]
+
+    B --> B1[查找发生缺页的虚拟地址<br>所属的VMA]
+    B1 --> B2{VMA是否存在?}
+    B2 -- 是 --> B3[权限检查]
+    B2 -- 否 --> B4[发送SIGSEGV信号<br>终止进程]
+    B3 --> B5[分配物理页面<br>建立映射]
+
+    C --> C1[malloc/mmap]
+    C1 --> C2[查找空闲区域<br>或检查映射冲突]
+    C2 --> C3[创建或扩展VMA]
+
+    D --> D1[访问非法地址<br>或权限违规]
+    D1 --> D2[快速定位VMA<br>进行权限判断]
+
+    E --> E1[读取 /proc/pid/maps]
+    E1 --> E2[遍历进程所有VMA<br>格式化输出]</pre>
+<ul>
+<li><p>匿名页面（通常是进程的私有数据）、page
+cache、slab都有自己的链表结构来组织页面</p></li>
+<li><p>对于页面回收而言，内核比较喜欢回收干净的page cache</p></li>
+<li><p>ksm是服务虚机的，系统中创建很多一样的虚机，会产生很多相同的匿名页面，所以ksm的作用就是把他们合并起来，减少内存占用</p></li>
+</ul>
+<h2 id="大页huge-page">大页（Huge Page）</h2>
+<p>我们常用的页大小是4KB，但在某些场景下，使用更大的页（如2MB或1GB）可以显著提高性能，减少TLB
+miss的次数。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">48位虚拟地址</span><br><span class="line">┌────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│ 47                                                               0 │</span><br><span class="line">└────────────────────────────────────────────────────────────────────┘</span><br><span class="line"></span><br><span class="line">─────────────────────────────────────────────────────────────────────</span><br><span class="line">4KB 页分配 (页大小 = 4KB = 2^12)</span><br><span class="line">┌────────────────────────────┬────────────────┐</span><br><span class="line">│       PFN (36 bits)        │offset(12 bits) │</span><br><span class="line">│       [47 ... 12]          │ [11 ... 0]     │</span><br><span class="line">└────────────────────────────┴────────────────┘</span><br><span class="line"></span><br><span class="line">─────────────────────────────────────────────────────────────────────</span><br><span class="line">2MB 页分配 (页大小 = 2MB = 2^21)</span><br><span class="line">┌────────────────────┬─────────────────────────┐</span><br><span class="line">│    PFN (27 bits)   │      offset(21 bits)    │</span><br><span class="line">│    [47 ... 21]     │      [20 ... 0]         │</span><br><span class="line">└────────────────────┴─────────────────────────┘</span><br><span class="line"></span><br><span class="line">─────────────────────────────────────────────────────────────────────</span><br></pre></td></tr></table></figure>
+<p>对比说明：</p>
+<ul>
+<li>offset 位数 = log2(页大小)</li>
+<li>PFN 位数 = 48 - offset 位数</li>
+<li>页越大，offset 占用位数越多，PFN 位数越少，TLB 条目覆盖范围越大</li>
+</ul>
+<p>大页：mmu访问页表的消耗是很严重的，以二级页表为例，一次tlb
+miss就会导致两次内存访存；所以huge page的最大的好处是可以减少 tlb miss
+次数，比如，你现在需要分配2mb内存，如果使用4k的页面，需要tlb miss
+512次</p>
+<!-- <img src=2026-03-20-01-31-10.png> -->
+<pre class="mermaid">flowchart LR
+
+    subgraph A["使用4KB页 (2MB区域 = 512页 PTE)"]
+        direction LR
+        A1["需要512个虚拟页<br>（VPN 0~511）"]
+        A2["需要512个PTE<br>（页表项）"]
+        A3["需要512个TLB条目<br>才能完全映射"]
+        A1 --> A2 --> A3
+    end
+
+    subgraph B["使用2MB大页 (2MB区域 = 1页 PMD)"]
+        direction LR
+        B1["仅需1个虚拟页<br>（VPN 0）"]
+        B2["仅需1 个PTE"]
+        B3["仅需1个TLB条目<br>即可完全映射"]
+        B1 --> B2 --> B3
+    end
+
+    A3 --> C["结果：TLB空间压力大<br>转换开销大、易缺失"]
+    B3 --> D["结果：TLB空间压力极小<br>转换快、命中率高"]</pre>
+<p>大页虽然对大内存很友好，但是分配小内存是就会有浪费的问题。</p>
+<p>如果在开启了2MB大页的情况下，你的应用只需要4KB的内存，整个映射和查找过程操作系统必须在物理内存中找到一段连续的2MB物理内存块。这与普通4KB页不同，普通页只需4KB连续，而<strong>大页强制要求2MB连续。</strong></p>
+<p>结果：一个页表项（PDE）直接映射了2MB的物理空间。虽然你只用了4KB，但在硬件看来，这2MB空间现在都属于你。</p>
+<p>地址计算：命中后，直接用物理地址高位（PPN）拼接虚拟地址的低位（Offset，即页内偏移），得到最终物理地址。对于2MB页，偏移量是21位。</p>
+<p>现代操作系统的解决方案（<strong>透明大页 THP</strong>）：</p>
+<p>Linux的透明大页（THP）机制很好地解决了你的疑虑。它的行为是动态的： -
+进程申请内存，内核默认按4KB页分配。 -
+内核后台线程扫描，发现进程占用了大量连续的4KB页。 -
+内核尝试将这些连续的4KB页合并成一个2MB大页。 -
+如果进程后续只访问其中4KB，或者修改局部权限，内核甚至可以将大页拆分回4KB页。</p>
+<p>结论：
+如果是静态开启大页（如HugeTLB），映射和查找都按2MB粒度进行，TLB中只有一条记录，效率极高但内存浪费严重；如果是透明大页，内核会动态调整，尽量让你“既享受大页的速度，又不失小页的灵活”。</p>
+<p>2MB大页的页表结构：</p>
+<table>
+<thead>
+<tr>
+<th>逻辑名称</th>
+<th>Linux内核常用名</th>
+<th>索引级别</th>
+<th>区间</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Page Global Directory</td>
+<td>PGD</td>
+<td>一级</td>
+<td>[47-39]</td>
+</tr>
+<tr>
+<td>Page Upper Directory</td>
+<td>PUD</td>
+<td>二级</td>
+<td>[38-30]</td>
+</tr>
+<tr>
+<td>Page Middle Directory</td>
+<td>PMD</td>
+<td>三级（关键转折点）</td>
+<td>[29-21]</td>
+</tr>
+<tr>
+<td>Page Table Entry</td>
+<td>PTE</td>
+<td>四级（2MB大页时无四级）</td>
+<td>[20-12]</td>
+</tr>
+</tbody>
+</table>
+<p>第 4 级 PTE 页表每个 entry 能映射的内存空间大小是由 offset
+位数决定的，比如当前 offset 有 12 位，那么 PTE 页表项就能映射 2^12 = 4KB
+的内存空间。</p>
+<p>那么同理，每个 PMD 页表项能映射的内存空间大小就是 2^(12+9) = 2^21 =
+2MB 的内存空间了。</p>
+<p>从上面的表格分段情况也可以看出，4 级页表中，每级页表用 9 bit
+来索引，所以每级页表有 512 个 entry（2^9 = 512），每个 entry 可以映射
+4KB 的页，所以每级页表可以映射 512 * 4KB = 2MB 的内存空间，这也是为什么
+PMD 级别的一页可以直接映射一个 2MB 大页的原因。</p>
+<p>以一个2MB大页为例，48 bit
+地址长度为例，虚拟地址的页表翻译过程如下图所示，在：</p>
+<!-- <img src=2026-03-20-22-35-49.png> -->
+<pre class="mermaid">flowchart TD
+
+    VA["VA 48bit"]
+
+    subgraph SPLIT
+        direction LR
+        L0["47-39 L0 idx"]
+        L1["38-30 L1 idx"]
+        L2["29-21 L2 idx"]
+        L3["20-12 L3 idx"]
+        OFF["11-0 Offset"]
+    end
+
+    VA --> SPLIT
+
+    %% L0
+    L0 --> TTBR["TTBR base"]
+    TTBR --> D0["L0 desc TABLE"]
+
+    %% L1
+    D0 --> L1T["L1 table PGD"]
+    L1T --> D1["L1 desc"]
+
+    D1 -->|BLOCK 1GB| PA1["PA = OA(47-30) + VA(29-0)"]
+    D1 -->|TABLE| L2T["L2 table PUD"]
+
+    %% L2
+    L2T --> D2["L2 desc"]
+
+    D2 -->|BLOCK 2MB| PA2["PA = OA(47-21) + VA(20-0)"]
+    D2 -->|TABLE| L3T["L3 table PMD"]
+
+    %% L3
+    L3T --> D3["L3 desc PAGE"]
+    D3 --> PA3["PA = OA(47-12) + VA(11-0)"]</pre>
+<p>可以看出，在2MB大页模式下，PMD级别的页表项直接指向一个2MB的物理内存块，而不需要再访问PTE级别的页表了，这样就减少了一次内存访问，提高了地址翻译的效率。</p>
+<p>在这种页表翻译的情况下，拿到实际 PA
+物理地址后，也会通过地址总线访问内存</p>
+<!-- <img src=2026-03-20-22-39-08.png> -->
+<pre class="mermaid">flowchart TD
+
+    %% CPU + MMU
+    subgraph CPU["CPU + MMU"]
+        VA["VA 0x...1234"]
+        MMU["MMU translate"]
+        PA["PA block_base + offset"]
+
+        VA --> MMU
+        MMU --> PA
+    end
+
+    %% Bus
+    PA --> BUS["AXI Bus"]
+
+    %% Memory
+    subgraph MEM["Physical Memory (2MB Block)"]
+        direction TB
+
+        B0["offset 0x000000"]
+        B1["offset 0x001000"]
+        B2["offset 0x001234 target"]
+        B3["offset 0x1FFFFF"]
+
+    end
+
+    BUS --> MEM
+
+    %% highlight
+    style B2 fill:#ffcccc,stroke:#333,stroke-width:2px</pre>
+<p>访问 2mb 大页其中一个 4k 内存时，tlb的地址命中过程如下：</p>
+<pre class="mermaid">flowchart TD
+
+    A["VA 0x234567"] --> B["MMU split"]
+    B --> C["VA = base 0x200000 + offset 0x034567"]
+    C --> D["TLB lookup"]
+
+    subgraph TLB["TLB entries (连续地址范围)"]
+        direction LR
+        D1["2MB entry\nbase 0x200000\nsize 2MB\nrange: 0x200000-0x3FFFFF"]
+        D2["4KB entry\nbase 0x400000\nsize 4KB\nrange: 0x400000-0x400FFF"]
+        D3["EntryN ..."]
+    end
+
+    D --> TLB
+    TLB --> E{"VA 在哪个条目范围内?"}
+
+    E -- "命中 2MB 块<br>VA = 0x200000(base) + 0x034567(offset)<br>范围检查: 0x200000 ≤ VA < 0x400000" --> F["获取 OA base"]
+    E -- "未命中" --> G["页表遍历 page table walk"]
+
+    F --> H["offset = VA - base = 0x234567 - 0x200000 = 0x034567"]
+    H --> I["PA = OA base + offset"]</pre>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u011649400/article/details/105984564">内存管理源码分析</a></p>
+</blockquote>
+<h1 id="linux-内存结构">linux 内存结构</h1>
+<p><img src="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-08-22-01-01-10.png"></p>
+<h2 id="基础结构-vma">基础结构-VMA</h2>
+<p><code>vm_area_struct (VMA)</code> 是 Linux
+内核<strong>管理进程用户态虚拟内存的基础结构（基础单元）</strong>。只要在虚拟地址空间分配了具有特定属性的连续内存，内核就会创建对应的
+VMA。为了兼顾遍历与查找效率，这些 VMA 会同时挂入两个结构：</p>
+<ul>
+<li>按地址排序的 <code>mm_struct-&gt;mmap</code> 双向链表</li>
+<li>以及用于 O(logN) 快速查找的 <code>mm_struct-&gt;mm_rb</code>
+红黑树。</li>
+</ul>
+<p>需要明确区分，<strong>mm_struct 中的 mmap 字段与系统调用 mmap()
+是完全不同的概念。</strong>前者是内核存储 VMA
+的数据结构（名词），后者是用户态申请内存映射的接口（动词）。调用系统调用
+mmap() 的结果，就是向 mm_struct-&gt;mmap 链表中插入一条新的 VMA
+节点。</p>
+<p>反之，<strong>并非只有 mmap() 才会操作这个链表。</strong>VMA
+作为虚拟地址空间的唯一"账本"，记录了所有内存分配行为。其他系统调用同样会触发
+VMA 的增删改：</p>
+<ul>
+<li><strong>brk()</strong>：调整堆空间大小，内核直接修改堆 VMA 的 vm_end
+指针。</li>
+<li><strong>execve()</strong>：加载程序时，为代码段、数据段创建初始
+VMA。</li>
+<li><strong>mprotect() / munmap()</strong>：修改现有 VMA
+权限或从链表中摘除节点。</li>
+</ul>
+<p>简言之，<code>mm_struct-&gt;mmap</code>
+链表是进程虚拟内存的"总账本"，而 mmap()、brk()
+等系统调用只是触发该账本更新的不同操作指令。</p>
+<p>linux 内存中，重要的结构体：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">task_struct            <span class="comment">// 进程描述符：内核中每个进程的唯一&quot;身份证&quot;，包含指向内存管理的入口</span></span><br><span class="line">    │</span><br><span class="line">    │  task_struct-&gt;mm  ──指向──▶  mm_struct</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">mm_struct              <span class="comment">// 进程内存管理结构体：描述进程的整个虚拟地址空间全貌</span></span><br><span class="line">    ├── pgd            <span class="comment">// 指向页全局目录(PGD)，是进程整棵页表树的&quot;根&quot;，也是该进程一级页表的基地址，进程运行时，该地址经物理地址转换后加载到 TTBR 寄存器中</span></span><br><span class="line">    ├── mmap           <span class="comment">// VMA 链表头，按地址顺序串联所有虚拟内存区域</span></span><br><span class="line">    ├── mm_rb          <span class="comment">// VMA 红黑树根，用于 O(logN) 快速查找地址所属区域</span></span><br><span class="line">    └── total_vm       <span class="comment">// 进程总共映射的虚拟页数</span></span><br><span class="line">        │</span><br><span class="line">        │  mm_struct-&gt;mmap ──指向──▶  vm_area_struct</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">vm_area_struct (VMA)   <span class="comment">// 虚拟内存区域：描述一段连续的虚拟地址区间（如代码段、堆、mmap区）</span></span><br><span class="line">    ├── vm_start       <span class="comment">// 区域起始虚拟地址</span></span><br><span class="line">    ├── vm_end         <span class="comment">// 区域结束虚拟地址（区间: [vm_start, vm_end)）</span></span><br><span class="line">    ├── vm_flags       <span class="comment">// 权限标志（VM_READ / VM_WRITE / VM_EXEC）</span></span><br><span class="line">    ├── vm_file        <span class="comment">// 如果是文件映射，指向 file → address_space</span></span><br><span class="line">    └── vm_ops         <span class="comment">// VMA 操作函数集（缺页回调 fault()、页移除 open() 等）</span></span><br><span class="line">        │</span><br><span class="line">        │  缺页时 → 遍历页表 → 最终落到物理页</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">┌─────────────────────────────────────────────────────────────┐</span><br><span class="line">│              页表层级结构（软件维护，硬件MMU遍历）               │</span><br><span class="line">│                                                             │</span><br><span class="line">│  <span class="keyword">pgd_t</span>  (PGD)     一级 页全局目录   索引[<span class="number">47</span><span class="number">-39</span>]  <span class="number">512</span>项       │</span><br><span class="line">│    └── <span class="keyword">p4d_t</span>      （五级页表时才有）                          │</span><br><span class="line">│        └── <span class="keyword">pud_t</span>  (PUD)  二级 页上级目录 索引[<span class="number">38</span><span class="number">-30</span>]  <span class="number">512</span>项  │</span><br><span class="line">│            └── <span class="keyword">pmd_t</span>(PMD) 三级 页中间目录 索引[<span class="number">29</span><span class="number">-21</span>]  <span class="number">512</span>项 │</span><br><span class="line">│                └── <span class="keyword">pte_t</span>(PTE) 四级 页表项   索引[<span class="number">20</span><span class="number">-12</span>]  <span class="number">512</span>项│</span><br><span class="line">│                    └── pfn ──指向──▶  物理页帧(page)         │</span><br><span class="line">└─────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<p>以上就是<strong>虚拟内存侧</strong>的核心结构体链条：<code>task_struct → mm_struct → vm_area_struct → 页表(PGD/PUD/PMD/PTE) → page</code>。</p>
+<p><img src="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/2026-08-22-00-56-12.png"></p>
+<h2 id="task_struct-与-mm_struct-的粒度">task_struct 与 mm_struct
+的粒度</h2>
+<p>上面提到 task_struct 和
+mm_struct，需要搞清楚它们的粒度：<strong>不是"一个内核/虚机挂一个"，而是每个线程/进程各有一个。</strong></p>
+<ul>
+<li><strong>task_struct：每个线程一个。</strong> Linux
+内核不区分进程和线程，线程本质上是轻量级进程（通过 <code>clone()</code>
+创建），每个线程都有自己独立的 <code>task_struct</code>。</li>
+<li><strong>mm_struct：每个进程（线程组）一个。</strong>
+同一进程下的多个线程<strong>共享</strong>同一个
+<code>mm_struct</code>，因为它们共享地址空间、页表、VMA 链表。只有
+<code>clone()</code> 时带 <code>CLONE_VM</code>
+标志（即创建线程），才会共享 mm_struct。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">进程 P1（线程组 TID=100）</span><br><span class="line">├── task_struct(线程100) ──┐</span><br><span class="line">├── task_struct(线程101) ──┼──▶ 共享同一个 mm_struct</span><br><span class="line">└── task_struct(线程102) ──┘</span><br><span class="line"></span><br><span class="line">进程 P2（线程组 TID=200）</span><br><span class="line">└── task_struct(线程200) ──▶ 独立的 mm_struct</span><br></pre></td></tr></table></figure>
+<p>内核线程是特例：它没有用户态地址空间，<code>task_struct-&gt;mm</code>
+为 NULL，只借用一个 <code>active_mm</code> 临时使用。</p>
+<p>至于 KVM 虚机，在 host 内核视角下一个虚机就是一个 QEMU 进程，有自己的
+<code>task_struct</code> 和 <code>mm_struct</code>，虚机内存是 mm_struct
+里 mmap 出来的一块普通用户态内存。guest OS 内部的 task_struct /
+mm_struct 对 host 内核不可见。</p>
+<h2 id="mm_struct-pgd-与-ttbr-的关系">mm_struct-&gt;pgd 与 TTBR
+的关系</h2>
+<p>上面结构体中 <code>mm_struct-&gt;pgd</code> 指向进程的 PGD
+页表页，它就是四级页表（PGD → PUD → PMD →
+PTE）的<strong>最顶层一级页表</strong>，也就是整棵页表树的"根"。</p>
+<p><strong>每个进程都有自己的 PGD。</strong> 因为每个进程有自己的
+<code>mm_struct</code>，而 <code>mm_struct-&gt;pgd</code> 指向各自独立的
+PGD 页表页。一个系统中同时运行 N 个进程，物理内存里就同时躺着 N 张不同的
+PGD 页表。</p>
+<p>但同一时刻只有一张 PGD 是"生效"的——当前正在 CPU 上跑的那个进程的
+PGD。进程切换时，内核把下一个进程的 <code>pgd</code> 经
+<code>__pa()</code> 转换为物理地址后写入 TTBR0，MMU
+从此用新进程的页表做翻译：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">进程切换时（schedule → switch_mm）：</span><br><span class="line"></span><br><span class="line">    mm_struct-&gt;pgd  (内核虚拟地址)</span><br><span class="line">         │</span><br><span class="line">         │  __pa() 转换为物理地址</span><br><span class="line">         ▼</span><br><span class="line">    物理地址  ──写入──▶  TTBR0_EL1 寄存器</span><br><span class="line">                            │</span><br><span class="line">                            ▼</span><br><span class="line">                     MMU 从此地址开始遍历四级页表</span><br><span class="line">                     同时刷新 TLB（旧进程的TLB缓存失效）</span><br></pre></td></tr></table></figure>
+<p>需要注意，<code>mm_struct-&gt;pgd</code> 存的是内核虚拟地址，而 TTBR
+需要物理地址，因为 MMU 硬件用物理地址遍历页表。</p>
+<p>另外在 ARM64 上有两个 TTBR：</p>
+<ul>
+<li><strong>TTBR0</strong>：存用户空间进程的 PGD
+地址，每个进程不同，进程切换时更新。</li>
+<li><strong>TTBR1</strong>：存内核空间的 PGD
+地址，所有进程共享，开机时设置一次就不变了。</li>
+</ul>
+
+    </article>
+    <!-- license -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
+            <p>Link：<a href="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">November 4th 2025, 10:31:15 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">August 22nd 2026, 1:11:53 am</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2025/11/20/FIELD-PREP%E5%92%8CFIELD-GET%E6%9B%BF%E4%BB%A3%E6%89%8B%E5%8A%A8%E4%BD%8D%E7%A7%BB/" title="FIELD_PREP和FIELD_GET替代手动位移">
+                    <div class="nextTitle">FIELD_PREP和FIELD_GET替代手动位移</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/" title="驱动学习2：字符设备驱动(fd,ioctl)">
+                    <div class="prevTitle">驱动学习2：字符设备驱动(fd,ioctl)</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC81NjEyMS8zMjU4NA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活 JavaScript</noscript>
+    </div>
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:tianzheng_edu@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="https://github.com/akirazheng" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text">内存基础知识</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E7%AF%87"><span class="toc-text">内存管理篇</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D"><span class="toc-text">多进程内存分配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%BF%BB%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="toc-text">虚拟地址翻译流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%86%85%E6%A0%B8%E7%A9%BA%E9%97%B4%E9%A1%B5%E9%9D%A2%E7%AE%A1%E7%90%86"><span class="toc-text">用户&#x2F;内核空间页面管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E9%A1%B5huge-page"><span class="toc-text">大页（Huge Page）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#linux-%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84"><span class="toc-text">linux 内存结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E7%BB%93%E6%9E%84-vma"><span class="toc-text">基础结构-VMA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#task_struct-%E4%B8%8E-mm_struct-%E7%9A%84%E7%B2%92%E5%BA%A6"><span class="toc-text">task_struct 与 mm_struct
+的粒度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mm_struct-pgd-%E4%B8%8E-ttbr-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">mm_struct-&gt;pgd 与 TTBR
+的关系</span></a></li></ol></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 89
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search site-search-loading popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span>
+            <a class="archive-post-title" href="/2026/08/06/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%BA%8C)/">虚机下VFIO设备BAR空间分配与BAR重叠报错分析(二)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span>
+            <a class="archive-post-title" href="/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/">VFIO 设备直通基础：地址空间、页表与 QEMU/KVM 数据结构详解(一)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/02</span>
+            <a class="archive-post-title" href="/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span>
+            <a class="archive-post-title" href="/2026/06/11/QEMU-Hotplug-ARMv8-%E5%AE%8C%E6%95%B4%E5%88%86%E6%9E%90/">QEMU Hotplug ARMv8 - 完整分析</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/Linux-early-param%E5%8F%82%E6%95%B0/">Linux内核学习：early_param机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">ARM64结构与编程:内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/06</span>
+            <a class="archive-post-title" href="/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/">Mac中配置使用claude</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/12</span>
+            <a class="archive-post-title" href="/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">linux文件系统</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/12</span>
+            <a class="archive-post-title" href="/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">虚拟化:VFIO传统热迁移</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/08</span>
+            <a class="archive-post-title" href="/2026/02/08/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86/">ARM64结构与编程:中断处理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span>
+            <a class="archive-post-title" href="/2026/01/26/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/">问题解决</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/11</span>
+            <a class="archive-post-title" href="/2026/01/11/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">ARM64结构与编程:异常处理</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span>
+            <a class="archive-post-title" href="/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">linux内核驱动debug方法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span>
+            <a class="archive-post-title" href="/2025/11/22/cacheLine%E7%AB%9E%E4%BA%89%E5%AF%B9%E6%80%A7%E8%83%BD%E7%9A%84%E5%BD%B1%E5%93%8D/">cacheLine竞争对性能的影响</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span>
+            <a class="archive-post-title" href="/2025/11/20/FIELD-PREP%E5%92%8CFIELD-GET%E6%9B%BF%E4%BB%A3%E6%89%8B%E5%8A%A8%E4%BD%8D%E7%A7%BB/">FIELD_PREP和FIELD_GET替代手动位移</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span>
+            <a class="archive-post-title" href="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">ARM64内存基础知识</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">驱动学习2：字符设备驱动(fd,ioctl)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/Linux-%E5%86%85%E6%A0%B8%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6/">Linux:内核通知机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/">ARM64结构与编程:加载和存储指令</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">ARM64结构与编程:QEMU_BenOS环境搭建</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：CPU虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">git常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">linux常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span>
+            <a class="archive-post-title" href="/2025/09/02/TLB%E7%89%B9%E6%80%A7%E5%AD%A6%E4%B9%A0/">TLB特性学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span>
+            <a class="archive-post-title" href="/2025/08/23/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F2%EF%BC%9A%E7%BC%96%E5%86%99MBR%E4%B8%BB%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA/">手写操作系统2：编写MBR主引导扇区</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span>
+            <a class="archive-post-title" href="/2025/08/22/%E8%BF%9B%E5%88%B6%E8%BD%AC%E6%8D%A2CPP%E7%89%88/">进制转换CPP版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/21</span>
+            <a class="archive-post-title" href="/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/">驱动学习1：驱动demo练习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span>
+            <a class="archive-post-title" href="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/">openeluer安装与内核替换</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/">推广搜6：传统推荐模型之阿里LS-PLM模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/">推广搜5：传统推荐模型之GBDT+LR模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span>
+            <a class="archive-post-title" href="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C4%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">推广搜4：传统推荐模型之FM模型</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C3%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜3：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span>
+            <a class="archive-post-title" href="/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C2%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/">推广搜2：传统推荐模型之协同过滤算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span>
+            <a class="archive-post-title" href="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C1%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/">推广搜1：基础知识及学习路线篇</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span>
+            <a class="archive-post-title" href="/2024/12/18/%E7%88%AC%E8%99%AB%E5%AE%9E%E7%8E%B0QQ%E7%BE%A4%E4%BD%9C%E4%B8%9A%E7%9A%84%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD/">爬虫实现QQ群作业的批量下载</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">手写操作系统1：项目环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/23</span>
+            <a class="archive-post-title" href="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/">计算机网络层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span>
+            <a class="archive-post-title" href="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">计算机网络传输层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span>
+            <a class="archive-post-title" href="/2024/09/21/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Redis数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">调度项目6：worker开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2024/09/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE5%EF%BC%9Aflowsvr%E5%BC%80%E5%8F%91/">调度项目5：flowsvr开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/18</span>
+            <a class="archive-post-title" href="/2024/08/18/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE4%EF%BC%9AWorker%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目4：Worker的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/">分布式Kafka学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span>
+            <a class="archive-post-title" href="/2024/06/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">调度项目1：环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3%E7%9A%84Linux%E6%93%8D%E4%BD%9C/">操作系统相关的Linux操作</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">文件描述符</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span>
+            <a class="archive-post-title" href="/2024/05/17/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">操作系统内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/15</span>
+            <a class="archive-post-title" href="/2024/05/15/%E5%A4%A7%E9%A1%B6%E5%A0%86-%E5%B0%8F%E9%A1%B6%E5%A0%86%EF%BC%88CPP%EF%BC%89/">大顶堆/小顶堆（CPP）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/01</span>
+            <a class="archive-post-title" href="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">高并发系统设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span>
+            <a class="archive-post-title" href="/2024/04/29/KMP%E7%AE%97%E6%B3%95/">KMP算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span>
+            <a class="archive-post-title" href="/2024/04/26/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/">动态规划-背包问题</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/25</span>
+            <a class="archive-post-title" href="/2024/04/25/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">操作系统结构及进程管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span>
+            <a class="archive-post-title" href="/2024/04/20/C-%E5%BA%95%E5%B1%82%E5%AD%A6%E4%B9%A0/">C++底层学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Mysql数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span>
+            <a class="archive-post-title" href="/2024/04/03/%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0/">排序实现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">WebServer学习9：WebBench压力测试</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A08%EF%BC%9A%E9%80%9A%E7%94%A8%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1/">WebServer学习8：通用日志系统的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span>
+            <a class="archive-post-title" href="/2024/03/26/WebServer%E5%AD%A6%E4%B9%A07%EF%BC%9A%E5%AE%9A%E6%97%B6%E5%99%A8%E6%8E%A7%E5%88%B6%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4/">WebServer学习7：定时器控制客户端存活时间</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2024/03/11/WebServer%E5%AD%A6%E4%B9%A06%EF%BC%9AHTTP%E8%BF%9E%E6%8E%A5%E5%A4%84%E7%90%86%E5%8F%8A%E6%8A%A5%E6%96%87%E6%9C%BA%E5%88%B6/">WebServer学习6：HTTP连接处理及报文机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/">HTTP协议的迭代（HTTP：应用层）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%AD%A6%E4%B9%A0/">C++基础知识学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/WebServer%E5%AD%A6%E4%B9%A05%EF%BC%9A%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%AE%BE%E8%AE%A1/">WebServer学习5：线程池与数据库连接池设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/05</span>
+            <a class="archive-post-title" href="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/">WebServer学习4：并发事件驱动模式Reactor和Proactor</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span>
+            <a class="archive-post-title" href="/2024/03/04/WebServer%E5%AD%A6%E4%B9%A03%EF%BC%9Asocket%E7%BC%96%E7%A8%8B%E4%B8%8Eepoll%E5%AE%9E%E7%8E%B0I-O%E5%A4%8D%E7%94%A8/">WebServer学习3：socket编程与epoll实现I/O复用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/03</span>
+            <a class="archive-post-title" href="/2024/03/03/WebServer%E5%AD%A6%E4%B9%A02%EF%BC%9A%E4%BB%8EConfig%E6%96%87%E4%BB%B6%E4%BA%86%E8%A7%A3Makefile%E7%BC%96%E8%AF%91/">WebServer学习2：从Config文件了解Makefile编译</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span>
+            <a class="archive-post-title" href="/2024/02/28/WebServer%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C/">WebServer学习1：部署运行</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F6%EF%BC%9A%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/">设计模式6：策略模式</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F5%EF%BC%9A%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95/">设计模式5：模板方法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/08</span>
+            <a class="archive-post-title" href="/2024/02/08/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F0%EF%BC%9A%E9%9D%A2%E5%AF%B9%E5%AF%B9%E8%B1%A1%E7%9A%848%E5%A4%A7%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86/">设计模式0：面对对象的8大设计原理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/07</span>
+            <a class="archive-post-title" href="/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/">从0开始实现线程池(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F4%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">设计模式4：代理模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F3%EF%BC%9A%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/">设计模式3：抽象工厂模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">设计模式2：工厂方法模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span>
+            <a class="archive-post-title" href="/2024/01/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F1%EF%BC%9A%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">设计模式1：单例模式(C++)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span>
+            <a class="archive-post-title" href="/2023/03/18/QT%E7%BC%96%E7%A8%8B%E7%BB%8F%E9%AA%8C/">QT编程经验</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span>
+            <a class="archive-post-title" href="/2022/12/08/SolveProgramLearningProblem/">SolveProgramLearningProblem</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/04</span>
+            <a class="archive-post-title" href="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/">Mine-重装系统后软件相关设置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/24</span>
+            <a class="archive-post-title" href="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/">快捷键方式整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/15</span>
+            <a class="archive-post-title" href="/2022/11/15/LOVE/">LOVE_打火机与公主裙</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2022/04/17/%E5%8A%A8%E6%89%8B%E5%AD%A6%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A001/">动手学深度学习01</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/">搭建Conda虚拟环境</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/13</span>
+            <a class="archive-post-title" href="/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">部署colab利用GPU资源训练深度学习模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">重装系统后Hexo博客部署教程</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/">DELL系统重装教程</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="计算机">
+                <span class="iconfont-archer">&#xe606;</span>
+                计算机
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="杂货铺-休闲">
+                <span class="iconfont-archer">&#xe606;</span>
+                杂货铺-休闲
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="环境配置">
+                <span class="iconfont-archer">&#xe606;</span>
+                环境配置
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="深度学习">
+                <span class="iconfont-archer">&#xe606;</span>
+                深度学习
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="VFIO">
+                <span class="iconfont-archer">&#xe606;</span>
+                VFIO
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="KVM">
+                <span class="iconfont-archer">&#xe606;</span>
+                KVM
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="QEMU">
+                <span class="iconfont-archer">&#xe606;</span>
+                QEMU
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ARM64">
+                <span class="iconfont-archer">&#xe606;</span>
+                ARM64
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="PCI">
+                <span class="iconfont-archer">&#xe606;</span>
+                PCI
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="任务调度项目">
+                <span class="iconfont-archer">&#xe606;</span>
+                任务调度项目
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="Linux内核基础">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核基础
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
+            <span class="iconfont-archer">&#xe60a;</span>
+            ARM64结构与编程实操
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络">
+            <span class="iconfont-archer">&#xe60a;</span>
+            计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据结构与算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="虚拟化">
+            <span class="iconfont-archer">&#xe60a;</span>
+            虚拟化
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据库">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据库
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="WebServer项目（C++）">
+            <span class="iconfont-archer">&#xe60a;</span>
+            WebServer项目（C++）
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="系统设计">
+            <span class="iconfont-archer">&#xe60a;</span>
+            系统设计
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="深度学习算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            深度学习算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统">
+            <span class="iconfont-archer">&#xe60a;</span>
+            操作系统
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="设计模式">
+            <span class="iconfont-archer">&#xe60a;</span>
+            设计模式
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="任务调度项目">
+            <span class="iconfont-archer">&#xe60a;</span>
+            任务调度项目
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核驱动">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核驱动
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="内存">
+            <span class="iconfont-archer">&#xe60a;</span>
+            内存
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="内存">
+            <span class="iconfont-archer">&#xe60a;</span>
+            内存
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="内存">
+            <span class="iconfont-archer">&#xe60a;</span>
+            内存
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://AkiraZheng.github.io",
+        root: siteMetaRoot,
+        author: "AkiraZheng"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+            <div class="site-search site-search-loading">
+    <div class="algolia-popup popup">
+        <div class="algolia-search">
+            <div class="algolia-search-input-icon">
+                <i class="fa fa-search"></i>
+            </div>
+            <div class="algolia-search-input" id="algolia-search-input"></div>
+            <div class="popup-btn-close">
+                <i class="iconfont-archer">&#xe609;</i>
+            </div>
+        </div>
+
+        <div class="algolia-results">
+            <div id="algolia-stats" class="algolia-stats"></div>
+            <div id="algolia-hits"></div>
+            <div id="algolia-pagination" class="algolia-pagination"></div>
+        </div>
+    </div>
+</div>
+            <script src="/scripts/search.js?v=20211217" defer></script>
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js'></script>
+            <script>
+                if (window.mermaid) {
+                    mermaid.initialize({theme: 'neutral'});
+                }
+            </script>
+        
+    </body>
+</html>
