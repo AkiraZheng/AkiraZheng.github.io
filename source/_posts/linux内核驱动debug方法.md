@@ -90,11 +90,13 @@ echo > trace
 添加的事项可以有 `p` 标志的和 `r`标志的，其中 `r`标志的表示跟踪的是这个函数的**返回值**
 
 ```shell
-echo 'p:kprobes/p___setup_irq __setup_irq irq=%x0 desc=%x1 new=%x2' > kprobe_events
-echo `r:kprobes/r___setup_irq __setup_irq ret=$retval` > kprobe_events
+echo 'p:kprobes/p___setup_irq __setup_irq irq=%x0 desc=%x1 new=%x2' >> kprobe_events
+echo 'r:kprobes/r___setup_irq __setup_irq ret=$retval' >> kprobe_events
 cat kprobe_events # 此时就能看到刚刚添加的 kprobe 事件
 ls events/kprobes/  | grep __setup_irq  # 此时能看到 __setup_irq 事件了
 ```
+
+**注意：如果用`>`写入的话，是覆盖，最后只能存在一个事件；所以要用`>>`追加的方式写入。**
 
 其中可以根据参数类型来选择不同的格式化输出：
 
@@ -380,8 +382,11 @@ echo 0 > events/irq/irq_handler_exit/enable
 # 查看所有可用的 tracepoints
 sudo perf list | grep irq:
 
-# 记录 tracepoint 事件
+# 记录 tracepoint 事件，一般用于性能分析，当有性能问题，观察耗时分布
 sudo perf record -e irq:irq_handler_exit -a sleep 10
+
+# 筛选 tracepoint，一般用于debug调试，当已经定位到某个具体函数或者代码路径的时候，想深入分析它的**行为、参数和延时**
+sudo perf record -e "probe:irq:irq_handler_exit" -a -- sleep 10
 
 # 实时查看
 sudo perf trace -e irq:irq_handler_exit
@@ -632,6 +637,48 @@ for (int i = 0; i < times_s * 1000; ++i) {
 - 图中最宽的区域是与 nanosleep 相关的系统调用栈。这表明您的程序大部分时间都花在了“睡眠”（等待）状态，而不是在执行计算任务。火焰图有效地指出了性能瓶颈在于频繁且耗时的睡眠操作。
 
 > [Linux 性能分析工具 perf 的使用指南](https://zhuanlan.zhihu.com/p/8497782204)
+
+# qemu trace
+
+## qemu起虚机时使用已有的 trace
+
+**1. 查看支持哪些 trace**
+
+```shell
+# 方法1：起虚机前在服务器的host中查看：
+qemu-system-aarch -help | grep -i mem
+
+# 方法2：在虚机中查看：
+# 进入qemu monitor
+(qemu) info trace-events
+```
+
+我们可以看到有一个`kvm_memory_fault`和`kvm_vm_ioctl`的trace，我们以这个为例来介绍使用方法：
+
+在启动虚机后面，加上这个 trace：
+
+```shell
+-trace kvm_memory_fault \
+-trace kvm_vm_ioctl
+```
+
+但是这样会有个问题，如果我们直接启动虚机的话，会有大量的打印信息（默认直接在启qemu虚机的串口中打印）
+
+因此，在起虚机的指令中加上：
+
+```shell
+-trace file=qemu.log
+```
+
+然后如果要实时查看日志信息的话，可以在host上查看：
+
+```shell
+tail -f qemu.log
+```
+
+## 代码中添加 trace
+
+> [qemu里增加trace的方法](https://wangzhou.github.io/qemu%E9%87%8C%E5%A2%9E%E5%8A%A0trace%E7%9A%84%E6%96%B9%E6%B3%95/)
 
 # tmp
 

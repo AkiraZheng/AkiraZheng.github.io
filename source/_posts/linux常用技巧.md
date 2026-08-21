@@ -1481,6 +1481,12 @@ tmux ls
 exits # 不会保留该会话（终止会话）
 ```
 
+**删除会话**
+
+```shell
+tmux kill-session -t <session_name>
+```
+
 **切换会话**
 
 ```shell
@@ -1552,3 +1558,49 @@ tmux source-file ~/.tmux.conf
 ```
 
 [Tmux 使用教程](https://www.ruanyifeng.com/blog/2019/10/tmux.html)
+
+# 10. ACPI 表的解析
+
+用 `isal -d` 查看某个 ACPI 表的详细信息：
+
+```shell
+cp /sys/firmware/acpi/tables/IORT ./
+isal -d IORT
+vim IORT
+```
+
+# 10. 利用 b4 下载 linux patch
+
+```shell
+# b4 am：下载并准备补丁，但不自动应用
+b4 am <Message-ID>
+
+# b4 shazam：下载并直接应用到当前分支
+b4 shazam <Message-ID>
+
+# b4 会自动从 lore.kernel.org 拉取整个讨论线程
+b4 mbox <Message-ID>
+```
+
+如果因为虚机`date`时间跟实际的时间不匹配的话，根因：系统时间（2026-08-02）早于 lore.kernel.org SSL 证书生效日期（2026-08-12），导致 certificate is not yet valid 错误。
+
+```
+[root@localhost ~]# cat /usr/local/bin/b4-am-nossl 
+#!/usr/bin/env python3
+import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+import b4
+original_get_session = b4.get_requests_session
+def patched_get_session():
+    session = original_get_session()
+    session.verify = False
+    return session
+b4.get_requests_session = patched_get_session
+
+import sys
+sys.argv[0] = 'b4'
+from b4.command import cmd
+cmd()
+```

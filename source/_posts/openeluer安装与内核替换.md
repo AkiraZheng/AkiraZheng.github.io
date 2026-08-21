@@ -509,6 +509,16 @@ Open this link in your browser https://vscode.dev/tunnel/openeuler-vm/xxx
 
 之后只要在 guest 中运行`./code tunnel`即可。
 
+# vmware 中给虚拟机增加存储
+
+先把虚机关机了，然后增加它的磁盘空间：
+
+此时增加完重启虚机后，实际上还没挂到虚机中，在虚机中`df -h`就可以看出并没有扩容，因此我们要在虚机里把扩容的盘新增进去：
+
+```shell
+lsblk
+```
+
 # 附件
 
 **build-initramfs.sh**

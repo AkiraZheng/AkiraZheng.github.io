@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>伙伴系统动画</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a1a2e; color: #eee; padding: 12px 14px;
+    display: flex; flex-direction: column; align-items: center;
+}
+.container { width: 100%; max-width: 920px; }
+h2 { text-align: center; margin-bottom: 10px; font-size: 16px; color: #e94560; }
+.step-label {
+    text-align: center; font-size: 14px; font-weight: bold; color: #ffffff;
+    margin: 8px 0 8px 0; padding: 8px 14px; border-radius: 6px;
+    background: #0d1b2a; border: 1px solid #1b2838; min-height: 36px;
+    white-space: pre-line; line-height: 1.4;
+}
+.buddy-rows { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; align-items: center; }
+.buddy-row {
+    display: flex; gap: 4px; align-items: center; justify-content: center;
+    min-height: 48px; padding: 4px 10px; border-radius: 6px;
+    background: rgba(15,52,96,0.12); border: 1px solid rgba(15,52,96,0.3);
+}
+.row-label {
+    font-size: 11px; color: #5e88b8; min-width: 56px; text-align: right;
+    padding-right: 8px;
+}
+.blocks-row { display: flex; gap: 4px; align-items: center; }
+.page-block {
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px; font-weight: bold; border: 2px solid transparent;
+    transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+    font-size: 12px; white-space: nowrap; overflow: hidden;
+}
+.free { background: #0f3460; color: #a3d5ff; border-color: #1a5276; }
+.allocated { background: #e94560; color: #fff; border-color: #c81e45; }
+.buddy-check { background: #f39c12; color: #fff; border-color: #d68910; }
+.merging { background: #27ae60; color: #fff; border-color: #1e8449; }
+.empty-slot {
+    display: flex; align-items: center; justify-content: center;
+    border: 2px dashed #333; border-radius: 4px; color: #444; font-size: 10px;
+}
+.controls { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+.controls button {
+    padding: 7px 18px; border: none; border-radius: 5px; font-size: 13px;
+    cursor: pointer; transition: all 0.3s; font-weight: bold;
+}
+.btn-play { background: #e94560; color: #fff; }
+.btn-play:hover { background: #c81e45; }
+.btn-step { background: #0f3460; color: #a3d5ff; }
+.btn-step:hover { background: #1a5276; }
+.btn-step:disabled { background: #333; color: #666; cursor: not-allowed; }
+.btn-reset { background: #2d2d44; color: #ccc; }
+.btn-reset:hover { background: #3d3d55; }
+.step-indicator { text-align: center; font-size: 12px; color: #888; margin-top: 6px; }
+.code-hint {
+    background: #16213e; border: 1px solid #0f3460; border-radius: 6px;
+    padding: 8px 14px; margin-top: 10px; font-family: 'Courier New', monospace;
+    font-size: 12px; color: #a3d5ff; line-height: 1.6;
+}
+.code-hint .keyword { color: #e94560; }
+.code-hint .comment { color: #666; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>伙伴系统 Buddy System - 分配与合并动画</h2>
+    <div class="step-label" id="stepLabel">初始状态</div>
+    <div class="buddy-rows" id="buddyRows"></div>
+    <div class="controls">
+        <button class="btn-step" id="btnPrev" onclick="prevStep()">◀ 上一步</button>
+        <button class="btn-play" id="btnPlay" onclick="playAnimation()">▶ 自动播放</button>
+        <button class="btn-step" id="btnNext" onclick="nextStep()">下一步 ▶</button>
+        <button class="btn-reset" onclick="resetAnimation()">↻ 重置</button>
+    </div>
+    <div class="step-indicator" id="stepIndicator">步骤 1 / 14</div>
+    <div class="code-hint">
+        <span class="comment">// 伙伴查找：XOR 运算</span><br>
+        buddy_pfn = pfn ^ (1 << order)<br>
+        buddy_page = <span class="keyword">mem_map</span>[buddy_pfn]<br>
+        <span class="comment">// 伙伴空闲则合并，递归向上</span>
+    </div>
+</div>
+<script>
+const BASE_W = 52;
+const BLOCK_H = 40;
+
+let pageStates = {};
+
+function initState() {
+    pageStates = {};
+    for (let i = 0; i < 8; i++) pageStates[i] = { state: 'free', order: 3 };
+}
+
+function renderRows() {
+    const container = document.getElementById('buddyRows');
+    container.innerHTML = '';
+    for (let order = 3; order >= 0; order--) {
+        const row = document.createElement('div');
+        row.className = 'buddy-row';
+        const label = document.createElement('div');
+        label.className = 'row-label';
+        label.textContent = 'order ' + order;
+        row.appendChild(label);
+        const blocksDiv = document.createElement('div');
+        blocksDiv.className = 'blocks-row';
+        const numBlocks = 8 / Math.pow(2, order);
+        const blockWidth = BASE_W * Math.pow(2, order);
+        for (let b = 0; b < numBlocks; b++) {
+            const pfn = b * Math.pow(2, order);
+            const block = document.createElement('div');
+            block.style.height = BLOCK_H + 'px';
+            const ps = pageStates[pfn];
+            if (ps && ps.order === order) {
+                block.className = 'page-block ' + ps.state;
+                block.style.width = blockWidth + 'px';
+                let text = order === 0 ? 'PFN ' + pfn : 'PFN ' + pfn + '~' + (pfn + Math.pow(2, order) - 1);
+                if (ps.state === 'allocated') text += '\n已分配';
+                block.textContent = text;
+                block.style.whiteSpace = 'pre-line';
+                block.style.textAlign = 'center';
+            } else {
+                block.className = 'empty-slot';
+                block.style.width = blockWidth + 'px';
+            }
+            blocksDiv.appendChild(block);
+        }
+        row.appendChild(blocksDiv);
+        container.appendChild(row);
+    }
+}
+
+const steps = [
+    { label: '初始状态：1 个 order 3 空闲块（PFN 0~7）\n注：假设 order 0/1/2 链表均为空，只能从 order 3 拆分',
+      apply: () => { initState(); } },
+    { label: '分配请求：1 页 (order 0) → order 0 链表为空，向上查找...', apply: () => {} },
+    { label: 'order 0/1/2 均为空 → 从 order 3 取 PFN 0~7，准备拆分', apply: () => { initState(); } },
+    { label: '拆分 order 3 → 两个 order 2：PFN 0~3（待用）/ PFN 4~7（空闲挂链表）',
+      apply: () => { initState(); pageStates[0] = { state: 'free', order: 2 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '拆分 order 2 (PFN 0~3) → 两个 order 1：PFN 0~1（待用）/ PFN 2~3（空闲挂链表）',
+      apply: () => { initState(); pageStates[0] = { state: 'free', order: 1 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '拆分 order 1 (PFN 0~1) → 两个 order 0：PFN 0（分配）/ PFN 1（空闲挂链表）',
+      apply: () => { initState(); pageStates[0] = { state: 'allocated', order: 0 }; pageStates[1] = { state: 'free', order: 0 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '✅ 分配完成！PFN 0 已分配\n空闲链表：order 0: PFN 1 | order 1: PFN 2~3 | order 2: PFN 4~7', apply: () => {} },
+    { label: '释放 PFN 0 → 伙伴 PFN = 0 ^ (1<<0) = 1，检查是否空闲...',
+      apply: () => { initState(); pageStates[0] = { state: 'buddy-check', order: 0 }; pageStates[1] = { state: 'free', order: 0 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: 'PFN 1 空闲 ✓ → 合并 PFN 0 + PFN 1 → order 1 (PFN 0~1)',
+      apply: () => { initState(); pageStates[0] = { state: 'merging', order: 1 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '合并完成 → PFN 0~1 (order 1)，继续找伙伴\n伙伴 PFN = 0 ^ (1<<1) = 2，检查是否空闲...',
+      apply: () => { initState(); pageStates[0] = { state: 'buddy-check', order: 1 }; pageStates[2] = { state: 'free', order: 1 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: 'PFN 2~3 空闲 ✓ → 合并 PFN 0~1 + PFN 2~3 → order 2 (PFN 0~3)',
+      apply: () => { initState(); pageStates[0] = { state: 'merging', order: 2 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: '合并完成 → PFN 0~3 (order 2)，继续找伙伴\n伙伴 PFN = 0 ^ (1<<2) = 4，检查是否空闲...',
+      apply: () => { initState(); pageStates[0] = { state: 'buddy-check', order: 2 }; pageStates[4] = { state: 'free', order: 2 }; } },
+    { label: 'PFN 4~7 空闲 ✓ → 合并 PFN 0~3 + PFN 4~7 → order 3 (PFN 0~7)',
+      apply: () => { initState(); pageStates[0] = { state: 'merging', order: 3 }; } },
+    { label: '✅ 全部合并完成！恢复初始状态：1 个 order 3 空闲块（PFN 0~7）', apply: () => { initState(); } },
+];
+
+let currentStep = 0;
+let isPlaying = false;
+let playTimer = null;
+
+function applyStep(index) {
+    const step = steps[index];
+    if (!step) return;
+    document.getElementById('stepLabel').textContent = step.label;
+    step.apply();
+    renderRows();
+    document.getElementById('stepIndicator').textContent = '步骤 ' + (index + 1) + ' / ' + steps.length;
+    document.getElementById('btnPrev').disabled = (index === 0);
+    document.getElementById('btnNext').disabled = (index === steps.length - 1);
+}
+
+function nextStep() { if (currentStep < steps.length - 1) { currentStep++; applyStep(currentStep); } }
+function prevStep() { if (currentStep > 0) { currentStep--; applyStep(currentStep); } }
+
+function playAnimation() {
+    if (isPlaying) { stopPlay(); return; }
+    isPlaying = true;
+    document.getElementById('btnPlay').textContent = '⏸ 暂停';
+    currentStep = 0; applyStep(0);
+    playTimer = setInterval(() => {
+        if (currentStep < steps.length - 1) { currentStep++; applyStep(currentStep); }
+        else { stopPlay(); }
+    }, 2000);
+}
+
+function stopPlay() {
+    isPlaying = false;
+    if (playTimer) { clearInterval(playTimer); playTimer = null; }
+    document.getElementById('btnPlay').textContent = '▶ 自动播放';
+}
+
+function resetAnimation() { stopPlay(); currentStep = 0; applyStep(0); }
+
+initState();
+renderRows();
+applyStep(0);
+</script>
+</body>
+</html>
