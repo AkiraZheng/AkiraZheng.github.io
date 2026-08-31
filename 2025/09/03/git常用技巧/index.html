@@ -27,7 +27,7 @@
 <meta property="og:description" content="日志状态类指令  git branch: 查看当前本地所处的 branch、本地中拉的所有的branch git branch -r: 查看远程所有的分支 git status or git st: 当前所处 branch、是否有需要 commit 的 git log: 查看当前 branch 的所有提交记录 git log --oneline: 查看当前 branch 的所有提交记录，每行只显示">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-09-03T07:13:31.000Z">
-<meta property="article:modified_time" content="2026-04-29T18:07:32.212Z">
+<meta property="article:modified_time" content="2026-08-31T06:13:13.962Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -337,7 +337,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">3.9k</span>Reading time: <span class="post-count reading-time">16 min</span></span>
+                        <span>Word count: <span class="post-count word-count">4k</span>Reading time: <span class="post-count reading-time">17 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -704,8 +704,12 @@ commit中，执行以下指令：</p>
 </ul>
 <p>如果是多个 patch，在发送邮件前，可以用下面的指令生成一些列带
 序号、封面的patches:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git format-patch --numbered -n --cover-letter --subject-prefix=&#x27;PATCH&#x27; -v2</span><br></pre></td></tr></table></figure>
-<p>其中的 <code>n</code> 是提交个数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git format-patch --numbered -n --cover-letter --base=&lt;base-commit&gt; --subject-prefix=&#x27;PATCH&#x27; -v2</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 方式2：range + --base 不用自己数有多少个patch</span></span><br><span class="line">git format-patch --base=d58772d8520c d58772d8520c..HEAD</span><br></pre></td></tr></table></figure>
+<ul>
+<li>其中的 <code>n</code> 是提交个数</li>
+<li><code>--base=&lt;base-commit&gt;</code>，会多一个
+<code>s</code>，里面包含 patch 系列摘要和 base-commit 信息</li>
+</ul>
 <p>生成patches后打开 0/5 这个 patch 修改里面的信息。</p>
 <h1 id="合入代码到另一个仓库中-保留的title">合入代码到另一个仓库中-保留<code>[]</code>的title</h1>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 生成 patch，空主题前缀会去掉 [PATCH x/x]</span></span><br><span class="line">git format-patch -4 --subject-prefix=&quot;&quot;  --no-numbered</span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用 -k 保留 [BigDipperV5R9][Virtualization]</span></span><br><span class="line">git am --3way -k ./*.patch</span><br></pre></td></tr></table></figure>
@@ -748,7 +752,7 @@ linux 工具检查 patch
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">September 3rd 2025, 3:13:31 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">April 30th 2026, 2:07:32 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">August 31st 2026, 2:13:13 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -2299,12 +2303,6 @@ linux 工具检查 patch
         
         
         
-        
-        
-        
-        
-        
-        
     
     
     
@@ -2461,13 +2459,13 @@ linux 工具检查 patch
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/14</span>
-            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/14</span>
-            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
         </li>
     
         
@@ -2966,19 +2964,14 @@ linux 工具检查 patch
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
-            <span class="iconfont-archer">&#xe60a;</span>
-            ARM64结构与编程实操
-        </span>
-    
         <span class="sidebar-category-name" data-categories="内存">
             <span class="iconfont-archer">&#xe60a;</span>
             内存
         </span>
     
-        <span class="sidebar-category-name" data-categories="C++知识点">
+        <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
             <span class="iconfont-archer">&#xe60a;</span>
-            C++知识点
+            ARM64结构与编程实操
         </span>
     
         <span class="sidebar-category-name" data-categories="Linux内核基础">
@@ -2986,19 +2979,24 @@ linux 工具检查 patch
             Linux内核基础
         </span>
     
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
         <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
             <span class="iconfont-archer">&#xe60a;</span>
             重装-环境配置-计算机
         </span>
     
-        <span class="sidebar-category-name" data-categories="虚拟化">
-            <span class="iconfont-archer">&#xe60a;</span>
-            虚拟化
-        </span>
-    
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="虚拟化">
+            <span class="iconfont-archer">&#xe60a;</span>
+            虚拟化
         </span>
     
         <span class="sidebar-category-name" data-categories="数据结构与算法">
