@@ -387,10 +387,14 @@ git format-patch -v2 HEAD~5
 如果是多个 patch，在发送邮件前，可以用下面的指令生成一些列带 序号、封面的patches:
 
 ```shell
-git format-patch --numbered -n --cover-letter --subject-prefix='PATCH' -v2
+git format-patch --numbered -n --cover-letter --base=<base-commit> --subject-prefix='PATCH' -v2
+
+# 方式2：range + --base 不用自己数有多少个patch
+git format-patch --base=d58772d8520c d58772d8520c..HEAD
 ```
 
-其中的 `n` 是提交个数
+- 其中的 `n` 是提交个数
+- `--base=<base-commit>`，会多一个 `s`，里面包含 patch 系列摘要和 base-commit 信息
 
 生成patches后打开 0/5 这个 patch 修改里面的信息。
 

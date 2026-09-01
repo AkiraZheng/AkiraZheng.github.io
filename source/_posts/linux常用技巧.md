@@ -372,6 +372,28 @@ vim /etc/default/grub
 grub2-mkconfig -o /boot/efi/EFI/openEuler/grub.cfg  # 每次都会刷新 grub 文件，把生成的 grub 中其他内核新增的 cmdline 也刷掉
 ```
 
+## 解决单板 Tab 键不自动补齐
+
+基于 Ubuntu/Debian 裁剪的单板，默认缺少 `bash-completion` 包，导致 Tab 键无法自动补齐命令参数（如输入 `git st` 自动补成 `status`）。
+
+安装 `bash-completion`：
+
+```shell
+# Debian/Ubuntu 系列
+apt-get install bash-completion
+
+# CentOS/RHEL 系列
+yum install bash-completion
+```
+
+安装后执行以下命令使其立即生效：
+
+```shell
+source /usr/share/bash-completion/bash_completion
+```
+
+如需永久生效，可将上面这行追加到 `~/.bashrc` 中。
+
 # 3. gdb 调试
 
 ## 常用指令
