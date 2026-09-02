@@ -591,7 +591,7 @@ end note
 
 > 🎬 **交互演示**:同一个 VA 如何同时命中 2MB 和 4KB 两条 entry——点击下方动画,逐步体验"VA 广播 → 并行掩码比较 → 双命中":
 
-<iframe src="tlb-multihit.html" style="width:100%;height:680px;border:1px solid #ddd;border-radius:8px" title="TLB Multi-Hit 演示"></iframe>
+<iframe src="/tlb-multihit/index.html" style="width:100%;height:680px;border:1px solid #ddd;border-radius:8px" title="TLB Multi-Hit 演示"></iframe>
 
 **multi-hit 是 BBM 全部问题的根源**：同一个 VA 既可能命中 2MB 的键，也可能命中 4KB 的键。两条都命中 = 同一地址多个 TLB entry = 翻译结果不确定。
 
@@ -713,7 +713,7 @@ CPU 的 BBM 支持级别由 `ID_AA64MMFR2_EL1.BBM`(bits [55:52])报告:
 
 > 🎬 **交互演示**：逐步体验 BBML0 六步序列——Break(invalid→DSB→TLBI→DSB) 到 [④,⑤) fault 窗口，再到 Make(写新 entry→DSB)：
 
-<iframe src="bbml0-sequence.html" style="width:100%;height:620px;border:1px solid #ddd;border-radius:8px" title="BBML0 六步序列演示"></iframe>
+<iframe src="/bbml0-sequence/index.html" style="width:100%;height:620px;border:1px solid #ddd;border-radius:8px" title="BBML0 六步序列演示"></iframe>
 
 ### 3.3 BBML1:nT 位方案
 
@@ -804,7 +804,7 @@ BBML1 的完整软件序列(ARM ARM 只说"可以用 nT",逐步序列是 SMMU sp
 
 > 🎬 **交互演示**：逐步体验 BBML1 nT-first 序列——从置 nT 到空窗期（无 fault，walk 不缓存），再到替换和两次 TLBI：
 
-<iframe src="bbml1-sequence.html" style="width:100%;height:620px;border:1px solid #ddd;border-radius:8px" title="BBML1 nT 位方案演示"></iframe>
+<iframe src="/bbml1-sequence/index.html" style="width:100%;height:620px;border:1px solid #ddd;border-radius:8px" title="BBML1 nT 位方案演示"></iframe>
 
 #### 3.3.4 SMMU 与 PE 的严格度差异
 
@@ -848,7 +848,7 @@ RKFLJB 第三条:软件**直接改**,不 invalid、不用 nT、无中间 TLBI,�
 
 > 🎬 **交互演示**：点击下方动画，逐步体验"初始稳态 → 直接改页表 → walk 填充新 entry → multi-hit"的全过程：
 
-<iframe src="bbml2-coexist.html" style="width:100%;height:620px;border:1px solid #ddd;border-radius:8px" title="BBML2 新旧 entry 共存演示"></iframe>
+<iframe src="/bbml2-coexist/index.html" style="width:100%;height:620px;border:1px solid #ddd;border-radius:8px" title="BBML2 新旧 entry 共存演示"></iframe>
 #### 3.4.2 multi-hit 时硬件返回哪条
 
 **multi-hit 时硬件返回哪条?**
@@ -908,7 +908,7 @@ RKFLJB 第三条:软件**直接改**,不 invalid、不用 nT、无中间 TLBI,�
 
 > 🎬 **交互演示**：逐步体验 BBML3 流程——直接改页表 → multi-hit → 对比 BBML2(可能 abort) vs BBML3(永不 abort) → 最终 TLBI 收尾：
 
-<iframe src="bbml3-noabort.html" style="width:100%;height:620px;border:1px solid #ddd;border-radius:8px" title="BBML3 永不 abort 演示"></iframe>
+<iframe src="/bbml3-noabort/index.html" style="width:100%;height:620px;border:1px solid #ddd;border-radius:8px" title="BBML3 永不 abort 演示"></iframe>
 
 ```plantuml
 @startuml
