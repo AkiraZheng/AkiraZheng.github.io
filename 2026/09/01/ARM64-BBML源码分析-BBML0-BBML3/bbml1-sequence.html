@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBML1 nT 位方案演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f8f9fa;padding:16px;color:#333}
+.c{max-width:900px;margin:0 auto}
+h1{font-size:18px;margin-bottom:8px;color:#1a1a2e}
+.sub{font-size:13px;color:#666;margin-bottom:16px}
+.ctl{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+button{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+button:disabled{opacity:.4;cursor:not-allowed}
+#bPrev{background:#e0e0e0;color:#333}
+#bNext{background:#4a6fa5;color:#fff}
+#bNext:hover:not(:disabled){background:#3d5d8a}
+#bRst{background:#95a5a6;color:#fff}
+.sp{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:20px;min-height:420px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.nar{background:#eef5ff;border-left:4px solid #4a6fa5;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;font-size:14px;line-height:1.7}
+.nar b{color:#4a6fa5}
+.nar code{background:#fff;padding:1px 4px;border-radius:3px;font-size:13px}
+.twocol{display:flex;gap:20px;margin-top:10px}
+.col{flex:1;min-width:0}
+.col h3{font-size:12px;color:#666;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.ptree,.tlb{background:#f9fafb;border:1px solid #e0e0e0;border-radius:8px;padding:14px;min-height:280px;font-size:12px}
+.pnode{padding:8px 10px;margin:4px 0;border-radius:6px;font-family:monospace;font-size:12px;transition:all .5s}
+.pnode.block{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;font-weight:600}
+.pnode.block-nt{background:#fef3c7;border:1px solid #f59e0b;color:#92400e;font-weight:600}
+.pnode.table{background:#dbeafe;border:1px solid #93c5fd;color:#1e40af;font-weight:600}
+.pnode.page{background:#dcfce7;border:1px solid #86efac;color:#166534;font-size:11px}
+.pnode.changing{animation:flash .8s ease}
+@keyframes flash{0%,100%{box-shadow:0 0 0 rgba(74,111,165,0)}50%{box-shadow:0 0 12px rgba(74,111,165,.6)}}
+.pnode .lbl{font-size:10px;color:#999;font-family:sans-serif;margin-right:6px}
+.pnode .badge{font-size:9px;padding:1px 5px;border-radius:3px;margin-left:6px;font-family:sans-serif}
+.badge.nt{background:#f59e0b;color:#fff}
+.arrow{color:#ccc;font-size:10px;padding-left:16px}
+.indent{padding-left:24px}
+.tlb-empty{text-align:center;color:#ccc;font-size:13px;padding:40px 0}
+.tent{padding:10px 12px;margin:6px 0;border-radius:8px;font-size:12px;transition:all .5s}
+.tent.s2{background:#fee2e2;border:2px solid #f87171}
+.tent.s4{background:#fef3c7;border:2px solid #fbbf24}
+.tent .tag{font-family:monospace;font-weight:700}
+.tent .sz{font-size:10px;color:#666;display:inline-block;margin-left:8px;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,.06)}
+.tent.removing{animation:fadeOut .6s forwards}
+@keyframes fadeOut{to{opacity:0;transform:scale(.8)}}
+.ops{text-align:center;margin:12px 0;font-size:13px}
+.step-tag{display:inline-block;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;margin:0 2px}
+.step-tag.active{transform:scale(1.05)}
+.step-tag.done{opacity:.5}
+.st-nt{background:#f59e0b;color:#fff}
+.st-tlbi{background:#ef4444;color:#fff}
+.st-dsb{background:#8b5cf6;color:#fff}
+.st-replace{background:#3b82f6;color:#fff}
+.st-none{background:#e0e0e0;color:#666}
+.info{background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:14px;margin-top:12px;font-size:13px;line-height:1.8;display:none}
+.info.show{display:block;animation:popin .5s}
+@keyframes popin{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+.si{display:flex;gap:6px;margin-top:12px;justify-content:center}
+.sd{width:10px;height:10px;border-radius:50%;background:#ddd;transition:background .3s}
+.sd.act{background:#4a6fa5}
+.sd.done{background:#93c5fd}
+.fn{text-align:center;font-size:11px;color:#aaa;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="c">
+<h1>BBML1 nT 位方案演示</h1>
+<div class="sub">拆大页时 nT-first 序列：全程 Valid=1，无 fault 窗口，新旧 entry 从不同时存在于 TLB</div>
+<div class="ctl">
+<button id="bPrev" onclick="prev()">← 上一步</button>
+<button id="bNext" onclick="next()">下一步 →</button>
+<button id="bRst" onclick="rst()">↺ 重置</button>
+</div>
+<div class="sp">
+<div id="content"></div>
+<div class="si" id="si"></div>
+</div>
+<div class="fn">关键：nT 管"未来"(不缓存)，TLBI 清"过去"(驱逐旧)，替换瞬间系统零副本</div>
+</div>
+<script>
+var step=0,totalSteps=8;
+var steps=[
+{n:'<b>初始状态:</b> 访问 VA 0x12345678，L2 Block(2MB) 映射正常，TLB 缓存了对应的 2MB entry。现在要拆大页。',pt:'block',tlb:'old2mb',ops:[],info:''},
+{n:'<b>① 置 nT=1:</b> 把旧 Block descriptor 的 nT 位从 0 改为 1。<b>Valid 保持 1</b>，翻译仍有效！nT=1 只是阻止新 walk 的缓存结果进入 TLB，<b>不删除已有缓存</b>。',pt:'block-nt',tlb:'old2mb',ops:[{c:'st-nt',t:'① nT 0→1',a:1}],info:''},
+{n:'<b>② 广播 TLBI:</b> 驱逐已缓存进去的旧 2MB 翻译。这是第一次 TLBI——清"过去"。',pt:'block-nt',tlb:'empty',ops:[{c:'st-nt',t:'① nT 0→1',a:0},{c:'st-tlbi',t:'② TLBI #1 (清过去)',a:1}],info:''},
+{n:'<b>③ DSB:</b> 确保 TLBI 完成。<b>空窗期</b>：TLB 为空，但翻译不中断！访问 miss → walk → 读到 Block(nT=1) → 翻译有效(2MB)，但<b>不存进 TLB</b>。',pt:'block-nt',tlb:'empty-walk',ops:[{c:'st-nt',t:'① nT 0→1',a:0},{c:'st-tlbi',t:'② TLBI #1',a:0},{c:'st-dsb',t:'③ DSB',a:1}],info:'<b>空窗期无 fault！</b> 因为 Valid=1，walk 读到 Block descriptor 仍能正常翻译。但 nT=1 禁止缓存，所以每次访问都要 walk（性能差 IDXRJK）。'},
+{n:'<b>④ 原子替换:</b> 把 L2 Block(nT=1) 替换为 Table descriptor，指向含 512 个 L3 Page 的新页表。<b>替换瞬间 TLB 为空，系统零副本——不会 multi-hit！</b>',pt:'table',tlb:'empty-walk',ops:[{c:'st-nt',t:'① nT 0→1',a:0},{c:'st-tlbi',t:'② TLBI #1',a:0},{c:'st-dsb',t:'③ DSB',a:0},{c:'st-replace',t:'④ 替换为 Table',a:1}],info:''},
+{n:'<b>⑤ 广播 TLBI:</b> 这是第二次 TLBI——清"残留"。第④步替换后，旧 Block descriptor 的 nT=1 翻译可能还残留在其他 PE 的 walk cache 或临时寄存器中，需要再次驱逐。',pt:'table',tlb:'empty',ops:[{c:'st-nt',t:'① nT 0→1',a:0},{c:'st-tlbi',t:'② TLBI #1',a:0},{c:'st-dsb',t:'③ DSB',a:0},{c:'st-replace',t:'④ 替换',a:0},{c:'st-tlbi',t:'⑤ TLBI #2 (清残留)',a:1}],info:''},
+{n:'<b>⑥ DSB:</b> 确保第二次 TLBI 完成。后续访问 TLB miss → walk 读到新 Table → L3 Page → 填充新 4KB entry。拆大页完成！',pt:'table',tlb:'new4kb',ops:[{c:'st-nt',t:'① nT 0→1',a:0},{c:'st-tlbi',t:'② TLBI #1',a:0},{c:'st-dsb',t:'③ DSB',a:0},{c:'st-replace',t:'④ 替换',a:0},{c:'st-tlbi',t:'⑤ TLBI #2',a:0},{c:'st-dsb',t:'⑥ DSB',a:1}],info:'<b>全程 Valid=1，无 fault 窗口！</b> 代价是两次 TLBI + nT 期间每次访问都 walk。这就是 BBML1 的"可靠性优化"。'}
+];
+function ptreeHTML(type){
+var blk=type==='block'?'<div class="pnode block changing"><span class="lbl">L2</span>Block(2MB) OA=0x6789A, Valid=1</div>':'';
+var nt=type==='block-nt'?'<div class="pnode block-nt changing"><span class="lbl">L2</span>Block(2MB) OA=0x6789A, Valid=1<span class="badge nt">nT=1</span></div>':'';
+var tbl=type==='table'?'<div class="pnode table changing"><span class="lbl">L2</span>Table → 指向新 L3 页表</div><div class="indent"><div class="pnode page"><span class="lbl">L3[0]</span>Page(4KB) OA=0x6789A+0</div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x6789A+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
+return '<div class="pnode table"><span class="lbl">L1</span>Table → 指向 L2</div><div class="arrow">↓</div>'+blk+nt+tbl;
+}
+function tlbHTML(type){
+if(type==='old2mb')return '<div class="tent s2"><span class="tag">VA=0x12345678 → tag VA[47:21]=0x91</span><span class="sz">2MB</span><br><small>OA=0x6789A, RW, WB</small></div>';
+if(type==='empty')return '<div class="tlb-empty">🗑️ TLB 为空（该地址）<br><small>旧 entry 已被 TLBI 驱逐</small></div>';
+if(type==='empty-walk')return '<div class="tlb-empty">🗑️ TLB 为空<br><small>但 walk 可读到 Block(nT=1) → 翻译有效，不缓存</small><br><small style="color:#f59e0b">⚠ nT=1: 翻译不 fault，但不进 TLB</small></div>';
+if(type==='new4kb')return '<div class="tent s4"><span class="tag">VA=0x12345678 → tag VA[47:12]=0x12345</span><span class="sz">4KB</span><br><small>OA=0x6789A, RW, WB</small><br><small style="color:#166534">✓ walk 后填充的新 entry</small></div>';
+return '';
+}
+function opsHTML(ops){
+if(!ops.length)return '';
+return '<div class="ops">'+ops.map(function(o){return '<span class="step-tag '+o.c+(o.a?' active':' done')+'">'+o.t+'</span>'}).join('')+'</div>';
+}
+function infoHTML(t){if(!t)return '';return '<div class="info show">'+t+'</div>'}
+function render(){
+var s=steps[step];
+var html='<div class="nar">'+s.n+'</div>';
+html+='<div class="twocol"><div class="col"><h3>📄 页表 (内存)</h3><div class="ptree">'+ptreeHTML(s.pt)+'</div></div>';
+html+='<div class="col"><h3>🔐 TLB</h3><div class="tlb">'+tlbHTML(s.tlb)+'</div></div></div>';
+html+=opsHTML(s.ops);
+html+=infoHTML(s.info);
+document.getElementById('content').innerHTML=html;
+document.getElementById('bPrev').disabled=step<=0;
+document.getElementById('bNext').disabled=step>=totalSteps-1;
+var d='';for(var i=0;i<totalSteps;i++)d+='<div class="sd'+(i===step?' act':i<step?' done':'')+'"></div>';
+document.getElementById('si').innerHTML=d;
+}
+function next(){if(step<totalSteps-1)step++;render()}
+function prev(){if(step>0)step--;render()}
+function rst(){step=0;render()}
+rst();
+</script>
+</body>
+</html>

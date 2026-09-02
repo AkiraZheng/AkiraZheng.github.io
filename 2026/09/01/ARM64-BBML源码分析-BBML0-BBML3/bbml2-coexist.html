@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBML2 硬件容忍 multi-hit 演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f8f9fa;padding:16px;color:#333}
+.c{max-width:900px;margin:0 auto}
+h1{font-size:18px;margin-bottom:8px;color:#1a1a2e}
+.sub{font-size:13px;color:#666;margin-bottom:16px}
+.ctl{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+button{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+button:disabled{opacity:.4;cursor:not-allowed}
+#bPrev{background:#e0e0e0;color:#333}
+#bNext{background:#4a6fa5;color:#fff}
+#bNext:hover:not(:disabled){background:#3d5d8a}
+#bRst{background:#95a5a6;color:#fff}
+.sp{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:20px;min-height:420px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.nar{background:#eef5ff;border-left:4px solid #4a6fa5;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;font-size:14px;line-height:1.7}
+.nar b{color:#4a6fa5}
+.twocol{display:flex;gap:20px;margin-top:10px}
+.col{flex:1;min-width:0}
+.col h3{font-size:12px;color:#666;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.ptree,.tlb{background:#f9fafb;border:1px solid #e0e0e0;border-radius:8px;padding:14px;min-height:280px;font-size:12px}
+.pnode{padding:8px 10px;margin:4px 0;border-radius:6px;font-family:monospace;font-size:12px;transition:all .5s}
+.pnode.block{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;font-weight:600}
+.pnode.table{background:#dbeafe;border:1px solid #93c5fd;color:#1e40af;font-weight:600}
+.pnode.page{background:#dcfce7;border:1px solid #86efac;color:#166534;font-size:11px}
+.pnode.changing{animation:flash .8s ease}
+@keyframes flash{0%,100%{box-shadow:0 0 0 rgba(74,111,165,0)}50%{box-shadow:0 0 12px rgba(74,111,165,.6)}}
+.pnode .lbl{font-size:10px;color:#999;font-family:sans-serif;margin-right:6px}
+.arrow{color:#ccc;font-size:10px;padding-left:16px}
+.indent{padding-left:24px}
+.tlb-empty{text-align:center;color:#ccc;font-size:13px;padding:40px 0}
+.tent{padding:10px 12px;margin:6px 0;border-radius:8px;font-size:12px;transition:all .5s}
+.tent.s2{background:#fee2e2;border:2px solid #f87171}
+.tent.s4{background:#fef3c7;border:2px solid #fbbf24}
+.tent .tag{font-family:monospace;font-weight:700}
+.tent .sz{font-size:10px;color:#666;display:inline-block;margin-left:8px;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,.06)}
+.tent .age{font-size:9px;padding:2px 6px;border-radius:4px;float:right}
+.tent .age.old{background:#fee2e2;color:#991b1b}
+.tent .age.new{background:#dcfce7;color:#166534}
+.tent.new{animation:popin .5s}
+@keyframes popin{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+.ops{text-align:center;margin:12px 0;font-size:13px}
+.step-tag{display:inline-block;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;margin:0 2px}
+.step-tag.active{transform:scale(1.05)}
+.step-tag.done{opacity:.5}
+.st-write{background:#e67e22;color:#fff}
+.st-walk{background:#8b5cf6;color:#fff}
+.st-tlbi{background:#ef4444;color:#fff}
+.st-none{background:#e0e0e0;color:#666}
+.mhb{border-radius:12px;padding:16px;margin-top:12px;font-size:14px;line-height:1.8;display:none}
+.mhb.show{display:block;animation:popin .5s}
+.mhb.multi{background:#fee2e2;border:2px solid #ef4444;color:#991b1b}
+.mhb.resolve{background:#fef3c7;border:2px solid #f59e0b;color:#92400e}
+.mhb.ok{background:#dcfce7;border:2px solid #22c55e;color:#166534}
+.mhb b{font-size:16px}
+.si{display:flex;gap:6px;margin-top:12px;justify-content:center}
+.sd{width:10px;height:10px;border-radius:50%;background:#ddd;transition:background .3s}
+.sd.act{background:#4a6fa5}
+.sd.done{background:#93c5fd}
+.fn{text-align:center;font-size:11px;color:#aaa;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="c">
+<h1>BBML2 硬件容忍 multi-hit 演示</h1>
+<div class="sub">直接改页表，无 invalid / 无 nT / 无中间 TLBI → multi-hit 由硬件消解 → 最终 TLBI 收尾</div>
+<div class="ctl">
+<button id="bPrev" onclick="prev()">← 上一步</button>
+<button id="bNext" onclick="next()">下一步 →</button>
+<button id="bRst" onclick="rst()">↺ 重置</button>
+</div>
+<div class="sp">
+<div id="content"></div>
+<div class="si" id="si"></div>
+</div>
+<div class="fn">关键：旧 entry Tag(VA[47:21]+2MB) ≠ 新 entry Tag(VA[47:12]+4KB)，能共存 → multi-hit 由硬件消解</div>
+</div>
+<script>
+var step=0,totalSteps=8;
+var steps=[
+{n:'<b>初始状态:</b> 访问 VA 0x12345678，L2 Block(2MB) 映射正常，TLB 缓存了对应的 2MB entry。现在要拆大页。',pt:'block',tlb:'old2mb',ops:[],mhb:''},
+{n:'<b>① 直接改页表:</b> 把 L2 Block 换成 Table，指向新页表页。<b>不 invalid、不用 nT、无中间 TLBI</b>！旧 2MB entry 仍然在 TLB 里。',pt:'table',tlb:'old2mb',ops:[{c:'st-write',t:'✏️ 直接写 Table',a:1},{c:'st-none',t:'❌ 无 invalid'},{c:'st-none',t:'❌ 无 nT'},{c:'st-none',t:'❌ 无中间 TLBI'}],mhb:''},
+{n:'<b>② walk 填充新 entry:</b> 某次访问 miss → walk 读到新 Table → L3 Page → 填充 4KB entry。walk 不检查"是否已有其他粒度 entry"，直接填入。',pt:'table-walk',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:1}],mhb:''},
+{n:'<b>③ MULTI-HIT!</b> 旧 2MB + 新 4KB 同时存在于 TLB。旧 Tag(VA[47:21]+2MB) ≠ 新 Tag(VA[47:12]+4KB)，所以能共存。同一个 VA 同时命中两条。',pt:'table',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:0}],mhb:'multi'},
+{n:'<b>④ 硬件消解:</b> BBML2 硬件消解 multi-hit 后果——要么 TLB conflict abort（实现定义），要么返回与某一条 entry 完整一致的翻译。<b>绝不融合</b>(不会把旧 OA + 新权限拼在一起)。',pt:'table',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:0}],mhb:'resolve'},
+{n:'<b>注意：CPU 侧 BBML2 不禁止 abort</b>（IHYQMB）。改完不做 TLBI → 可产生 TLB conflict abort。这是 BBML2 与 BBML3 的关键区别。',pt:'table',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:0}],mhb:'resolve'},
+{n:'<b>⑤ 最终 TLBI:</b> 调用者做一次最终 TLBI，把新旧 entry 全部清掉。这是 BBML2 的唯一一次 TLBI——不是"中间"的，而是"最终"的。',pt:'table',tlb:'empty',ops:[{c:'st-tlbi',t:'📡 最终 TLBI',a:1}],mhb:''},
+{n:'<b>完成:</b> 最终 TLBI 把新旧 entry 全部清掉（TLBI 按地址失效，不区分新旧）。之后访问 miss → walk 读到新页表 → 只填充新 4KB entry。拆大页完成！<b>全程 0 次中间 TLBI</b>。',pt:'table',tlb:'empty',ops:[{c:'st-tlbi',t:'📡 最终 TLBI',a:0}],mhb:'ok'}
+];
+function ptreeHTML(type){
+var blk=type==='block'?'<div class="pnode block changing"><span class="lbl">L2</span>Block(2MB) OA=0x6789A, Valid=1</div>':'';
+var walk=type==='table-walk'?'<div class="pnode table"><span class="lbl">L2</span>Table → 指向新 L3 页表</div><div class="indent"><div class="pnode page changing"><span class="lbl">L3[0]</span>Page(4KB) OA=0x6789A+0 <span style="color:#8b5cf6">⬅ walk</span></div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x6789A+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
+var tbl=type==='table'?'<div class="pnode table"><span class="lbl">L2</span>Table → 指向新 L3 页表</div><div class="indent"><div class="pnode page"><span class="lbl">L3[0]</span>Page(4KB) OA=0x6789A+0</div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x6789A+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
+return '<div class="pnode table"><span class="lbl">L1</span>Table → 指向 L2</div><div class="arrow">↓</div>'+blk+walk+tbl;
+}
+function tlbHTML(type){
+if(type==='old2mb')return '<div class="tent s2"><span class="age old">旧</span><span class="tag">VA=0x12345678 → tag VA[47:21]=0x91</span><span class="sz">2MB</span><br><small>OA=0x6789A, RW, WB</small></div>';
+if(type==='both')return '<div class="tent s2"><span class="age old">旧</span><span class="tag">VA=0x12345678 → tag VA[47:21]=0x91</span><span class="sz">2MB</span><br><small>OA=0x6789A, RW, WB</small></div><div class="tent s4 new"><span class="age new">新</span><span class="tag">VA=0x12345678 → tag VA[47:12]=0x12345</span><span class="sz">4KB</span><br><small>OA=0x6789A, RW, WB</small></div>';
+if(type==='empty')return '<div class="tlb-empty">🗑️ TLB 为空<br><small>最终 TLBI 清掉了新旧全部</small></div>';
+if(type==='new4kb')return '<div class="tent s4"><span class="tag">VA=0x12345678 → tag VA[47:12]=0x12345</span><span class="sz">4KB</span><br><small>OA=0x6789A, RW, WB</small><br><small style="color:#166534">✓ 最终 TLBI 后只剩新 entry</small></div>';
+return '';
+}
+function opsHTML(ops){
+if(!ops.length)return '';
+return '<div class="ops">'+ops.map(function(o){var cls=o.a===undefined?'':(o.a?' active':' done');return '<span class="step-tag '+o.c+cls+'">'+o.t+'</span>'}).join('')+'</div>';
+}
+function mhbHTML(type){
+if(!type)return '';
+if(type==='multi')return '<div class="mhb show multi"><b>⚠ MULTI-HIT!</b><br>旧 2MB + 新 4KB 同时存在于 TLB<br>同一个 VA 0x12345678 同时命中两条 entry</div>';
+if(type==='resolve')return '<div class="mhb show resolve"><b>硬件消解 multi-hit</b><br>• BBML2: abort 或一致结果（实现定义），绝不融合<br>• CPU 侧不禁止 abort（IHYQMB）<br>• 收敛靠最终 TLBI 或自然淘汰</div>';
+if(type==='ok')return '<div class="mhb show ok"><b>✅ 拆大页完成！</b><br>全程 0 次中间 TLBI，multi-hit 由硬件消解</div>';
+return '';
+}
+function render(){
+var s=steps[step];
+var html='<div class="nar">'+s.n+'</div>';
+html+='<div class="twocol"><div class="col"><h3>📄 页表 (内存)</h3><div class="ptree">'+ptreeHTML(s.pt)+'</div></div>';
+html+='<div class="col"><h3>🔐 TLB</h3><div class="tlb">'+tlbHTML(s.tlb)+'</div></div></div>';
+html+=opsHTML(s.ops);
+html+=mhbHTML(s.mhb);
+document.getElementById('content').innerHTML=html;
+document.getElementById('bPrev').disabled=step<=0;
+document.getElementById('bNext').disabled=step>=totalSteps-1;
+var d='';for(var i=0;i<totalSteps;i++)d+='<div class="sd'+(i===step?' act':i<step?' done':'')+'"></div>';
+document.getElementById('si').innerHTML=d;
+}
+function next(){if(step<totalSteps-1)step++;render()}
+function prev(){if(step>0)step--;render()}
+function rst(){step=0;render()}
+rst();
+</script>
+</body>
+</html>
