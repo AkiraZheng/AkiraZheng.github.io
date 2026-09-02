@@ -26,23 +26,25 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="ARM64 BBML 源码分析:BBML0~BBML3  源码基线: Linux 7.2-rc7 + BBML3 系列 patch(含 Mikołaj Lenczewski 的 BBML2 四部曲 3eb06f6ce3af&#x2F;5aa4b625762e&#x2F;212c439bdd8f&#x2F;83bbd6be7d17,以及 BBML3 演进 f8d0751426dd&#x2F;267b481d0b94&#x2F;06468bc3c93">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/2026-09-02-10-45-18.png">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/VLHTJzDW5BxlhpZXQak4EV0A8y4YAB352GkBoMwwhS2oqf9HGjIORCA0oM3ZGpva83C6a0y7CibOHVwBzkt7l_2qRv4fYKblUivvdlESvvosVKpcalBuYC2C9UBYA9VaHY32HHD3IMbSZ7L8WfI4YU6upDVbO_mWDox8NP8ezyTVyk1jPkIuBF10DdzuMy4iVJDA-z0foiaNBgrM89ygRhMw044VwmJrxylaU9raorhnoAs_doAPC_rCOHWkAcEx1kEoh2hdOT55fZFQJXKyq3lWTpS0DmRz8OOPHNdS40yDc4OQjNgC54vJfzyTe1maNoRJ6mXznG14kMGC6dntFJwlnzSCGIw2adbB4BRISZEaiAXMvzHgIg_jqMx16vGDOGKfcg0GS7aVivvcFqihsPlA5WXOwfogUxrEHO1vNITTBnsXFFrACSgBr0rmaVo1CNbfV3n4exhDpwTcgl2NSik_QxaaVuug7Rooh6qN7SM-6oLeZBbMmJAOu8G41gF3F48jchhP0SsZ2YX3gECFWGsZIjLgHLix9-KfQsyR-xINtvwfFmIDZMqGX5P0ho4GxBmEiRT3WRfG49gQsh0VXcWJgnzsGGUe81JR_UJvCp_RwWYEyMFHP7mKZoGigXSVpDGRVMLVhIquazeWsuqfDyFQxDQmhVRyr2LIEYIP31FuNnAbtcIjNG2vkDAMZkbAhjEsRZlhCdAJPBEYPsVTuDGmeYJp495aMHe1QT3XwkiRw7d4sYZ7-mUWAefw-KxBfRLYbjwmdR6MOWzoYydYwUeAzVHI7hKwZzyMHQfNNxILYx1ep1oGj_YsXRHupiPC1OyhLoEpX-WLn3YPeyVW_fSSHyFrN9oRMzjQEQyTbPnLWObtkRTByel0idxucLh11_1UKNHOVFhGGxz4_LGXstCU_UiIgUrwXWGfmWdcp3p9xv3yEicjQjbvivWoTjCaCmjiakSIwDrUsjlKuhuV5lLQMTkQD3SAT8nVgJHHQlhXdBPwegtla9Cf79N2cNPUZE4lwpS0">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/dPD1QnD15CVlyoaUUab2nPtPODAYeOcG7goaA7ZH73R9TBjaioEJ2O96IA4LFDGjAYZMKZsOW5W81QMardwNikEstyAtkw4sfOVG7LZu_T-RUV-TztQ-hIofEYsNj9kEzzIILWjgLhrfIz7n6dU5AoGyMt4KFnTly6MhuwgoyDH3vpa7QfmBIbvNbcUx75uGWDA5ewwNuoUA2DdWSb9zIPIZSAVU-iFcG7yUwkrUSBYXTtRqSAHtD-6uznxqvbeu6cZ_5mfwzwD-zpqORPtbFl5IsNibiANbTLm-0zdyZPgZu57nPgMO9kI_kskuh3Oy89vG76f2AT42iOn2zmuafwV2lRTwr4y3AjdSSQzlpa9gqOZPp4Ti8DEOsImoeyWiOGEPCcGpPagHCLsl-k7W89R--lx9qJ3yqSUl23-jeNdeakxjyMKK89DPf51oHRq9TA6KoG36bYoNBqZElG9KYfSAPIDQ1KWAJQsCQrQAZxEvETEe0ir7ztRH41iROlUdDdGrXnD-6Aq2ortcnuGbo-Q0BR-odMdyJRYXh0hchSGDzneG3H0XBhSZa8wzeaXuS7JoUWzma710rx-TTHhR71Kv_VfJxm-muIHS7OuJjp_eL-j9IGoaWlqDt3k3WniSla7XjES7lx-aeu999JAFB_nl_m40">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/LLBBRjf05DtxA-uIB1P-u90CGOg3WbgfJH54ePBDmWGtjMB6o0pgGrdG1j95cXBrbQGbgAYLg58L1QcDegAa_n8n1lwYOqEZTdLzpfovv_ZUMQeGmoNLairLjYnSDboZ10LZOslJTQguc7HinuL73orY_dDUD1yOLPka74oorbCJH94Z5h5De1-lP0IJpiznvokOcBXFW7Q-ZJytHbz-3Q_suBhs5fZVfYd17HdIx8FrgcouLfauBiS5KJZa7NsYP_L9g-RrdoEudLP1U2nASbIPYyt3zUvh21W65bGbAkiuv9tiJ8uF89EBmAhZbWmRSiiHK5C9CHpdq7_guBxNFA3DzomclUWYuFbxgXQD8L7AG-AlbETrd5vR0TeyfT-Ffj8832_s6QAzbzwx7xHrHazgSHsFUxydXptly7pqeUuBTnlqMNFK7J2ByOjJM5TXUFaAH8cLVGW5_VrOR32qt_PgNKOZ7QifJHJo2H6s8NjBMq3p-OHG40CegMajXkPcH2YJ2-luhbbI2N4r1KbJtZ_9BOUP_lwgfaIH8ZEUeIHRagRuegddg3-WxJtV4meMqKJVCZHRHZWIS46CqBfXMqNcH1ldmyjZFtjc9Ilu4sADHeEwlzN16w_TGjD9tOnkSP7zwpP3KK48gZohoHbCJekEUVxcKYoLulauUm5EcLioSP4zo3y0">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/jLLTJnD157sVNp7Gb_90c5aes2OOMkX6ebLZYJ417ePsMJQqksGxA6AQOBGLOyM2YPY0Nua946DyKG8IyRyOjYt_mZkpszhYGlkWko_jFMVEt7lFpfsH76SsNyncK6xUC1UOpR9uXgNcTTjQDDEZLiQoyRqvWsjDU5gRPOiPhbecJnhB6gQa2RIr56Ucdj7m0uJXYVcAISIoqvhjHWEXK0Zb4U86XvKJrs9OCxbz7rUVxbNBnUhHoyhRny7JbQFQyNfjf-Xi7VSWz6UdxjjHJ9QeqZyG6XowX8FEuS_AnkUURino6A20giP9d22q0Bam7VXYWzFNtvpLpMv0G-A5T6LM3OvCO99Cuw2IYBbQ6l6AQY6EHXDuWkcmRUdmjF0Sg84uKOcgDf75as9sMgRAcJvbagKmdJALeHc3IsrExZ8VUWuQ3BH4p2Fbblqq4-DZGZ5KLyhwaFICDSCo7aDl4F9_5vIy1HMDCSvmiFRbo7doNPGa2bA9Rqatec9pw7muAkNJnF8h9NgpxyvrZy0M_0YSs-DcUgdECVmuQb_oYaV86hdKcJholYPIC77WQjr4-YzDb1_TbDa_sF2HNk0Z9E6HEl6HjlMH_byVQJiVQGS-qdO-qevzL5eEetA1ZvtQ1yMwdLGwENtAkQxLHR8T-T693T7OgDiUfPq9IfC9zUxbMyRZbV49IONHIt0WJEBnC3a7ftvuOZoPb0HmAgVWm5Y_U162FlRsNXPZCOATSgcokUzEtWP0pm11-7DoiEAixrQst_KqQChPzGWa1I8JZc0nAuV1CGI2NfZAi3nzBg98n4tGNT4rBFr5IAe8L0mc0E4m22kGb95nsX97fiKrR1lw7CVMhDmDsdfoyB7oveER9eQEuM6SXLlGw0My2t3nhU3AsewpkbzPswk-VnY1OECISLwyWgjeSc0eej3f1a2R0Qe803usN2izShQ-EgM2K_w4OMPu0K1_5JUmsqDniTNAFvpjNKYijb8uENpc50j8CzDOf8z6u1TSwxy1">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/ZLDFJnD15B_lftZX1AN4tQKLQLX3MqD2Q6C3X1uiXxKTSTFjRBCx5J0UQY94exLYI30Ieur1Z4BnegbModSXEstv5hwTBRJLYvUTxBm_lp_lpQp3T9kL2gRav0rQr6sz07VrR7xDjaeq5xTCouRr-mOZ0_4SkQUNJ3PdKRPaF2IWA18pc4c0xxT24LXEn81GPcz2v-qJNllQ_RZbDbxodLEtSGpdvLrmcmUW9cEGK25cMjayk8rVRkkv965xPcIDeauPZ7JhPnTxTPXFHK7UKDJ9KFZwr8qC7Lr9pj_Iv8tms0Ze3aJZyU4oH1S1F8S35xNltTfdMDVDl4X8BKiILiF4JS4u0ktt1-rdBLWWcv4CHTWxeQc8ggmYrhG2u-2WLCsZFGwN52HgCGBM0sBtMXGCnu7pxTVGFVp4gpkTsf7R_24W9Iy1eLBBcEPTG48McGd5FrG9GnDNPBedJVxqMz-Y776ojb5abetaRWzmGrEcencwf4PJsc8w24bIY39cQ-bO4A9pcd89xBSD1Fo1-0CA138KvO86_oKtGrTqiqGmFVKl0GyK8ujfk0Rf67u4-Dy6ySVLpc4JHZqyLOx8gsCu_4htRDydbA7-ul3g5txy1YV66uV1Nj55kUh-_Y1f6l1NBzn6MQmGVxV7jxVuTgLzLEijZAODZtLWWQPb6HUehnKtiOASFSLZlazOvHKBeyJ21WBeDtRmieJIcHbLWKTUnru_BnAVKoR3udz0iT-8d_nid-n68BGGWwA-HlfFGtYlzTWegkUbO1di-QnTHVnNSrhXTQHKGVdIBA4vVBH_0000">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RLDRJnD157xVNt72Knim5Oml9KIAXiG4bAIL-D2NPJlRJhgTQNQd47ogIg68M504B7X1HKW856-XSlqlfBENV-7PNK0Yl9mpsJrppdSvqsi9rHIbWg5OUSgAggaMO4JLybcJbrZcBZUu2MCvAiYb_ncYgoL3z7CcalG9WSukHL1X490hnxVZC3Zu29oJ0xSnx-urvF44d9ONG5QgziTrI0tqTK21MXROqxCmfXfvHGaGAF7X1BWx9zxI3aGChcOW1fRW9i4iQulsowbejnAtFqnuvK-GKhFG0yC9RskvTJGBxU1-ctHM5kNN3RbRIxFsi_6jvejMSyPUd898acWbauhnc4coj41YmuFtxyKIIGnPWu-e1ZQdEaGG7iZverPp-quKH8umY8mJAwe0n9s5JUVmZTnU3dlBftNx_NFltPpzfOp4qYoI64AeZnzWI7RXMQvkXftazsT0cCvDZHG84pW9m9yLNlVATVTawlzfEEzX0dbnNRU807lcq7wrtd6cZvoi80o_3J4i0X76pwuC4TENbd86_Rv1GGdBK5svNEZFzeK7JTLov9mk4i3aBVrozZTybr3Z4NGK0PlZqQletBsV2DkTMPT_Vk2D49BRE42hhW7cbUUmoFyTr7bhlzsrpJGRk0cdawzXe3DCNM6wzGysNWqsxGO2rN3ziY3tQxAwX617LOFwEn9wZeT4FuPGqmk90_HWhqxRRwkjveAiDK8Bhv5Rhct9IiLdtXryO5mGC6as9-B0KZsTuDGdeC_WMZxK9CrQpTdMOTtzl1Nsn1tp5zyg4YsUPcr5aunYeGLKW6voV5J4nnzedccBNjKePQhCCbHnuHwI36oIrLsWBEGR4dAsfwENl0qYlfMYqejdVCf_0G00">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/VLJVJzjM57xtNt74Kqo3QFUmXqYP2ckhLMj7HA9cslBY49TOCTV8SJgrJw4b56q41nIWbF4ZBQ6KAKbRjM1YGluNvdjj_nSxle4g6L9VVErpp_4vt_c-Ssxd3Kat2ZEgaCyfP5RIfHb8IrEvQLqhaCoFcghfy4TMCUI--upyM2genZsD677bcGotRWc6OgWoqAtpxoFWM7MsTyOEQ_JCXF7nXsXOfiqEspxlsKAENOB4W_ltHVVrFAqiiKRTEsdHytdQEcMjQeeurhxxqOPOuYuutIQhdeR1-_A1DfTewT3TigXPna2_rgPjKn2m94EPKcObOi2Grsavzl4GI7c89mUl_DeNhtOOeWibsdWbSfTOOj0byM2Ss_4KX6Xq04Y48ud2OxMGpuuOMPcCp4Wv6KAqjCZM6xIoJEss2D6e813Da45x8kjO0qJ0BpvtguSHc1YZvYkwj0wZq2i2CTATl_3J_RHAsmUXjAfDvIuMgeQKLcKnHKPXMjNIakg_B5Dp3qAJoPz-IyQPLQBbDL4GyESZFo06J76niWTiuvrC3Fsfssagv8caAXa8FGgEw4tnqXTnSUSQt8cFmyN2Ahw_0NhQPQkDW8zBqzlWMWYSlyRuxp_wnSfLYZw4iKJuqcLu-FUqBakvC0Hz4S4zsg3cs-7XI8hm8BYgwaOGG4y-kU_RIBLjEvqrhzdrDveyVKANI5wL34KZS2zGMOg4yhC5NT4AUU2o2qDM8XbLrh4lRBUEJw-r9WwsOnzRlCdMF_Gotq1BdOCAMEsN8ehLBd7eKLvsZrZECMSMEGsONJpv9hFKF4AHikqN_cR5wPGXD1OR_VMNqVXtOp6aiPysnohJoZySABxwVnUzWpbCmnjtZL5twpDRhlU0qE8P5dJm72QJ63mv8GvmW07eSqKFFJr6TI6Y8SSgUYy_krtRQwqCOIDns2R6_YtEuTalGJ4OkR9pzde6swkWhesfx3N9N9F9cs_8P389_rVALvK4VGxp-SU9PeiL4QQbMQuJT77iCbtfE5RZ2amu47QljJW08jwxrLssjfWYr6nvBpgiUkxL4Cqchuhj7BETULgQyveMBWs-3LZr68M8w7z-zD2RDuCzSBBhMKUHG2DETvlzkO-Xd7CyKL4PHJUUYi9jcMHmB_u7">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/PLDHQzDG57xFhpZCbxPEjFWW32QZhO711iEMxS6ytBLN5vBUbEHsGnzaFgJu8AuRsYeY6BiofoHLmSaMQlzBoKtIV-5DqjRCFWM-yttddEyxDsi6HJfjrbN1K6JIG3ggmowgAazqhKbgHKtLT3ZOaobErMluCMggLDG8BSlFCEJp0fMfYe5z-7Dl1HwMIflR5M2cxTjzM8M2Zf6I6Hz_UZu-xcNzZkrtp-0cR285S_IKe_qiSw_ypdT1u0EeN9KRY51O2eS3pxrO0cH0UUTwQMBz2gql6TOocVqk6rEsAjSfbOq2t8OTf2f5LDt3COTZWX1PQoHRmVZm3Kmtccye01y7j-xpZh0270LUneJgJuEX8vDzfCerYMIse-_gdN_qQ634jw1KBaWai1nlz77APuDBPbvuRcVh0JiQX6Sl5bIVWLsE_1Exih6-peiHFAzEpdzC3jkpBHQalVJ0XCkSL_xBje193MAxWa0qYa7RnpgtjHnBRuYYUBTOv2rokKUxKHpBKET7oKBmjSkEUhcSHEA1C3N1ZyPrxFVFuFnA8fxhUiEteJEQT1qOjqwWeYDYg8ZA6W4nUY2pgADBnqadLuRvrVzF-XHOwpqp-vmK3vwdd5zCkPysFHDCiqtPJejO-tNWsid64LAN3KCY1_o5X0DtrYAsmgnlp3Gv5D6IqDTuK_wR_0K0">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/bLNhJnfP5F_ENt7IJy3ILEWsQKZOj5ZTjQKRgvErsINPZ3Yj1BmqE7OVdp3AmrK4Nr057wYihkq0Rbn5aFA_D7Fl3F_5dfd15xIRx1SUzvvpp_azphsF9aK-B4vD14sJ0JzvmuVv2HZbVO7NuT0K6UiD1KDX-6NSBmetziU4L_nKKEmF4N7O_xi0Thj9z8j10MZkuqCpswdIvep5YVzooa4ItExd7b1g1pJnNjcOXK6k3rZkX6KgB7DEBrAqVCxAgrv2ypMsNdQ2nm6Evsvm1qE-0B3v64t4v6fDM-RuKQpn5JomE-JgaUS-VFtC3OFyQy5amhv4ly__XYSYt54RPRb-UWVuIHWUkRtLAloZ5WxDD1QbqZkB7ZB8tGxXF6wu1oDyCD3B-yO5FGRNJ2QNIuVIWy2Y4fEAIgriLAAr54rapNIxfjIQDf3hTRcnfXG-u1QJzfH2oG8kbyaqF09tly5ou8HFIpl0iWS24SE_qTWwZHR1JzxoGVyOc7_GlbmzbdQyrewMK80dmsuO6FuEpErGcYgh1zETSRj0pvjiMU8y0mCcRV5gh_NNSIkInh8QlNhfZjIzwn9q_vYj9MXfWINI5XC9YGA4tWhXTkXFes613zWc-81W0UKeIrDxJYynSAkbPYjRWa-nPU32F9aCyg8_HA1VCuoNcDNr3JeTPslHraRU1kCy6GiAuLOyoRQB-AcMrootUTe7Wn-qYo6_tlWbItQBbrpw0NtLWQTuZGVJ3RBRd5sAQNS2uUH64gt82Wamz_SzvdxMDxwacU5B_J0j5teGgVswdnjSwLc4Ss4DfLbNoqjoFSdoSyWhSjL0KoTfBAdklbSkLj2Cs6FaG9rfqBEI3GQUl1nw-gpR0jVIuXWWE2ynHALdVnkdu82XkaQvBjcOj4yJk5Ea-GhTZ1WPTAxCyX_OMWM7h0S58fnIAh3y4Tiisa2hnAfHjHcdY_KEPT1eYzjKIhDSaoLtCVk6FdWEMuZJz98XZIBDoVKp5CZIvRXhH3ILfOrZkf9K5sPexiG0U0C3PcgJTwWSphV9jg4UE_fDP7ZmIbK7CgwF7osTqsPo0YFyT_4Ekw6luxFwAdWlBHO_vpX4X8Ar9mzdl9fKLWy9fxSWLwLMzaJ3q3qgsZLtEUZeFTJt_1HPnt4nEZG61KDz8V8gwFU9m8-6mY9OhHWkruiqjQIiRbkjNi8I6RMvIdDRSdLH6xKg2fX1CcZa0d-hyHFKNgcliAqyzghKDx55TIj9qmaR37t_hUVbZ_U6dhvumVLskuhb8qezeRlAh5Pc49WQYRBLKrhvQ37gne-KsLDszeuTLwv8lkyqk4QXMAMArOp6pOuUnmDu7FQDGz-lulzakOk-A-bOzhGjQUe8MVIIIovqv3fi6vAczw3Dr9_JJDgrMly3QoUkJgV5elYGwUV9rJ_awZpBnCtAHGrV4Be_gwHZQ6fa1t7B5njOiHLPferbFPxDhR2CP7eaa35yL_y5">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/VPJVJXD15CRlzoacN6r3HU5E4WoK52MbWXGa92IJwUxGRdRsJtQcHIGaDJP4HGCY5me9KZL2C0HlX0OKtiLqj-rRU6Qtr5QD5qqxSyxvdUzyUxR3N11F52ocSDEmNU8H2sM9PkOyfs3hemvpFBIKDmJjYEjqaHIO67DiaJ4UKzJVhmX3C8hytSlRWoZrC8qoWkJe00hMr_nF1ytAjyRNf_Njm-QRIvL2m4FSPOP0Dr6Zl26ZP-yRrQEOeW1V69hX4bkW7YW8dfq5fISBjleWcPwDzI32aVpLdIVxMLQXJmlZSEeEBn5cKY-eh0Lxfq1oSu9a6UtJ8jnSgZkRXy9ng0z7fL1Kg-xuBoh-xXxC4TMD9hhhxirF8S6oBH5mKZI7CQe9mx4vwfcPI8G1-5OKEGAwSISqAhGBPv8pU3QJdCRfP7foUXvF9--EJzw7nlxtahzvqksIB6jNcqKBm_0jmHQr76yPUpG7RTN_fkOBEOfT69QhiGKxUFbSonTiit5rNBlu64VD3sM_yYNAb4bO8rgUNlFcKYrSoqpSwPh4HSODhMZPeKudumls8YCvFZGtCf724ycHiJWYNcx8qbOLOFwBB0ib4UE_Rr6pj5a_FsYMjlmVMmfp71S59nlo1iog7DPtod2iLO-eBRnb1Q6E5jsuei4ZtS5UkLdQryIZ5LTGDuuSfeD2NVVYYD4YPQj08KoWa1YyFV4tJltZJQHccQEPCGXUDnbDG1Cjgm8gZjhJHXaGQsTub0YA2pOpR9FgKaBzyqNz_Cg_E0TmiFyQgPdK-1HE9D8OTcUyao1NRX2rh0SzE0iq4uDooVcvjjMQ4jOIBx82p-EYPUWO5bQDC1807E021wxv0EqtEEf5Ei-g1iy3fHSLBG9x3FT_QcyrjeX9htjoouLLS3mA6yWeuLITaVv6TlsMVlqGRi4DPPosxGoVHeUBOLQjkjvyzwfMBVr-r51cwuhyoBpsWhTaSn636HfNs_2-AiEG1Vzklm00">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RLJHJXj757tVhnZnv1LKnMwR1qkkKbCY8Q2Ws2eFSJGQsnDxvTbPQsVif7s21bDJC35D2MberQ2M9YM0gTf63flWVwbsTjT_qRkx9E2eBxEhkNVFFVUUS_UwaCIM3PDfecRmEh69YOgaLAlOLeENfoncsUXkrP3qIhnCxv06apSiBdF6rnGbaveq9AD8xPqd9zC882iqXRoDjU7-Fsv_tJi-y8yV-Ji7Rd_BV_rG7J_sltlfBQyaL6V7xH-cvhCeownIJTSqA22Dab4dNAAnu4tFTLuMU4BKcI7HNS9grDR7414ejpIQ2eM2_US9jTO2z3XbCJ-Qaf_BHlVm70s4kAX4IbKQnPUcD2sJGVxHaTjV1kffvF_k-6S3vPofuwxtT1jbCbfk2NtmAPH0QLIoAP4KDpWpU8sM4tg1kywMISq8KhNNXgrEJ0_E0bU_TLJRMVXil6vRKhLFFqccO0QB-McDMv8Ygqbjm9q06e0T5_H-ElGslma6UyneqXYgmFtz8nYEs--e1xtW_XlrUiV_uJdwT-rxb9kTMSJPx3o6JcTWUi7WH-znRypRVHedZGsNdU1yUmA1790sbmeZhR_qTssVRKPjPw6nsdlDBjsSoK_ZXI-cfZyicVLxfMebNU3UxhD8FqIvjB-AECmjJCrEVmx5YuOKjwvzbBusUJkJd41V4cQKCvFw1IOm152CQqqJIrR4TrX3L77JDCeOn0b72G-Heab39E1j0Z7Qf6pqwx8e9WnHrT4uQfg4iJ1P2qFlCeP__3bSxW9BS9e_S8BUTaGKsAdk2zzPLTrsBZcUI_bFLgE0VaMA6E5MCPo5VxYh7lnwky23ay5mzoHgD6yJBXYHXiNHZN0h2ZoyRWXgO_009aNBbWaT3R_jUBySm1dqTgx0Hoe76mSn_fDL44gI8gnIH0Hc-p-JWOeL6iucsBolzlxsrzjnWvS-lZJmUgJaFAdHzuICTnIR4C5r6S49iuw5j6oARSee4JIHlwIYZzWJ02votC7FGMybDC6ZqzYjuGwUl5AjjdksTGKWjEcpbGiASAPHs5gz4hMBB-X4YmxUTXwgq_EtoWePMzDzjQ6wMvTznD9K6bJ8M13J428UVpWA81JlIgIJsd-XMgsFPxCn6-qwvMNuw_q7">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/dLHTJnf157tVNp7n2IZ64dqYeR4QRT9GgsXYqzAG1LRSkCwItS6cVS8eYZL8KmceW2bjhSQ4WYd5rHLzw3ynExFBl-ZbewtK-jANdTcvTyuzvzoxEwmINY6nHObJ5qGSvHL-4GNvq494aMCuF2fBie9UpOj4k14F2tDyJ2BZCYRJuXi1kLmS4Oaa89g_TBdSA0I1A17Gd2o54SlLwNcQLivO9OEkunaqClB4UnyjgUtD8B9DU8RCp-V6vQQTum2VY24nocE2-gn6nT3hVcphuWLWNH8KOkz3l8gcPtkpcwNlLkd8vXtiX2TdUiCptf7sEQmSv_5qMBWHlKeqIpehR1XQkPch4Iae8e-7uwPdKVy3045k50X0xMWW8f00ZyE1a2JmYisEVkI6_DXQtgFlaW_71yAYGbuxuS8OqnA6TYxY9LuImrqSADe6cfDYwdm0YWGK7aS4czsFsnNleR0QvB0CdicWi9jlbhuQLqMQg1jwTdACfe_DmYPDLhlGVioIMPQjjimH8qZ0H7dTIri5na1T_KMMhktIn05wuNlg3Bsy_UpXQbLNpCoH5Kz0usXwX-LhuA-vjyeASLDFjaZ_Td4Gia-_MLVh_sVX7PRTeS7CrzZMGOyIEBzb7SiTsdopJcmtj2tmoDPAjDDqnLffqBCwBU-u_TWtySZxxFc0x_7KrCmel5-llKTyK5O8ihLbcL-MMVcZ7O7DdI1W6RfkQ77p8ciURTBu1UojzHhOOkhRRB_Wnmw7gHSDBMNjfs0k78v_U_h7H6YYbc1R6y0HA7Tw-BUMrW0qTYVwNOPs31-h93IB-pURxiVDuWTh_TXShRFJ7NPITGBJ56sSqEqKAt-2AMBnGpysj0nCaz58T-y2EClKpVnRRbZ0OVW1_0G0">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLDTJzDG6BxlhpZXQeqNPP1uCMFuL251NTmIrEocOmMQbPPiPngzwcJ0b7LR28nD1Z8Z7tx0Xa4idMF_HVkUhl_2qrPm0RqvUSzxtZxd-JWTJ68-WLDp4fECY_8yd-3dK9IVYiyab9GS6r4a9O6UpufOw3gF2TDyIi9t5Hc7n9S2yliPB699GB1vxkyB8BDzHDREI7a76XdhwoeOUxwef4p5ESn79G4-x4EZy4jDZz3lnHaK5J5BDawjjnbIEYErhAs-9YiV6SObneZJo0U5JmxUre9TAPej3Gq5kSSFk53VK720HNXMa96FbEiiWr00yk-Wsg3JmV0TT0FH0ehvyCJuEF8zkXSCFXbZ8xAfQtPLxUobXuVlq_RasDF94EtH1Zb-nTwYC4cip3E2b1JetSKzbX7ac3ZjKLbQXCEoTTo4xHKeb25N6a0FX_vK4Nb6KgAyPEfvUslRg-rb3GexrtYQpQRPMgS49YnZ7xAVxOMMG-4u3OjQ82B3KOwidzmaXxjq18m2P3SkcFw3O01PHjqpclDCzGXr4xTgNypcALchavoZUwAFwxzAoXdhj8kTMWwg1rGesT7vg9B0flx6r5T8QPaAz5a_3BlshVEz3kSPRefUDey5pZBQHDtt0cUle5AndjizfA5JZIvaZzdUwjJJLAd3fH_vnaUXdg7EGkM0P4jMfGL53RHrLsnN42wSIvzgtZmX-LrOgi3YBYar11adNaHacdbLjPfP9tEoTWgDSnV2zQ7BC0UZb_DVoBxgZd_WkWevxBtF09B3j_tevz8gSX-MKv3DDj7UN_QeJrI5hQeq15Ctl3Gla_olgDu0-XkyDqkHHFaPBuanYZqQ6gQhSy7bPewF2zw6xTBfhkuR6QGr_Rb_0m00">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/VLHVJzjM57_tfpZYAQP1j7lOGwHCXQxLggqZ8b4phNbnY4kic6laE9swfz0IYbg20mfGolYJbZ3AbAIjMZ0n8T-5-LxRtsB7Dr0bG-gBhttkEJxdz-VUstb3qet2Z2haSmgPbNHf1jBIL6vQrmeaSqTJDHt-o2g6tBUVaHzB1TMufn4ZhlmfmwrRWg4OgWnqw_px23XMdUsTiSCQFJDXVFm11fPfiyEsptkna6EN8F7B-7tHVJDFAqkiKVTEMlHydhPEMQkQ8ewrxtwq8PQu2qwtoQgdOV2-VA3D9LewTBSiQfQnqA-rQTiK11p9KAQKMOaOCEHrMevzF0HI7kB9mIs_ziMh7OReGeasNeiy9POOJC6PU1nNGOX61u14E98eF5OB-Uo8aPN9o8oKao54IujilK4hozHkYn2D2WBH31cq9xAECq04_E8pjteOWOanQhwcI-im2hqX42FTUOMVxgTLsZu8fLLjAdUnK3Maj2gBAJ8AqwgMbbJ_HPcQUn2QJFxqUpBEh18jhuc2W3yV-G4nO8kBbJrW6t_BnD2VkfscGfv8gfA1qCDWYTuKBtCH5q-kmO_nSRXOMCNtjq1Fksor4UXn6NeNR0j1yjSQ__r7lrYvQj67C9O8NwOC3pzAwxAK2qF0YmZkqGOrtmqFHrA45y7LL3U20dhooNtVHgbjs-ciUSsklz7axHEwHFAgP2WQWNk1or8ab9yjw8fMo0EtNHYo4iceiewyiDqwFhtMcZX8npvIlCdMF_Gwty18dOCALEst8fhLBd7eKJvsJrYkCLSMDGsKNJpvfhBKF4AJiktd_cR5wPGXD1OR_UtNqVXtOp6KiLysnohJoZySABxwVnMzWpbimucxfgYxzPajrtj0QF4C1pfu1fD9B9wS40Sqm0BCkPA7dXwZkn3Ha6CLlHUVtQxjjLQ6a4WyR1DZ_nRdSEste1WSkR9pzcO6wLNGryPKzffbhjdaxJTiCfc4_plbgqi2dhbfxkE9PeiL4QQbMUuJZ3bscQvq7Ajn1IOS6Bj7BHu04VVTwYvRMqmHQhQyvnrMFVTgY6QJJyLsZjdEF2tDUKqBBmr-6x3gCHeHqV_yy84tRmRtmCckPnr50eyutMtsSXzBkUQuegCoYcuy5ONRCidWlVWV">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/PLDHQzDG57xFhpZCbxPEjFWW32QZhG71mR1bUp0lT-tLXQGt9RdTq0UP3oa-YEk6QoSY6BiofoHLmSaMQlzBoKtIV-5DqjRCFeLyvpldEzztaZM38fqswwfWA39f81tLOHjLbMUwrYIregPgEkpjo1IdwZNy53LLAcg4bkKN6F9vWSfKnS0-_Bct0ezBfVND2Z3Jzkq-h491nqZ9Z0y_lHmVzh9-n_QxPt0Jrf62ENhAqNwMkLT-vxiWS04gL-K68XIMmk70So-M01bGthfUcbY_GkjBXhLCPfzaOyf6vJgbygW0js4BgKeHLNTmpE6O84JM6ibMCDv_1zEDvXiAmENWrdq-4LQ0ey3Bc53zUJ1qPBABLBacaSncz5ozyuyU2KPy2qhbWaG2o_567wTyDhXaveNdTZOUi8D1UFPgeUipiCkHVsJpzuUy6C7pwkJynsI_FTjYeRMN5aoup7dZlsuBcDGWjYi8HACOj5siSrlBSUiDKHJl5ejyH2xtP3kAOndg_2XP2BvssK4lbvD8B0XJ4_nel8_z_XcSNqd4SrrlU1mweqdNWN7h22ew8eQAgAmH4ACFP1PrTEauwUJACB_w_qcV0ckzPsQVasBXUShvnPJxQTEpXccsATlf9jP-6xXsid64r6N3aCWU_qB2WJiR4LjXrZTccXoAQ4deQtme_qt-0W00">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/bLLTRzfM6BxthtZLArjBjS0KQQ9YQkaIhL8g8O6MYo5L3j34WXmYnrctNL6b96GDXIGKif4bWJI39kCZKqRuAEM_H3x7vb_ijKqX4DHfDqRs-_Myp_ESmyCrHPILzPKmjnQIoAeeYokmAFf3It9adGGUHy8H6LuiIqhmLZmGV2wkXvMv254yqYz1iDbk1Kb42GuZzbiHDmwI_DAgI1It60X8P0biCvmYAU4WqDp7htbsqg3T3S61Rpcjc02Nw-ayQAqYZLzelxy2jtSMMEwAPMeiqwGVahJQPDKqnwqE-y8zlLDLs_Lx8Aw1Ps4qrCl_e-TBFDsCqVA1OAQulQCftdaNV0aBOZZqMFGl1yqS_CPnJgU9PXgnnSgiVAQrgjOasahIU1PuUjpIMjqfKDjjjVDMo_-5CLO-rV8L0PnEZlCimFrlS1uuu6Rt15Ys62IA_3FT_8t6pa0YFufXAG3yzyQFSrhevnjuZ88yVEjnmHFFTy3tKt5v6gkhxOnxbYQhUl7bU4a1QBFBzihu_eGpFWvYlVUNlMWA4TYVki14CLPwEfncLDFA3ekd1CvG5cHfQLc1oFD-yW-BSb0CJQs8eQ00sdcM9azznE90htHxsGhSREw1LnR9MbXKf0Y1ESCwetIy0ui6LDOhBg8RJ52VoB09y0NCsEngunmTC0RrR0WLgorA-tHyqipc0E9LEmaq3Sl7WP-RVUHzPWQcKCoILdezc3DPA5SuuWzPc8nMC8qhsSROCFE9rud3iC90P-QhxGGzBFa8ZnAoxGHhn8G7W41VeCFKHaBxi8zMlAFrvuMZrtzRTNWcK46jszQhktV4DsZvJ_NmQNHxtte01Y8mD-MDDGGViHgpmstsDgvsDWTm-Pk36F7YGnZbwXJecsDQJh5SboKAQgCreYNRsQAfNKj6hRojjgzHp77FlhkrEarcQUUIxYVqdGsQkvga-zXEcE4OLNGAnJWnxohBcWDFs1rW7L5QQT9kOWKpfFjuomtTyMpUFj4F6bv0Ryuc-nKfwfzEl0UGhdI9U4q8QgFSoruPMqtMmRZIiaNQh2Ez3X0N8xA2BgR9NIrzx2Cidb4RKNthIclliwD3Ncl_WTtremHDnUzU5EmmghNZnYpWzTe6Wj2ZCPQkqzf70R2LldMklQgpwmDsMHlmyPN3eWLF6giriBk90NZxj7q67id-PPZzIVcVV4pSTC0qJPxhtJJD7Lch-OWvKIzSQ7--PEN2PzOQts622SnUQkDNjV6QPROCiWeNFjABxj7EdXbZs_iiK-OU1aa0__h-1G00">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RLJRJXD16BxVfvXmjGqUW3j9D5WiIae5AKgCcCcq7SgcixERtMbHBqo9IaYC5YeH2H4ne2W952-K2aBVXNItxLluptHRseIBDjdz3lzXljaXLn17P4sckHc3syGX9agGP2RjM5cU6hQOvQ3vEKFG3Zn5PqcMYH6BYxZnWgB-_WwGMu9U87qTo0GKCfA6JRYO8AcKmTCI5uPW57aRPpS6KVHH3CK5ITC1vBzTz7Ps6rz_rmzVrLP_D3wSwHG01xasCmIwZkgl2n8z-b8lxuKqpRumHpqWy9UE_Fn23o8kUX29FUp6PHtJp5vBAXoUkk5vmZBKcU6wdHOamUYrP4WHfwFTFDKARhEzZKrejaaT3dTJxpsUG88bWehmf6coBNJrbXfQZOxZaIdyC1wPnB58R7poCPwCt1qTlo-T_-MzvLBtn5BMLcTo9eQ1SBCZavgMynmxD6rON6zJfwC1CnWBkshLJH7G0B-C9UVJGwYHNwuTxpRoHU-qg37Bif5VAbJBUvGBvxc6K8SQuqvzpd2b_GptDrytybj9yGpOX0cabFwdabVuu-qlwmbc9JCXm5fUms7mIYPqK5n1qxV7edWiSdkaoG2ipN0e4HHdEJDuXgPafThtazfnnJiv1bz_QqMFHqSdS3WSmrDZuL48YtIG0RTH6CIPGMJm7656gbVYlNVYOQIVhsozF5_PRbPhrPEdE8Y2jK7pE27bs1PKpRUsgqQgdHu4VleZ-N-pxp8Nxs_5B-xBWW4eNxTHY8qxGFiD5_MYb9lG3NSEAlIYd4aOK-_F5ukeyVCN70lK7OY50nTv_P1ZfES4icO3ioUgpThUcbVOVZh3wmULnje1wASSmbr61AG4ZSWRhJmeJpMNqxcd6CbGw7bntVzug8PiRMa7jlIjUpvrAi6IJD2rzkEQDaJESYWaar7YKdrA1gIPWz2b_IkhW5sjVAwN5WPdUFDGlJTBrUFtIkiLIlNTXSkQbmsrKja7RoXpQJjtAfuTULEiQlbjO_rTjPo_2BjorUHFyjftBZWMLuJWZEgLLRZ-sX2mu5lw7m00">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RLHTRnf757tdLrpbQLUXag5j7f2e8jn4YenL953za8rM0unXnUuisXc8sYTRDSI9FuAREhQIfZMjtAH9RHAfZR19pN-ncDtbN_JkBZN6yiiipBrpvjnpxftRN117D2mpnci6gnE7M50afLh5iHkiF6-RjWCFguQWb-9bkamQfhXhCv4tlgUGI5mACblGQMJkKYI75nabeqwOo95osM2L82uCOLAGByyISob0CXMQ17UZFUx-C-e_TeyElQFdtkxXgB_jVNecZ_Qz9n_TbLL5RksE-c-JYnd8c7QffiPYzIawtF3_xOq67pMcyBff27X8p1frr1j0EEINPbFn8h_xHf7j5g97ARd2R4eXcmdtyJiR272XH4fL6iQNvcEnT1hETmx0-sFWdGxbu5GUTTo37L1axyJ_q4rDziFDEBXx1-EVLpAPHHNIwLX-2Jxx2Y-759GSIWJL6ymqM8sM5LLZShqzRcsvpzz7X76DW-o--pAHH25oXJknG7XmZ4fLWBqSmPX6aqRfMSnwuW_ttVsUk_Swr0me4yvt21oIGIhXVtVpaUmWDQ_x5oeuwc_9fpt_x4nZ-OLxEHsfwgZ2FGNJvQTTxwStSHY_-WMtiqbrKdmNCiY-Tb5oG0AooUWwv3niZRk3Qsh6g5uCJkfrGLCQcpcNYdm-R_-O_MP-uSxNQ6tH4Fp-hSzJj-OUf1Dn-9QOHZazfquWaILYwdgjQUd2BEhBPeDNzQPbb7KqBn0KFpn94mPNy5SSJDgavkpfCYyg1g-gS1EQ5Z7D83aMX2uondz-6AzqK57iH6yuy7ix4r4LsNdd3TPaPpsVk9bFUY_Mme1wnQK8vNvOjlTsJpxz_O76_EFXUEyOIoquX76J2CDcS3UOE8tXReDJHxUefPEYxGX57J_QSdyznDNlxLw1Nvf7T7_ZCC9_iORk2rB4SOiqrTWrwk2T5Hheus_-85_-xJrUZugSzlh4vzzWaTJeXSsoipdghs0lplXsrMGBZrpdBvotEr2OSjCOj-ew5xP3TOUQb71wNODFGgFXAx-tYfWu7b4x1-DyV29RwwFJROrT0WxQ-VNgX1AkAGWqg5T2NVJe_T73LqDZtk2PV7_sVnjm4NNuw6H3ThQdTKKULXgKYyWvo-0yT2fyTouc5e8Td5ZPQdsna8dOn6vJLiR7zpy0">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/dPDlJzDG5CRVzrESyAgD49p3Dqjc408cPk8O91YjQUxMRjnGRfVs3i5N8petGXWcaW4oY3EYX0IP4KTX0RwBQM-xR-7TdmWpCoQ-kasVSyxptD_D6ROeCcbcNXUiEKpIo4Jp44U9kPHfP8WwQkY62IzcCTLkwAgMH1cTZXk4Jk6N6WG2DqHYKErQkND3YN8ZdC1fH6WKgIecAGZS5IYckWRkpcKW4884RqnJ3PA6hWBRhBddw-xn6JlUW9_P3HWPUHIv3GjMwoC8uaHuoFjqxbokIeAGlXuEVVx5iLEloKJip5FukQ2PLEe3PC7KJ7Tre_B3hno8aM1RZavtozEHaTP_VWf2EDnE4GBtAjUer5bvnR6F6fidL8zZ28S5OMe61kxn8H02HU7UQIMbKGKHLKde6Z952HQ7PE8lltVV5kwF3whOf4lzl7wCsJd7FiTa0UbOxOpXdgqvIJrZpIhSGp4HIMcY99EMuIrGhRZGH0ucJirIC9AT7g_orRdQTNCrfrwAZhdhXrvvrIrKPT8nO8KIArMRV70AD4BDfUxa5W_DqrkTlEwRRJUt3yzYZ_iJpnU7kkBvrLVUne6VpR5orgiNci5-Wmfo-VIxVvN_Bqf_eT8xehTpmehxVmRjnOPjVX5ZC_r4SkmYXo0sQoNthEOUROLa4fju47doT33sS79oUbGcA6wOL6pTnVkyp8u-SlOSdcDd_Vo9Lt_7zigYLzzrx3L_Rus_gVGlDhpTph7Y2dVcGTheUwLiljt5ziH0mB4F-PBo9MdLogIn-y7F7tglQ-nqYtsh2iCQKVa2_m80">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLDTJzDG6BxlhpZXQeqNPP1uCME0WGe9wkAMe6Ot7IlGhBHaEsZqgfC1KzPj8J0s6SYCVFW16mQnT8xz5-rxkluBJrl11VJcv3tlUVkSv-DqC8Nv99wVbPXKGfJd-2G_YsByP68wgSpByM55KfBe-Oo8XQxpk335pqluhYBZiFXIG7u_WqKi2GWsp_rz0MIsZyZQ6IdlG2DZVLq5OyyNavJ918Vvc2J0Xtre57wfwM7wlJYDOY9coSQfzJP3IcUabhNLrsJb8yEun1Xn2lcWyCd1srgmAqMpfQ6X4FVu0HVk6meDi0ZF23BoaNATPH0AGFuTL1jqEXIvWsuWMa0n7naFZY7VetkXq9DHDYgRkcPNrSvUEXYyJziJeqydmhH76-Ju5NkBmgImCiS8KagWTnVtM4QGu-AKHsLf4GxBrd4JjbUWK8PSQG0z7FfJHULfIOdnagddxQrjhxQNDIZiNEDfDfjcQvqI6BUCVSX-jXTQ3eNZD2ngWQWCHpcoVdAJ7ExI4J0AaDsuOFeFWW5a6NNFQCuprIFKJTogVJ6RfsIjJdAExl4-hlygAMUiqovsQZce7b2XP4VdOqeIc_eRKryXfMKgq6VzCEpQjyxtEfndk4bwsHmMECje4tNV2vozWah5Ucxta8PEDRgGFMPxgrDFKwKEbtxa6nk1UeOw2vK3aYrPbHOKDT3MNR5TGRXmBdsgUVE4v7TXgGABkwJK46ISV16LQUPLrMfcdSp9sYaqpbq8ruSkmnoCNiv_8VkgE_w1wohaYFS-0qYEtFQZdqkho7rOJa4ssqHxVzcZFb4LjghI44pTyDAyJFA_ede3w6_mtYn54kLdl2J6AVP8E4XNvuBBpIoV4BmDswNJNTqtCaXh-dF_1W00">
 <meta property="article:published_time" content="2026-09-01T05:08:59.000Z">
-<meta property="article:modified_time" content="2026-09-01T09:11:51.509Z">
+<meta property="article:modified_time" content="2026-09-02T03:24:15.883Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://www.plantuml.com/plantuml/svg/VLHTJzDW5BxlhpZXQak4EV0A8y4YAB352GkBoMwwhS2oqf9HGjIORCA0oM3ZGpva83C6a0y7CibOHVwBzkt7l_2qRv4fYKblUivvdlESvvosVKpcalBuYC2C9UBYA9VaHY32HHD3IMbSZ7L8WfI4YU6upDVbO_mWDox8NP8ezyTVyk1jPkIuBF10DdzuMy4iVJDA-z0foiaNBgrM89ygRhMw044VwmJrxylaU9raorhnoAs_doAPC_rCOHWkAcEx1kEoh2hdOT55fZFQJXKyq3lWTpS0DmRz8OOPHNdS40yDc4OQjNgC54vJfzyTe1maNoRJ6mXznG14kMGC6dntFJwlnzSCGIw2adbB4BRISZEaiAXMvzHgIg_jqMx16vGDOGKfcg0GS7aVivvcFqihsPlA5WXOwfogUxrEHO1vNITTBnsXFFrACSgBr0rmaVo1CNbfV3n4exhDpwTcgl2NSik_QxaaVuug7Rooh6qN7SM-6oLeZBbMmJAOu8G41gF3F48jchhP0SsZ2YX3gECFWGsZIjLgHLix9-KfQsyR-xINtvwfFmIDZMqGX5P0ho4GxBmEiRT3WRfG49gQsh0VXcWJgnzsGGUe81JR_UJvCp_RwWYEyMFHP7mKZoGigXSVpDGRVMLVhIquazeWsuqfDyFQxDQmhVRyr2LIEYIP31FuNnAbtcIjNG2vkDAMZkbAhjEsRZlhCdAJPBEYPsVTuDGmeYJp495aMHe1QT3XwkiRw7d4sYZ7-mUWAefw-KxBfRLYbjwmdR6MOWzoYydYwUeAzVHI7hKwZzyMHQfNNxILYx1ep1oGj_YsXRHupiPC1OyhLoEpX-WLn3YPeyVW_fSSHyFrN9oRMzjQEQyTbPnLWObtkRTByel0idxucLh11_1UKNHOVFhGGxz4_LGXstCU_UiIgUrwXWGfmWdcp3p9xv3yEicjQjbvivWoTjCaCmjiakSIwDrUsjlKuhuV5lLQMTkQD3SAT8nVgJHHQlhXdBPwegtla9Cf79N2cNPUZE4lwpS0">
+<meta name="twitter:image" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/2026-09-02-10-45-18.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
@@ -350,7 +352,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">15.3k</span>Reading time: <span class="post-count reading-time">67 min</span></span>
+                        <span>Word count: <span class="post-count word-count">20.8k</span>Reading time: <span class="post-count reading-time">89 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -530,7 +532,7 @@ SVA 一节)</p>
 给虚机配的第二级翻译,由 EL2 软件管理、PE 硬件遍历)。SMMU/IOMMU
 是另一套翻译器,只在对照处出现。</p>
 </blockquote>
-<hr>
+<h2 id="section"><img src="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/2026-09-02-10-45-18.png"></h2>
 <h2 id="一bbm-是什么break-before-make-的字面与本质">一、BBM 是什么:Break
 Before Make 的字面与本质</h2>
 <h3 id="字面拆解">1.1 字面拆解</h3>
@@ -543,6 +545,18 @@ PTE 置 invalid 并广播刷新 TLB)。</p>
 <li><strong>TLB
 entry</strong>(缓存副本):硬件持有,软件<strong>不能直接写</strong>,只能用
 TLBI 指令驱逐。</li>
+</ul>
+<p><strong>TLBI 是什么</strong>(首次出现,全文大量使用):<strong>TLB
+Invalidation,TLB 无效化指令</strong>——ARM 的 TLB 维护指令族,软件操作 TLB
+的唯一接口(只能驱逐缓存 entry,不能读、不能写入):</p>
+<ul>
+<li><code>TLBI IPAS2E1IS</code>:按 IPA 无效化 stage2 entry(KVM
+拆页用的就是它,见 5.5);</li>
+<li><code>TLBI VMALLE1IS</code>:无效化 EL1&amp;0 翻译 regime 的全部
+entry(5.5 里刷 S1 用它);</li>
+<li><strong>IS 后缀</strong> = Inner Shareable,广播到共享域内所有
+PE(跨核驱逐必需);无 IS = 仅本核;range
+版(FEAT_TLBIRANGE)支持按范围批量无效化。</li>
 </ul>
 <p>所以完整的 <strong>Break</strong>
 包含两步,<strong>缺一不可</strong>:</p>
@@ -649,7 +663,8 @@ TLB,所以 invalid → valid 建新映射天然安全,没有缓存副本可言;<
 </ul>
 <blockquote>
 <p>RWHZWS 完整原文与四类场景的详细展开在 3.1
-节,本节只是前向概览。后文的两个案例分析(五、六章)全部围绕第三行(粒度变化)展开。</p>
+节,本节只是前向概览。后文的两个案例分析(五、六章)全部围绕第三行(粒度变化)展开;级别相关的完整路径见
+4.7 矩阵。</p>
 </blockquote>
 <hr>
 <h2 id="二预备知识">二、预备知识</h2>
@@ -1055,7 +1070,7 @@ place",按级别定向失效能成立,前提是 TLB entry 带级别/大小信息
 <tr>
 <td>contig fold/unfold</td>
 <td>旧非 contig 单页 entry + 新 contig entry</td>
-<td>contpte_convert 跳过中间 TLII 后的瞬态(即"Contig bit
+<td>contpte_convert 跳过中间 TLBI 后的瞬态(即"Contig bit
 误编程"形态,RNGLXZ)</td>
 </tr>
 <tr>
@@ -1082,6 +1097,105 @@ size";</li>
 <li>两种风格都 IMPLEMENTATION DEFINED,但架构行为必须等价于"size 是 entry
 的一部分"。</li>
 </ul>
+<p><strong>TLB 查找的真实机制——并行掩码比较,不是单 key
+查找:</strong></p>
+<ul>
+<li><strong>不是"从 VA 算一个 tag 查哈希表"</strong>:那样不同粒度 = 不同
+key,确实无法同时命中——这与实际不符;</li>
+<li><strong>也不是"遍历所有 size 逐个试"</strong>:没有循环,没有"先试 2MB
+再试 4KB"的顺序逻辑;</li>
+<li><strong>真实机制:CAM(内容寻址存储)并行掩码比较</strong>——VA
+<strong>同时广播</strong>到所有 entry,每条 entry 用<strong>自己的 size
+派生掩码</strong>在<strong>同一时钟周期</strong>内独立完成比较(与 entry
+数量无关);</li>
+<li>tag 和掩码在<strong>填充时</strong>随 walk 结果写入 entry:walk 到 L2
+Block → 带 2MB 掩码;walk 到 L3 Page → 带 4KB
+掩码。<strong>查找时硬件不"选"tag</strong>——tag 是每条 entry
+自己存的一部分。</li>
+</ul>
+<p>VA 0x12345678 同时匹配 2MB 和 4KB 两条 entry 的过程:</p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr>
+<th>entry</th>
+<th>粒度</th>
+<th>掩码(填充时写入)</th>
+<th>比较(VA 广播后各自计算)</th>
+<th>命中?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>[0]</td>
+<td>2MB</td>
+<td>取 VA[47:21]</td>
+<td>0x12345678 &gt;&gt; 21 = 0x91 = tag(0x91)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>[1]</td>
+<td>4KB</td>
+<td>取 VA[47:12]</td>
+<td>0x12345678 &gt;&gt; 12 = 0x12345 = tag(0x12345)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>[2]</td>
+<td>2MB</td>
+<td>取 VA[47:21]</td>
+<td>0x91 ≠ tag(0x678)</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>[3]</td>
+<td>4KB</td>
+<td>取 VA[47:12]</td>
+<td>0x12345 ≠ tag(0x99)</td>
+<td>✗</td>
+</tr>
+</tbody>
+</table>
+<p>2MB 范围与 4KB 范围是<strong>包含关系</strong>——同一个 VA
+同时落在两者之内,两条 entry 同时报告命中 =
+<strong>multi-hit</strong>。这就是 multi-hit 架构上可能的原因,也是
+BBML2/3 必须定义 multi-hit 行为(abort 或一致结果)的原因。</p>
+<p><strong>TLB entry 的物理形态——不是 struct,是 CAM 段 + SRAM
+段的宽位线:</strong></p>
+<ul>
+<li><strong>OA 不在 tag 里</strong>:tag(钥匙)= VA 高位 + size + VMID +
+ASID + global,参与<strong>匹配</strong>;OA(答案)= 命中后从 SRAM
+段读出的数据——如果 OA 也参与匹配,就成了"已经知道 PA 还要查
+TLB"的悖论;</li>
+<li><strong>不是字节编址的 struct</strong>:TLB entry
+是一根固定宽度的<strong>位向量</strong>(IMPLEMENTATION DEFINED,约
+100~200 bit),物理上分两段:</li>
+</ul>
+<p><img src="http://www.plantuml.com/plantuml/svg/jLLTJnD157sVNp7Gb_90c5aes2OOMkX6ebLZYJ417ePsMJQqksGxA6AQOBGLOyM2YPY0Nua946DyKG8IyRyOjYt_mZkpszhYGlkWko_jFMVEt7lFpfsH76SsNyncK6xUC1UOpR9uXgNcTTjQDDEZLiQoyRqvWsjDU5gRPOiPhbecJnhB6gQa2RIr56Ucdj7m0uJXYVcAISIoqvhjHWEXK0Zb4U86XvKJrs9OCxbz7rUVxbNBnUhHoyhRny7JbQFQyNfjf-Xi7VSWz6UdxjjHJ9QeqZyG6XowX8FEuS_AnkUURino6A20giP9d22q0Bam7VXYWzFNtvpLpMv0G-A5T6LM3OvCO99Cuw2IYBbQ6l6AQY6EHXDuWkcmRUdmjF0Sg84uKOcgDf75as9sMgRAcJvbagKmdJALeHc3IsrExZ8VUWuQ3BH4p2Fbblqq4-DZGZ5KLyhwaFICDSCo7aDl4F9_5vIy1HMDCSvmiFRbo7doNPGa2bA9Rqatec9pw7muAkNJnF8h9NgpxyvrZy0M_0YSs-DcUgdECVmuQb_oYaV86hdKcJholYPIC77WQjr4-YzDb1_TbDa_sF2HNk0Z9E6HEl6HjlMH_byVQJiVQGS-qdO-qevzL5eEetA1ZvtQ1yMwdLGwENtAkQxLHR8T-T693T7OgDiUfPq9IfC9zUxbMyRZbV49IONHIt0WJEBnC3a7ftvuOZoPb0HmAgVWm5Y_U162FlRsNXPZCOATSgcokUzEtWP0pm11-7DoiEAixrQst_KqQChPzGWa1I8JZc0nAuV1CGI2NfZAi3nzBg98n4tGNT4rBFr5IAe8L0mc0E4m22kGb95nsX97fiKrR1lw7CVMhDmDsdfoyB7oveER9eQEuM6SXLlGw0My2t3nhU3AsewpkbzPswk-VnY1OECISLwyWgjeSc0eej3f1a2R0Qe803usN2izShQ-EgM2K_w4OMPu0K1_5JUmsqDniTNAFvpjNKYijb8uENpc50j8CzDOf8z6u1TSwxy1" alt="plantuml diagram"></p>
+<ul>
+<li><p><strong>VA tag 位数取决于粒度</strong>:2MB entry = VA[47:21] = 27
+bit(L0+L1+L2 索引拼接);4KB entry = VA[47:12] = 36 bit(L0+L1+L2+L3
+拼接);1GB entry = VA[47:30] = 18 bit;物理上按最宽(36 bit)分配,size
+字段控制哪些位参与比较;</p></li>
+<li><p><strong>CAM 段</strong>:VA 广播进来,每一位与 entry
+存的对应位<strong>硬件直连比较</strong>(异或+全等判定),size
+字段决定掩码(哪些 VA 位参与比较),VMID/ASID/global
+同时并行比较——所有比较信号汇总成一条 HIT 线;</p></li>
+<li><p><strong>SRAM 段</strong>:HIT 线拉高时,这一段(OA + 权限 +
+属性)<strong>一次性整体读出</strong>,不参与任何匹配。</p></li>
+</ul>
+<blockquote>
+<p>🎬 <strong>交互演示</strong>:同一个 VA 如何同时命中 2MB 和 4KB 两条
+entry——点击下方动画,逐步体验"VA 广播 → 并行掩码比较 → 双命中":</p>
+</blockquote>
+<iframe src="tlb-multihit.html" style="width:100%;height:680px;border:1px solid #ddd;border-radius:8px" title="TLB Multi-Hit 演示">
+</iframe>
 <p>TLB entry 的填装与命中流程(数字沿用上文示例):</p>
 <p><img src="http://www.plantuml.com/plantuml/svg/ZLDFJnD15B_lftZX1AN4tQKLQLX3MqD2Q6C3X1uiXxKTSTFjRBCx5J0UQY94exLYI30Ieur1Z4BnegbModSXEstv5hwTBRJLYvUTxBm_lp_lpQp3T9kL2gRav0rQr6sz07VrR7xDjaeq5xTCouRr-mOZ0_4SkQUNJ3PdKRPaF2IWA18pc4c0xxT24LXEn81GPcz2v-qJNllQ_RZbDbxodLEtSGpdvLrmcmUW9cEGK25cMjayk8rVRkkv965xPcIDeauPZ7JhPnTxTPXFHK7UKDJ9KFZwr8qC7Lr9pj_Iv8tms0Ze3aJZyU4oH1S1F8S35xNltTfdMDVDl4X8BKiILiF4JS4u0ktt1-rdBLWWcv4CHTWxeQc8ggmYrhG2u-2WLCsZFGwN52HgCGBM0sBtMXGCnu7pxTVGFVp4gpkTsf7R_24W9Iy1eLBBcEPTG48McGd5FrG9GnDNPBedJVxqMz-Y776ojb5abetaRWzmGrEcencwf4PJsc8w24bIY39cQ-bO4A9pcd89xBSD1Fo1-0CA138KvO86_oKtGrTqiqGmFVKl0GyK8ujfk0Rf67u4-Dy6ySVLpc4JHZqyLOx8gsCu_4htRDydbA7-ul3g5txy1YV66uV1Nj55kUh-_Y1f6l1NBzn6MQmGVxV7jxVuTgLzLEijZAODZtLWWQPb6HUehnKtiOASFSLZlazOvHKBeyJ21WBeDtRmieJIcHbLWKTUnru_BnAVKoR3udz0iT-8d_nid-n68BGGWwA-HlfFGtYlzTWegkUbO1di-QnTHVnNSrhXTQHKGVdIBA4vVBH_0000" alt="plantuml diagram"></p>
 <p><strong>multi-match 是 BBM 全部问题的根源</strong>:同一个 VA
@@ -1118,13 +1232,13 @@ entry 放行了。</p>
 BBM 的必要性:</p>
 <ul>
 <li><strong>它说明的事实</strong>:TLB 缓存副本是权限检查的依据——任何 PTE
-修改(含权限)不做 TLII,对其他 PE 都不生效;BBM 只是 TLB
+修改(含权限)不做 TLBI,对其他 PE 都不生效;BBM 只是 TLB
 维护中<strong>最严格的一类</strong>(哪些修改必须"先断后建",判定标准见
 3.1);</li>
 <li><strong>权限修改的序列与 BBM 方向相反</strong>:BBM =
 flush-then-make(先断后建);权限修改 =
-<strong>make-then-flush</strong>(先改内存再 TLII)——先改内存,再刷
-TLBI,差别只是中间一小段权限不一致的 gap(架构允许,边界是 TLII+DSB
+<strong>make-then-flush</strong>(先改内存再 TLBI)——先改内存,再刷
+TLBI,差别只是中间一小段权限不一致的 gap(架构允许,边界是 TLBI+DSB
 完成);</li>
 <li><strong>为什么权限可以后刷</strong>:新旧 entry 并存是"一致翻译"(同
 OA、同内存类型),不会 multi-match;gap 内旧 RW entry
@@ -1132,9 +1246,9 @@ OA、同内存类型),不会 multi-match;gap 内旧 RW entry
 捕捉脏写(详见 3.1);</li>
 <li><strong>页表内存本身不需要软件同步</strong>:页表也是内存,走 data
 cache 硬件一致性协议(MESI),一个 PE 的写对其他 PE 的 walk 自动可见;DSB
-只保证"写 PTE"先于 TLII 可见的<strong>顺序</strong>;<strong>TLB
+只保证"写 PTE"先于 TLBI 可见的<strong>顺序</strong>;<strong>TLB
 是整个链条里唯一不自动一致的环节</strong>(RFFWJK "distinct from data
-caches" 的深意),所以 TLII 是必须的。</li>
+caches" 的深意),所以 TLBI 是必须的。</li>
 </ul>
 <p><img src="http://www.plantuml.com/plantuml/svg/RLDRJnD157xVNt72Knim5Oml9KIAXiG4bAIL-D2NPJlRJhgTQNQd47ogIg68M504B7X1HKW856-XSlqlfBENV-7PNK0Yl9mpsJrppdSvqsi9rHIbWg5OUSgAggaMO4JLybcJbrZcBZUu2MCvAiYb_ncYgoL3z7CcalG9WSukHL1X490hnxVZC3Zu29oJ0xSnx-urvF44d9ONG5QgziTrI0tqTK21MXROqxCmfXfvHGaGAF7X1BWx9zxI3aGChcOW1fRW9i4iQulsowbejnAtFqnuvK-GKhFG0yC9RskvTJGBxU1-ctHM5kNN3RbRIxFsi_6jvejMSyPUd898acWbauhnc4coj41YmuFtxyKIIGnPWu-e1ZQdEaGG7iZverPp-quKH8umY8mJAwe0n9s5JUVmZTnU3dlBftNx_NFltPpzfOp4qYoI64AeZnzWI7RXMQvkXftazsT0cCvDZHG84pW9m9yLNlVATVTawlzfEEzX0dbnNRU807lcq7wrtd6cZvoi80o_3J4i0X76pwuC4TENbd86_Rv1GGdBK5svNEZFzeK7JTLov9mk4i3aBVrozZTybr3Z4NGK0PlZqQletBsV2DkTMPT_Vk2D49BRE42hhW7cbUUmoFyTr7bhlzsrpJGRk0cdawzXe3DCNM6wzGysNWqsxGO2rN3ziY3tQxAwX617LOFwEn9wZeT4FuPGqmk90_HWhqxRRwkjveAiDK8Bhv5Rhct9IiLdtXryO5mGC6as9-B0KZsTuDGdeC_WMZxK9CrQpTdMOTtzl1Nsn1tp5zyg4YsUPcr5aunYeGLKW6voV5J4nnzedccBNjKePQhCCbHnuHwI36oIrLsWBEGR4dAsfwENl0qYlfMYqejdVCf_0G00" alt="plantuml diagram"></p>
 <h3 id="dsb-与-isb-简述">2.5 DSB 与 ISB 简述</h3>
@@ -1280,7 +1394,7 @@ RO——访问用哪一个都是"一致的翻译",不会破坏数据、不会写
 <li><p>所以不需要 BBM。但架构仍要求改完后做 TLBI
 让新权限<strong>可见</strong>(见下):</p></li>
 <li><p><strong>RGPPYH(改后可见性)</strong>:改完 entry 必须
-TLII,新值才对后续执行生效——<strong>含推测执行</strong>:CPU
+TLBI,新值才对后续执行生效——<strong>含推测执行</strong>:CPU
 会提前推测性地翻译地址,这些翻译同样用 TLB
 缓存副本,刷完之前连"还没发生"的访问都可能用旧权限(原文见附录A)。</p></li>
 </ul>
@@ -1295,8 +1409,8 @@ break
 更新"的条件里显式排除——<code>(old ^ new) &amp; ~KVM_PTE_LEAF_ATTR_S2_PERMS</code>,只改权限就原地更新。</li>
 </ul>
 <p>两条路径的直观对比——顺序完全相反,窗口期的"不一致"性质也不同(BBM
-是映射缺失,仅 TLII 是权限滞后):</p>
-<p><img src="http://www.plantuml.com/plantuml/svg/VLJVJzjM57xtNt74Kqo3QFUmXqYP2ckhLMj7HA9cslBY49TOCTV8SJgrJw4b56q41nIWbF4ZBQ6KAKbRjM1YGluNvdjj_nSxle4g6L9VVErpp_4vt_c-Ssxd3Kat2ZEgaCyfP5RIfHb8IrEvQLqhaCoFcghfy4TMCUI--upyM2genZsD677bcGotRWc6OgWoqAtpxoFWM7MsTyOEQ_JCXF7nXsXOfiqEspxlsKAENOB4W_ltHVVrFAqiiKRTEsdHytdQEcMjQeeurhxxqOPOuYuutIQhdeR1-_A1DfTewT3TigXPna2_rgPjKn2m94EPKcObOi2Grsavzl4GI7c89mUl_DeNhtOOeWibsdWbSfTOOj0byM2Ss_4KX6Xq04Y48ud2OxMGpuuOMPcCp4Wv6KAqjCZM6xIoJEss2D6e813Da45x8kjO0qJ0BpvtguSHc1YZvYkwj0wZq2i2CTATl_3J_RHAsmUXjAfDvIuMgeQKLcKnHKPXMjNIakg_B5Dp3qAJoPz-IyQPLQBbDL4GyESZFo06J76niWTiuvrC3Fsfssagv8caAXa8FGgEw4tnqXTnSUSQt8cFmyN2Ahw_0NhQPQkDW8zBqzlWMWYSlyRuxp_wnSfLYZw4iKJuqcLu-FUqBakvC0Hz4S4zsg3cs-7XI8hm8BYgwaOGG4y-kU_RIBLjEvqrhzdrDveyVKANI5wL34KZS2zGMOg4yhC5NT4AUU2o2qDM8XbLrh4lRBUEJw-r9WwsOnzRlCdMF_Gotq1BdOCAMEsN8ehLBd7eKLvsZrZECMSMEGsONJpv9hFKF4AHikqN_cR5wPGXD1OR_VMNqVXtOp6aiPysnohJoZySABxwVnUzWpbCmnjtZL5twpDRhlU0qE8P5dJm72QJ63mv8GvmW07eSqKFFJr6TI6Y8SSgUYy_krtRQwqCOIDns2R6_YtEuTalGJ4OkR9pzde6swkWhesfx3N9N9F9cs_8P389_rVALvK4VGxp-SU9PeiL4QQbMQuJT77iCbtfE5RZ2amu47QljJW08jwxrLssjfWYr6nvBpgiUkxL4Cqchuhj7BETULgQyveMBWs-3LZr68M8w7z-zD2RDuCzSBBhMKUHG2DETvlzkO-Xd7CyKL4PHJUUYi9jcMHmB_u7" alt="plantuml diagram"></p>
+是映射缺失,仅 TLBI 是权限滞后):</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/VLHVJzjM57_tfpZYAQP1j7lOGwHCXQxLggqZ8b4phNbnY4kic6laE9swfz0IYbg20mfGolYJbZ3AbAIjMZ0n8T-5-LxRtsB7Dr0bG-gBhttkEJxdz-VUstb3qet2Z2haSmgPbNHf1jBIL6vQrmeaSqTJDHt-o2g6tBUVaHzB1TMufn4ZhlmfmwrRWg4OgWnqw_px23XMdUsTiSCQFJDXVFm11fPfiyEsptkna6EN8F7B-7tHVJDFAqkiKVTEMlHydhPEMQkQ8ewrxtwq8PQu2qwtoQgdOV2-VA3D9LewTBSiQfQnqA-rQTiK11p9KAQKMOaOCEHrMevzF0HI7kB9mIs_ziMh7OReGeasNeiy9POOJC6PU1nNGOX61u14E98eF5OB-Uo8aPN9o8oKao54IujilK4hozHkYn2D2WBH31cq9xAECq04_E8pjteOWOanQhwcI-im2hqX42FTUOMVxgTLsZu8fLLjAdUnK3Maj2gBAJ8AqwgMbbJ_HPcQUn2QJFxqUpBEh18jhuc2W3yV-G4nO8kBbJrW6t_BnD2VkfscGfv8gfA1qCDWYTuKBtCH5q-kmO_nSRXOMCNtjq1Fksor4UXn6NeNR0j1yjSQ__r7lrYvQj67C9O8NwOC3pzAwxAK2qF0YmZkqGOrtmqFHrA45y7LL3U20dhooNtVHgbjs-ciUSsklz7axHEwHFAgP2WQWNk1or8ab9yjw8fMo0EtNHYo4iceiewyiDqwFhtMcZX8npvIlCdMF_Gwty18dOCALEst8fhLBd7eKJvsJrYkCLSMDGsKNJpvfhBKF4AJiktd_cR5wPGXD1OR_UtNqVXtOp6KiLysnohJoZySABxwVnMzWpbimucxfgYxzPajrtj0QF4C1pfu1fD9B9wS40Sqm0BCkPA7dXwZkn3Ha6CLlHUVtQxjjLQ6a4WyR1DZ_nRdSEste1WSkR9pzcO6wLNGryPKzffbhjdaxJTiCfc4_plbgqi2dhbfxkE9PeiL4QQbMUuJZ3bscQvq7Ajn1IOS6Bj7BHu04VVTwYvRMqmHQhQyvnrMFVTgY6QJJyLsZjdEF2tDUKqBBmr-6x3gCHeHqV_yy84tRmRtmCckPnr50eyutMtsSXzBkUQuegCoYcuy5ONRCidWlVWV" alt="plantuml diagram"></p>
 <h3 id="标准序列rddmvt-六步-bbml0-纯软件路径">3.2 标准序列:RDDMVT 六步
 —— BBML0 纯软件路径</h3>
 <ul>
@@ -1304,10 +1418,65 @@ break
 ③广播 TLBI ④DSB ⑤写新 entry ⑥DSB——完整展开见下图与 5.4
 映射表(原文见附录A)。</li>
 </ul>
+<p>六步中每一步干什么:</p>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>步骤</th>
+<th>操作</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>①</td>
+<td>旧 entry 置 invalid(Valid=0)</td>
+<td>从页表源头断旧——后续 walk 读不到旧值</td>
+</tr>
+<tr>
+<td>②</td>
+<td>DSB</td>
+<td>确保①的 invalid 写对其他 PE 可见</td>
+</tr>
+<tr>
+<td>③</td>
+<td>广播 TLBI</td>
+<td><strong>驱逐 TLB 中已缓存的旧 entry</strong>(旧翻译的缓存副本)</td>
+</tr>
+<tr>
+<td>④</td>
+<td>DSB</td>
+<td>确保③的驱逐广播完成——此刻 TLB 里该地址的 entry 为空</td>
+</tr>
+<tr>
+<td>⑤</td>
+<td>写新 entry(Valid=1)</td>
+<td>从页表源头建新——后续 walk 读到新翻译</td>
+</tr>
+<tr>
+<td>⑥</td>
+<td>DSB</td>
+<td>确保⑤的新 entry 对其他 PE 可见——后续 miss → walk → 填充新 TLB
+entry</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>注意:BBML0 六步里只有<strong>一次 TLBI</strong>(第③步,驱逐旧
+entry);BBML1 有<strong>两次</strong>(②驱逐旧 +
+⑤清理替换后的残留);BBML2/3 有<strong>零次中间
+TLBI</strong>,但调用者会做一次<strong>最终 TLBI</strong>(见
+4.4,清掉新旧并存的所有 entry)。</p>
+</blockquote>
 <p>六步按目的精确划分为两个阶段——<strong>Break(①~④)=
 断旧</strong>(把旧翻译从页表和 TLB 里彻底清掉)、<strong>Make(⑤~⑥)=
 建新</strong>(写入新翻译并保证可见):</p>
-<p><img src="http://www.plantuml.com/plantuml/svg/PLDHQzDG57xFhpZCbxPEjFWW32QZhO711iEMxS6ytBLN5vBUbEHsGnzaFgJu8AuRsYeY6BiofoHLmSaMQlzBoKtIV-5DqjRCFWM-yttddEyxDsi6HJfjrbN1K6JIG3ggmowgAazqhKbgHKtLT3ZOaobErMluCMggLDG8BSlFCEJp0fMfYe5z-7Dl1HwMIflR5M2cxTjzM8M2Zf6I6Hz_UZu-xcNzZkrtp-0cR285S_IKe_qiSw_ypdT1u0EeN9KRY51O2eS3pxrO0cH0UUTwQMBz2gql6TOocVqk6rEsAjSfbOq2t8OTf2f5LDt3COTZWX1PQoHRmVZm3Kmtccye01y7j-xpZh0270LUneJgJuEX8vDzfCerYMIse-_gdN_qQ634jw1KBaWai1nlz77APuDBPbvuRcVh0JiQX6Sl5bIVWLsE_1Exih6-peiHFAzEpdzC3jkpBHQalVJ0XCkSL_xBje193MAxWa0qYa7RnpgtjHnBRuYYUBTOv2rokKUxKHpBKET7oKBmjSkEUhcSHEA1C3N1ZyPrxFVFuFnA8fxhUiEteJEQT1qOjqwWeYDYg8ZA6W4nUY2pgADBnqadLuRvrVzF-XHOwpqp-vmK3vwdd5zCkPysFHDCiqtPJejO-tNWsid64LAN3KCY1_o5X0DtrYAsmgnlp3Gv5D6IqDTuK_wR_0K0" alt="plantuml diagram"></p>
+<p><img src="http://www.plantuml.com/plantuml/svg/PLDHQzDG57xFhpZCbxPEjFWW32QZhG71mR1bUp0lT-tLXQGt9RdTq0UP3oa-YEk6QoSY6BiofoHLmSaMQlzBoKtIV-5DqjRCFeLyvpldEzztaZM38fqswwfWA39f81tLOHjLbMUwrYIregPgEkpjo1IdwZNy53LLAcg4bkKN6F9vWSfKnS0-_Bct0ezBfVND2Z3Jzkq-h491nqZ9Z0y_lHmVzh9-n_QxPt0Jrf62ENhAqNwMkLT-vxiWS04gL-K68XIMmk70So-M01bGthfUcbY_GkjBXhLCPfzaOyf6vJgbygW0js4BgKeHLNTmpE6O84JM6ibMCDv_1zEDvXiAmENWrdq-4LQ0ey3Bc53zUJ1qPBABLBacaSncz5ozyuyU2KPy2qhbWaG2o_567wTyDhXaveNdTZOUi8D1UFPgeUipiCkHVsJpzuUy6C7pwkJynsI_FTjYeRMN5aoup7dZlsuBcDGWjYi8HACOj5siSrlBSUiDKHJl5ejyH2xtP3kAOndg_2XP2BvssK4lbvD8B0XJ4_nel8_z_XcSNqd4SrrlU1mweqdNWN7h22ew8eQAgAmH4ACFP1PrTEauwUJACB_w_qcV0ckzPsQVasBXUShvnPJxQTEpXccsATlf9jP-6xXsid64r6N3aCWU_qB2WJiR4LjXrZTccXoAQ4deQtme_qt-0W00" alt="plantuml diagram"></p>
 <p><strong>这六步是 BBML0 的纯软件路径;BBML1
 上仍可使用(正确但非必需);BBML2/3
 上也依然正确</strong>——它是基线,在任何硬件上都不会错。后面 4.1 的 RKFLJB
@@ -1357,6 +1526,63 @@ abort(原文见附录A);</li>
 <hr>
 <h2 id="四bbml0-bbml1-bbml2-bbml3四级实现">四、BBML0 / BBML1 / BBML2 /
 BBML3:四级实现</h2>
+<p><strong>先看全貌——三级优化各自优化了什么?</strong></p>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr>
+<th>维度</th>
+<th>BBML0</th>
+<th>BBML1(nT 方案)</th>
+<th>BBML2/3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>multi-entry 共存</td>
+<td>不允许(软件杜绝)</td>
+<td><strong>不允许</strong>(nT 阻新缓存 + TLBI 清旧 = 替换时零副本)</td>
+<td><strong>允许</strong>(硬件消解)</td>
+</tr>
+<tr>
+<td>中间 TLBI 次数</td>
+<td><strong>1 次</strong></td>
+<td><strong>2 次</strong>(②和⑤)——反而更多</td>
+<td><strong>0 次</strong></td>
+</tr>
+<tr>
+<td>fault 窗口</td>
+<td><strong>有</strong>([break,make) 内 Translation Fault)</td>
+<td><strong>无</strong>(Valid 恒 1,翻译从不中断)</td>
+<td>无</td>
+</tr>
+<tr>
+<td>额外代价</td>
+<td>fault 处理抖动</td>
+<td>nT 期间每次访问都 walk</td>
+<td>无</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>BBML1 要<strong>多付一次 TLBI</strong> 的代价(2 vs BBML0 的
+1),换来"全程
+Valid=1、翻译从不中断"——这是<strong>可靠性优化</strong>,不是性能优化;</li>
+<li>BBML1 的动机来自 SMMU 侧:<strong>不可停的 DMA
+流</strong>(网卡/GPU)在 BBML0 的 fault 窗口内会吃 Translation Fault →
+掉线/驱动挂死;BBML1 让 I/O 流"无感"通过;</li>
+<li>BBML2/3 才是<strong>性能优化</strong>:0 次中间 TLBI + 无 nT walk
+惩罚;</li>
+<li>演进链:<strong>BBML0(1 TLBI + fault 窗口)→ BBML1(2 TLBI + 无
+fault,可靠性)→ BBML2/3(0 TLBI + 无 fault,性能+可靠性双优)</strong>;</li>
+<li>这也解释了内核为什么跳过 BBML1:CPU 侧场景可用 BBML0 忍受或规避 fault
+窗口,BBML2/3 严格优于 BBML1,没有理由停在中间。</li>
+</ul>
 <h3 id="检测id_aa64mmfr2_el1.bbm">4.1 检测:ID_AA64MMFR2_EL1.BBM</h3>
 <p>CPU 的 BBM 支持级别由 <code>ID_AA64MMFR2_EL1.BBM</code>(bits
 [55:52])报告:</p>
@@ -1404,12 +1630,12 @@ commit 与 2025 扩展文档为准,注意版本差异。</p>
 </blockquote>
 <h3 id="bbml0六步纯软件序列">4.2 BBML0:六步纯软件序列</h3>
 <p>即 3.2 的 RDDMVT 六步。<strong>软件承担全部同步责任</strong>:invalid
-→ DSB → 广播 TLII → DSB → Make →
+→ DSB → 广播 TLBI → DSB → Make →
 DSB,保证任意时刻系统里同一地址只有一份有效翻译。第五章的 KVM stage2
 拆大页就是完整的 BBML0 代码案例。</p>
 <blockquote>
 <p>注意:KVM <strong>不检测</strong>硬件 BBM 级别,无条件按 BBML0
-假设写代码——在任何硬件上都正确,代价是每次拆页的 TLII 开销和 fault
+假设写代码——在任何硬件上都正确,代价是每次拆页的 TLBI 开销和 fault
 窗口。</p>
 </blockquote>
 <h3 id="bbml1nt-位方案">4.3 BBML1:nT 位方案</h3>
@@ -1425,13 +1651,22 @@ DSB,保证任意时刻系统里同一地址只有一份有效翻译。第五章�
 table/block 大小、不改其他任何需要 BBM
 的属性</strong>——物理位置、内存类型等都不能变(原文见附录A)。</li>
 </ul>
+<p><strong>RPVTFW 的规则化含义</strong>:</p>
+<ul>
+<li><strong>BBML 的全部优化只覆盖两类修改</strong>:块大小变化 +
+Contiguous bit 变化;RWHZWS 的另外三类(内存类型/OA/global
+重叠)在任何硬件上——包括 BBML3——都只能走 BBML0 六步序列;</li>
+<li>全场景 × 四级的支持矩阵见
+4.7(一张表查清"我的场景在这块硬件上能走什么路径")。</li>
+</ul>
 <p><strong>nT 位的 spec 定义(D8.7.3 Table and Block entry,需
 FEAT_BBML1)</strong>:</p>
 <ul>
 <li><strong>IPJZBK(nT 的位置)</strong>:nT 在 VMSAv8-64 的 <strong>Block
 descriptor</strong>(bit[16])和 VMSAv9-128 SKL≠0
 的描述符中——<strong>VMSAv8-64 的 Table descriptor 和 L3 Page descriptor
-没有 nT</strong>(原文见附录A);</li>
+没有 nT</strong>(描述符格式见 <a href="#描述符格式table-block-page">2.2
+节</a>;原文见附录A);</li>
 <li><strong>IXPRKH(nT 的保证)</strong>:nT=1 期间改变 table/block
 大小,由该 entry 翻译的访问不会破坏一致性/排序/单处理器语义,也不会导致
 Exclusive monitor 清除失败(原文见附录A);</li>
@@ -1445,21 +1680,80 @@ walk、不被缓存,所以 nT
 <p>nT 的语义本质(SMMU spec IHI 0070H.a 3.21.1.1,原文见附录B):nT 允许一个
 valid 的 Block descriptor 参与翻译,但阻止它以可能与现存 TLB entry
 冲突的方式被缓存——<strong>参与翻译,但不进缓存</strong>。</p>
+<p><strong>BBML1 全程的 TLB 状态时间线——新旧 entry 从不同时存在于
+TLB</strong>(这正是 nT 的设计目的,也是 BBML1 与 BBML2/3 的本质区别):</p>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr>
+<th>时间段</th>
+<th>TLB 里有什么</th>
+<th>访问走哪条路</th>
+<th>有"选哪个"问题吗?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>① nT=1 之后、② TLBI 之前</td>
+<td><strong>只有旧 2MB entry</strong>(nT 不删已有缓存)</td>
+<td>TLB <strong>命中旧 entry</strong>——命中就用,不会去 walk 内存</td>
+<td>没有(TLB 只有一种)</td>
+</tr>
+<tr>
+<td>② TLBI 之后、④ 替换之前</td>
+<td><strong>空</strong>(旧的被驱逐,nT 阻止新的被缓存)</td>
+<td>TLB miss → walk → Block(nT=1) → 翻译有效但不缓存</td>
+<td>没有(TLB 空,直接用内存描述符)</td>
+</tr>
+<tr>
+<td>④ 替换之后</td>
+<td>空,开始填新 entry</td>
+<td>miss → walk Table→PTE → 4KB entry 被缓存</td>
+<td>没有(只有新的一种)</td>
+</tr>
+</tbody>
+</table>
+<p>TLB 命中优先于 walk——命中就不查内存,miss 才读内存描述符。每个时刻 TLB
+里<strong>最多只有一种粒度的
+entry</strong>,不存在"硬件选哪个"的问题。</p>
+<p><strong>nT 的核心作用——空窗期行为详解</strong>:②(TLBI)到
+④(替换)之间的空窗期是理解 nT 的关键:</p>
+<ul>
+<li><strong>②(TLBI)之后</strong>:旧 2MB entry 已被驱逐,TLB
+中该地址的副本为空;</li>
+<li><strong>空窗期内的并发访问</strong>:TLB miss → walk → 读到
+Block(nT=1) → 翻译<strong>有效</strong>(2MB,OA 正确),但<strong>不存进
+TLB</strong>——nT=1 禁止了 walk 结果的缓存;</li>
+<li><strong>如果没有 nT</strong>:同一次 walk 会读 Block descriptor(仍
+valid)→ 把 2MB 翻译<strong>重新缓存</strong>回 TLB → 到 ④ 替换成 Table
+后,TLB 里 2MB(重缓存的)+ 4KB(新的)并存 = multi-match;</li>
+<li><strong>有 nT=1</strong>:TLB 保持空 → ④
+替换发生时系统里该地址副本数为 <strong>0</strong> → 之后只有新 4KB entry
+进来 → 永不冲突。</li>
+</ul>
+<p>即:<strong>TLBI 清"过去"(已缓存的旧副本),nT 管"未来"(空窗期内 walk
+不许重缓存)——两者配合让替换(④)发生的瞬间系统零副本。</strong>
+"性能差"(IDXRJK)的原因是空窗期每次访问都要 walk、TLB 不填充。</p>
 <p><strong>BBML1 的完整软件序列</strong>(ARM ARM 只说"可以用
 nT",逐步序列是 SMMU spec IHI 0070H.a 3.21.1.2 以 Note
 形式给出的权威操作;CPU 侧软件遵循同样的模式):</p>
 <p><strong>拆大页(block → pages,最常见,如热迁移拆大页)——必须
 nT-first,四步:</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">① 旧 Block descriptor: nT 0→1   (Valid 保持 1,翻译仍有效)</span><br><span class="line">② 广播 TLII 该 block + DSB       (驱逐已经缓存进去的旧 2MB 翻译)</span><br><span class="line">③ 原子替换为 Table descriptor     (指向含 512 个等价 PTE 的新页表)</span><br><span class="line">④ 广播 TLII 受影响范围 + DSB</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">① 旧 Block descriptor: nT 0→1   (Valid 保持 1,翻译仍有效)</span><br><span class="line">② 广播 TLBI 该 block            (驱逐已缓存进去的旧 2MB 翻译)</span><br><span class="line">③ DSB                           (确保 TLBI 完成)</span><br><span class="line">④ 原子替换为 Table descriptor    (指向含 512 个等价 PTE 的新页表)</span><br><span class="line">⑤ 广播 TLBI 受影响范围</span><br><span class="line">⑥ DSB</span><br></pre></td></tr></table></figure>
 <p><strong>合并(pages → block)——四步:</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">① 中间级 Table descriptor 直接替换为 nT=1 的 Block descriptor</span><br><span class="line">② 广播 TLII 受影响范围 + DSB     (驱逐旧的 4KB 翻译缓存)</span><br><span class="line">③ 新 Block descriptor: nT 1→0   (恢复可缓存)</span><br><span class="line">④ 广播 TLII 该 block + DSB</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">① 中间级 Table descriptor 直接替换为 nT=1 的 Block descriptor</span><br><span class="line">② 广播 TLBI 受影响范围           (驱逐旧的 4KB 翻译缓存)</span><br><span class="line">③ DSB</span><br><span class="line">④ 新 Block descriptor: nT 1→0   (恢复可缓存)</span><br><span class="line">⑤ 广播 TLBI 该 block</span><br><span class="line">⑥ DSB</span><br></pre></td></tr></table></figure>
 <p><strong>为什么拆分必须 nT-first 而不能 make-first?</strong></p>
 <ul>
 <li>make-first 的问题:直接把 block 换成 table,walk 会立刻把 4KB entry
 缓存进 TLB,与 stale 的 2MB entry 并存 → multi-match——这是 BBML2
 才容忍的行为;</li>
 <li>nT-first 两步配合:<strong>置 nT 管"未来"</strong>(nT=1 后的新 walk
-不再产生缓存)、<strong>TLII
+不再产生缓存)、<strong>TLBI
 清"过去"</strong>(已有的缓存副本被驱逐);</li>
 <li>结论:第 ③ 步结构替换发生时,系统里该地址的缓存副本数为零,永远不会出现
 multi-match。</li>
@@ -1467,7 +1761,7 @@ multi-match。</li>
 <p><strong>"BBML1 是不是不用 break 把旧 TLB entry 写成
 invalid?"</strong> ——软件根本无法直接写 TLB entry。BBML1 全程
 Valid=1、没有"置 invalid"这一步,靠的是 nT(阻止未来缓存)+
-TLII(清理过去缓存)的组合,而不是"写 invalid"。</p>
+TLBI(清理过去缓存)的组合,而不是"写 invalid"。</p>
 <p><strong>SMMU 与 PE 的严格度差异</strong>(SMMU spec
 3.21.1.2,原文见附录B):PE 侧允许对 nT=1 报 Translation fault(ARM ARM
 fault-checking 序列第 8 步),SMMU Level 1 明确<strong>禁止</strong>此
@@ -1482,30 +1776,168 @@ abort(同 IA 多 entry);</li>
 <li><strong>ICFFVK</strong>:产生 conflict abort 后需要 TLB 维护清除多个
 entry(Table descriptor 场景含中间缓存结构)。</li>
 </ul>
+<p><strong>L3 Page descriptor 没有 nT,怎么享受 BBML1 的放松?</strong>
+因为 BBML1 包含<strong>两个独立的放松机制</strong>,nT 只是其中之一:</p>
+<ul>
+<li><strong>机制一:粒度变化(L1/L2 专属)→ nT 位</strong>:拆/合大页改的是
+L2 entry(Block↔︎Table 类型转换),nT 挂在转换点上抑制期间的新缓存;L3
+是最后一级,不能变 Table、不能再拆,L3 entry
+<strong>从不经历类型转换</strong>,nT 无用武之地(VMSAv9-128 佐证:它的
+Table descriptor 也有 nT,因为小表本身可改大小——nT
+永远跟着转换点走,不跟着描述符类型走);</li>
+<li><strong>机制二:Contig bit 变化(Block 或 Page 都适用)→
+硬件直接容忍,不用 nT</strong>:只翻 bit[52]、OA/权限/内存类型全不变,entry
+仍是叶子,没有结构交换——瞬态只是"同范围内部分 entry 带
+cont、部分不带"(RNGLXZ 的 misprogramming 形态),硬件保证查找要么
+abort、要么返回与任一编程值一致的结果;SMMU spec 3.21.1.2 明说 Contig
+变化无需 BBM 也无需 nT;</li>
+<li><strong>但 RFCPSG:PE 侧 BBML1 的 Contig 放松仍可能 TLB conflict
+abort</strong>——这正是内核 contpte 场景额外要求 noabort(演进为
+BBML3)的原因(见 6.3)。</li>
+</ul>
+<p><strong>L3 叶子节点自己的 BBM 场景分诊</strong>(L3
+不存在粒度变化,但其余场景齐全):</p>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>L3 场景</th>
+<th>性质</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4K 页迁移 / COW / KSM</td>
+<td>OA 变化</td>
+<td>完整六步(任何硬件,见 3.1 场景表)</td>
+</tr>
+<tr>
+<td>unmap / swap-out</td>
+<td>无 Make 步</td>
+<td>仅 TLBI</td>
+</tr>
+<tr>
+<td>mprotect</td>
+<td>权限变化</td>
+<td>make-then-flush(见 3.1/图6)</td>
+</tr>
+<tr>
+<td>contpte fold / unfold</td>
+<td>Contig bit</td>
+<td>BBML1 起放松;内核要求 noabort → BBML3(见 6.3)</td>
+</tr>
+<tr>
+<td>KFENCE / debug_pagealloc</td>
+<td>权限变化(线性映射)</td>
+<td>make-then-flush</td>
+</tr>
+</tbody>
+</table>
 <h3 id="bbml2硬件容忍-multi-hit">4.4 BBML2:硬件容忍 multi-hit</h3>
 <p>RKFLJB 第三条:软件<strong>直接改</strong>,不 invalid、不用 nT、无中间
-TLII,硬件保证不破坏一致性/排序/单处理器语义/Exclusive monitor。</p>
+TLBI,硬件保证不破坏一致性/排序/单处理器语义/Exclusive monitor。</p>
 <p><strong>硬件"透明处理"的确切含义</strong>——不是"硬件去更新
-TLB",而是<strong>硬件消解 multi-hit 的后果</strong>。ARM ARM
-侧的表述就是 3.3 的 RNGLXZ/RJQQTC(multi-hit 时要么
-abort、要么返回与任一编程值一致的结果,绝不融合);SMMU
+TLB",而是<strong>硬件消解 multi-hit 的后果</strong>。</p>
+<p><strong>新旧 entry 为什么会在 TLB 里同时存在?</strong></p>
+<ul>
+<li><strong>旧 entry 早就缓存了</strong>:拆大页之前 2MB Block
+是正常有效映射,之前的访问已把它缓存进 TLB;软件做 BBML2 操作时(直接写新
+Table entry)<strong>没有做 TLBI</strong>,旧 2MB entry 一直在;</li>
+<li><strong>新 entry 有不同的 Tag 所以能共存</strong>:旧 entry 键 =
+<code>VA[47:21]+size=2MB</code>,新 walk 产生的 4KB entry 键 =
+<code>VA[47:12]+size=4KB</code>——<strong>两条不同的 TLB
+entry</strong>(不同键),walk 不检查"此 VA 是否已有其他粒度
+entry",直接填入;</li>
+<li><strong>访问可能命中旧也命中新</strong>:TLB 查找只做 tag
+匹配,<strong>不检查 entry 是否"过期"</strong>——在新 entry 被 walk
+填充之前,访问命中旧 2MB entry(返回旧翻译,正确,因为 OA/属性没变);新 entry
+填进来之后,同一 VA 查找可能同时命中两条 = multi-hit;</li>
+<li>结果:TLB 里 2MB(旧的)+ 4KB(新的)物理共存,同一个 VA 0x12345678
+同时匹配两条 entry = <strong>multi-hit</strong>。</li>
+</ul>
+<p><strong>multi-hit
+时硬件返回哪条?</strong>——协议规定允许的行为,实现选择走哪条:</p>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr>
+<th>级别</th>
+<th>允许的行为</th>
+<th>谁决定</th>
+<th>关键约束</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BBML0</td>
+<td>abort / <strong>融合(amalgamation)</strong> / 一致结果</td>
+<td>实现定义</td>
+<td>最危险:可以拼凑新旧属性,可能越权</td>
+</tr>
+<tr>
+<td>BBML2</td>
+<td>abort / <strong>与任一编程值一致的结果</strong></td>
+<td><strong>实现定义</strong>(厂商选一条)</td>
+<td><strong>禁止融合</strong>(RNGLXZ):必须返回某一条 entry
+的完整翻译,不能把旧 OA + 新权限拼在一起</td>
+</tr>
+<tr>
+<td>BBML3</td>
+<td><strong>只允许一致结果</strong>(abort 被禁止)</td>
+<td>架构强制</td>
+<td>厂商没得选</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>"一致结果"≠"择优返回"</strong>:架构不规定返回旧还是新,只保证返回的是某一条
+entry 的<strong>完整</strong>翻译(OA + 权限 +
+属性都来自同一条);<strong>具体返回旧 2MB 还是新 4KB = IMPLEMENTATION
+DEFINED</strong>(厂商硬件自己定,没有"优先新""优先大"之类的架构规则);因为
+BBML2 的前提是 RPVTFW(OA 和属性都没变,只变了粒度),旧 2MB 和新 4KB 的 OA
++ 属性本就一致,返回哪个都正确;</li>
+<li><strong>"abort"≠"不返回"</strong>:abort 是报 TLB conflict abort
+<strong>异常</strong>,访问以异常结束(不是静默丢弃)。</li>
+</ul>
+<p>ARM ARM 侧的表述就是 3.3 的 RNGLXZ/RJQQTC;SMMU
 spec(3.21.1.3,原文见附录B)说得更工程化:<strong>忽略 nT 位、自动消解任何
 multi-hit 场景、F_TLB_CONFLICT 永不发生;翻译至多使用一条匹配 entry
 的信息,绝不组合多条 entry、不组合描述符更新前后的状态。</strong></p>
 <p><strong>注意一个关键差异</strong>:CPU 侧 BBML2
 <strong>不禁止</strong> TLB conflict abort——</p>
 <ul>
-<li><strong>IHYQMB(不 TLII 则可能 abort)</strong>:改完不做 TLII → TLB
+<li><strong>IHYQMB(不 TLBI 则可能 abort)</strong>:改完不做 TLBI → TLB
 可能存在多条同 IA entry,可产生 TLB conflict abort;Table descriptor
 场景还适用于中间级缓存结构(原文见附录A)。</li>
 </ul>
 <p>也就是说,<strong>BBML2 的收敛仍然要靠软件的最终
-TLII(或自然淘汰)</strong>。典型模式:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">直接写入新 entry → (窗口期新旧并存, 硬件消解后果) → 调用者最终TLII清掉新旧 → 只剩新翻译</span><br></pre></td></tr></table></figure>
+TLBI(或自然淘汰)</strong>。典型模式:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">直接写入新 entry → (窗口期新旧并存, 硬件消解后果) → 调用者最终TLBI清掉新旧 → 只剩新翻译</span><br></pre></td></tr></table></figure>
+<p><strong>最终 TLBI 清什么?</strong>——清掉<strong>新旧并存的所有
+entry</strong>:</p>
 <ul>
-<li>contpte_convert 之外的路径:未被最终 TLII 覆盖的 entry 靠 TLB
-自然淘汰——不保证时间,但正确性不受影响(见 6.3)。</li>
+<li>窗口期内 TLB 里有旧 entry(如 2MB block,拆页前缓存的)+ 新 entry(如
+4KB page,拆页后 walk 填充的),两者并存;</li>
+<li>最终 TLBI 把它们<strong>全部驱逐</strong>——之后下次访问 miss → walk
+读到(已是新的)页表 → 填充新翻译;</li>
+<li>被最终 TLBI 覆盖到的 entry:即时清除;未被覆盖的 stale entry:靠 TLB
+自然淘汰(不保证时间,但正确性不受影响)。</li>
 </ul>
+<blockquote>
+<p>对比:BBML0 六步里的 TLBI(第③步)只清<strong>旧 entry</strong>(因为新
+entry 还没写入);BBML2/3 的最终 TLBI 清<strong>新旧全部</strong>(因为新
+entry 早在直接写入时就进了 TLB)。</p>
+</blockquote>
 <p><strong>BBML2 的适用场景</strong>:<strong>仅限"改 table/block
 大小(双向)"+ Contiguous bit 修改</strong>(RKHRBC 对 BBML1 成立,BBML2
 当然继承)。<strong>不适用</strong>的:</p>
@@ -1522,7 +1954,7 @@ OA 不变(RPVTFW)。</li>
 方案吗?"——是,分三层说:</strong></p>
 <ol type="1">
 <li><strong>语义上</strong>:BBML3 = BBML2 的全部放松(免 break、免
-nT、免中间 TLII)+ <strong>"永不产生 TLB conflict abort"</strong>。BBML2
+nT、免中间 TLBI)+ <strong>"永不产生 TLB conflict abort"</strong>。BBML2
 允许实现选择 abort 路径(RNGLXZ/IHYQMB);BBML3 把这条路径堵死,multi-hit
 时硬件只能返回与任一编程值一致的结果。</li>
 <li><strong>历史上</strong>:内核先有的是
@@ -1550,7 +1982,7 @@ mappings</strong>."(不产生 abort 就不用证明任何 BBML2 路径都不会�
 fault,从而能用于任意内核映射。)</li>
 </ul>
 <p><strong>BBML3 的流程</strong>:与 BBML2 完全一致(直接写入新 entry →
-最终 TLII 或自然淘汰),唯一区别是窗口期 multi-hit
+最终 TLBI 或自然淘汰),唯一区别是窗口期 multi-hit
 时硬件<strong>不会</strong> abort。</p>
 <h3 id="常见误解纠错表">4.6 常见误解纠错表</h3>
 <p>围绕 BBML1 流转很广的一段"理解",逐条核验(spec 依据见上文):</p>
@@ -1571,7 +2003,7 @@ fault,从而能用于任意内核映射。)</li>
 <tr>
 <td>"nT 向硬件发'正在施工'信号,可以先 Make 再清理旧缓存"</td>
 <td><strong>顺序错</strong></td>
-<td>拆分方向必须 <strong>nT-first</strong>:nT=1 → TLII → 替换 → TLII。先
+<td>拆分方向必须 <strong>nT-first</strong>:nT=1 → TLBI → 替换 → TLBI。先
 Make 再清只对"合并"方向成立</td>
 </tr>
 <tr>
@@ -1615,7 +2047,13 @@ OA+属性都不变)</td>
 <td><strong>半错</strong></td>
 <td>粒度变更 ✅;权限变更(RW→RO)<strong>从来不需要 BBM</strong>(只需
 RGPPYH 的改后
-TLII);内存类型变更(WB→NC)<strong>任何级别都不豁免</strong></td>
+TLBI);内存类型变更(WB→NC)<strong>任何级别都不豁免</strong></td>
+</tr>
+<tr>
+<td>"BBML1/2/3 让所有 BBM 场景都快了"</td>
+<td><strong>错误</strong></td>
+<td>放松的只有块大小 + Contig bit 两类(RPVTFW);内存类型/OA/global
+变化任何级别都走完整六步,见 4.7 矩阵</td>
 </tr>
 <tr>
 <td>"减少性能抖动/虚假故障"</td>
@@ -1624,22 +2062,187 @@ TLII);内存类型变更(WB→NC)<strong>任何级别都不豁免</strong></td>
 </tr>
 </tbody>
 </table>
-<p><img src="http://www.plantuml.com/plantuml/svg/bLNhJnfP5F_ENt7IJy3ILEWsQKZOj5ZTjQKRgvErsINPZ3Yj1BmqE7OVdp3AmrK4Nr057wYihkq0Rbn5aFA_D7Fl3F_5dfd15xIRx1SUzvvpp_azphsF9aK-B4vD14sJ0JzvmuVv2HZbVO7NuT0K6UiD1KDX-6NSBmetziU4L_nKKEmF4N7O_xi0Thj9z8j10MZkuqCpswdIvep5YVzooa4ItExd7b1g1pJnNjcOXK6k3rZkX6KgB7DEBrAqVCxAgrv2ypMsNdQ2nm6Evsvm1qE-0B3v64t4v6fDM-RuKQpn5JomE-JgaUS-VFtC3OFyQy5amhv4ly__XYSYt54RPRb-UWVuIHWUkRtLAloZ5WxDD1QbqZkB7ZB8tGxXF6wu1oDyCD3B-yO5FGRNJ2QNIuVIWy2Y4fEAIgriLAAr54rapNIxfjIQDf3hTRcnfXG-u1QJzfH2oG8kbyaqF09tly5ou8HFIpl0iWS24SE_qTWwZHR1JzxoGVyOc7_GlbmzbdQyrewMK80dmsuO6FuEpErGcYgh1zETSRj0pvjiMU8y0mCcRV5gh_NNSIkInh8QlNhfZjIzwn9q_vYj9MXfWINI5XC9YGA4tWhXTkXFes613zWc-81W0UKeIrDxJYynSAkbPYjRWa-nPU32F9aCyg8_HA1VCuoNcDNr3JeTPslHraRU1kCy6GiAuLOyoRQB-AcMrootUTe7Wn-qYo6_tlWbItQBbrpw0NtLWQTuZGVJ3RBRd5sAQNS2uUH64gt82Wamz_SzvdxMDxwacU5B_J0j5teGgVswdnjSwLc4Ss4DfLbNoqjoFSdoSyWhSjL0KoTfBAdklbSkLj2Cs6FaG9rfqBEI3GQUl1nw-gpR0jVIuXWWE2ynHALdVnkdu82XkaQvBjcOj4yJk5Ea-GhTZ1WPTAxCyX_OMWM7h0S58fnIAh3y4Tiisa2hnAfHjHcdY_KEPT1eYzjKIhDSaoLtCVk6FdWEMuZJz98XZIBDoVKp5CZIvRXhH3ILfOrZkf9K5sPexiG0U0C3PcgJTwWSphV9jg4UE_fDP7ZmIbK7CgwF7osTqsPo0YFyT_4Ekw6luxFwAdWlBHO_vpX4X8Ar9mzdl9fKLWy9fxSWLwLMzaJ3q3qgsZLtEUZeFTJt_1HPnt4nEZG61KDz8V8gwFU9m8-6mY9OhHWkruiqjQIiRbkjNi8I6RMvIdDRSdLH6xKg2fX1CcZa0d-hyHFKNgcliAqyzghKDx55TIj9qmaR37t_hUVbZ_U6dhvumVLskuhb8qezeRlAh5Pc49WQYRBLKrhvQ37gne-KsLDszeuTLwv8lkyqk4QXMAMArOp6pOuUnmDu7FQDGz-lulzakOk-A-bOzhGjQUe8MVIIIovqv3fi6vAczw3Dr9_JJDgrMly3QoUkJgV5elYGwUV9rJ_awZpBnCtAHGrV4Be_gwHZQ6fa1t7B5njOiHLPferbFPxDhR2CP7eaa35yL_y5" alt="plantuml diagram"></p>
+<h3 id="场景-bbml-级别支持矩阵速查">4.7 场景 × BBML
+级别支持矩阵(速查)</h3>
+<p>开发者视角的最终速查表——"我要改这种 PTE,这块硬件上能走什么路径":</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>修改场景</th>
+<th>BBML0</th>
+<th>BBML1</th>
+<th>BBML2</th>
+<th>BBML3</th>
+<th>依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A</strong></td>
+<td><strong>级别无关——本来就不需要 BBM</strong>(行1~3)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>建立新映射(invalid→valid)</td>
+<td>免 TLBI,仅需 ISB</td>
+<td>同左</td>
+<td>同左</td>
+<td>同左</td>
+<td>IWZCBG</td>
+</tr>
+<tr>
+<td>2</td>
+<td>unmap(valid→invalid)</td>
+<td>仅 TLBI</td>
+<td>同左</td>
+<td>同左</td>
+<td>同左</td>
+<td>RGPPYH</td>
+</tr>
+<tr>
+<td>3</td>
+<td>权限变化(AP/XN/S2AP)</td>
+<td>make-then-flush</td>
+<td>同左</td>
+<td>同左</td>
+<td>同左</td>
+<td>RWHZWS 不含</td>
+</tr>
+<tr>
+<td><strong>B</strong></td>
+<td><strong>级别无关——必须完整 BBM,BBML 优化不覆盖</strong>(行4~6)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>内存类型/SH/Cacheability 变化</td>
+<td>六步 BBM</td>
+<td>同左</td>
+<td>同左</td>
+<td>同左</td>
+<td>RWHZWS①</td>
+</tr>
+<tr>
+<td>5</td>
+<td>OA 变化(迁移/COW/KSM)</td>
+<td>六步 BBM</td>
+<td>同左</td>
+<td>同左</td>
+<td>同左</td>
+<td>RWHZWS②</td>
+</tr>
+<tr>
+<td>6</td>
+<td>global 与非 global 重叠</td>
+<td>六步 BBM</td>
+<td>同左</td>
+<td>同左</td>
+<td>同左</td>
+<td>RWHZWS④</td>
+</tr>
+<tr>
+<td><strong>C</strong></td>
+<td><strong>仅有的两类随级别放松</strong>(行7~8)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>块大小变化(拆/合大页,L1/L2)</td>
+<td>六步 BBM</td>
+<td>六步 <strong>或 nT 方案</strong></td>
+<td><strong>直接改</strong>+最终 TLBI(仍可 abort)</td>
+<td><strong>直接改</strong>+最终 TLBI(<strong>永不 abort</strong>)</td>
+<td>RKFLJB;RWHZWS③</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Contig bit 变化(Block/<strong>Page</strong>)</td>
+<td>六步 BBM</td>
+<td><strong>直接翻</strong>(仍可 abort)</td>
+<td><strong>直接翻</strong>(仍可 abort)</td>
+<td><strong>直接翻</strong>(<strong>永不 abort</strong>)</td>
+<td>RKHRBC;RFCPSG</td>
+</tr>
+</tbody>
+</table>
+<p>图例:<strong>六步 BBM</strong> = RDDMVT
+完整序列(图7);<strong>直接改/直接翻</strong> = 免 break、免 nT、免中间
+TLBI,收敛靠最终 TLBI 或自然淘汰;<strong>abort</strong> = TLB conflict
+abort 可能性;同左 = 与 BBML0 列相同。</p>
+<p>三段的读法:</p>
+<ul>
+<li><strong>A 段(行1~3)与硬件级别无关</strong>——本来就不需要
+BBM,四级完全一致;</li>
+<li><strong>B 段(行4~6)是 RPVTFW 的规则化含义</strong>——BBML
+优化完全不覆盖,即使 BBML3 也只能走 BBML0 六步;</li>
+<li><strong>C 段(行7~8)是 BBML1/2/3
+全部优化所在</strong>——且只有这两行;行8 是唯一 L3 Page descriptor
+也受益的行(机制见 4.3 双机制分析)。</li>
+</ul>
+<blockquote>
+<p>五、六章的案例全部落在 C 段:KVM stage2 拆大页 = <strong>行7 的 BBML0
+列</strong>软件实现;contpte fold/unfold = <strong>行8 的 BBML3
+列</strong>硬件方案。</p>
+</blockquote>
+<p><img src="http://www.plantuml.com/plantuml/svg/bLLTRzfM6BxthtZLArjBjS0KQQ9YQkaIhL8g8O6MYo5L3j34WXmYnrctNL6b96GDXIGKif4bWJI39kCZKqRuAEM_H3x7vb_ijKqX4DHfDqRs-_Myp_ESmyCrHPILzPKmjnQIoAeeYokmAFf3It9adGGUHy8H6LuiIqhmLZmGV2wkXvMv254yqYz1iDbk1Kb42GuZzbiHDmwI_DAgI1It60X8P0biCvmYAU4WqDp7htbsqg3T3S61Rpcjc02Nw-ayQAqYZLzelxy2jtSMMEwAPMeiqwGVahJQPDKqnwqE-y8zlLDLs_Lx8Aw1Ps4qrCl_e-TBFDsCqVA1OAQulQCftdaNV0aBOZZqMFGl1yqS_CPnJgU9PXgnnSgiVAQrgjOasahIU1PuUjpIMjqfKDjjjVDMo_-5CLO-rV8L0PnEZlCimFrlS1uuu6Rt15Ys62IA_3FT_8t6pa0YFufXAG3yzyQFSrhevnjuZ88yVEjnmHFFTy3tKt5v6gkhxOnxbYQhUl7bU4a1QBFBzihu_eGpFWvYlVUNlMWA4TYVki14CLPwEfncLDFA3ekd1CvG5cHfQLc1oFD-yW-BSb0CJQs8eQ00sdcM9azznE90htHxsGhSREw1LnR9MbXKf0Y1ESCwetIy0ui6LDOhBg8RJ52VoB09y0NCsEngunmTC0RrR0WLgorA-tHyqipc0E9LEmaq3Sl7WP-RVUHzPWQcKCoILdezc3DPA5SuuWzPc8nMC8qhsSROCFE9rud3iC90P-QhxGGzBFa8ZnAoxGHhn8G7W41VeCFKHaBxi8zMlAFrvuMZrtzRTNWcK46jszQhktV4DsZvJ_NmQNHxtte01Y8mD-MDDGGViHgpmstsDgvsDWTm-Pk36F7YGnZbwXJecsDQJh5SboKAQgCreYNRsQAfNKj6hRojjgzHp77FlhkrEarcQUUIxYVqdGsQkvga-zXEcE4OLNGAnJWnxohBcWDFs1rW7L5QQT9kOWKpfFjuomtTyMpUFj4F6bv0Ryuc-nKfwfzEl0UGhdI9U4q8QgFSoruPMqtMmRZIiaNQh2Ez3X0N8xA2BgR9NIrzx2Cidb4RKNthIclliwD3Ncl_WTtremHDnUzU5EmmghNZnYpWzTe6Wj2ZCPQkqzf70R2LldMklQgpwmDsMHlmyPN3eWLF6giriBk90NZxj7q67id-PPZzIVcVV4pSTC0qJPxhtJJD7Lch-OWvKIzSQ7--PEN2PzOQts622SnUQkDNjV6QPROCiWeNFjABxj7EdXbZs_iiK-OU1aa0__h-1G00" alt="plantuml diagram"></p>
 <hr>
 <h2 id="五案例一kvm-stage2-拆大页-bbml0-纯软件方案">五、案例一:KVM
 Stage2 拆大页 —— BBML0 纯软件方案</h2>
+<p><strong>结论:KVM stage2 主线代码没有适配任何 BBML 优化——全树搜索
+<code>system_supports_bbml3()</code> 调用点,arch/arm64/kvm/
+下为零。</strong> KVM 不检测硬件 BBM 级别,无条件走 BBML0 六步(invalid →
+DSB → TLBI → DSB → make → DSB),在任何硬件上都正确。</p>
+<blockquote>
+<p><strong>RFC 预览</strong>:社区已有 KVM 侧 BBML3 的 RFC(Mostafa Saleh
+/ Google,两个 patch),落在 <code>BBML3</code> 分支未合入主线——见 5.7
+节。</p>
+</blockquote>
 <p>KVM 的 stage2 是 <strong>PE MMU 的第二级翻译</strong>:VTTBR_EL2
 指向页表,由 EL2 软件管理、PE 硬件遍历——所以前文所有 ARM ARM
 规则直接适用。</p>
 <ul>
 <li><strong>策略</strong>:KVM <strong>不检测</strong>
 <code>ID_AA64MMFR2_EL1.BBM</code>,无条件按 BBML0
-假设实现——在任何硬件上都正确,代价是每次拆页的 TLII 开销和 fault
+假设实现——在任何硬件上都正确,代价是每次拆页的 TLBI 开销和 fault
 窗口;</li>
 <li><strong>嵌套虚拟化</strong>:KVM 还向 Guest 隐藏该字段(nested.c 的
 <code>limit_nv_id_registers</code> 强制 Guest 看到 BBM=0),因为 S1/S2
 由不同实体管理时 BBM 保证无法跨级维护。</li>
 </ul>
+<blockquote>
+<p>注意:KVM stage2 有两个<strong>非 BBML 的 TLB
+优化</strong>——<code>stage2_unmap_defer_tlb_flush()</code>(FEAT_TLBIRANGE
++ FWB 时延迟到 walk 结束再用 range 版 TLBI 批量刷)和
+<code>kvm_tlb_flush_vmid_range()</code>(range 版 TLBI
+代替逐条)。这些是<strong>TLB 指令层面的优化</strong>(减少 TLBI
+次数),不是 BBM 级别放松(仍然做完整 BBM 序列,只是把多次 TLBI 合并成一次
+range 版)。<code>SKIP_BBM_TLBI</code> 仅用于
+<code>create_unlinked()</code> 建离线子树(子树未挂载进 live 页表),与硬件
+BBM 级别无关。</p>
+</blockquote>
 <h3 id="触发场景">5.1 触发场景</h3>
 <p>最常见的是<strong>热迁移脏页跟踪的 eager
 split</strong>:用户态(QEMU)通过 <code>KVM_SET_USER_MEMORY_REGION</code>
@@ -1656,14 +2259,75 @@ split</strong>:用户态(QEMU)通过 <code>KVM_SET_USER_MEMORY_REGION</code>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> __kvm_pgtable_visit(...)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kvm_pgtable_visit_ctx</span> <span class="title">ctx</span> =</span> &#123;</span><br><span class="line">		.ptep  = ptep,</span><br><span class="line">		.old   = READ_ONCE(*ptep),     <span class="comment">// 读取旧值</span></span><br><span class="line">		.arg   = data-&gt;walker-&gt;arg,</span><br><span class="line">		.level = level,</span><br><span class="line">		.flags = flags,</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="keyword">bool</span> table = kvm_pte_table(ctx.old, level);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// entry 是 table 且设置了 TABLE_PRE 标志 → 先序回调</span></span><br><span class="line">	<span class="keyword">if</span> (table &amp;&amp; (ctx.flags &amp; KVM_PGTABLE_WALK_TABLE_PRE)) &#123;</span><br><span class="line">		ret = kvm_pgtable_visitor_cb(data, &amp;ctx, KVM_PGTABLE_WALK_TABLE_PRE);</span><br><span class="line">		<span class="comment">// 回调可能已替换该entry → reload</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// entry 是叶子(block/page)且设置了 LEAF 标志 → 叶子回调</span></span><br><span class="line">	<span class="keyword">if</span> (!table &amp;&amp; (ctx.flags &amp; KVM_PGTABLE_WALK_LEAF)) &#123;</span><br><span class="line">		ret = kvm_pgtable_visitor_cb(data, &amp;ctx, KVM_PGTABLE_WALK_LEAF);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// reload: 回调可能把 block 换成了 table, 让框架能下降进新子树</span></span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">if</span> (!table) &#123;</span><br><span class="line">		<span class="comment">// 叶子处理完, addr 前进一个 granule, 继续同级</span></span><br><span class="line">		data-&gt;addr = ALIGN_DOWN(data-&gt;addr, kvm_granule_size(level));</span><br><span class="line">		data-&gt;addr += kvm_granule_size(level);</span><br><span class="line">		<span class="keyword">goto</span> out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 是 table → 下降一级递归</span></span><br><span class="line">	ret = __kvm_pgtable_walk(data, mm_ops, childp, level + <span class="number">1</span>);</span><br><span class="line">	<span class="comment">// TABLE_POST 回调(拆页不用)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>拆页的入口只注册叶子回调:</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">kvm_pgtable_stage2_split</span><span class="params">(struct kvm_pgtable *pgt, u64 addr, u64 size,</span></span></span><br><span class="line"><span class="params"><span class="function">			     struct kvm_mmu_memory_cache *mc)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kvm_pgtable_walker</span> <span class="title">walker</span> =</span> &#123;</span><br><span class="line">		.cb	= stage2_split_walker,        <span class="comment">// 业务回调</span></span><br><span class="line">		.flags	= KVM_PGTABLE_WALK_LEAF,       <span class="comment">// 只访问叶子</span></span><br><span class="line">		.arg	= mc,                          <span class="comment">// 页表页预留缓存</span></span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	ret = kvm_pgtable_walk(pgt, addr, size, &amp;walker);</span><br><span class="line">	dsb(ishst);      <span class="comment">// RDDMVT 第6步: 确保新entry可见</span></span><br><span class="line">	<span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="http://www.plantuml.com/plantuml/svg/VPJVJXD15CRlzoacN6r3HU5E4WoK52MbWXGa92IJwUxGRdRsJtQcHIGaDJP4HGCY5me9KZL2C0HlX0OKtiLqj-rRU6Qtr5QD5qqxSyxvdUzyUxR3N11F52ocSDEmNU8H2sM9PkOyfs3hemvpFBIKDmJjYEjqaHIO67DiaJ4UKzJVhmX3C8hytSlRWoZrC8qoWkJe00hMr_nF1ytAjyRNf_Njm-QRIvL2m4FSPOP0Dr6Zl26ZP-yRrQEOeW1V69hX4bkW7YW8dfq5fISBjleWcPwDzI32aVpLdIVxMLQXJmlZSEeEBn5cKY-eh0Lxfq1oSu9a6UtJ8jnSgZkRXy9ng0z7fL1Kg-xuBoh-xXxC4TMD9hhhxirF8S6oBH5mKZI7CQe9mx4vwfcPI8G1-5OKEGAwSISqAhGBPv8pU3QJdCRfP7foUXvF9--EJzw7nlxtahzvqksIB6jNcqKBm_0jmHQr76yPUpG7RTN_fkOBEOfT69QhiGKxUFbSonTiit5rNBlu64VD3sM_yYNAb4bO8rgUNlFcKYrSoqpSwPh4HSODhMZPeKudumls8YCvFZGtCf724ycHiJWYNcx8qbOLOFwBB0ib4UE_Rr6pj5a_FsYMjlmVMmfp71S59nlo1iog7DPtod2iLO-eBRnb1Q6E5jsuei4ZtS5UkLdQryIZ5LTGDuuSfeD2NVVYYD4YPQj08KoWa1YyFV4tJltZJQHccQEPCGXUDnbDG1Cjgm8gZjhJHXaGQsTub0YA2pOpR9FgKaBzyqNz_Cg_E0TmiFyQgPdK-1HE9D8OTcUyao1NRX2rh0SzE0iq4uDooVcvjjMQ4jOIBx82p-EYPUWO5bQDC1807E021wxv0EqtEEf5Ei-g1iy3fHSLBG9x3FT_QcyrjeX9htjoouLLS3mA6yWeuLITaVv6TlsMVlqGRi4DPPosxGoVHeUBOLQjkjvyzwfMBVr-r51cwuhyoBpsWhTaSn636HfNs_2-AiEG1Vzklm00" alt="plantuml diagram"></p>
+<p><img src="http://www.plantuml.com/plantuml/svg/RLJRJXD16BxVfvXmjGqUW3j9D5WiIae5AKgCcCcq7SgcixERtMbHBqo9IaYC5YeH2H4ne2W952-K2aBVXNItxLluptHRseIBDjdz3lzXljaXLn17P4sckHc3syGX9agGP2RjM5cU6hQOvQ3vEKFG3Zn5PqcMYH6BYxZnWgB-_WwGMu9U87qTo0GKCfA6JRYO8AcKmTCI5uPW57aRPpS6KVHH3CK5ITC1vBzTz7Ps6rz_rmzVrLP_D3wSwHG01xasCmIwZkgl2n8z-b8lxuKqpRumHpqWy9UE_Fn23o8kUX29FUp6PHtJp5vBAXoUkk5vmZBKcU6wdHOamUYrP4WHfwFTFDKARhEzZKrejaaT3dTJxpsUG88bWehmf6coBNJrbXfQZOxZaIdyC1wPnB58R7poCPwCt1qTlo-T_-MzvLBtn5BMLcTo9eQ1SBCZavgMynmxD6rON6zJfwC1CnWBkshLJH7G0B-C9UVJGwYHNwuTxpRoHU-qg37Bif5VAbJBUvGBvxc6K8SQuqvzpd2b_GptDrytybj9yGpOX0cabFwdabVuu-qlwmbc9JCXm5fUms7mIYPqK5n1qxV7edWiSdkaoG2ipN0e4HHdEJDuXgPafThtazfnnJiv1bz_QqMFHqSdS3WSmrDZuL48YtIG0RTH6CIPGMJm7656gbVYlNVYOQIVhsozF5_PRbPhrPEdE8Y2jK7pE27bs1PKpRUsgqQgdHu4VleZ-N-pxp8Nxs_5B-xBWW4eNxTHY8qxGFiD5_MYb9lG3NSEAlIYd4aOK-_F5ukeyVCN70lK7OY50nTv_P1ZfES4icO3ioUgpThUcbVOVZh3wmULnje1wASSmbr61AG4ZSWRhJmeJpMNqxcd6CbGw7bntVzug8PiRMa7jlIjUpvrAi6IJD2rzkEQDaJESYWaar7YKdrA1gIPWz2b_IkhW5sjVAwN5WPdUFDGlJTBrUFtIkiLIlNTXSkQbmsrKja7RoXpQJjtAfuTULEiQlbjO_rTjPo_2BjorUHFyjftBZWMLuJWZEgLLRZ-sX2mu5lw7m00" alt="plantuml diagram"></p>
 <h3 id="stage2_split_walker三步策略">5.3
 stage2_split_walker:三步策略</h3>
+<p><strong>先理解"live 页表 vs
+离线子树"——这是三步策略的心智模型:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">拆页前的 live 页表:                create_unlinked() 建的离线子树:</span><br><span class="line">L2: [Block(2MB, OA=X)]            L2(新页表页, 从memcache分配)</span><br><span class="line">      ↑ 硬件正用这个翻译              └─ 512个L3 PTE:</span><br><span class="line">                                      [Page(4KB, OA=X+0)]</span><br><span class="line">                                      [Page(4KB, OA=X+4K)]</span><br><span class="line">                                      ...</span><br><span class="line">                                      (复刻block的OA+属性)</span><br><span class="line">                                      ↑ 无entry指向它, 硬件不可达!</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>live 页表</strong>:VTTBR_EL2 指向的、PE
+硬件正在遍历的那棵页表——拆页前 L2 上是旧 Block entry;</li>
+<li><strong>离线子树</strong>:从 <code>split_page_cache</code>
+新分配的页表页,内容是 512 个 L3 PTE(复刻原 block 的 OA
+区间和属性),<strong>此时没有任何 live entry 指向它</strong>——硬件 walk
+从 VTTBR 出发永远走不到这里,所以不可能有 TLB entry / walk cache 引用它的
+PTE;</li>
+<li>这就是 <code>SKIP_BBM_TLBI</code> 的依据:子树内部 PTE 的写入不需要
+BBM(无引用),BBM 只在"挂载"那一下(替换 L2 entry)才需要。</li>
+</ul>
+<p><strong>三步各自操作的对象不同,只有 Step2/3 需要 BBM:</strong></p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr>
+<th>Step</th>
+<th>操作</th>
+<th>对象</th>
+<th>需要 BBM?</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>① create_unlinked</td>
+<td>分配新页表页,填 512 个 PTE</td>
+<td><strong>离线子树</strong>(无 entry 指向)</td>
+<td><strong>否</strong></td>
+<td>硬件不可达,无缓存副本,<code>SKIP_BBM_TLBI</code> 跳过 TLBI</td>
+</tr>
+<tr>
+<td>② try_break_pte</td>
+<td>旧 Block entry → invalid + TLBI</td>
+<td><strong>live 页表的 L2 entry</strong>(正被硬件使用)</td>
+<td><strong>是</strong></td>
+<td>旧 2MB 翻译已缓存进 TLB,直接改 = multi-match</td>
+</tr>
+<tr>
+<td>③ make_pte</td>
+<td>L2 entry ← 新 Table entry(指向子树)</td>
+<td>同一个 L2 entry</td>
+<td>—</td>
+<td>写新值 + <code>smp_store_release</code> 保证可见</td>
+</tr>
+</tbody>
+</table>
+<p><strong>核心:BBM 的对象是 live 的 L2
+entry(块大小变化),不是离线子树。</strong> 离线建子树只是把 RDDMVT
+六步序列中"⑤写新
+entry"的<strong>准备工作提前做掉</strong>,与"①~④断旧"解耦,缩短 Break
+窗口。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">stage2_split_walker</span><span class="params">(<span class="keyword">const</span> struct kvm_pgtable_visit_ctx *ctx,</span></span></span><br><span class="line"><span class="params"><span class="function">			       <span class="keyword">enum</span> kvm_pgtable_walk_flags visit)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kvm_mmu_memory_cache</span> *<span class="title">mc</span> =</span> ctx-&gt;arg;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kvm_s2_mmu</span> *<span class="title">mmu</span>;</span></span><br><span class="line">	<span class="keyword">kvm_pte_t</span> pte = ctx-&gt;old, <span class="keyword">new</span>, *childp;</span><br><span class="line">	...</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* L3 没有大页可拆 */</span></span><br><span class="line">	<span class="keyword">if</span> (level == KVM_PGTABLE_LAST_LEVEL)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 只拆 valid 的 block mapping */</span></span><br><span class="line">	<span class="keyword">if</span> (!kvm_pte_valid(pte))</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	nr_pages = stage2_block_get_nr_page_tables(level);  <span class="comment">// 评估需要的页表页数</span></span><br><span class="line">	<span class="comment">// memcache充足 → force_pte=true 建满整棵子树</span></span><br><span class="line">	<span class="comment">// 不足 → 只建一层, 留给下次递归再拆</span></span><br><span class="line">	<span class="keyword">if</span> (mc-&gt;nobjs &lt; nr_pages)</span><br><span class="line">		<span class="keyword">return</span> -ENOMEM;</span><br><span class="line"></span><br><span class="line">	phys = kvm_pte_to_phys(pte);</span><br><span class="line">	prot = kvm_pgtable_stage2_pte_prot(pte);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ── 第一步: 离线建好整棵新子树 ──────────────────────</span></span><br><span class="line">	<span class="comment">// 关键: 内部walk带 KVM_PGTABLE_WALK_SKIP_BBM_TLBI</span></span><br><span class="line">	<span class="comment">// 子树还没挂进live页表, 硬件不可能有引用它的TLB entry</span></span><br><span class="line">	childp = kvm_pgtable_stage2_create_unlinked(mmu-&gt;pgt, phys,</span><br><span class="line">						    level, prot, mc, force_pte);</span><br><span class="line">	<span class="keyword">if</span> (IS_ERR(childp))</span><br><span class="line">		<span class="keyword">return</span> PTR_ERR(childp);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ── 第二步: Break ─────────────────────────────────</span></span><br><span class="line">	<span class="keyword">if</span> (!stage2_try_break_pte(ctx, mmu)) &#123;</span><br><span class="line">		kvm_pgtable_stage2_free_unlinked(mm_ops, childp, level);</span><br><span class="line">		<span class="keyword">return</span> -EAGAIN;                  <span class="comment">// 他人持锁 → 丢弃子树重试</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ── 第三步: Make ──────────────────────────────────</span></span><br><span class="line">	<span class="comment">// 注释原文: 子树内容保证先于新PTE可见,</span></span><br><span class="line">	<span class="comment">// 因为 stage2_make_pte() 用 smp_store_release() 写PTE</span></span><br><span class="line">	<span class="keyword">new</span> = kvm_init_table_pte(childp, mm_ops);</span><br><span class="line">	stage2_make_pte(ctx, <span class="keyword">new</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="stage2_try_break_pte-rddmvt-六步映射">5.4 stage2_try_break_pte ↔︎
 RDDMVT 六步映射</h3>
 <p>BBML0 的核心原语,注意 invalid entry 的编码用 bits[63:60]:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">stage2_try_break_pte</span><span class="params">(<span class="keyword">const</span> struct kvm_pgtable_visit_ctx *ctx,</span></span></span><br><span class="line"><span class="params"><span class="function">				 struct kvm_s2_mmu *mmu)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kvm_pgtable_mm_ops</span> *<span class="title">mm_ops</span> =</span> ctx-&gt;mm_ops;</span><br><span class="line">	<span class="keyword">kvm_pte_t</span> locked_pte;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 软件锁检查: 他人已锁定 → false → 调用方返回 -EAGAIN</span></span><br><span class="line">	<span class="keyword">if</span> (stage2_pte_is_locked(ctx-&gt;old)) &#123;</span><br><span class="line">		WARN_ON(!kvm_pgtable_walk_shared(ctx));</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// RDDMVT 第1步: 旧entry替换为invalid</span></span><br><span class="line">	<span class="comment">// 编码 = KVM_INVALID_PTE_TYPE_LOCKED (bits[63:60]=1, Valid=0)</span></span><br><span class="line">	<span class="comment">// 双重身份: 既是BBM的&quot;Break&quot;, 又是KVM自己的软件锁(防并发软件walker)</span></span><br><span class="line">	<span class="comment">// 独占访问: WRITE_ONCE; 共享walk: cmpxchg(失败即并发冲突)</span></span><br><span class="line">	locked_pte = FIELD_PREP(KVM_INVALID_PTE_TYPE_MASK,</span><br><span class="line">				KVM_INVALID_PTE_TYPE_LOCKED);</span><br><span class="line">	<span class="keyword">if</span> (!stage2_try_set_pte(ctx, locked_pte))</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!kvm_pgtable_walk_skip_bbm_tlbi(ctx)) &#123;</span><br><span class="line">		<span class="comment">// RDDMVT 第3步: 广播TLII, 按旧entry类型选粒度</span></span><br><span class="line">		<span class="keyword">if</span> (kvm_pte_table(ctx-&gt;old, ctx-&gt;level)) &#123;</span><br><span class="line">			<span class="comment">// 旧entry是table → 刷整个范围</span></span><br><span class="line">			<span class="comment">// (walk cache缓存了Table descriptor, 必须范围版驱逐!)</span></span><br><span class="line">			kvm_tlb_flush_vmid_range(mmu, addr, size);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (kvm_pte_valid(ctx-&gt;old)) &#123;</span><br><span class="line">			<span class="comment">// 旧entry是block/page → 只刷该IPA+level</span></span><br><span class="line">			kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,</span><br><span class="line">				     ctx-&gt;addr, ctx-&gt;level);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (stage2_pte_is_counted(ctx-&gt;old))</span><br><span class="line">		mm_ops-&gt;put_page(ctx-&gt;ptep);   <span class="comment">// 页表页引用计数</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">stage2_make_pte</span><span class="params">(<span class="keyword">const</span> struct kvm_pgtable_visit_ctx *ctx, <span class="keyword">kvm_pte_t</span> <span class="keyword">new</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	WARN_ON(!stage2_pte_is_locked(*ctx-&gt;ptep));   <span class="comment">// 必须处于LOCKED态</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (stage2_pte_is_counted(<span class="keyword">new</span>))</span><br><span class="line">		mm_ops-&gt;get_page(ctx-&gt;ptep);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// RDDMVT 第5步: 写新entry; release语义保证</span></span><br><span class="line">	<span class="comment">// 新子树内容先于Table entry对硬件可见</span></span><br><span class="line">	smp_store_release(ctx-&gt;ptep, <span class="keyword">new</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">stage2_try_break_pte</span><span class="params">(<span class="keyword">const</span> struct kvm_pgtable_visit_ctx *ctx,</span></span></span><br><span class="line"><span class="params"><span class="function">				 struct kvm_s2_mmu *mmu)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kvm_pgtable_mm_ops</span> *<span class="title">mm_ops</span> =</span> ctx-&gt;mm_ops;</span><br><span class="line">	<span class="keyword">kvm_pte_t</span> locked_pte;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 软件锁检查: 他人已锁定 → false → 调用方返回 -EAGAIN</span></span><br><span class="line">	<span class="keyword">if</span> (stage2_pte_is_locked(ctx-&gt;old)) &#123;</span><br><span class="line">		WARN_ON(!kvm_pgtable_walk_shared(ctx));</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// RDDMVT 第1步: 旧entry替换为invalid</span></span><br><span class="line">	<span class="comment">// 编码 = KVM_INVALID_PTE_TYPE_LOCKED (bits[63:60]=1, Valid=0)</span></span><br><span class="line">	<span class="comment">// 双重身份: 既是BBM的&quot;Break&quot;, 又是KVM自己的软件锁(防并发软件walker)</span></span><br><span class="line">	<span class="comment">// 独占访问: WRITE_ONCE; 共享walk: cmpxchg(失败即并发冲突)</span></span><br><span class="line">	locked_pte = FIELD_PREP(KVM_INVALID_PTE_TYPE_MASK,</span><br><span class="line">				KVM_INVALID_PTE_TYPE_LOCKED);</span><br><span class="line">	<span class="keyword">if</span> (!stage2_try_set_pte(ctx, locked_pte))</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!kvm_pgtable_walk_skip_bbm_tlbi(ctx)) &#123;</span><br><span class="line">		<span class="comment">// RDDMVT 第3步: 广播TLBI, 按旧entry类型选粒度</span></span><br><span class="line">		<span class="keyword">if</span> (kvm_pte_table(ctx-&gt;old, ctx-&gt;level)) &#123;</span><br><span class="line">			<span class="comment">// 旧entry是table → 刷整个范围</span></span><br><span class="line">			<span class="comment">// (walk cache缓存了Table descriptor, 必须范围版驱逐!)</span></span><br><span class="line">			kvm_tlb_flush_vmid_range(mmu, addr, size);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (kvm_pte_valid(ctx-&gt;old)) &#123;</span><br><span class="line">			<span class="comment">// 旧entry是block/page → 只刷该IPA+level</span></span><br><span class="line">			kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,</span><br><span class="line">				     ctx-&gt;addr, ctx-&gt;level);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (stage2_pte_is_counted(ctx-&gt;old))</span><br><span class="line">		mm_ops-&gt;put_page(ctx-&gt;ptep);   <span class="comment">// 页表页引用计数</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">stage2_make_pte</span><span class="params">(<span class="keyword">const</span> struct kvm_pgtable_visit_ctx *ctx, <span class="keyword">kvm_pte_t</span> <span class="keyword">new</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	WARN_ON(!stage2_pte_is_locked(*ctx-&gt;ptep));   <span class="comment">// 必须处于LOCKED态</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (stage2_pte_is_counted(<span class="keyword">new</span>))</span><br><span class="line">		mm_ops-&gt;get_page(ctx-&gt;ptep);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// RDDMVT 第5步: 写新entry; release语义保证</span></span><br><span class="line">	<span class="comment">// 新子树内容先于Table entry对硬件可见</span></span><br><span class="line">	smp_store_release(ctx-&gt;ptep, <span class="keyword">new</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>与 RDDMVT 六步的映射表:</strong></p>
 <table>
 <colgroup>
@@ -1684,10 +2348,10 @@ LOCKED</td>
 </tr>
 <tr>
 <td>2. DSB(可见性)</td>
-<td>折叠进 hyp 调用边界 + 后续广播 TLII 语义</td>
+<td>折叠进 hyp 调用边界 + 后续广播 TLBI 语义</td>
 </tr>
 <tr>
-<td>3. broadcast TLII</td>
+<td>3. broadcast TLBI</td>
 <td><code>__tlbi_level(ipas2e1is)</code>;table entry 用
 <code>kvm_tlb_flush_vmid_range</code></td>
 </tr>
@@ -1706,9 +2370,9 @@ LOCKED</td>
 </tr>
 </tbody>
 </table>
-<h3 id="kvm_tlb_flush_vmid_ipatlii-的硬件细节">5.5
-__kvm_tlb_flush_vmid_ipa:TLII 的硬件细节</h3>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> __kvm_tlb_flush_vmid_ipa(struct kvm_s2_mmu *mmu,</span><br><span class="line">			      <span class="keyword">phys_addr_t</span> ipa, <span class="keyword">int</span> level)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tlb_inv_context</span> <span class="title">cxt</span>;</span></span><br><span class="line"></span><br><span class="line">	enter_vmid_context(mmu, &amp;cxt, <span class="literal">false</span>);   <span class="comment">// 切到目标VMID</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 广播TLII, 带level提示优化</span></span><br><span class="line">	__tlbi_level(ipas2e1is, ipa, level);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 必须先确保S2失效完成</span></span><br><span class="line">	dsb(ish);</span><br><span class="line">	<span class="comment">// 额外把S1全刷!</span></span><br><span class="line">	__tlbi(vmalle1is);</span><br><span class="line">	__tlbi_sync_s1ish_hyp();</span><br><span class="line">	isb();</span><br><span class="line"></span><br><span class="line">	exit_vmid_context(&amp;cxt);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="kvm_tlb_flush_vmid_ipatlbi-的硬件细节">5.5
+__kvm_tlb_flush_vmid_ipa:TLBI 的硬件细节</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> __kvm_tlb_flush_vmid_ipa(struct kvm_s2_mmu *mmu,</span><br><span class="line">			      <span class="keyword">phys_addr_t</span> ipa, <span class="keyword">int</span> level)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tlb_inv_context</span> <span class="title">cxt</span>;</span></span><br><span class="line"></span><br><span class="line">	enter_vmid_context(mmu, &amp;cxt, <span class="literal">false</span>);   <span class="comment">// 切到目标VMID</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 广播TLBI, 带level提示优化</span></span><br><span class="line">	__tlbi_level(ipas2e1is, ipa, level);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 必须先确保S2失效完成</span></span><br><span class="line">	dsb(ish);</span><br><span class="line">	<span class="comment">// 额外把S1全刷!</span></span><br><span class="line">	__tlbi(vmalle1is);</span><br><span class="line">	__tlbi_sync_s1ish_hyp();</span><br><span class="line">	isb();</span><br><span class="line"></span><br><span class="line">	exit_vmid_context(&amp;cxt);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>代码注释解释了为什么连 S1 一起刷:"We have to ensure completion of the
 invalidation at Stage-2, since <strong>a table walk on another CPU could
 refill a TLB with a complete (S1 + S2) walk based on the old Stage-2
@@ -1719,18 +2383,368 @@ S1+S2 信息的结构"的体现。)</p>
 <h3 id="skip_bbm_tlbi-的真实语义-bbml2">5.6 SKIP_BBM_TLBI 的真实语义(≠
 BBML2)</h3>
 <p><code>KVM_PGTABLE_WALK_SKIP_BBM_TLBI</code> 很容易被误读为"用了
-BBML2"。<strong>不是</strong>。它跳过 TLII
+BBML2"。<strong>不是</strong>。它跳过 TLBI
 的依据是:<strong>子树尚未挂载进 live 页表,硬件不可能持有引用它的 TLB
 entry / walk cache</strong>——这是"无引用"逻辑,与硬件 BBM 级别无关,在
 BBML0 上同样成立。KVM 是彻底的 BBML0 软件方案。</p>
-<p><img src="http://www.plantuml.com/plantuml/svg/RLJHJXj757tVhnZnv1LKnMwR1qkkKbCY8Q2Ws2eFSJGQsnDxvTbPQsVif7s21bDJC35D2MberQ2M9YM0gTf63flWVwbsTjT_qRkx9E2eBxEhkNVFFVUUS_UwaCIM3PDfecRmEh69YOgaLAlOLeENfoncsUXkrP3qIhnCxv06apSiBdF6rnGbaveq9AD8xPqd9zC882iqXRoDjU7-Fsv_tJi-y8yV-Ji7Rd_BV_rG7J_sltlfBQyaL6V7xH-cvhCeownIJTSqA22Dab4dNAAnu4tFTLuMU4BKcI7HNS9grDR7414ejpIQ2eM2_US9jTO2z3XbCJ-Qaf_BHlVm70s4kAX4IbKQnPUcD2sJGVxHaTjV1kffvF_k-6S3vPofuwxtT1jbCbfk2NtmAPH0QLIoAP4KDpWpU8sM4tg1kywMISq8KhNNXgrEJ0_E0bU_TLJRMVXil6vRKhLFFqccO0QB-McDMv8Ygqbjm9q06e0T5_H-ElGslma6UyneqXYgmFtz8nYEs--e1xtW_XlrUiV_uJdwT-rxb9kTMSJPx3o6JcTWUi7WH-znRypRVHedZGsNdU1yUmA1790sbmeZhR_qTssVRKPjPw6nsdlDBjsSoK_ZXI-cfZyicVLxfMebNU3UxhD8FqIvjB-AECmjJCrEVmx5YuOKjwvzbBusUJkJd41V4cQKCvFw1IOm152CQqqJIrR4TrX3L77JDCeOn0b72G-Heab39E1j0Z7Qf6pqwx8e9WnHrT4uQfg4iJ1P2qFlCeP__3bSxW9BS9e_S8BUTaGKsAdk2zzPLTrsBZcUI_bFLgE0VaMA6E5MCPo5VxYh7lnwky23ay5mzoHgD6yJBXYHXiNHZN0h2ZoyRWXgO_009aNBbWaT3R_jUBySm1dqTgx0Hoe76mSn_fDL44gI8gnIH0Hc-p-JWOeL6iucsBolzlxsrzjnWvS-lZJmUgJaFAdHzuICTnIR4C5r6S49iuw5j6oARSee4JIHlwIYZzWJ02votC7FGMybDC6ZqzYjuGwUl5AjjdksTGKWjEcpbGiASAPHs5gz4hMBB-X4YmxUTXwgq_EtoWePMzDzjQ6wMvTznD9K6bJ8M13J428UVpWA81JlIgIJsd-XMgsFPxCn6-qwvMNuw_q7" alt="plantuml diagram"></p>
+<p><img src="http://www.plantuml.com/plantuml/svg/RLHTRnf757tdLrpbQLUXag5j7f2e8jn4YenL953za8rM0unXnUuisXc8sYTRDSI9FuAREhQIfZMjtAH9RHAfZR19pN-ncDtbN_JkBZN6yiiipBrpvjnpxftRN117D2mpnci6gnE7M50afLh5iHkiF6-RjWCFguQWb-9bkamQfhXhCv4tlgUGI5mACblGQMJkKYI75nabeqwOo95osM2L82uCOLAGByyISob0CXMQ17UZFUx-C-e_TeyElQFdtkxXgB_jVNecZ_Qz9n_TbLL5RksE-c-JYnd8c7QffiPYzIawtF3_xOq67pMcyBff27X8p1frr1j0EEINPbFn8h_xHf7j5g97ARd2R4eXcmdtyJiR272XH4fL6iQNvcEnT1hETmx0-sFWdGxbu5GUTTo37L1axyJ_q4rDziFDEBXx1-EVLpAPHHNIwLX-2Jxx2Y-759GSIWJL6ymqM8sM5LLZShqzRcsvpzz7X76DW-o--pAHH25oXJknG7XmZ4fLWBqSmPX6aqRfMSnwuW_ttVsUk_Swr0me4yvt21oIGIhXVtVpaUmWDQ_x5oeuwc_9fpt_x4nZ-OLxEHsfwgZ2FGNJvQTTxwStSHY_-WMtiqbrKdmNCiY-Tb5oG0AooUWwv3niZRk3Qsh6g5uCJkfrGLCQcpcNYdm-R_-O_MP-uSxNQ6tH4Fp-hSzJj-OUf1Dn-9QOHZazfquWaILYwdgjQUd2BEhBPeDNzQPbb7KqBn0KFpn94mPNy5SSJDgavkpfCYyg1g-gS1EQ5Z7D83aMX2uondz-6AzqK57iH6yuy7ix4r4LsNdd3TPaPpsVk9bFUY_Mme1wnQK8vNvOjlTsJpxz_O76_EFXUEyOIoquX76J2CDcS3UOE8tXReDJHxUefPEYxGX57J_QSdyznDNlxLw1Nvf7T7_ZCC9_iORk2rB4SOiqrTWrwk2T5Hheus_-85_-xJrUZugSzlh4vzzWaTJeXSsoipdghs0lplXsrMGBZrpdBvotEr2OSjCOj-ew5xP3TOUQb71wNODFGgFXAx-tYfWu7b4x1-DyV29RwwFJROrT0WxQ-VNgX1AkAGWqg5T2NVJe_T73LqDZtk2PV7_sVnjm4NNuw6H3ThQdTKKULXgKYyWvo-0yT2fyTouc5e8Td5ZPQdsna8dOn6vJLiR7zpy0" alt="plantuml diagram"></p>
+<h3 id="kvm-bbml3rfc-预览未合入主线">5.7 KVM BBML3(RFC
+预览,未合入主线)</h3>
+<p>社区已有 KVM 侧 BBML3 支持的 RFC(Mostafa Saleh / Google,两个
+patch,<code>BBML3</code> 分支):</p>
+<ul>
+<li><code>8c44dbf89352</code> — 添加
+<code>stage2_clean_old_pte()</code>:把原
+<code>stage2_try_break_pte()</code> 中的 TLBI + put_page
+逻辑<strong>抽取成独立函数</strong>,供 BBML3 路径复用(软件 BBM
+路径行为不变,仅重构);</li>
+<li><code>5adaf55fb3bd</code> — KVM 支持 BBM Level 3:新增
+<code>stage2_use_bbml3()</code> 门控 +
+<code>stage2_try_break_pte()</code> / <code>stage2_make_pte()</code>
+双路径。</li>
+</ul>
+<h4 id="门控三个条件同时满足">门控:三个条件同时满足</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">stage2_use_bbml3</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> system_supports_bbml3() &amp;&amp;</span><br><span class="line">           cpus_have_final_cap(ARM64_HAS_STAGE2_FWB) &amp;&amp;</span><br><span class="line">           cpus_have_final_cap(ARM64_HAS_CACHE_DIC);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>BBML3</strong>:基础 BBM 级别保证;</li>
+<li><strong>FWB(Stage2 Forced Write-Back)</strong>:stage2 不需要
+CMO(cache maintenance operation);</li>
+<li><strong>DIC(Device ICache clean)</strong>:指令 cache 隐含维护;</li>
+<li><strong>为什么要限制 FWB+DIC</strong>:BBML3 用 <code>cmpxchg</code>
+原子替换 PTE,只有在替换失败时才知道有并发——而 CMO
+必须在写入前做,并发时会做<strong>冗余 CMO</strong>。限制在 DIC+FWB
+系统避免这个问题(commit message 原文:"racing cores will issue redundant
+CMOs. To avoid this, limit BBML3 support for systems with DIC and FWB,
+which does not require CMOs")。</li>
+</ul>
+<h4 id="新序列make-first-tlbi-后置">新序列:Make-first + TLBI 后置</h4>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>BBML0(软件六步)</th>
+<th>BBML3(RFC 新序列)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>①</td>
+<td>旧 entry 置 invalid(Valid=0)</td>
+<td><strong>get ref on new PTE</strong></td>
+</tr>
+<tr>
+<td>②</td>
+<td>DSB</td>
+<td><strong>原子替换 PTE</strong>(cmpxchg,Valid 恒 1)</td>
+</tr>
+<tr>
+<td>③</td>
+<td>广播 TLBI</td>
+<td><strong>TLBI(驱逐旧 entry)</strong></td>
+</tr>
+<tr>
+<td>④</td>
+<td>DSB</td>
+<td><strong>drop ref on old PTE</strong></td>
+</tr>
+<tr>
+<td>⑤</td>
+<td>写新 entry</td>
+<td>—</td>
+</tr>
+<tr>
+<td>⑥</td>
+<td>DSB</td>
+<td>—</td>
+</tr>
+<tr>
+<td>fault 窗口</td>
+<td><strong>有</strong></td>
+<td><strong>无</strong>(Valid 恒 1)</td>
+</tr>
+<tr>
+<td>软件锁</td>
+<td>LOCKED(bits[63:60])</td>
+<td><strong>不需要</strong>(cmpxchg 失败即 -EAGAIN)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="代码路径">代码路径</h4>
+<p><code>stage2_try_break_pte()</code> 在 BBML3 下<strong>直接 return
+true(跳过 break)</strong>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">stage2_try_break_pte</span><span class="params">(...)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">kvm_pte_t</span> locked_pte;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* All handled in stage2_make_pte() */</span></span><br><span class="line">    <span class="keyword">if</span> (stage2_use_bbml3() &amp;&amp; kvm_pte_valid(ctx-&gt;old))</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;                    <span class="comment">// ← BBML3: 不置 invalid, 不锁定, 直接跳过</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 以下 BBML0 路径不变...</span></span><br><span class="line">    locked_pte = FIELD_PREP(KVM_INVALID_PTE_TYPE_MASK,</span><br><span class="line">                            KVM_INVALID_PTE_TYPE_LOCKED);</span><br><span class="line">    <span class="keyword">if</span> (!stage2_try_set_pte(ctx, locked_pte))</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    stage2_clean_old_pte(ctx, mmu);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>stage2_make_pte()</code> 在 BBML3 下走
+<strong>make-first</strong> 路径:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">stage2_make_pte</span><span class="params">(ctx, mmu, <span class="keyword">new</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (stage2_pte_is_counted(<span class="keyword">new</span>))</span><br><span class="line">        mm_ops-&gt;get_page(ctx-&gt;ptep);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (stage2_use_bbml3() &amp;&amp; kvm_pte_valid(ctx-&gt;old)) &#123;</span><br><span class="line">        smp_wmb();                      <span class="comment">// 保证新内容先于 PTE 可见</span></span><br><span class="line">        <span class="keyword">if</span> (!stage2_try_set_pte(ctx, <span class="keyword">new</span>)) &#123;  <span class="comment">// cmpxchg 原子替换</span></span><br><span class="line">            mm_ops-&gt;put_page(ctx-&gt;ptep);     <span class="comment">// 失败: 回滚 ref, -EAGAIN</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        stage2_clean_old_pte(ctx, mmu);      <span class="comment">// 成功: 后置 TLBI + put_page</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// BBML0 路径不变...</span></span><br><span class="line">    WARN_ON(!stage2_pte_is_locked(*ctx-&gt;ptep));</span><br><span class="line">    smp_store_release(ctx-&gt;ptep, <span class="keyword">new</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>前置约束</strong>(commit message 原文):"We assume that KVM
+will never change the OA of an active translation. If the host needs to
+move the backing PFN, it should do an explicit unmap to issue the
+required TLBI."——KVM 承诺不在 BBML3 路径上改变活跃翻译的 OA(需要 remap
+时走显式 unmap,走传统 BBM)。</p>
+<p>三个调用点(<code>stage2_map_walker_try_leaf</code> /
+<code>stage2_map_walk_leaf</code> /
+<code>stage2_split_walker</code>)都适配了 <code>-EAGAIN</code>
+重试。</p>
 <hr>
-<h2 id="六案例二cpu-mm-侧-bbml2-bbml3-硬件方案">六、案例二:CPU MM 侧 ——
-BBML2 → BBML3 硬件方案</h2>
-<p>Linux arm64 的进程/内核页表(stage1)是 BBML2/3
-的受益者:<code>arch/arm64/mm/</code> 在 BBML2_NOABORT(现
-BBML3)系统上跳过大量中间 TLII。</p>
-<h3 id="演进时间线">6.1 演进时间线</h3>
+<h2 id="六bbml1-bbml2-bbml3-的代码实现与使用场景">六、BBML1 / BBML2 /
+BBML3 的代码实现与使用场景</h2>
+<p>本章按级别逐一解析内核代码——发现 BBML1 被完全跳过、BBML2 仅 SMMU
+侧检测、BBML3 是 CPU 侧主力。先看全貌:</p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>场景</th>
+<th>函数</th>
+<th>优化内容</th>
+<th>侧</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>mTHP contig PTE 折叠/展开</td>
+<td><code>contpte_convert()</code></td>
+<td>跳过中间 TLBI(最核心场景)</td>
+<td>CPU MM(stage1)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>线性映射</td>
+<td><code>force_pte_mapping()</code></td>
+<td>BBML3 保留 block mapping,不强制 PTE 化</td>
+<td>CPU MM(stage1)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>KFENCE pool</td>
+<td><code>arch_kfence_init_pool()</code></td>
+<td>拆页后跳过 TLBI("larger entries may safely linger")</td>
+<td>CPU MM(stage1)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>KPTI 混合拓扑</td>
+<td><code>linear_map_split_to_ptes()</code> +
+<code>idmap_kpti_bbml3_flag</code></td>
+<td>核间握手,拆分窗口期处理</td>
+<td>CPU MM(stage1)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>SMMU SVA</td>
+<td><code>arm_smmu_sva_supported()</code></td>
+<td>CPU+SMMU 双侧 noabort 门控(共享页表)</td>
+<td>SMMU + CPU MM</td>
+</tr>
+<tr>
+<td>6</td>
+<td>KVM stage2 拆大页/映射(RFC)</td>
+<td><code>stage2_make_pte()</code> +
+<code>stage2_clean_old_pte()</code></td>
+<td>跳过 break,make-first + TLBI 后置</td>
+<td>KVM stage2</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>前 5 项由 <code>system_supports_bbml3()</code> 门控,主线已合入;第 6
+项在 RFC 分支(Mostafa Saleh / Google),见 5.7 节。</p>
+</blockquote>
+<h3 id="bbml1被跳过的一级无内核实现">6.1
+BBML1：被跳过的一级(无内核实现)</h3>
+<p><strong>sysreg 定义了 BBML1 但内核从不用它。</strong>
+搜索全树确认:</p>
+<table>
+<thead>
+<tr>
+<th>搜索项</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>arch/arm64/tools/sysreg</code> 中 BBM 枚举</td>
+<td><code>0b0001</code> 有定义(Level 1)</td>
+</tr>
+<tr>
+<td><code>pgtable-hwdef.h</code> 中 nT 位定义</td>
+<td><strong>无</strong>——内核页表格式不定义 nT 位</td>
+</tr>
+<tr>
+<td><code>cpufeature.c</code> 中 BBML1 能力</td>
+<td><strong>无</strong>——只有 <code>ARM64_HAS_BBML3</code></td>
+</tr>
+<tr>
+<td><code>contpte.c</code> / <code>mmu.c</code> 中 nT 操作</td>
+<td><strong>无</strong>——没有任何读/写 nT 位的代码</td>
+</tr>
+<tr>
+<td>KVM 中 BBML3 使用</td>
+<td>主线<strong>无</strong>(无条件 BBML0);RFC 分支已实现(见 5.7)</td>
+</tr>
+</tbody>
+</table>
+<p>内核从 BBML0(软件 6 步)<strong>直接跳到</strong> BBML2_NOABORT(现
+BBML3),完全跳过 BBML1。原因:</p>
+<ul>
+<li><strong>性能差</strong>:nT=1 空窗期每次访问都 walk
+且不缓存(IDXRJK)——比 BBML2/3 的"直接改"差一个数量级;</li>
+<li><strong>安全不足</strong>:BBML1 的 Contig 放松仍可能产生 TLB
+conflict abort(RFCPSG)——内核缺页处理等路径运行在 abort 上下文中,递归
+abort 无法恢复;</li>
+<li><strong>BBML2/3 严格优于 BBML1</strong>:免 nT、免中间 TLBI,BBML3
+还额外消除 abort——没有任何场景会让内核选 BBML1。</li>
+</ul>
+<blockquote>
+<p>4.3 节里的 nT 位四步序列是 SMMU spec(IHI 0070H.a 3.21.1.2)的
+Note,<strong>不是内核 C 代码</strong>——SMMU 实现可能内部使用
+nT,但内核软件不碰它。</p>
+</blockquote>
+<h3 id="bbml2smmu-侧检测-sva-门控">6.2 BBML2：SMMU 侧检测 + SVA
+门控</h3>
+<p>BBML2 在内核中<strong>只有两个代码点</strong>,都在 SMMU 驱动里:</p>
+<p><strong>① 硬件探测——读 SMMU IDR3.BBM 字段:</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c</span></span><br><span class="line"><span class="keyword">if</span> (FIELD_GET(IDR3_BBM, reg) == <span class="number">2</span>)</span><br><span class="line">    smmu-&gt;features |= ARM_SMMU_FEAT_BBML2;</span><br></pre></td></tr></table></figure>
+<p>SMMU spec(IHI 0070H.a)比 ARM ARM 更严格:IDR3.BBM==2 时<strong>保证
+F_TLB_CONFLICT 永不发生</strong>(3.21.1.3)——SMMU 的 BBML2 就等价于 ARM
+的 BBML3(noabort)。所以内核的 <code>ARM_SMMU_FEAT_BBML2</code>
+本质是"SMMU 侧的 BBML3"。</p>
+<p><strong>② SVA 门控——CPU 和 SMMU 双侧都满足才开 SVA:</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-sva.c</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">arm_smmu_sva_supported</span><span class="params">(struct arm_smmu_device *smmu)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    u32 feat_mask = ARM_SMMU_FEAT_COHERENCY;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (system_supports_bbml3())       <span class="comment">// CPU 侧必须支持 BBML3(原 bbml2_noabort)</span></span><br><span class="line">        feat_mask |= ARM_SMMU_FEAT_BBML2;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((smmu-&gt;features &amp; feat_mask) != feat_mask)  <span class="comment">// SMMU 侧也必须支持</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>使用场景</strong>:SVA(Shared Virtual Addressing)下 CPU 和
+SMMU <strong>共享同一套进程页表</strong>。页表更新时(如 contpte
+fold/unfold)CPU 侧跳过了中间 TLBI——SMMU 也必须能在不中断 DMA
+的前提下容忍新旧 entry 并存。这就是双侧都要 noabort 的原因。</p>
+<p><strong>最低公共级别原则</strong>(SMMU spec
+3.21.1.1,原文见附录B):多个组件共享一张页表时,必须按<strong>最低公共 BBML
+级别</strong>行为更新。CPU 侧 BBML3 + SMMU 侧 BBML2(=SMMU 的 noabort)=
+双方都满足 noabort → SVA 可以安全跳过中间 TLBI。</p>
+<blockquote>
+<p>⚠️ rename commit <code>94104e3cfa80</code>
+漏改了此文件——仍调用已不存在的
+<code>system_supports_bbml2_noabort()</code>,SVA config
+开启时编译会失败。<strong>主线已正式合入修复</strong>(Will Deacon,
+<code>d8fc0793cf68</code>:"Use system_supports_bbml3() to detect CPU
+feature")。</p>
+</blockquote>
+<h3 id="bbml3cpu-侧检测-五个使用场景">6.3 BBML3：CPU 侧检测 +
+五个使用场景</h3>
+<p>BBML3 是内核中<strong>唯一有实际代码使用的 BBML 级别</strong>(KVM
+不使用,见第五章)。代码分布在 <code>cpufeature.c</code> /
+<code>contpte.c</code> / <code>mmu.c</code> / <code>proc.S</code> /
+<code>nested.c</code> / <code>sys_regs.c</code>。</p>
+<h4 id="检测cpu_supports_bbml3">6.3.1 检测:cpu_supports_bbml3()</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// arch/arm64/kernel/cpufeature.c</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">cpu_supports_bbml3</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">/* CPUs that support BBML3 but dont advertise through ID_AA64MMFR2_EL1 */</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">midr_range</span> <span class="title">supports_bbml3_list</span>[] =</span> &#123;</span><br><span class="line">        MIDR_REV_RANGE(MIDR_CORTEX_X4,       <span class="number">0</span>, <span class="number">3</span>, <span class="number">0xf</span>),</span><br><span class="line">        MIDR_REV_RANGE(MIDR_NEOVERSE_V3,     <span class="number">0</span>, <span class="number">2</span>, <span class="number">0xf</span>),</span><br><span class="line">        MIDR_REV_RANGE(MIDR_NEOVERSE_V3AE,   <span class="number">0</span>, <span class="number">2</span>, <span class="number">0xf</span>),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_NVIDIA_OLYMPUS),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_AMPERE1),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_AMPERE1A),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_CORTEX_A520AE),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_CORTEX_A715),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_CORTEX_A720AE),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_CORTEX_A725),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_NEOVERSE_N3),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_C1_NANO),</span><br><span class="line">        MIDR_ALL_VERSIONS(MIDR_C1_PRO),</span><br><span class="line">        <span class="comment">/* Erratum 3683289 fixed in r1p1:</span></span><br><span class="line"><span class="comment">         * C1-Ultra/Premium 在r1p0及以前必须遵守完整BBM, 否则livelock */</span></span><br><span class="line">        MIDR_RANGE(MIDR_C1_ULTRA,   <span class="number">1</span>, <span class="number">1</span>, <span class="number">0xf</span>, <span class="number">0xf</span>),</span><br><span class="line">        MIDR_RANGE(MIDR_C1_PREMIUM, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0xf</span>, <span class="number">0xf</span>),</span><br><span class="line">        &#123;&#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    u64 mmfr2 = __read_sysreg_by_encoding(SYS_ID_AA64MMFR2_EL1);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (SYS_FIELD_GET(ID_AA64MMFR2_EL1, BBM, mmfr2) &gt;= ID_AA64MMFR2_EL1_BBM_3)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> is_midr_in_range_list(supports_bbml3_list);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>为什么要 MATCH_ALL_EARLY_CPUS?</strong></p>
+<ul>
+<li>检测依据是 MIDR(非 sanitised 寄存器),SCOPE_SYSTEM 那种"SMP
+启动完成后统一检查"不适用;</li>
+<li>新类型要求<strong>每个 early CPU
+本地检查、全部满足才启用</strong>;late CPU 必须具备该特性;</li>
+<li>能力表项:<code>ARM64_HAS_BBML3</code>,<code>type = ARM64_CPUCAP_EARLY_LOCAL_CPU_FEATURE</code>。</li>
+</ul>
+<p><strong>erratum 3683289</strong>:C1-Ultra/C1-Premium
+在受影响修订版上不遵守 BBM 会触发 livelock,白名单只放行 r1p1+——说明 MIDR
+fallback 不只是信任清单,每款 CPU 还要逐个核对微架构 bug。</p>
+<h4 id="使用场景①contpte_convertmthp-contiguous-pte-折叠展开">6.3.2
+使用场景①:contpte_convert()——mTHP contiguous PTE 折叠/展开</h4>
+<p><strong>这是 BBML3 最核心的使用场景。</strong>
+<code>contpte_convert()</code> 同时服务 fold(N 个非 contig PTE → 1 个
+contig block)和 unfold(反向):</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// arch/arm64/mm/contpte.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">contpte_convert</span><span class="params">(struct mm_struct *mm, <span class="keyword">unsigned</span> <span class="keyword">long</span> addr,</span></span></span><br><span class="line"><span class="params"><span class="function">                            <span class="keyword">pte_t</span> *ptep, <span class="keyword">pte_t</span> pte)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vm_area_struct</span> <span class="title">vma</span> =</span> TLB_FLUSH_VMA(mm, <span class="number">0</span>);</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 第一步: 聚合AF/dirty位, PTE清为invalid</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; CONT_PTES; i++, ptep++, addr += PAGE_SIZE) &#123;</span><br><span class="line">        <span class="keyword">pte_t</span> ptent = __ptep_get_and_clear(mm, addr, ptep);</span><br><span class="line">        <span class="keyword">if</span> (pte_dirty(ptent))</span><br><span class="line">            pte = pte_mkdirty(pte);</span><br><span class="line">        <span class="keyword">if</span> (pte_young(ptent))</span><br><span class="line">            pte = pte_mkyoung(pte);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 关键: BBML0系统才需要中间tlbi; BBML3直接跳过</span></span><br><span class="line">    <span class="keyword">if</span> (!system_supports_bbml3())</span><br><span class="line">        __flush_tlb_range(&amp;vma, start_addr, addr, PAGE_SIZE, <span class="number">3</span>,</span><br><span class="line">                          TLBF_NOWALKCACHE);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 第二步: 重绘为contig block</span></span><br><span class="line">    __set_ptes(mm, start_addr, start_ptep, pte, CONT_PTES);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>使用场景体现</strong>:mTHP(Transparent Huge Pages for
+mTHP)在用户进程页表上做 contig PTE 的动态折叠/展开。触发路径:</p>
+<ul>
+<li><code>__contpte_try_fold()</code>(pgtable.h)→ 检查连续性满足 → 调
+<code>contpte_convert()</code> 折叠;</li>
+<li><code>__contpte_try_unfold()</code>(contpte.c)→ 反向 → 同调
+<code>contpte_convert()</code> 展开;</li>
+<li>调用者:<code>set_ptes</code> / <code>ptep_get_and_clear</code> /
+<code>contpte_try_unfold_partial</code> 等常规页表操作。</li>
+</ul>
+<p><strong>BBML3
+在代码中的体现</strong>:<code>if (!system_supports_bbml3())</code>
+是唯一的分支点——BBML3 系统<strong>跳过中间 TLBI</strong>,直接从 invalid
+重绘成 contig block;非 BBML3 系统必须先 <code>__flush_tlb_range()</code>
+再重绘(BBML0 的 make-then-flush 反向 = flush-then-make)。</p>
+<p><strong>跳过的正确性</strong>(内核注释引 RNGLXZ/RJQQTC):</p>
+<ul>
+<li>跳过后旧的单页 entry(如 RW,n)和新的 contig entry(RO,c)可能同时存在于
+TLB——不同 Tag(4KB vs 64KB contig)所以能共存;</li>
+<li>multi-match 时,BBML3 硬件<strong>只返回一致结果、绝不融合、永不
+abort</strong>;</li>
+<li>调用者对变更页的<strong>最终 TLBI</strong> 清掉新旧;其余 stale entry
+靠自然淘汰。</li>
+</ul>
+<p><code>TLBF_NOWALKCACHE</code>:只刷 TLB entry、不动 walk cache——contig
+位变化不改变层级结构,walk cache 无需无效化。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/dPDlJzDG5CRVzrESyAgD49p3Dqjc408cPk8O91YjQUxMRjnGRfVs3i5N8petGXWcaW4oY3EYX0IP4KTX0RwBQM-xR-7TdmWpCoQ-kasVSyxptD_D6ROeCcbcNXUiEKpIo4Jp44U9kPHfP8WwQkY62IzcCTLkwAgMH1cTZXk4Jk6N6WG2DqHYKErQkND3YN8ZdC1fH6WKgIecAGZS5IYckWRkpcKW4884RqnJ3PA6hWBRhBddw-xn6JlUW9_P3HWPUHIv3GjMwoC8uaHuoFjqxbokIeAGlXuEVVx5iLEloKJip5FukQ2PLEe3PC7KJ7Tre_B3hno8aM1RZavtozEHaTP_VWf2EDnE4GBtAjUer5bvnR6F6fidL8zZ28S5OMe61kxn8H02HU7UQIMbKGKHLKde6Z952HQ7PE8lltVV5kwF3whOf4lzl7wCsJd7FiTa0UbOxOpXdgqvIJrZpIhSGp4HIMcY99EMuIrGhRZGH0ucJirIC9AT7g_orRdQTNCrfrwAZhdhXrvvrIrKPT8nO8KIArMRV70AD4BDfUxa5W_DqrkTlEwRRJUt3yzYZ_iJpnU7kkBvrLVUne6VpR5orgiNci5-Wmfo-VIxVvN_Bqf_eT8xehTpmehxVmRjnOPjVX5ZC_r4SkmYXo0sQoNthEOUROLa4fju47doT33sS79oUbGcA6wOL6pTnVkyp8u-SlOSdcDd_Vo9Lt_7zigYLzzrx3L_Rus_gVGlDhpTph7Y2dVcGTheUwLiljt5ziH0mB4F-PBo9MdLogIn-y7F7tglQ-nqYtsh2iCQKVa2_m80" alt="plantuml diagram"></p>
+<h4 id="使用场景②force_pte_mapping线性映射保留-block">6.3.3
+使用场景②:force_pte_mapping()——线性映射保留 block</h4>
+<p><strong>使用场景</strong>:内核线性映射(direct map)要不要强制拆成 4K
+PTE?BBML3 系统保留 2M/1G block mapping:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// arch/arm64/mm/mmu.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">bool</span> <span class="title">force_pte_mapping</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">bool</span> bbml3 = system_capabilities_finalized() ?</span><br><span class="line">        system_supports_bbml3() : cpu_supports_bbml3();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (debug_pagealloc_enabled())</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">if</span> (bbml3)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;                       <span class="comment">// ← BBML3: 保留block mapping</span></span><br><span class="line">    <span class="keyword">return</span> rodata_full || arm64_kfence_can_set_direct_map() || is_realm_world();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>使用场景体现</strong>:</p>
+<ul>
+<li>非 BBML3 系统:<code>rodata=full</code> / KFENCE / Realm
+都要求线性映射全部 PTE 化(因为后续要原地改权限/拆页,而 BBML0 下改 live
+block 需要完整 BBM 序列);</li>
+<li>BBML3 系统:保留 block mapping——后续可以<strong>在 live block
+上原地改权限</strong>(权限变化不在 RWHZWS 的 BBM 清单里,见
+3.1/图6)或<strong>拆页时允许旧的大 entry 留在
+TLB</strong>(<code>split_kernel_leaf_mapping()</code>)。</li>
+</ul>
+<p>设置点:<code>linear_map_requires_bbml3 = !force_pte_mapping() &amp;&amp; can_set_direct_map()</code>(mmu.c)。</p>
+<h4 id="使用场景③kfence-pool-初始化larger-entries-may-safely-linger">6.3.4
+使用场景③:KFENCE pool 初始化——"larger entries may safely linger"</h4>
+<p><strong>使用场景</strong>:KFENCE
+是内核的内存错误检测框架,初始化时需要把线性映射的一段拆成 4K PTE
+以便单独设置权限。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// arch/arm64/mm/mmu.c</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">arch_kfence_init_pool</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    ret = range_split_to_ptes(start, end, GFP_PGTABLE_KERNEL);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释原文:</p>
+<blockquote>
+<p>"Since the system supports bbml3, tlb invalidation is not required
+here; the pgtable mappings have been split to pte but <strong>larger
+entries may safely linger in the TLB</strong>."</p>
+</blockquote>
+<p><strong>BBML3 在代码中的体现</strong>:拆页后<strong>不做
+TLBI</strong>——因为 BBML3 保证 multi-hit 时硬件返回一致结果,旧的大 block
+entry 和新的 4K entry 并存不会出错。</p>
+<h4 id="使用场景④kpti-混合-cpu-拓扑idmap_kpti_bbml3_flag-握手">6.3.5
+使用场景④:KPTI 混合 CPU 拓扑——idmap_kpti_bbml3_flag 握手</h4>
+<p><strong>使用场景</strong>:boot CPU 支持 BBML3 但 secondary CPU
+不支持(混合 big.LITTLE)。此时
+<code>linear_map_requires_bbml3 &amp;&amp; !system_supports_bbml3()</code>——boot
+CPU 需要在 secondary 被锁在 idmap 中时把线性映射全拆成 PTE:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// arch/arm64/mm/mmu.c</span></span><br><span class="line"><span class="keyword">if</span> (linear_map_requires_bbml3 &amp;&amp; !system_supports_bbml3()) &#123;</span><br><span class="line">    init_idmap_kpti_bbml3_flag();</span><br><span class="line">    stop_machine(linear_map_split_to_ptes, <span class="literal">NULL</span>, cpu_online_mask);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>核间握手</strong>用 <code>idmap_kpti_bbml3_flag</code>(proc.S
+汇编):</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">u32 idmap_kpti_bbml3_flag;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> __init <span class="title">init_idmap_kpti_bbml3_flag</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    WRITE_ONCE(idmap_kpti_bbml3_flag, <span class="number">1</span>);</span><br><span class="line">    <span class="comment">/* Must be visible to other CPUs before stop_machine() is called. */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>boot CPU 设置 flag → secondary 自增 →
+<code>smp_cond_load_acquire</code> 等 secondary 到齐 → boot CPU
+<code>stop_machine</code> 拆分 → 释放;</li>
+<li>若任一 secondary 不支持 BBML3 → 写 0 → 中止拆分,回退到全 PTE
+化。</li>
+</ul>
+<h4 id="使用场景⑤kvm-隐藏-bbm-字段不向-guest-暴露">6.3.6 使用场景⑤:KVM
+隐藏 BBM 字段——不向 Guest 暴露</h4>
+<p><strong>使用场景</strong>:KVM 嵌套虚拟化场景下,Guest 看到的
+<code>ID_AA64MMFR2_EL1.BBM</code> 被清零。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// arch/arm64/kvm/nested.c (limit_nv_id_registers)</span></span><br><span class="line"><span class="keyword">case</span> SYS_ID_AA64MMFR2_EL1:</span><br><span class="line">    val &amp;= ~(ID_AA64MMFR2_EL1_BBM |</span><br><span class="line">             ID_AA64MMFR2_EL1_TTL |</span><br><span class="line">             ...);</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// arch/arm64/kvm/hyp/nvhe/sys_regs.c</span></span><br><span class="line">MAX_FEAT(ID_AA64MMFR2_EL1, BBM, <span class="number">2</span>),  <span class="comment">// nVHE 侧允许最大 BBM=2</span></span><br></pre></td></tr></table></figure>
+<p><strong>原因</strong>:Guest 的 stage1 页表和 Host 的 stage2
+页表由不同实体管理;BBM 的保证需要跨 S1+S2 共同维护,当前不支持暴露给
+Guest。Guest 看到 BBM=0 → 必须用软件 BBM。</p>
+<h3 id="演进时间线commit-链">6.4 演进时间线(commit 链)</h3>
 <table>
 <colgroup>
 <col style="width: 33%">
@@ -1780,126 +2794,36 @@ BBML3)系统上跳过大量中间 TLII。</p>
 </tr>
 <tr>
 <td>2026-07</td>
-<td><code>06468bc3c936</code></td>
-<td><strong>Rename: BBML2_NOABORT → BBML3</strong>(功能等价,2025
-Architecture Extensions)</td>
+<td><code>94104e3cfa80</code></td>
+<td><strong>Rename: BBML2_NOABORT → BBML3</strong>(主线版)</td>
 </tr>
 <tr>
 <td>2026-07</td>
-<td><code>4955df16ff99</code></td>
-<td>检测改为 ID 寄存器优先,MIDR 白名单降级为 fallback</td>
+<td><code>879aca5119cd</code></td>
+<td>检测改为 ID 寄存器优先,MIDR 白名单降级为 fallback(主线版)</td>
+</tr>
+<tr>
+<td>2026-08</td>
+<td><code>d8fc0793cf68</code></td>
+<td>SVA: <code>bbml2_noabort()</code> → <code>bbml3()</code>
+修复正式合入主线(Will Deacon)</td>
+</tr>
+<tr>
+<td>2026-07</td>
+<td><code>8c44dbf89352</code></td>
+<td>KVM: 添加 <code>stage2_clean_old_pte()</code>(RFC,Mostafa
+Saleh)</td>
+</tr>
+<tr>
+<td>2026-07</td>
+<td><code>5adaf55fb3bd</code></td>
+<td>KVM: 支持 BBM Level 3(RFC,见 5.7)</td>
 </tr>
 </tbody>
 </table>
-<h3 id="特性检测cpu_supports_bbml3">6.2
-特性检测:cpu_supports_bbml3()</h3>
-<p><strong>为什么要 MATCH_ALL_EARLY_CPUS?</strong></p>
-<ul>
-<li>检测依据是 MIDR(非 sanitised 寄存器),SCOPE_SYSTEM 那种"SMP
-启动完成后基于 sanitised ID 寄存器统一检查"的模式不适用;</li>
-<li>新类型要求<strong>每个 early CPU
-本地检查、全部满足才启用</strong>;late CPU 必须具备该特性;</li>
-<li>能力表项:<code>ARM64_HAS_BBML3</code>,<code>type = ARM64_CPUCAP_EARLY_LOCAL_CPU_FEATURE</code>,<code>matches = has_bbml3</code>。</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">cpu_supports_bbml3</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	u64 mmfr2;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 优先: 架构化路径, 直接读ID寄存器</span></span><br><span class="line">	mmfr2 = __read_sysreg_by_encoding(SYS_ID_AA64MMFR2_EL1);</span><br><span class="line">	<span class="keyword">if</span> (SYS_FIELD_GET(ID_AA64MMFR2_EL1, BBM, mmfr2) &gt;= ID_AA64MMFR2_EL1_BBM_3)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// fallback: 支持BBML3但没有通过ID寄存器广播的CPU</span></span><br><span class="line">	<span class="comment">// (X4/V3这批&quot;先行者&quot;: 实现了noabort语义但早于架构化定义)</span></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">midr_range</span> <span class="title">supports_bbml3_list</span>[] =</span> &#123;</span><br><span class="line">		MIDR_REV_RANGE(MIDR_CORTEX_X4,       <span class="number">0</span>, <span class="number">3</span>, <span class="number">0xf</span>),</span><br><span class="line">		MIDR_REV_RANGE(MIDR_NEOVERSE_V3,     <span class="number">0</span>, <span class="number">2</span>, <span class="number">0xf</span>),</span><br><span class="line">		MIDR_REV_RANGE(MIDR_NEOVERSE_V3AE,   <span class="number">0</span>, <span class="number">2</span>, <span class="number">0xf</span>),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_NVIDIA_OLYMPUS),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_AMPERE1),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_AMPERE1A),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_CORTEX_A520AE),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_CORTEX_A715),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_CORTEX_A720AE),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_CORTEX_A725),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_NEOVERSE_N3),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_C1_NANO),</span><br><span class="line">		MIDR_ALL_VERSIONS(MIDR_C1_PRO),</span><br><span class="line">		<span class="comment">/* Erratum 3683289 fixed in r1p1:</span></span><br><span class="line"><span class="comment">		 * C1-Ultra/Premium 在r1p0及以前必须遵守完整BBM, 否则livelock */</span></span><br><span class="line">		MIDR_RANGE(MIDR_C1_ULTRA,   <span class="number">1</span>, <span class="number">1</span>, <span class="number">0xf</span>, <span class="number">0xf</span>),</span><br><span class="line">		MIDR_RANGE(MIDR_C1_PREMIUM, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0xf</span>, <span class="number">0xf</span>),</span><br><span class="line">		&#123;&#125;</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (is_midr_in_range_list(supports_bbml3_list))</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意 <strong>erratum 3683289</strong>:C1-Ultra/C1-Premium
-在受影响修订版上不遵守 BBM 会触发 livelock,所以白名单只放行
-r1p1+。这说明 MIDR fallback 清单不只是"信任清单"——每款 CPU
-还要逐个核对微架构 bug。</p>
-<h3 id="contpte_convertmthp-contiguous-pte-折叠展开">6.3
-contpte_convert():mTHP contiguous PTE 折叠/展开</h3>
-<p>这是 BBML2/3 最核心的使用场景。<code>contpte_convert()</code>
-一个函数同时服务 fold(4 个非 contig PTE → 1 个 contig block)和
-unfold(反向),内核源码里有约 140 行注释完整论证了正确性:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">contpte_convert</span><span class="params">(struct mm_struct *mm, <span class="keyword">unsigned</span> <span class="keyword">long</span> addr,</span></span></span><br><span class="line"><span class="params"><span class="function">			    <span class="keyword">pte_t</span> *ptep, <span class="keyword">pte_t</span> pte)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vm_area_struct</span> <span class="title">vma</span> =</span> TLB_FLUSH_VMA(mm, <span class="number">0</span>);</span><br><span class="line">	...</span><br><span class="line">	<span class="comment">// 对齐到contig block边界</span></span><br><span class="line">	start_ptep = ptep = contpte_align_down(ptep);</span><br><span class="line">	start_addr = addr = ALIGN_DOWN(addr, CONT_PTE_SIZE);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 第一步: 聚合AF/dirty位, PTE清为invalid</span></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; CONT_PTES; i++, ptep++, addr += PAGE_SIZE) &#123;</span><br><span class="line">		<span class="keyword">pte_t</span> ptent = __ptep_get_and_clear(mm, addr, ptep);</span><br><span class="line">		<span class="keyword">if</span> (pte_dirty(ptent))</span><br><span class="line">			pte = pte_mkdirty(pte);</span><br><span class="line">		<span class="keyword">if</span> (pte_young(ptent))</span><br><span class="line">			pte = pte_mkyoung(pte);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ... 140行注释论证跳过此处tlbi的正确性 ...</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 关键: BBML0系统才需要中间tlbi; BBML3直接跳过</span></span><br><span class="line">	<span class="keyword">if</span> (!system_supports_bbml3())</span><br><span class="line">		__flush_tlb_range(&amp;vma, start_addr, addr, PAGE_SIZE, <span class="number">3</span>,</span><br><span class="line">				  TLBF_NOWALKCACHE);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 第二步: 重绘为contig block</span></span><br><span class="line">	__set_ptes(mm, start_addr, start_ptep, pte, CONT_PTES);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>内核注释里的 BBML0 vs BBML2 时序(以 N=4 为例):</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">BBML0 折叠:  [RO,n][RO,n][RO,n][RW,n] → 全部清零 → tlbi+dsb → [RO,c][RO,c][RO,c][RO,c]</span><br><span class="line">BBML2/3折叠: [RO,n][RO,n][RO,n][RW,n] → 全部清零 → 直接重绘 [RO,c]×4 (跳过中间tlbi+dsb)</span><br></pre></td></tr></table></figure>
-<p>跳过中间 tlbi 的正确性论证(注释原文引 RNGLXZ/RJQQTC,翻译):</p>
-<ul>
-<li>跳过后,旧的单页 entry(如 RW,n)和新的 contig
-entry(RO,c)可能同时存在于 TLB;</li>
-<li>此时的瞬态正是"Contiguous bit 误编程"场景:multi-match
-时,<strong>要么 TLB conflict abort(BBML3
-实现不会),要么返回与任一编程值一致的结果,绝不融合(amalgamate)</strong>;</li>
-<li>调用者对变更页的<strong>最终 tlbi+dsb</strong> 会把新旧 entry
-一起清掉;</li>
-<li>其余 N-1 个非 contig 的 stale entry <strong>靠自然 TLB
-压力淘汰</strong>——注释:"over time, natural TLB pressure will cause the
-non-contiguous pte TLB entries to be flushed, leaving only the
-contiguous block TLB entry"。(省掉中间 tlbi 不仅正确,还保住了 contig
-entry 带来的 TLB 收益。)</li>
-</ul>
-<p><code>TLBF_NOWALKCACHE</code> 的含义:只无效化 TLB entry,<strong>不动
-walk cache</strong>。为什么可以不动:</p>
-<ul>
-<li>L3 PTE 之下的 walk cache 缓存的是 L2 Table
-entry,拆大页(改变层级结构)才需要动它;</li>
-<li>contig 位变化不改变层级结构,walk cache 无需无效化。</li>
-</ul>
-<p><img src="http://www.plantuml.com/plantuml/svg/dLHTJnf157tVNp7n2IZ64dqYeR4QRT9GgsXYqzAG1LRSkCwItS6cVS8eYZL8KmceW2bjhSQ4WYd5rHLzw3ynExFBl-ZbewtK-jANdTcvTyuzvzoxEwmINY6nHObJ5qGSvHL-4GNvq494aMCuF2fBie9UpOj4k14F2tDyJ2BZCYRJuXi1kLmS4Oaa89g_TBdSA0I1A17Gd2o54SlLwNcQLivO9OEkunaqClB4UnyjgUtD8B9DU8RCp-V6vQQTum2VY24nocE2-gn6nT3hVcphuWLWNH8KOkz3l8gcPtkpcwNlLkd8vXtiX2TdUiCptf7sEQmSv_5qMBWHlKeqIpehR1XQkPch4Iae8e-7uwPdKVy3045k50X0xMWW8f00ZyE1a2JmYisEVkI6_DXQtgFlaW_71yAYGbuxuS8OqnA6TYxY9LuImrqSADe6cfDYwdm0YWGK7aS4czsFsnNleR0QvB0CdicWi9jlbhuQLqMQg1jwTdACfe_DmYPDLhlGVioIMPQjjimH8qZ0H7dTIri5na1T_KMMhktIn05wuNlg3Bsy_UpXQbLNpCoH5Kz0usXwX-LhuA-vjyeASLDFjaZ_Td4Gia-_MLVh_sVX7PRTeS7CrzZMGOyIEBzb7SiTsdopJcmtj2tmoDPAjDDqnLffqBCwBU-u_TWtySZxxFc0x_7KrCmel5-llKTyK5O8ihLbcL-MMVcZ7O7DdI1W6RfkQ77p8ciURTBu1UojzHhOOkhRRB_Wnmw7gHSDBMNjfs0k78v_U_h7H6YYbc1R6y0HA7Tw-BUMrW0qTYVwNOPs31-h93IB-pURxiVDuWTh_TXShRFJ7NPITGBJ56sSqEqKAt-2AMBnGpysj0nCaz58T-y2EClKpVnRRbZ0OVW1_0G0" alt="plantuml diagram"></p>
-<h3 id="内核线性映射force_pte_mapping-kfence-kpti">6.4
-内核线性映射:force_pte_mapping / KFENCE / KPTI</h3>
-<p><strong>线性映射要不要强制 4K PTE 化?</strong></p>
-<ul>
-<li><strong>非 BBML3
-系统:要</strong>。<code>rodata=full</code>、KFENCE、Realm
-场景后续要原地改权限/拆页,而 BBML0 下改 live block 需要 BBM
-序列——干脆一开始就全部拆成 4K PTE;</li>
-<li><strong>BBML3 系统:不要</strong>。直接保留 2M/1G block
-mapping(见下):</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">bool</span> <span class="title">force_pte_mapping</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">bool</span> bbml3 = system_capabilities_finalized() ?</span><br><span class="line">		system_supports_bbml3() : cpu_supports_bbml3();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (debug_pagealloc_enabled())</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">	<span class="keyword">if</span> (bbml3)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;                       <span class="comment">// ← 保留block mapping</span></span><br><span class="line">	<span class="keyword">return</span> rodata_full || arm64_kfence_can_set_direct_map() || is_realm_world();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>为什么 BBML3 就敢保留 block?</strong></p>
-<ul>
-<li><strong>改权限</strong>:权限位修改(PXN/RDONLY/WRITE/NG
-等,<code>update_mapping_prot()</code> 的 mask)不属于 RWHZWS 的必须-BBM
-清单,可以<strong>在 live block 上原地改 + 最终
-TLII</strong>(权限变化的豁免,见 3.1);</li>
-<li><strong>真拆页</strong>:<code>split_kernel_leaf_mapping()</code> 在
-BBML3 下允许"拆完后旧的大 entry 留在 TLB 里不管"。</li>
-</ul>
-<p><strong>KFENCE pool
-初始化</strong>,<code>arch_kfence_init_pool()</code> 注释原文:</p>
-<blockquote>
-<p>"Since the system supports bbml3, tlb invalidation is not required
-here; the pgtable mappings have been split to pte but <strong>larger
-entries may safely linger in the TLB</strong>." (系统支持 bbml3,此处无需
-TLII;页表已拆成 pte,但 TLB 里残留的大 entry 是安全的——因为 multi-hit
-时硬件返回一致结果。)</p>
-</blockquote>
-<p><strong>KPTI + 混合 CPU 拓扑</strong>(boot CPU 有 BBML3、secondary
-没有):</p>
-<ul>
-<li>条件:<code>linear_map_requires_bbml3 &amp;&amp; !system_supports_bbml3()</code>;</li>
-<li>机制:boot CPU 在 secondary CPU 被锁在 idmap 中的窗口期,用
-<code>stop_machine(linear_map_split_to_ptes, ...)</code>
-把线性映射全部拆成 PTE;</li>
-<li>同步:汇编侧用
-<code>idmap_kpti_bbml3_flag</code>(proc.S)做核间握手,等所有 secondary
-到位后 boot CPU 才开始动 swapper 页表。</li>
-</ul>
-<h3 id="smmu-sva双侧检测与最低公共级别原则">6.5 SMMU
-SVA:双侧检测与"最低公共级别"原则</h3>
-<p>SVA(Shared Virtual Addressing)场景下 CPU 和 SMMU
-<strong>共享同一套进程页表</strong>,所以必须双侧都支持:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-sva.c</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">arm_smmu_sva_supported</span><span class="params">(struct arm_smmu_device *smmu)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	u32 feat_mask = ARM_SMMU_FEAT_COHERENCY;</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">if</span> (system_supports_bbml3())          <span class="comment">// CPU侧</span></span><br><span class="line">		feat_mask |= ARM_SMMU_FEAT_BBML2;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> ((smmu-&gt;features &amp; feat_mask) != feat_mask)   <span class="comment">// SMMU侧: IDR3.BBM==2</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// arm-smmu-v3.c: 硬件探测</span></span><br><span class="line"><span class="keyword">if</span> (FIELD_GET(IDR3_BBM, reg) == <span class="number">2</span>)</span><br><span class="line">	smmu-&gt;features |= ARM_SMMU_FEAT_BBML2;</span><br></pre></td></tr></table></figure>
-<p>共享页表时的原则(SMMU spec
-3.21.1.1,原文见附录B):多个组件(SMMU/PE/其他)共享一张页表时,必须按<strong>最低公共
-BBML 级别</strong>行为更新页表。</p>
-<blockquote>
-<p>⚠️ <strong>顺带发现并修复的一个问题</strong>:rename commit
-<code>06468bc3c936</code> 漏改了 <code>arm-smmu-v3-sva.c</code>:</p>
-<ul>
-<li>现象:该文件仍在调用已不存在的
-<code>system_supports_bbml2_noabort()</code>,SVA 相关 config
-开启时<strong>编译会失败</strong>;</li>
-<li>处理:本文分析时已将其修正为
-<code>system_supports_bbml3()</code>(一行,未提交);</li>
-<li>教训:patch 重命名类改动的典型遗漏点——跨子系统引用要用
-<code>grep -r</code> 全量核查。</li>
-</ul>
-</blockquote>
+<p>演进逻辑:内核最初只有 BBML2_NOABORT(MIDR 白名单信任"不 abort 的 BBML2
+实现")→ 2025 Architecture Extensions 把"BBML2+noabort"架构化为
+FEAT_BBML3(ID 编码 0b0011)→ 内核重命名、改用 ID 寄存器检测。</p>
 <hr>
 <h2 id="七总结">七、总结</h2>
 <h3 id="四级实现方案对照">7.1 四级实现方案对照</h3>
@@ -1930,8 +2854,8 @@ BBML 级别</strong>行为更新页表。</p>
 </tr>
 <tr>
 <td>软件路径</td>
-<td>六步序列(invalid→DSB→TLII→DSB→make→DSB)</td>
-<td>nT=1→TLII→替换→TLII(拆分方向)</td>
+<td>六步序列(invalid→DSB→TLBI→DSB→make→DSB)</td>
+<td>nT=1→TLBI→替换→TLBI(拆分方向)</td>
 <td>直接写入新 entry</td>
 <td>同 BBML2</td>
 </tr>
@@ -1945,7 +2869,7 @@ BBML 级别</strong>行为更新页表。</p>
 <tr>
 <td>multi-hit 可能性</td>
 <td>不允许(软件杜绝)</td>
-<td>不允许(nT+TLII 杜绝)</td>
+<td>不允许(nT+TLBI 杜绝)</td>
 <td>允许,abort <strong>可能</strong></td>
 <td>允许,abort <strong>禁止</strong></td>
 </tr>
@@ -1958,7 +2882,7 @@ BBML 级别</strong>行为更新页表。</p>
 </tr>
 <tr>
 <td>性能代价</td>
-<td>每次 TLII + fault 窗口抖动</td>
+<td>每次 TLBI + fault 窗口抖动</td>
 <td>nT 期间性能显著受损</td>
 <td>几乎无</td>
 <td>几乎无</td>
@@ -2009,9 +2933,9 @@ BBML 级别</strong>行为更新页表。</p>
 <td>mmap_lock/ptl</td>
 </tr>
 <tr>
-<td>TLII 开销</td>
+<td>TLBI 开销</td>
 <td>每次拆页两次(单 IPA / 范围)</td>
-<td>跳过中间 TLII,只留最终一次或自然淘汰</td>
+<td>跳过中间 TLBI,只留最终一次或自然淘汰</td>
 </tr>
 <tr>
 <td>为什么这样选</td>
@@ -2021,20 +2945,21 @@ BBML 级别</strong>行为更新页表。</p>
 </tbody>
 </table>
 <h3 id="决策树">7.3 决策树</h3>
-<p><img src="http://www.plantuml.com/plantuml/svg/TLDTJzDG6BxlhpZXQeqNPP1uCMFuL251NTmIrEocOmMQbPPiPngzwcJ0b7LR28nD1Z8Z7tx0Xa4idMF_HVkUhl_2qrPm0RqvUSzxtZxd-JWTJ68-WLDp4fECY_8yd-3dK9IVYiyab9GS6r4a9O6UpufOw3gF2TDyIi9t5Hc7n9S2yliPB699GB1vxkyB8BDzHDREI7a76XdhwoeOUxwef4p5ESn79G4-x4EZy4jDZz3lnHaK5J5BDawjjnbIEYErhAs-9YiV6SObneZJo0U5JmxUre9TAPej3Gq5kSSFk53VK720HNXMa96FbEiiWr00yk-Wsg3JmV0TT0FH0ehvyCJuEF8zkXSCFXbZ8xAfQtPLxUobXuVlq_RasDF94EtH1Zb-nTwYC4cip3E2b1JetSKzbX7ac3ZjKLbQXCEoTTo4xHKeb25N6a0FX_vK4Nb6KgAyPEfvUslRg-rb3GexrtYQpQRPMgS49YnZ7xAVxOMMG-4u3OjQ82B3KOwidzmaXxjq18m2P3SkcFw3O01PHjqpclDCzGXr4xTgNypcALchavoZUwAFwxzAoXdhj8kTMWwg1rGesT7vg9B0flx6r5T8QPaAz5a_3BlshVEz3kSPRefUDey5pZBQHDtt0cUle5AndjizfA5JZIvaZzdUwjJJLAd3fH_vnaUXdg7EGkM0P4jMfGL53RHrLsnN42wSIvzgtZmX-LrOgi3YBYar11adNaHacdbLjPfP9tEoTWgDSnV2zQ7BC0UZb_DVoBxgZd_WkWevxBtF09B3j_tevz8gSX-MKv3DDj7UN_QeJrI5hQeq15Ctl3Gla_olgDu0-XkyDqkHHFaPBuanYZqQ6gQhSy7bPewF2zw6xTBfhkuR6QGr_Rb_0m00" alt="plantuml diagram"></p>
+<p>表格速查版见 4.7 矩阵,本图是同一决策的流程形态:</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/TLDTJzDG6BxlhpZXQeqNPP1uCME0WGe9wkAMe6Ot7IlGhBHaEsZqgfC1KzPj8J0s6SYCVFW16mQnT8xz5-rxkluBJrl11VJcv3tlUVkSv-DqC8Nv99wVbPXKGfJd-2G_YsByP68wgSpByM55KfBe-Oo8XQxpk335pqluhYBZiFXIG7u_WqKi2GWsp_rz0MIsZyZQ6IdlG2DZVLq5OyyNavJ918Vvc2J0Xtre57wfwM7wlJYDOY9coSQfzJP3IcUabhNLrsJb8yEun1Xn2lcWyCd1srgmAqMpfQ6X4FVu0HVk6meDi0ZF23BoaNATPH0AGFuTL1jqEXIvWsuWMa0n7naFZY7VetkXq9DHDYgRkcPNrSvUEXYyJziJeqydmhH76-Ju5NkBmgImCiS8KagWTnVtM4QGu-AKHsLf4GxBrd4JjbUWK8PSQG0z7FfJHULfIOdnagddxQrjhxQNDIZiNEDfDfjcQvqI6BUCVSX-jXTQ3eNZD2ngWQWCHpcoVdAJ7ExI4J0AaDsuOFeFWW5a6NNFQCuprIFKJTogVJ6RfsIjJdAExl4-hlygAMUiqovsQZce7b2XP4VdOqeIc_eRKryXfMKgq6VzCEpQjyxtEfndk4bwsHmMECje4tNV2vozWah5Ucxta8PEDRgGFMPxgrDFKwKEbtxa6nk1UeOw2vK3aYrPbHOKDT3MNR5TGRXmBdsgUVE4v7TXgGABkwJK46ISV16LQUPLrMfcdSp9sYaqpbq8ruSkmnoCNiv_8VkgE_w1wohaYFS-0qYEtFQZdqkho7rOJa4ssqHxVzcZFb4LjghI44pTyDAyJFA_ede3w6_mtYn54kLdl2J6AVP8E4XNvuBBpIoV4BmDswNJNTqtCaXh-dF_1W00" alt="plantuml diagram"></p>
 <h3 id="核心结论">7.4 核心结论</h3>
 <ol type="1">
 <li><strong>BBM 的本质是驱逐缓存的同步协议</strong>:页表 entry
 是源头、TLB entry(含 walk cache、walk 临时寄存器)是缓存副本,TLB
 没有硬件一致性,软件必须显式维护。</li>
 <li><strong>权限变化不需要 BBM</strong>(只需改后
-TLII),<strong>内存类型/OA/global 变化任何级别都不豁免</strong>,BBML
+TLBI),<strong>内存类型/OA/global 变化任何级别都不豁免</strong>,BBML
 系列放开的<strong>只有</strong>块大小(双向)和 Contiguous bit——且要求 OA
 与其他属性完全不变(RPVTFW)。</li>
-<li><strong>BBML1 的 nT 是"施工围挡"</strong>:管未来(nT=1 不缓存)+ TLII
+<li><strong>BBML1 的 nT 是"施工围挡"</strong>:管未来(nT=1 不缓存)+ TLBI
 清过去,替换瞬间系统零缓存副本;代价是 nT 期间每次访问都 walk。</li>
 <li><strong>BBML2 是"硬件消解 multi-hit"</strong>:允许新旧并存,硬件保证
-abort 或一致结果、绝不融合;收敛靠最终 TLII 或自然淘汰。</li>
+abort 或一致结果、绝不融合;收敛靠最终 TLBI 或自然淘汰。</li>
 <li><strong>BBML3 = BBML2 + 永不 abort 的架构化</strong>(2025
 Architecture Extensions):内核从 MIDR 白名单信任(BBML2_NOABORT)演进到读
 ID 寄存器;abort 上下文不能递归 fault 是 noabort 的刚需。</li>
@@ -2043,7 +2968,7 @@ ID 寄存器;abort 上下文不能递归 fault 是 noabort 的刚需。</li>
 六步一一对应,LOCKED invalid PTE 一石二鸟(Break +
 软件锁),<code>SKIP_BBM_TLBI</code> 是"无引用"逻辑而非 BBML2。</li>
 <li><strong>contpte_convert 是 BBML2/3 的标准用法</strong>:跳过中间
-tlbi,瞬态 multi-hit 由 RNGLXZ/RJQQTC 兜底,最终 TLII +
+tlbi,瞬态 multi-hit 由 RNGLXZ/RJQQTC 兜底,最终 TLBI +
 自然淘汰完成收敛。</li>
 </ol>
 <hr>
@@ -2310,14 +3235,14 @@ intermediate TLB caching structures." (实现 BBML1 且产生 TLB conflict
 abort 后,需要 TLB 维护清除多个同地址 entry;Table descriptor
 场景还适用于中间级缓存结构。)</p>
 </blockquote>
-<p><strong>IHYQMB — 不 TLII 则可能 abort(D8.17.2)</strong></p>
+<p><strong>IHYQMB — 不 TLBI 则可能 abort(D8.17.2)</strong></p>
 <blockquote>
 <p>"If the TLB entries are not invalidated after the writes that
 modified the translation table entries are completed, then a TLB
 conflict abort can be generated because in a TLB there might be multiple
 translation table entries that all translate the same IA. For Table
 descriptors, this also applies to intermediate TLB caching structures."
-(修改完成后若不做 TLII,TLB 中可能存在多个翻译同一 IA 的 entry,可以产生
+(修改完成后若不做 TLBI,TLB 中可能存在多个翻译同一 IA 的 entry,可以产生
 TLB conflict abort;Table descriptor 场景还适用于中间级缓存结构。)</p>
 </blockquote>
 <p><strong>ID_AA64MMFR2_EL1.BBM — 级别检测字段(D24.2)</strong></p>
@@ -2389,13 +3314,18 @@ common break-before-make Level must be used when updating the table."
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/">https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/">September 1st 2026, 1:08:59 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/">September 1st 2026, 5:11:51 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/">September 2nd 2026, 11:24:15 am</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
     <!-- paginator -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2026/09/02/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/tlb-multihit/" title="">
+                    <div class="nextTitle">[Untitled Post]</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -2551,7 +3481,7 @@ common break-before-make Level must be used when updating the table."
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
                 <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#arm64-bbml-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90bbml0bbml3"><span class="toc-text">ARM64 BBML
-源码分析:BBML0~BBML3</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80bbm-%E6%98%AF%E4%BB%80%E4%B9%88break-before-make-%E7%9A%84%E5%AD%97%E9%9D%A2%E4%B8%8E%E6%9C%AC%E8%B4%A8"><span class="toc-text">一、BBM 是什么:Break
+源码分析:BBML0~BBML3</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#section"><span class="toc-text"></span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80bbm-%E6%98%AF%E4%BB%80%E4%B9%88break-before-make-%E7%9A%84%E5%AD%97%E9%9D%A2%E4%B8%8E%E6%9C%AC%E8%B4%A8"><span class="toc-text">一、BBM 是什么:Break
 Before Make 的字面与本质</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E9%9D%A2%E6%8B%86%E8%A7%A3"><span class="toc-text">1.1 字面拆解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#spec-%E5%AF%B9tlb-entry%E7%9A%84%E5%AE%9A%E4%B9%89%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%A4%E4%B8%AA%E5%AF%B9%E8%B1%A1%E7%BC%BA%E4%B8%80%E4%B8%8D%E5%8F%AF"><span class="toc-text">1.2 Spec 对&quot;TLB
 entry&quot;的定义(为什么两个对象缺一不可)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%93%AA%E4%BA%9B-pte-%E4%BF%AE%E6%94%B9%E4%BC%9A%E8%A7%A6%E5%8F%91-bbm%E6%A6%82%E8%A7%88"><span class="toc-text">1.3 哪些 PTE 修改会触发
 BBM(概览)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E9%A2%84%E5%A4%87%E7%9F%A5%E8%AF%86"><span class="toc-text">二、预备知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#oa-%E6%98%AF%E4%BB%80%E4%B9%88output-address"><span class="toc-text">2.1 OA 是什么:Output Address</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%8F%E8%BF%B0%E7%AC%A6%E6%A0%BC%E5%BC%8Ftable-block-page"><span class="toc-text">2.2 描述符格式:Table &#x2F; Block &#x2F;
@@ -2561,18 +3491,24 @@ ARM 的 BBM 规则(本文 spec 引用均出自 DDI 0487M.b)</span></a><ol class=
 —— BBML0 纯软件路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9D%E5%8F%8D%E5%90%8E%E6%9E%9Cmulti-match-%E4%B9%8B%E5%90%8E%E4%BC%9A%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88"><span class="toc-text">3.3 违反后果:multi-match
 之后会发生什么</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9Bbbml0-bbml1-bbml2-bbml3%E5%9B%9B%E7%BA%A7%E5%AE%9E%E7%8E%B0"><span class="toc-text">四、BBML0 &#x2F; BBML1 &#x2F; BBML2 &#x2F;
 BBML3:四级实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%B5%8Bid_aa64mmfr2_el1.bbm"><span class="toc-text">4.1 检测:ID_AA64MMFR2_EL1.BBM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml0%E5%85%AD%E6%AD%A5%E7%BA%AF%E8%BD%AF%E4%BB%B6%E5%BA%8F%E5%88%97"><span class="toc-text">4.2 BBML0:六步纯软件序列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml1nt-%E4%BD%8D%E6%96%B9%E6%A1%88"><span class="toc-text">4.3 BBML1:nT 位方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml2%E7%A1%AC%E4%BB%B6%E5%AE%B9%E5%BF%8D-multi-hit"><span class="toc-text">4.4 BBML2:硬件容忍 multi-hit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml3bbml2-%E6%B0%B8%E4%B8%8D-abort-%E7%9A%84%E6%9E%B6%E6%9E%84%E5%8C%96"><span class="toc-text">4.5 BBML3:BBML2 + 永不 abort
-的架构化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E8%AF%AF%E8%A7%A3%E7%BA%A0%E9%94%99%E8%A1%A8"><span class="toc-text">4.6 常见误解纠错表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E6%A1%88%E4%BE%8B%E4%B8%80kvm-stage2-%E6%8B%86%E5%A4%A7%E9%A1%B5-bbml0-%E7%BA%AF%E8%BD%AF%E4%BB%B6%E6%96%B9%E6%A1%88"><span class="toc-text">五、案例一:KVM
+的架构化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E8%AF%AF%E8%A7%A3%E7%BA%A0%E9%94%99%E8%A1%A8"><span class="toc-text">4.6 常见误解纠错表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF-bbml-%E7%BA%A7%E5%88%AB%E6%94%AF%E6%8C%81%E7%9F%A9%E9%98%B5%E9%80%9F%E6%9F%A5"><span class="toc-text">4.7 场景 × BBML
+级别支持矩阵(速查)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E6%A1%88%E4%BE%8B%E4%B8%80kvm-stage2-%E6%8B%86%E5%A4%A7%E9%A1%B5-bbml0-%E7%BA%AF%E8%BD%AF%E4%BB%B6%E6%96%B9%E6%A1%88"><span class="toc-text">五、案例一:KVM
 Stage2 拆大页 —— BBML0 纯软件方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A6%E5%8F%91%E5%9C%BA%E6%99%AF"><span class="toc-text">5.1 触发场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#walker-%E5%9B%9E%E8%B0%83%E6%9C%BA%E5%88%B6%E6%A1%86%E6%9E%B6%E4%B8%8E%E4%B8%9A%E5%8A%A1%E5%88%86%E5%B1%82"><span class="toc-text">5.2 walker
 回调机制:框架与业务分层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stage2_split_walker%E4%B8%89%E6%AD%A5%E7%AD%96%E7%95%A5"><span class="toc-text">5.3
 stage2_split_walker:三步策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stage2_try_break_pte-rddmvt-%E5%85%AD%E6%AD%A5%E6%98%A0%E5%B0%84"><span class="toc-text">5.4 stage2_try_break_pte ↔︎
-RDDMVT 六步映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kvm_tlb_flush_vmid_ipatlii-%E7%9A%84%E7%A1%AC%E4%BB%B6%E7%BB%86%E8%8A%82"><span class="toc-text">5.5
-__kvm_tlb_flush_vmid_ipa:TLII 的硬件细节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#skip_bbm_tlbi-%E7%9A%84%E7%9C%9F%E5%AE%9E%E8%AF%AD%E4%B9%89-bbml2"><span class="toc-text">5.6 SKIP_BBM_TLBI 的真实语义(≠
-BBML2)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E6%A1%88%E4%BE%8B%E4%BA%8Ccpu-mm-%E4%BE%A7-bbml2-bbml3-%E7%A1%AC%E4%BB%B6%E6%96%B9%E6%A1%88"><span class="toc-text">六、案例二:CPU MM 侧 ——
-BBML2 → BBML3 硬件方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%94%E8%BF%9B%E6%97%B6%E9%97%B4%E7%BA%BF"><span class="toc-text">6.1 演进时间线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E6%80%A7%E6%A3%80%E6%B5%8Bcpu_supports_bbml3"><span class="toc-text">6.2
-特性检测:cpu_supports_bbml3()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#contpte_convertmthp-contiguous-pte-%E6%8A%98%E5%8F%A0%E5%B1%95%E5%BC%80"><span class="toc-text">6.3
-contpte_convert():mTHP contiguous PTE 折叠&#x2F;展开</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%BA%BF%E6%80%A7%E6%98%A0%E5%B0%84force_pte_mapping-kfence-kpti"><span class="toc-text">6.4
-内核线性映射:force_pte_mapping &#x2F; KFENCE &#x2F; KPTI</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#smmu-sva%E5%8F%8C%E4%BE%A7%E6%A3%80%E6%B5%8B%E4%B8%8E%E6%9C%80%E4%BD%8E%E5%85%AC%E5%85%B1%E7%BA%A7%E5%88%AB%E5%8E%9F%E5%88%99"><span class="toc-text">6.5 SMMU
-SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E6%80%BB%E7%BB%93"><span class="toc-text">七、总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E7%BA%A7%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%A1%88%E5%AF%B9%E7%85%A7"><span class="toc-text">7.1 四级实现方案对照</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E4%BB%A3%E7%A0%81%E6%A1%88%E4%BE%8B%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-text">7.2 两个代码案例的对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-text">7.3 决策树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E7%BB%93%E8%AE%BA"><span class="toc-text">7.4 核心结论</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95aarm-armddi-0487m.b%E8%A7%84%E5%88%99%E7%B4%A2%E5%BC%95"><span class="toc-text">附录A:ARM ARM(DDI
+RDDMVT 六步映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kvm_tlb_flush_vmid_ipatlbi-%E7%9A%84%E7%A1%AC%E4%BB%B6%E7%BB%86%E8%8A%82"><span class="toc-text">5.5
+__kvm_tlb_flush_vmid_ipa:TLBI 的硬件细节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#skip_bbm_tlbi-%E7%9A%84%E7%9C%9F%E5%AE%9E%E8%AF%AD%E4%B9%89-bbml2"><span class="toc-text">5.6 SKIP_BBM_TLBI 的真实语义(≠
+BBML2)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kvm-bbml3rfc-%E9%A2%84%E8%A7%88%E6%9C%AA%E5%90%88%E5%85%A5%E4%B8%BB%E7%BA%BF"><span class="toc-text">5.7 KVM BBML3(RFC
+预览,未合入主线)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%A8%E6%8E%A7%E4%B8%89%E4%B8%AA%E6%9D%A1%E4%BB%B6%E5%90%8C%E6%97%B6%E6%BB%A1%E8%B6%B3"><span class="toc-text">门控:三个条件同时满足</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E5%BA%8F%E5%88%97make-first-tlbi-%E5%90%8E%E7%BD%AE"><span class="toc-text">新序列:Make-first + TLBI 后置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc-text">代码路径</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%ADbbml1-bbml2-bbml3-%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%E4%B8%8E%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">六、BBML1 &#x2F; BBML2 &#x2F;
+BBML3 的代码实现与使用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml1%E8%A2%AB%E8%B7%B3%E8%BF%87%E7%9A%84%E4%B8%80%E7%BA%A7%E6%97%A0%E5%86%85%E6%A0%B8%E5%AE%9E%E7%8E%B0"><span class="toc-text">6.1
+BBML1：被跳过的一级(无内核实现)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml2smmu-%E4%BE%A7%E6%A3%80%E6%B5%8B-sva-%E9%97%A8%E6%8E%A7"><span class="toc-text">6.2 BBML2：SMMU 侧检测 + SVA
+门控</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml3cpu-%E4%BE%A7%E6%A3%80%E6%B5%8B-%E4%BA%94%E4%B8%AA%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">6.3 BBML3：CPU 侧检测 +
+五个使用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A3%80%E6%B5%8Bcpu_supports_bbml3"><span class="toc-text">6.3.1 检测:cpu_supports_bbml3()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A0contpte_convertmthp-contiguous-pte-%E6%8A%98%E5%8F%A0%E5%B1%95%E5%BC%80"><span class="toc-text">6.3.2
+使用场景①:contpte_convert()——mTHP contiguous PTE 折叠&#x2F;展开</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A1force_pte_mapping%E7%BA%BF%E6%80%A7%E6%98%A0%E5%B0%84%E4%BF%9D%E7%95%99-block"><span class="toc-text">6.3.3
+使用场景②:force_pte_mapping()——线性映射保留 block</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A2kfence-pool-%E5%88%9D%E5%A7%8B%E5%8C%96larger-entries-may-safely-linger"><span class="toc-text">6.3.4
+使用场景③:KFENCE pool 初始化——&quot;larger entries may safely linger&quot;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A3kpti-%E6%B7%B7%E5%90%88-cpu-%E6%8B%93%E6%89%91idmap_kpti_bbml3_flag-%E6%8F%A1%E6%89%8B"><span class="toc-text">6.3.5
+使用场景④:KPTI 混合 CPU 拓扑——idmap_kpti_bbml3_flag 握手</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A4kvm-%E9%9A%90%E8%97%8F-bbm-%E5%AD%97%E6%AE%B5%E4%B8%8D%E5%90%91-guest-%E6%9A%B4%E9%9C%B2"><span class="toc-text">6.3.6 使用场景⑤:KVM
+隐藏 BBM 字段——不向 Guest 暴露</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%94%E8%BF%9B%E6%97%B6%E9%97%B4%E7%BA%BFcommit-%E9%93%BE"><span class="toc-text">6.4 演进时间线(commit 链)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E6%80%BB%E7%BB%93"><span class="toc-text">七、总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E7%BA%A7%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%A1%88%E5%AF%B9%E7%85%A7"><span class="toc-text">7.1 四级实现方案对照</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E4%BB%A3%E7%A0%81%E6%A1%88%E4%BE%8B%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-text">7.2 两个代码案例的对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-text">7.3 决策树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E7%BB%93%E8%AE%BA"><span class="toc-text">7.4 核心结论</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95aarm-armddi-0487m.b%E8%A7%84%E5%88%99%E7%B4%A2%E5%BC%95"><span class="toc-text">附录A:ARM ARM(DDI
 0487M.b)规则索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95bsmmu-specihi-0070h.a%E5%BC%95%E7%94%A8%E7%B4%A2%E5%BC%95"><span class="toc-text">附录B:SMMU spec(IHI
 0070H.a)引用索引</span></a></li></ol></li></ol>
             </div>
@@ -3038,7 +3974,28 @@ SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -3981,7 +4938,7 @@ SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 90
+        Total : 91
         </div>
         <!-- search  -->
         
@@ -3999,6 +4956,12 @@ SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span>
+            <a class="archive-post-title" href="/2026/09/02/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/tlb-multihit/">[Untitled Post]</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/01</span>
@@ -4155,13 +5118,13 @@ SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/03</span>
-            <a class="archive-post-title" href="/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">git常用技巧</a>
+            <a class="archive-post-title" href="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">linux常用技巧</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/03</span>
-            <a class="archive-post-title" href="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">linux常用技巧</a>
+            <a class="archive-post-title" href="/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">git常用技巧</a>
         </li>
     
         
@@ -4296,13 +5259,13 @@ SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/15</span>
-            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/15</span>
-            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
         </li>
     
         
@@ -4642,19 +5605,14 @@ SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="内存">
-            <span class="iconfont-archer">&#xe60a;</span>
-            内存
-        </span>
-    
         <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
             <span class="iconfont-archer">&#xe60a;</span>
             ARM64结构与编程实操
         </span>
     
-        <span class="sidebar-category-name" data-categories="虚拟化">
+        <span class="sidebar-category-name" data-categories="内存">
             <span class="iconfont-archer">&#xe60a;</span>
-            虚拟化
+            内存
         </span>
     
         <span class="sidebar-category-name" data-categories="Linux内核基础">
@@ -4662,19 +5620,9 @@ SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li
             Linux内核基础
         </span>
     
-        <span class="sidebar-category-name" data-categories="C++知识点">
+        <span class="sidebar-category-name" data-categories="虚拟化">
             <span class="iconfont-archer">&#xe60a;</span>
-            C++知识点
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="内存">
-            <span class="iconfont-archer">&#xe60a;</span>
-            内存
+            虚拟化
         </span>
     
         <span class="sidebar-category-name" data-categories="计算机网络">
@@ -4682,9 +5630,19 @@ SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li
             计算机网络
         </span>
     
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
         <span class="sidebar-category-name" data-categories="数据结构与算法">
             <span class="iconfont-archer">&#xe60a;</span>
             数据结构与算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
         </span>
     
         <span class="sidebar-category-name" data-categories="数据库">
@@ -4695,6 +5653,11 @@ SVA:双侧检测与&quot;最低公共级别&quot;原则</span></a></li></ol></li
         <span class="sidebar-category-name" data-categories="WebServer项目（C++）">
             <span class="iconfont-archer">&#xe60a;</span>
             WebServer项目（C++）
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="内存">
+            <span class="iconfont-archer">&#xe60a;</span>
+            内存
         </span>
     
         <span class="sidebar-category-name" data-categories="深度学习算法">

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TLB Multi-Hit 演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f8f9fa;padding:16px;color:#333}
+.c{max-width:900px;margin:0 auto}
+h1{font-size:18px;margin-bottom:8px;color:#1a1a2e}
+.sub{font-size:13px;color:#666;margin-bottom:16px}
+.ctl{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+button{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+button:disabled{opacity:.4;cursor:not-allowed}
+#bPrev{background:#e0e0e0;color:#333}
+#bNext{background:#4a6fa5;color:#fff}
+#bNext:hover:not(:disabled){background:#3d5d8a}
+#bBc{background:#e67e22;color:#fff}
+#bBc:hover{background:#d35400}
+#bRst{background:#95a5a6;color:#fff}
+.vaIn{display:flex;align-items:center;gap:6px;margin-left:auto}
+.vaIn input{width:130px;padding:6px 10px;border:2px solid #4a6fa5;border-radius:6px;font-family:monospace;font-size:14px;font-weight:700;text-align:center}
+.vaIn label{font-size:12px;color:#666;font-weight:600}
+.sp{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:20px;min-height:420px;box-shadow:0 2px 8px rgba(0,0,0,.06);position:relative}
+.nar{background:#eef5ff;border-left:4px solid #4a6fa5;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;font-size:14px;line-height:1.7}
+.nar b{color:#4a6fa5}
+.vad{text-align:center;margin:20px 0}
+.vad .lb{font-size:13px;color:#666;margin-bottom:8px}
+.bits{font-family:'Courier New',monospace;font-size:15px;letter-spacing:1px;display:flex;justify-content:center;gap:1px;flex-wrap:wrap}
+.bg{padding:4px 8px;border-radius:4px;font-weight:700;margin:2px;border:2px solid transparent;transition:all .5s}
+.bg.hi47{background:#dbeafe;color:#1e40af}
+.bg.hi20{background:#fef3c7;color:#92400e}
+.bg.hi0{background:#e5e7eb;color:#6b7280}
+.bg.hl{border-color:#333;transform:scale(1.08)}
+.lg{display:flex;justify-content:center;gap:16px;margin-top:10px;font-size:11px;color:#666;flex-wrap:wrap}
+.lg .it{display:flex;align-items:center;gap:4px}
+.lg .sw{width:12px;height:12px;border-radius:3px}
+.abc{margin:24px 40px;position:relative;height:70px}
+.ab{position:absolute;top:20px;left:0;right:0;height:30px;background:#f0f0f0;border-radius:15px;overflow:hidden;border:1px solid #ccc}
+.r2{position:absolute;top:0;height:100%;background:linear-gradient(90deg,#93c5fd,#60a5fa);border-radius:15px 0 0 15px;transition:all 1s}
+.r4{position:absolute;top:0;height:100%;background:#fbbf24;transition:all 1s}
+.vp{position:absolute;top:50%;transform:translate(-50%,-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid #dc2626;transition:left 1s;z-index:5}
+.vpl{position:absolute;top:60%;transform:translateX(-50%);font-size:11px;font-weight:700;color:#dc2626;font-family:monospace;white-space:nowrap;transition:left 1s}
+.als{position:absolute;top:56px;left:0;right:0;font-size:10px;color:#999;font-family:monospace;display:flex;justify-content:space-between}
+.ents{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px}
+.ent{background:#fff;border:2px solid #e0e0e0;border-radius:10px;padding:14px;text-align:center;transition:all .4s;position:relative}
+.ent.hit{border-color:#22c55e;background:#f0fdf4;box-shadow:0 0 15px rgba(34,197,94,.3)}
+.ent.miss{border-color:#d1d5db;opacity:.6}
+.ent .num{font-size:11px;color:#999;margin-bottom:6px}
+.ent .sz{font-size:16px;font-weight:800;margin-bottom:6px}
+.ent .sz.s2{color:#1e40af}
+.ent .sz.s4{color:#92400e}
+.ent .tg{font-family:monospace;font-size:13px;background:#f5f5f5;padding:4px 8px;border-radius:4px;margin-bottom:8px;display:inline-block}
+.ent .ms{font-size:10px;color:#888}
+.ent .rs{font-size:14px;font-weight:800;margin-top:8px;min-height:20px}
+.ent .rs.rh{color:#16a34a;animation:pls .6s ease-in-out 3}
+.ent .rs.rm{color:#999}
+@keyframes pls{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+.cd{font-family:monospace;font-size:12px;background:#f8f9fa;padding:6px 10px;border-radius:6px;margin-top:8px;display:none}
+.cd.show{display:block;animation:fi .4s}
+.cd .ok{color:#16a34a;font-weight:700}
+.cd .no{color:#dc2626;font-weight:700}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.bv{margin:12px 0;text-align:center}
+.ba{font-size:22px;color:#e67e22;opacity:0;transform:translateY(-10px);transition:all .4s;margin:4px 0}
+.ba.act{opacity:1;transform:translateY(0)}
+.bt{font-size:13px;font-weight:700;color:#e67e22;opacity:0;transition:opacity .4s}
+.bt.act{opacity:1}
+.mhb{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;text-align:center;padding:20px;border-radius:12px;margin-top:20px;font-size:20px;font-weight:800;letter-spacing:2px;display:none}
+.mhb.show{display:block;animation:bi .6s}
+.mhb.ok{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.mhb.neutral{background:linear-gradient(135deg,#6b7280,#9ca3af)}
+@keyframes bi{0%{transform:scale(.3);opacity:0}50%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.mhi{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px;margin-top:12px;font-size:13px;line-height:1.8;display:none}
+.mhi.show{display:block}
+.si{display:flex;gap:6px;margin-top:12px;justify-content:center}
+.sd{width:10px;height:10px;border-radius:50%;background:#ddd;transition:background .3s}
+.sd.act{background:#4a6fa5}
+.sd.done{background:#93c5fd}
+.fn{text-align:center;font-size:11px;color:#aaa;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="c">
+<h1>TLB Multi-Hit 交互演示</h1>
+<div class="sub">同一个 VA 如何同时命中 2MB 和 4KB 两条 TLB entry —— 并行掩码比较机制</div>
+<div class="ctl">
+<button id="bPrev" onclick="prev()">← 上一步</button>
+<button id="bNext" onclick="next()">下一步 →</button>
+<button id="bBc" onclick="bc()" style="display:none">📡 广播 VA</button>
+<button id="bRst" onclick="rst()">↺ 重置</button>
+<div class="vaIn"><label>VA:</label><input type="text" id="vaIn" value="0x12345678" onchange="vaChg()"></div>
+</div>
+<div class="sp" id="sp">
+<div class="nar" id="nar">点击"下一步"开始。</div>
+<div id="s1" style="display:none">
+<div class="vad">
+<div class="lb">当前查找的虚拟地址 (VA)</div>
+<div class="bits" id="vb"></div>
+<div class="lg">
+<div class="it"><div class="sw" style="background:#dbeafe"></div>VA[47:21] → 2MB tag</div>
+<div class="it"><div class="sw" style="background:#fef3c7"></div>VA[20:12] → 4KB 额外位</div>
+<div class="it"><div class="sw" style="background:#e5e7eb"></div>VA[11:0] → 偏移(不比较)</div>
+</div>
+</div>
+<div class="abc" id="abc">
+<div class="ab"><div class="r2" id="r2"></div><div class="r4" id="r4"></div><div class="vp" id="vp"></div></div>
+<div class="vpl" id="vpl"></div>
+<div class="als"><span>0x00000000000</span><span>0xFFFFFFFFFFF</span></div>
+</div>
+<div style="text-align:center;font-size:12px;color:#666;margin-top:8px">2MB(蓝) <b>包含</b> 4KB(橙) —— VA 同时落在两者之内</div>
+</div>
+<div id="s2" style="display:none">
+<div style="text-align:center;font-size:13px;color:#666;margin-bottom:8px">TLB 中的 4 条 entry(各自带 tag 和 size 掩码)</div>
+<div class="ents" id="ents2"></div>
+</div>
+<div id="s3" style="display:none">
+<div class="bv">
+<div class="bt" id="bt">VA 同时广播到所有 entry —— 同一时钟周期,不是逐个遍历!</div>
+<div class="ba" id="a0">↙</div><div class="ba" id="a1">↓</div><div class="ba" id="a2">↓</div><div class="ba" id="a3">↘</div>
+</div>
+<div class="ents" id="ents3"></div>
+</div>
+<div id="s4" style="display:none">
+<div class="ents" id="ents4"></div>
+<div class="mhb" id="mhb"></div>
+<div class="mhi" id="mhi">
+<b>同一个 VA 同时命中 2 条 entry</b> —— 因为 2MB 范围包含 4KB 范围,两者是包含关系。<br>
+硬件消解(架构定义):<br>
+• <b>BBML2</b>:要么 TLB conflict abort(实现定义),要么返回与某一条 entry 完全一致的结果;<br>
+• <b>BBML3</b>:只能返回一致结果,<b>abort 被禁止</b>;<br>
+• 两者都<b>绝不融合</b>(不会把旧 OA + 新权限拼在一起)。<br>
+软件收尾:调用者做<b>最终 TLBI</b> 把新旧 entry 一起清掉。
+</div>
+</div>
+</div>
+<div class="si" id="si"></div>
+<div class="fn">改 VA 试试:0x20000000(只命中2MB) / 0x12399778(只命中4KB) / 0x50000000(零命中)</div>
+</div>
+<script>
+var E=[
+{n:0,s:'2MB',sc:'s2',tag:0x91,mb:'VA[47:21]',sh:21},
+{n:1,s:'4KB',sc:'s4',tag:0x12345,mb:'VA[47:12]',sh:12},
+{n:2,s:'2MB',sc:'s2',tag:0x678,mb:'VA[47:21]',sh:21},
+{n:3,s:'4KB',sc:'s4',tag:0x99,mb:'VA[47:12]',sh:12}
+];
+var va=0x12345678,step=0,bcDone=false;
+function vv(){return va>>>0}
+function pad(h,n){return h.padStart(n,'0').toUpperCase()}
+function rvb(){
+var el=document.getElementById('vb');var h=pad(va.toString(16),12);
+el.innerHTML='<div class="bg hi47">'+h.slice(0,7)+'</div><div class="bg hi20">'+h.slice(7,10)+'</div><div class="bg hi0">'+h.slice(10,12)+'</div>';
+}
+function rab(){
+var full=0x100000000000;
+var e0=0x122000000,e1=0x12345000,r0=0x200000,r1=0x1000;
+document.getElementById('r2').style.left=(e0/full*100)+'%';
+document.getElementById('r2').style.width=Math.max(r0/full*100,3)+'%';
+document.getElementById('r4').style.left=(e1/full*100)+'%';
+document.getElementById('r4').style.width=Math.max(r1/full*100,1.5)+'%';
+document.getElementById('vp').style.left=(va/full*100)+'%';
+document.getElementById('vpl').style.left=(va/full*100)+'%';
+document.getElementById('vpl').textContent='0x'+pad(va.toString(16),8);
+}
+function ext(e){return Math.floor(va/Math.pow(2,e.sh))}
+function mat(e){return ext(e)===e.tag}
+function card(e,cmp){
+var m=mat(e),cls=cmp?(m?' hit':' miss'):'';
+var rh=cmp?(m?'<div class="rs rh">● HIT</div>':'<div class="rs rm">○ MISS</div>'):'<div class="rs"></div>';
+var cd='';
+if(cmp&&bcDone){
+cd='<div class="cd show">'+e.mb+' 截取 → <b>0x'+pad(ext(e).toString(16),5)+'</b> vs tag <b>0x'+pad(e.tag.toString(16),5)+'</b> → <span class="'+(m?'ok':'no')+'">'+(m?'✓ 匹配!':'✗ 不匹配')+'</span></div>';
+}
+return '<div class="ent'+cls+'"><div class="num">entry['+e.n+']</div><div class="sz '+e.sc+'">'+e.s+'</div><div class="tg">tag = 0x'+pad(e.tag.toString(16),5)+'</div><div class="ms">掩码: '+e.mb+'</div>'+rh+cd+'</div>';
+}
+function rent(id,cmp){document.getElementById(id).innerHTML=E.map(function(e){return card(e,cmp)}).join('')}
+function nar(t){document.getElementById('nar').innerHTML=t}
+function show(n){['s1','s2','s3','s4'].forEach(function(id,i){document.getElementById(id).style.display=(i===n-1)?'block':'none'});document.getElementById('bBc').style.display=(n===3&&!bcDone)?'inline-block':'none';dot()}
+function dot(){document.getElementById('si').innerHTML=[1,2,3,4].map(function(i){return '<div class="sd'+(i===step?' act':i<step?' done':'')+'"></div>'}).join('')}
+function next(){if(step<4)step++;app()}
+function prev(){if(step>0)step--;app()}
+function app(){
+document.getElementById('bPrev').disabled=step<=1;
+document.getElementById('bNext').disabled=step>=4;
+switch(step){
+case 0:nar('点击"下一步"开始。');show(0);break;
+case 1:nar('<b>场景 1 — VA 输入:</b>注意 bit 分组:蓝色(VA[47:21])是 2MB tag 来源;蓝+橙(VA[47:12])是 4KB tag 来源。下方地址条:2MB(蓝)<b>包含</b> 4KB(橙),VA 落在两者之内。');rvb();rab();show(1);break;
+case 2:nar('<b>场景 2 — TLB entries:</b>每条 entry 自带 tag 和 size 掩码(填充时写入)。注意 entry[0](2MB)和 entry[1](4KB)掩码不同——各自独立判断"VA 落在我的范围吗?"');rent('ents2',false);show(2);break;
+case 3:nar('<b>场景 3 — 并行比较:</b>点击"📡 广播 VA"——VA <b>同时</b>广播到所有 entry(同一周期,非遍历!),各自用自己的掩码截取并比较。');rent('ents3',false);show(3);if(bcDone)setTimeout(bc,300);break;
+case 4:
+var hits=E.filter(function(e){return mat(e)}).length;
+nar('<b>场景 4 — 结果:</b>' +(hits>=2?'<b>'+hits+' 条 entry 同时命中</b> = MULTI-HIT!2MB 范围包含 4KB 范围,VA 落在两者之内。':hits===1?'1 条 entry 命中(单命中,正常)。':'零命中 → TLB miss,触发 page table walk。'));
+rent('ents4',true);show(4);
+var b=document.getElementById('mhb'),info=document.getElementById('mhi');
+if(hits>=2){b.textContent='⚠ MULTI-HIT! '+hits+' 条同时命中';b.className='mhb show';info.className='mhi show'}
+else if(hits===1){b.textContent='● 单命中 ('+hits+' 条)';b.className='mhb show ok';info.className='mhi'}
+else{b.textContent='○ 零命中 → TLB miss,触发 walk';b.className='mhb show neutral';info.className='mhi'}
+break;
+}
+}
+function bc(){
+bcDone=true;document.getElementById('bBc').style.display='none';
+['a0','a1','a2','a3'].forEach(function(id,i){setTimeout(function(){document.getElementById(id).classList.add('act')},i*100)});
+setTimeout(function(){document.getElementById('bt').classList.add('act');rent('ents3',true);['a0','a1','a2','a3'].forEach(function(id){document.getElementById(id).classList.remove('act')})},600);
+}
+function vaChg(){
+var v=parseInt(document.getElementById('vaIn').value,16);
+if(!isNaN(v)&&v>=0&&v<=0xFFFFFFFFFFF){va=v;bcDone=false;step=1;app()}
+else{alert('请输入有效十六进制 VA(如 0x12345678)');document.getElementById('vaIn').value='0x'+va.toString(16)}
+}
+function rst(){
+step=0;bcDone=false;
+document.getElementById('mhb').className='mhb';
+document.getElementById('mhi').className='mhi';
+document.getElementById('bt').classList.remove('act');
+['a0','a1','a2','a3'].forEach(function(id){document.getElementById(id).classList.remove('act')});
+app();
+}
+rst();
+</script>
+</body>
+</html>
