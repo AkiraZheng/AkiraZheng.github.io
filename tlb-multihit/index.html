@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TLB Multi-Hit 演示</title>
+<title>TLB Multi-Hit 演示(SMMU 场景)</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f8f9fa;padding:16px;color:#333}
@@ -20,13 +20,13 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .sp{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:20px;min-height:420px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .nar{background:#eef5ff;border-left:4px solid #4a6fa5;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;font-size:14px;line-height:1.7}
 .nar b{color:#4a6fa5}
-.pe-row{display:flex;gap:16px;margin:12px 0;align-items:stretch}
-.pe-box{flex:1;border:1px solid #ddd;border-radius:8px;padding:12px;min-height:100px}
-.pe-box h4{font-size:12px;color:#666;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
-.pe-a{background:#eff6ff;border-color:#93c5fd}
-.pe-b{background:#fef3f2;border-color:#fca5a5}
-.shared-l2{background:#f9fafb;border:2px dashed #d1d5db;border-radius:8px;padding:12px;margin:12px 0}
-.shared-l2 h4{font-size:12px;color:#666;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.dev-row{display:flex;gap:16px;margin:12px 0;align-items:stretch}
+.dev-box{flex:1;border:1px solid #ddd;border-radius:8px;padding:12px;min-height:100px}
+.dev-box h4{font-size:12px;color:#666;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.dev1{background:#eff6ff;border-color:#93c5fd}
+.dev2{background:#fef3f2;border-color:#fca5a5}
+.smmu-tlb{background:#f9fafb;border:2px dashed #d1d5db;border-radius:8px;padding:12px;margin:12px 0}
+.smmu-tlb h4{font-size:12px;color:#666;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
 .tent{padding:8px 10px;margin:4px 0;border-radius:6px;font-size:11px;transition:all .5s;font-family:monospace}
 .tent.s2{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
 .tent.s4{background:#fef3c7;border:1px solid #fbbf24;color:#92400e}
@@ -40,7 +40,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .st-visit{background:#3b82f6;color:#fff}
 .st-walk{background:#8b5cf6;color:#fff}
 .st-fill{background:#22c55e;color:#fff}
-.st-cascade{background:#f59e0b;color:#fff}
 .st-query{background:#e67e22;color:#fff}
 .st-none{background:#e0e0e0;color:#666}
 .mhb{border-radius:12px;padding:16px;margin-top:12px;font-size:14px;line-height:1.8;display:none}
@@ -53,13 +52,13 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .sd{width:10px;height:10px;border-radius:50%;background:#ddd;transition:background .3s}
 .sd.act{background:#4a6fa5}
 .sd.done{background:#93c5fd}
-.fn{text-align:center;font-size:11px;color:#aaa;margin-top:16px}
+.fn{text-align:center;font-size:11px;color:#aaa;margin-top:16px;line-height:1.6}
 </style>
 </head>
 <body>
 <div class="c">
 <h1>TLB Multi-Hit 交互演示</h1>
-<div class="sub">多 PE + 共享 L2 TLB → walk 填装与级联 → 新旧 entry 并存 → multi-hit → 最终 TLBI → 重新 walk</div>
+<div class="sub">SMMU 场景：多设备共享 SMMU TLB → Device-2 walk 填入新 entry → 新旧并存 → multi-hit → 最终 TLBI 收敛</div>
 <div class="ctl">
 <button id="bPrev" onclick="prev()">← 上一步</button>
 <button id="bNext" onclick="next()">下一步 →</button>
@@ -69,63 +68,65 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="content"></div>
 <div class="si" id="si"></div>
 </div>
-<div class="fn">关键：walk 结果先填 PE-B 私有 L1，再级联到共享 L2 → PE-A 查共享 L2 时新旧并存</div>
+<div class="fn">
+SMMU TLB 是架构中天然多设备共享的翻译结构——多个设备的 DMA 翻译填入同一 TLB，不同设备在不同时刻 walk 的结果可并存。<br>
+SMMU BBML2 ≈ ARM BBML3（noabort + 硬件消解 multi-hit）。SMMU spec 3.21.1.3: "automatically resolves any TLB multi-hit scenarios"
+</div>
 </div>
 <script>
-var step=0,totalSteps=11;
+var step=0,totalSteps=10;
 var steps=[
-{n:'<b>初始状态:</b> 访问 VA 0x12345678。页表 L2 是 Block(2MB)映射。PE-A 之前访问过，L1 TLB 缓存了 2MB entry。PE-B 还没访问过。',pe:'init',l2:'old2mb',ops:[],mhb:''},
-{n:'<b>PE-A 访问 VA 0x12345678:</b> L1 TLB 命中旧 2MB entry → 直接返回翻译，<b>不会 walk</b>。',pe:'a-hit',l2:'old2mb',ops:[{c:'st-visit',t:'PE-A 访问',a:1},{c:'st-none',t:'❌ 不 walk (hit)'}],mhb:''},
-{n:'<b>软件直接改页表（BBML2 方式）:</b> L2 Block → Table，指向新 L3 页表。<b>不 invalid、不 TLBI</b>。PE-A 的 L1 TLB 里旧 2MB entry 还在。',pe:'a-hit',l2:'old2mb',ops:[{c:'st-none',t:'PE-A: 旧 entry 还在'}],mhb:''},
-{n:'<b>PE-B 访问 VA 0x12345678:</b> PE-B 的 L1 TLB 没有该地址 → <b>miss</b> → 查共享 L2 TLB → 也没有 → miss → walk。',pe:'b-miss',l2:'old2mb',ops:[{c:'st-visit',t:'PE-B 访问',a:1},{c:'st-walk',t:'🔍 miss → walk',a:1}],mhb:''},
-{n:'<b>PE-B walk 页表:</b> 读到新的 L2 Table → L3 Page → 翻译结果为 4KB。walk 结果<b>先填入 PE-B 私有 L1 TLB</b>。',pe:'b-walk-l1',l2:'old2mb',ops:[{c:'st-walk',t:'🔍 walk 读到 4KB',a:0},{c:'st-fill',t:'① 填入 PE-B L1',a:1}],mhb:''},
-{n:'<b>级联填入共享 L2 TLB:</b> walk 结果同时/随后<b>级联到共享 L2 TLB</b>。此时共享 L2 里出现新 4KB entry，与旧 2MB entry 并存！',pe:'b-walk-l2',l2:'both',ops:[{c:'st-fill',t:'① 填入 PE-B L1',a:0},{c:'st-cascade',t:'② 级联到共享 L2',a:1}],mhb:'multi'},
-{n:'<b>共享 L2 TLB 两条并存!</b> 旧 2MB + 新 4KB，Tag 不同（VA[47:21]+2MB ≠ VA[47:12]+4KB），能共存。',pe:'both-have',l2:'both',ops:[{c:'st-cascade',t:'② 级联到共享 L2',a:0}],mhb:'multi-detail'},
-{n:'<b>PE-A 后续访问:</b> L1 miss（旧 entry 被淘汰）→ 查共享 L2 TLB → <b>同时命中旧 2MB 和新 4KB = MULTI-HIT!</b>',pe:'a-l2-query',l2:'both',ops:[{c:'st-query',t:'PE-A 查共享 L2',a:1}],mhb:'multi-detail'},
-{n:'<b>最终 TLBI:</b> 调用者做最终 TLBI，<b>新旧全部清掉</b>（TLBI 按地址失效，不区分新旧版本）。TLB 里该地址为空。',pe:'clean',l2:'empty',ops:[{c:'st-none',t:'📡 最终 TLBI',a:1}],mhb:'ok'},
-{n:'<b>后续访问重新 walk（以 PE-A 为例）:</b> PE-A 访问 VA 0x12345678 → L1 miss → 查共享 L2 → miss（已清空）→ walk 读到新页表 → 翻译结果为 4KB → <b>先填入 PE-A 私有 L1 TLB</b>。',pe:'rewalk-l1',l2:'empty',ops:[{c:'st-walk',t:'🔍 miss → walk',a:1},{c:'st-fill',t:'① 填入 PE-A L1',a:1}],mhb:''},
-{n:'<b>级联到共享 L2 TLB:</b> walk 结果级联到共享 L2 TLB。从此共享 L2 里只有新 4KB entry，<b>multi-hit 窗口结束</b>。任何 PE 后续访问只命中这一条。',pe:'rewalk-l2',l2:'new4kb',ops:[{c:'st-fill',t:'① 填入 PE-A L1',a:0},{c:'st-cascade',t:'② 级联到共享 L2',a:1}],mhb:'done'}
+{n:'<b>初始状态:</b> IOVA 0x12345678。页表 L2 是 Block(2MB)映射。Device-1(网卡)之前 DMA 过,SMMU TLB 缓存了 2MB entry。Device-2(GPU)还没有 DMA 过。',dev:'init',tlb:'old2mb',ops:[],mhb:''},
+{n:'<b>Device-1 再次 DMA:</b> SMMU TLB 命中旧 2MB entry → 直接返回翻译 → <b>不 walk</b>。',dev:'d1-hit',tlb:'old2mb',ops:[{c:'st-visit',t:'Device-1 DMA',a:1},{c:'st-none',t:'❌ 不 walk (hit)'}],mhb:''},
+{n:'<b>软件直接改页表(BBML2 方式):</b> L2 Block → Table,指向新 L3 页表。<b>不 invalid、不 TLBI</b>。SMMU TLB 里旧 2MB entry 还在。',dev:'d1-hit',tlb:'old2mb',ops:[{c:'st-none',t:'SMMU TLB: 旧 entry 还在'}],mhb:''},
+{n:'<b>Device-2 DMA IOVA 0x12345678:</b> SMMU TLB 里没有 Device-2 对应的 Stream 上下文 → <b>miss</b> → SMMU walk。',dev:'d2-miss',tlb:'old2mb',ops:[{c:'st-visit',t:'Device-2 DMA',a:1},{c:'st-walk',t:'🔍 miss → walk',a:1}],mhb:''},
+{n:'<b>SMMU walk 页表:</b> 读到新的 L2 Table → L3 Page → 翻译结果为 4KB。walk 结果<b>填入 SMMU TLB</b>。此时 SMMU TLB 里出现新 4KB entry,与旧 2MB entry 并存!',dev:'d2-walk',tlb:'both',ops:[{c:'st-walk',t:'🔍 walk 读到 4KB',a:0},{c:'st-fill',t:'① 填入 SMMU TLB',a:1}],mhb:'multi'},
+{n:'<b>SMMU TLB 两条并存!</b> 旧 2MB + 新 4KB,Tag 不同(VA[47:21]+2MB ≠ VA[47:12]+4KB),能共存。',dev:'both-have',tlb:'both',ops:[{c:'st-fill',t:'① 填入 SMMU TLB',a:0}],mhb:'multi-detail'},
+{n:'<b>Device-1 后续 DMA:</b> 查 SMMU TLB → <b>同时命中旧 2MB 和新 4KB = MULTI-HIT!</b>',dev:'d1-query',tlb:'both',ops:[{c:'st-query',t:'Device-1 查 SMMU TLB',a:1}],mhb:'multi-detail'},
+{n:'<b>最终 TLBI:</b> 软件发 CMD_TLBI_S2_IPA → <b>新旧全部清掉</b>(TLBI 按地址失效,不区分新旧版本)。SMMU TLB 里该地址为空。',dev:'clean',tlb:'empty',ops:[{c:'st-none',t:'📡 CMD_TLBI',a:1}],mhb:'ok'},
+{n:'<b>后续 Device-1 DMA 重新 walk:</b> SMMU TLB miss(已清空)→ walk 读到新页表 → 翻译结果为 4KB → <b>填入 SMMU TLB</b>。',dev:'rewalk',tlb:'empty',ops:[{c:'st-walk',t:'🔍 miss → walk',a:1},{c:'st-fill',t:'① 填入 SMMU TLB',a:1}],mhb:''},
+{n:'<b>SMMU TLB 里只有新 4KB entry:</b> <b>multi-hit 窗口结束</b>。任何设备后续 DMA 只命中这一条。拆大页全流程完成。',dev:'rewalk',tlb:'new4kb',ops:[{c:'st-fill',t:'① 填入 SMMU TLB',a:0}],mhb:'done'}
 ];
 
-function peHTML(type){
-var a_l1='',b_l1='';
-// PE-A L1
-if(type==='init'||type==='a-hit'||type==='b-miss'||type==='b-walk-l1'||type==='b-walk-l2'){
-a_l1='<div class="tent s2">VA=0x12345678<br>tag VA[47:21]=0x91 (2MB)<br>OA=0x6789A, RW, WB</div>';
-}else if(type==='a-l2-query'||type==='both-have'||type==='clean'||type==='rewalk-l1'){
-a_l1='<div class="tent empty">🗑️ L1 miss（旧 entry 被淘汰）</div>';
-}else if(type==='rewalk-l2'){
-a_l1='<div class="tent s4 new-entry">VA=0x12345678<br>tag VA[47:12]=0x12345 (4KB)<br>OA=0x6789A, RW, WB<br><small>✓ walk 填入的新 entry</small></div>';
+function devHTML(type){
+var d1='',d2='';
+// Device-1
+if(type==='init'||type==='d1-hit'||type==='d2-miss'||type==='d2-walk'){
+d1='<div class="tent s2">IOVA=0x12345678<br>tag VA[47:21]=0x91 (2MB)<br>OA=0x6789A, RW, WB</div>';
+}else if(type==='d1-query'||type==='both-have'||type==='clean'){
+d1='<div class="tent s2">IOVA=0x12345678<br>tag VA[47:21]=0x91 (2MB)<br>OA=0x6789A, RW, WB</div>';
+}else if(type==='rewalk'){
+d1='<div class="tent s4 new-entry">IOVA=0x12345678<br>tag VA[47:12]=0x12345 (4KB)<br>OA=0x6789A, RW, WB<br><small>✓ walk 填入的新 entry</small></div>';
 }
-// PE-B L1
-if(type==='init'||type==='a-hit'){
-b_l1='<div class="tent empty">没有该地址的 entry</div>';
-}else if(type==='b-miss'){
-b_l1='<div class="tent empty">🔍 miss → 准备 walk</div>';
-}else if(type==='b-walk-l1'||type==='b-walk-l2'||type==='both-have'||type==='a-l2-query'){
-b_l1='<div class="tent s4 new-entry">VA=0x12345678<br>tag VA[47:12]=0x12345 (4KB)<br>OA=0x6789A, RW, WB<br><small>✓ walk 填入的新 entry</small></div>';
+// Device-2
+if(type==='init'||type==='d1-hit'){
+d2='<div class="tent empty">没有该地址的 entry</div>';
+}else if(type==='d2-miss'){
+d2='<div class="tent empty">🔍 miss → 准备 walk</div>';
+}else if(type==='d2-walk'||type==='both-have'||type==='d1-query'){
+d2='<div class="tent s4 new-entry">IOVA=0x12345678<br>tag VA[47:12]=0x12345 (4KB)<br>OA=0x6789A, RW, WB<br><small>✓ walk 填入的新 entry</small></div>';
 }else if(type==='clean'){
-b_l1='<div class="tent empty">🗑️ L1 miss</div>';
-}else if(type==='rewalk-l1'||type==='rewalk-l2'){
-b_l1='<div class="tent empty">L1 miss → 查共享 L2</div>';
+d2='<div class="tent empty">🗑️ TLBI 已清空</div>';
+}else if(type==='rewalk'){
+d2='<div class="tent empty">—</div>';
 }
-return '<div class="pe-row"><div class="pe-box pe-a"><h4>🔒 PE-A 私有 L1 TLB</h4>'+a_l1+'</div><div class="pe-box pe-b"><h4>🔒 PE-B 私有 L1 TLB</h4>'+b_l1+'</div></div>';
+return '<div class="dev-row"><div class="dev-box dev1"><h4>🔌 Device-1 (网卡)</h4>'+d1+'</div><div class="dev-box dev2"><h4>🔌 Device-2 (GPU)</h4>'+d2+'</div></div>';
 }
 
-function l2HTML(type){
+function tlbHTML(type){
 var entries='';
 if(type==='old2mb'){
-entries='<div class="tent s2">VA=0x12345678 → tag VA[47:21]=0x91<br>2MB | OA=0x6789A, RW, WB<br><small style="color:#991b1b">旧 entry（拆页前缓存）</small></div>';
+entries='<div class="tent s2">IOVA=0x12345678 → tag VA[47:21]=0x91<br>2MB | OA=0x6789A, RW, WB<br><small style="color:#991b1b">旧 entry（Device-1 DMA 前 walk 填入）</small></div>';
 }else if(type==='both'){
-entries='<div class="tent s2">VA=0x12345678 → tag VA[47:21]=0x91<br>2MB | OA=0x6789A, RW, WB<br><small style="color:#991b1b">旧 entry</small></div>';
-entries+='<div class="flow-arrow" style="color:#f59e0b">⬇ PE-B walk 级联填入</div>';
-entries+='<div class="tent s4 new-entry">VA=0x12345678 → tag VA[47:12]=0x12345<br>4KB | OA=0x6789A, RW, WB<br><small style="color:#166534">新 entry（级联填入）</small></div>';
-}else if(type==='empty'||type==='rewalk-l1'){
-entries='<div class="tent empty">🗑️ TLB 为空<br><small>最终 TLBI 清掉了新旧全部</small></div>';
-}else if(type==='new4kb'||type==='rewalk-l2'){
-entries='<div class="tent s4 new-entry">VA=0x12345678 → tag VA[47:12]=0x12345<br>4KB | OA=0x6789A, RW, WB<br><small style="color:#166534">✓ walk 后填充的新 entry（唯一）</small></div>';
+entries='<div class="tent s2">IOVA=0x12345678 → tag VA[47:21]=0x91<br>2MB | OA=0x6789A, RW, WB<br><small style="color:#991b1b">旧 entry</small></div>';
+entries+='<div class="flow-arrow" style="color:#f59e0b">⬇ Device-2 walk 填入</div>';
+entries+='<div class="tent s4 new-entry">IOVA=0x12345678 → tag VA[47:12]=0x12345<br>4KB | OA=0x6789A, RW, WB<br><small style="color:#166534">新 entry</small></div>';
+}else if(type==='empty'){
+entries='<div class="tent empty">🗑️ SMMU TLB 为空<br><small>最终 TLBI 清掉了新旧全部</small></div>';
+}else if(type==='new4kb'){
+entries='<div class="tent s4 new-entry">IOVA=0x12345678 → tag VA[47:12]=0x12345<br>4KB | OA=0x6789A, RW, WB<br><small style="color:#166534">✓ walk 后填充的新 entry（唯一）</small></div>';
 }
-return '<div class="shared-l2"><h4>🌐 共享 L2 TLB（多 PE 共用）</h4>'+entries+'</div>';
+return '<div class="smmu-tlb"><h4>🌐 SMMU TLB（多设备共享）</h4>'+entries+'</div>';
 }
 
 function opsHTML(ops){
@@ -135,19 +136,18 @@ return '<div class="ops">'+ops.map(function(o){var cls=o.a===undefined?'':(o.a?'
 
 function mhbHTML(type){
 if(!type)return '';
-if(type==='multi')return '<div class="mhb show multi"><b>⚠ 共享 L2 TLB 里两条并存!</b><br>旧 2MB + 新 4KB，Tag 不同所以能共存<br>walk 结果级联到共享 L2 是 multi-hit 的触发点</div>';
-if(type==='multi-detail')return '<div class="mhb show multi"><b>⚠ MULTI-HIT!</b><br>PE-A 查共享 L2 → 同时命中旧 2MB 和新 4KB<br>2MB 范围包含 4KB 范围，VA 落在两者之内<br><br>BBML2 硬件消解：abort 或一致结果（绝不融合）<br>BBML3：永不 abort，只返回一致结果</div>';
-if(type==='ok')return '<div class="mhb show ok"><b>✅ 最终 TLBI 收尾</b><br>新旧 entry 全部清掉（TLBI 按地址失效，不区分新旧）<br>multi-hit 是共享 TLB 结构的瞬态</div>';
-if(type==='done')return '<div class="mhb show ok"><b>✅ 重新 walk 完成！</b><br>TLB 里只有新 4KB entry，multi-hit 窗口结束<br>拆大页全流程完成</div>';
+if(type==='multi')return '<div class="mhb show multi"><b>⚠ SMMU TLB 里两条并存!</b><br>旧 2MB + 新 4KB,Tag 不同所以能共存<br>Device-2 walk 结果填入 SMMU TLB 是 multi-hit 的触发点</div>';
+if(type==='multi-detail')return '<div class="mhb show multi"><b>⚠ MULTI-HIT!</b><br>Device-1 查 SMMU TLB → 同时命中旧 2MB 和新 4KB<br>2MB 范围包含 4KB 范围,IOVA 落在两者之内<br><br>BBML2 硬件消解: abort 或一致结果(绝不融合)<br>BBML3: 永不 abort,只返回一致结果</div>';
+if(type==='ok')return '<div class="mhb show ok"><b>✅ 最终 TLBI 收尾</b><br>新旧 entry 全部清掉(TLBI 按地址失效,不区分新旧)<br>multi-hit 是 SMMU TLB 的瞬态</div>';
+if(type==='done')return '<div class="mhb show ok"><b>✅ 重新 walk 完成!</b><br>SMMU TLB 里只有新 4KB entry,multi-hit 窗口结束<br>拆大页全流程完成</div>';
 return '';
 }
 
 function render(){
 var s=steps[step];
 var html='<div class="nar">'+s.n+'</div>';
-html+=peHTML(s.pe);
-html+='<div class="flow-arrow">↕</div>';
-html+=l2HTML(s.l2);
+html+=devHTML(s.dev);
+html+=tlbHTML(s.tlb);
 html+=opsHTML(s.ops);
 html+=mhbHTML(s.mhb);
 document.getElementById('content').innerHTML=html;

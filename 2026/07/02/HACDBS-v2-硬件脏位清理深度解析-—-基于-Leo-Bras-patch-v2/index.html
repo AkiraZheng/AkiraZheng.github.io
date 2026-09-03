@@ -27,7 +27,7 @@
 <meta property="og:description" content="HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2 核心问题：HACDBS 里硬件自动识别 DBM+writable-dirty → writable-clean，但只在收到 HACDBSBR_EL2 触发后才执行，不是随时自动。本文档基于 Leo Bras 2026-06-29 提交的 patch v2（共 13 个 patch, 2186 行）的真实源码。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-07-02T12:18:12.000Z">
-<meta property="article:modified_time" content="2026-07-02T12:52:11.766Z">
+<meta property="article:modified_time" content="2026-09-03T14:18:52.304Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -523,7 +523,7 @@ trap</p></li>
 </ul>
 <p><strong>硬件在 DBM=1 的前提下，出现permission
 fault的时候自动恢复写权限</strong> —— 即 "writable-dirty →
-writable-clean"。这是 ARM ARM DDI 0487M.b 白纸黑字的描述。</p>
+writable-clean"。这是 ARMDDI 0487M.b 白纸黑字的描述。</p>
 <h1 id="二hw_entries-数据结构与编码">二、hw_entries 数据结构与编码</h1>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">hw_entries = kmalloc_objs(u64, entries_sz, GFP_KERNEL);</span><br><span class="line"><span class="comment">// entries_sz = PAGE_SIZE / sizeof(u64) = 512</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// hw_entries[i] 编码格式（每个 8 字节）：</span></span><br><span class="line"><span class="comment">//   bit[55:12]  = IPA    (44-bit, max 16TB guest)</span></span><br><span class="line"><span class="comment">//   bit[11:4]   = 保留</span></span><br><span class="line"><span class="comment">//   bit[3:1]    = TTWL   (Translation Table Walk Level)</span></span><br><span class="line"><span class="comment">//   bit[0]      = Valid</span></span><br></pre></td></tr></table></figure>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* HDBSS entry field definitions */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_VALID    BIT(0)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_TTWL_SHIFT  (1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_TTWL_MASK   (GENMASK(3, 1))</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_TTWL(x) \</span></span><br><span class="line"><span class="meta">    (((x) &lt;&lt; HDBSS_ENTRY_TTWL_SHIFT) &amp; HDBSS_ENTRY_TTWL_MASK)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_TTWL_RESV   HDBSS_ENTRY_TTWL(-4)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HDBSS_ENTRY_IPA         GENMASK_ULL(55, 12)</span></span><br></pre></td></tr></table></figure>
@@ -1034,9 +1034,8 @@ HDBSS（同一个东西的两个名字），二者不是"独立"也不是"无关
 "处理 HDBSS 的函数"。</p>
 <p>所以 <strong>hw_entries =
 HDBSS</strong>，是同一个内存结构在软件侧起的不同名字。</p>
-<h2 id="arm-arm-规范里-hdbss-的定义">10.2 ARM ARM 规范里 HDBSS
-的定义</h2>
-<p><strong>ARM ARM 原文：</strong></p>
+<h2 id="arm规范里-hdbss-的定义">10.2 ARM规范里 HDBSS 的定义</h2>
+<p><strong>ARM原文：</strong></p>
 <blockquote>
 <p>"The HDBSS is a structure in memory that consists of a sequence of
 8-byte entries, each describing a translation table entry to be
@@ -1108,7 +1107,7 @@ PTE.W，完成后触发 HACDBS 中断唤醒 CPU。</p>
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">July 2nd 2026, 8:18:12 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">July 2nd 2026, 8:52:11 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">September 3rd 2026, 10:18:52 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -1288,8 +1287,7 @@ HACDBS 只做 dirty bit clean？—— 纯属性修改 vs 内存管理操作</sp
 block descriptor）—— 必须软件做</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4-pteunmap-%E5%BF%85%E9%A1%BB%E8%BD%AF%E4%BB%B6%E5%81%9A"><span class="toc-text">9.3.3 删除 PTE（unmap）——
 必须软件做</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9-hpamove-page-%E5%BF%85%E9%A1%BB%E8%BD%AF%E4%BB%B6%E5%81%9A"><span class="toc-text">9.3.4 修改 HPA（move page）——
 必须软件做</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%9C%AC%E8%B4%A8"><span class="toc-text">9.4 一句话本质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E5%BA%94%E5%88%B0-hacdbs-%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">9.5 对应到 HACDBS 的设计</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81hw_entries-%E4%B8%8E-hdbss-%E7%9A%84%E7%B2%BE%E7%A1%AE%E5%85%B3%E7%B3%BB%E5%9F%BA%E4%BA%8E-patch-v2-%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="toc-text">十、hw_entries
-与 HDBSS 的精确关系（基于 patch v2 真实数据流）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%91%BD%E5%90%8D%E7%9B%B4%E6%8E%A5%E5%AF%B9%E5%BA%94"><span class="toc-text">10.1 命名直接对应</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#arm-arm-%E8%A7%84%E8%8C%83%E9%87%8C-hdbss-%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-text">10.2 ARM ARM 规范里 HDBSS
-的定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hacdbsbr_el2-%E5%90%8D%E5%AD%97%E9%87%8C%E7%9A%84hdbss"><span class="toc-text">10.3 HACDBSBR_EL2
+与 HDBSS 的精确关系（基于 patch v2 真实数据流）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%91%BD%E5%90%8D%E7%9B%B4%E6%8E%A5%E5%AF%B9%E5%BA%94"><span class="toc-text">10.1 命名直接对应</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#arm%E8%A7%84%E8%8C%83%E9%87%8C-hdbss-%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-text">10.2 ARM规范里 HDBSS 的定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hacdbsbr_el2-%E5%90%8D%E5%AD%97%E9%87%8C%E7%9A%84hdbss"><span class="toc-text">10.3 HACDBSBR_EL2
 名字里的&quot;HDBSS&quot;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hw_entries-%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE%E6%B5%81%E4%B8%A4%E6%9D%A1%E8%B7%AF%E5%BE%84"><span class="toc-text">10.4 hw_entries
 的真实数据流（两条路径）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84-a%E4%BB%8E-dirty-bitmap-%E5%87%BA%E5%8F%91kvm_get_dirty_log"><span class="toc-text">10.4.1 路径 A：从
 dirty bitmap 出发（KVM_GET_DIRTY_LOG）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84-b%E4%BB%8E-dirty-ring-%E5%87%BA%E5%8F%91kvm_dirty_ring"><span class="toc-text">10.4.2 路径 B：从 dirty
@@ -2697,10 +2695,6 @@ ring 出发（KVM_DIRTY_RING）</span></a></li></ol></li><li class="toc-item toc
         
         
         
-        
-        
-        
-        
     
     
     
@@ -3022,13 +3016,13 @@ ring 出发（KVM_DIRTY_RING）</span></a></li></ol></li><li class="toc-item toc
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/15</span>
-            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/15</span>
-            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
         </li>
     
         
@@ -3368,11 +3362,6 @@ ring 出发（KVM_DIRTY_RING）</span></a></li></ol></li><li class="toc-item toc
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="虚拟化">
-            <span class="iconfont-archer">&#xe60a;</span>
-            虚拟化
-        </span>
-    
         <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
             <span class="iconfont-archer">&#xe60a;</span>
             ARM64结构与编程实操
@@ -3383,14 +3372,9 @@ ring 出发（KVM_DIRTY_RING）</span></a></li></ol></li><li class="toc-item toc
             内存
         </span>
     
-        <span class="sidebar-category-name" data-categories="内存">
+        <span class="sidebar-category-name" data-categories="虚拟化">
             <span class="iconfont-archer">&#xe60a;</span>
-            内存
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="C++知识点">
-            <span class="iconfont-archer">&#xe60a;</span>
-            C++知识点
+            虚拟化
         </span>
     
         <span class="sidebar-category-name" data-categories="Linux内核基础">
@@ -3398,9 +3382,19 @@ ring 出发（KVM_DIRTY_RING）</span></a></li></ol></li><li class="toc-item toc
             Linux内核基础
         </span>
     
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
         <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
             <span class="iconfont-archer">&#xe60a;</span>
             重装-环境配置-计算机
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="内存">
+            <span class="iconfont-archer">&#xe60a;</span>
+            内存
         </span>
     
         <span class="sidebar-category-name" data-categories="计算机网络">

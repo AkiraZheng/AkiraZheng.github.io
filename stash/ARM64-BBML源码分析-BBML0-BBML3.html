@@ -41,7 +41,7 @@
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/dPDlJzDG5CRVzrESyAgD49p3Dqjc408cPk8O91YjQUxMRjnGRfVs3i5N8petGXWcaW4oY3EYX0IP4KTX0RwBQM-xR-7TdmWpCoQ-kasVSyxptD_D6ROeCcbcNXUiEKpIo4Jp44U9kPHfP8WwQkY62IzcCTLkwAgMH1cTZXk4Jk6N6WG2DqHYKErQkND3YN8ZdC1fH6WKgIecAGZS5IYckWRkpcKW4884RqnJ3PA6hWBRhBddw-xn6JlUW9_P3HWPUHIv3GjMwoC8uaHuoFjqxbokIeAGlXuEVVx5iLEloKJip5FukQ2PLEe3PC7KJ7Tre_B3hno8aM1RZavtozEHaTP_VWf2EDnE4GBtAjUer5bvnR6F6fidL8zZ28S5OMe61kxn8H02HU7UQIMbKGKHLKde6Z952HQ7PE8lltVV5kwF3whOf4lzl7wCsJd7FiTa0UbOxOpXdgqvIJrZpIhSGp4HIMcY99EMuIrGhRZGH0ucJirIC9AT7g_orRdQTNCrfrwAZhdhXrvvrIrKPT8nO8KIArMRV70AD4BDfUxa5W_DqrkTlEwRRJUt3yzYZ_iJpnU7kkBvrLVUne6VpR5orgiNci5-Wmfo-VIxVvN_Bqf_eT8xehTpmehxVmRjnOPjVX5ZC_r4SkmYXo0sQoNthEOUROLa4fju47doT33sS79oUbGcA6wOL6pTnVkyp8u-SlOSdcDd_Vo9Lt_7zigYLzzrx3L_Rus_gVGlDhpTph7Y2dVcGTheUwLiljt5ziH0mB4F-PBo9MdLogIn-y7F7tglQ-nqYtsh2iCQKVa2_m80">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLDTJzDG6BxlhpZXQeqNPP1uCME0WGe9wkAMe6Ot7IlGhBHaEsZqgfC1KzPj8J0s6SYCVFW16mQnT8xz5-rxkluBJrl11VJcv3tlUVkSv-DqC8Nv99wVbPXKGfJd-2G_YsByP68wgSpByM55KfBe-Oo8XQxpk335pqluhYBZiFXIG7u_WqKi2GWsp_rz0MIsZyZQ6IdlG2DZVLq5OyyNavJ918Vvc2J0Xtre57wfwM7wlJYDOY9coSQfzJP3IcUabhNLrsJb8yEun1Xn2lcWyCd1srgmAqMpfQ6X4FVu0HVk6meDi0ZF23BoaNATPH0AGFuTL1jqEXIvWsuWMa0n7naFZY7VetkXq9DHDYgRkcPNrSvUEXYyJziJeqydmhH76-Ju5NkBmgImCiS8KagWTnVtM4QGu-AKHsLf4GxBrd4JjbUWK8PSQG0z7FfJHULfIOdnagddxQrjhxQNDIZiNEDfDfjcQvqI6BUCVSX-jXTQ3eNZD2ngWQWCHpcoVdAJ7ExI4J0AaDsuOFeFWW5a6NNFQCuprIFKJTogVJ6RfsIjJdAExl4-hlygAMUiqovsQZce7b2XP4VdOqeIc_eRKryXfMKgq6VzCEpQjyxtEfndk4bwsHmMECje4tNV2vozWah5Ucxta8PEDRgGFMPxgrDFKwKEbtxa6nk1UeOw2vK3aYrPbHOKDT3MNR5TGRXmBdsgUVE4v7TXgGABkwJK46ISV16LQUPLrMfcdSp9sYaqpbq8ruSkmnoCNiv_8VkgE_w1wohaYFS-0qYEtFQZdqkho7rOJa4ssqHxVzcZFb4LjghI44pTyDAyJFA_ede3w6_mtYn54kLdl2J6AVP8E4XNvuBBpIoV4BmDswNJNTqtCaXh-dF_1W00">
 <meta property="article:published_time" content="2026-09-01T05:08:59.000Z">
-<meta property="article:modified_time" content="2026-09-02T03:24:15.883Z">
+<meta property="article:modified_time" content="2026-09-03T14:18:52.304Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://akirazheng.github.io/stash/2026-09-02-10-45-18.png">
@@ -463,7 +463,7 @@ BBML3 演进
 <code>f8d0751426dd</code>/<code>267b481d0b94</code>/<code>06468bc3c936</code>/<code>4955df16ff99</code>)</p>
 <p><strong>Spec 基线</strong>: 本文以 <strong>PE/MMU 侧 spec(ARM ARM,
 DDI 0487M.b)为主</strong>,所有架构规则原文均引自 ARM ARM;SMMU spec(IHI
-0070H.a)只在 ARM ARM 未给出具体软件序列的地方作补充,并明确标注来源</p>
+0070H.a)只在 ARM未给出具体软件序列的地方作补充,并明确标注来源</p>
 <p><strong>代码范围</strong>: <code>arch/arm64/mm/</code>(contpte.c /
 mmu.c)、<code>arch/arm64/kernel/cpufeature.c</code>、<code>arch/arm64/kvm/hyp/pgtable.c</code>、<code>drivers/iommu/arm/arm-smmu-v3/</code>(仅
 SVA 一节)</p>
@@ -524,7 +524,7 @@ TLB 的部分。</li>
 TLB,等于白清。</p>
 <h3 id="spec-对tlb-entry的定义为什么两个对象缺一不可">1.2 Spec 对"TLB
 entry"的定义(为什么两个对象缺一不可)</h3>
-<p>ARM ARM D8.17 对 TLB entry 的定义非常宽:</p>
+<p>ARMD8.17 对 TLB entry 的定义非常宽:</p>
 <ul>
 <li><strong>RRVJDB(TLB entry 的宽定义)</strong>:TLB entry 不只是"TLB
 里的翻译缓存"——任何持有页表 entry 的结构都算,包括中间级 walk cache 和
@@ -1208,10 +1208,10 @@ synchronization)。KVM 的
 </ul>
 <p>一句话:<strong>DSB 管数据访问完成,ISB 管取指上下文同步</strong>。</p>
 <hr>
-<h2 id="三arm-arm-的-bbm-规则本文-spec-引用均出自-ddi-0487m.b">三、ARM
-ARM 的 BBM 规则(本文 spec 引用均出自 DDI 0487M.b)</h2>
+<h2 id="三arm的-bbm-规则本文-spec-引用均出自-ddi-0487m.b">三、ARM的 BBM
+规则(本文 spec 引用均出自 DDI 0487M.b)</h2>
 <h3 id="哪些修改必须-bbmrwhzws">3.1 哪些修改必须 BBM:RWHZWS</h3>
-<p>ARM ARM D8.17.1 用一条规则列出了必须走 BBM 序列的全部场景:</p>
+<p>ARMD8.17.1 用一条规则列出了必须走 BBM 序列的全部场景:</p>
 <table>
 <colgroup>
 <col style="width: 100%">
@@ -1579,7 +1579,7 @@ DSB,保证任意时刻系统里同一地址只有一份有效翻译。第五章�
 窗口。</p>
 </blockquote>
 <h3 id="bbml1nt-位方案">4.3 BBML1:nT 位方案</h3>
-<p>ARM ARM 把各级别与软件可选路径的关系写成一条规则:</p>
+<p>ARM把各级别与软件可选路径的关系写成一条规则:</p>
 <ul>
 <li><strong>RKFLJB(级别与可选路径)</strong>:改 table/block 大小时
 <ul>
@@ -1679,9 +1679,9 @@ valid)→ 把 2MB 翻译<strong>重新缓存</strong>回 TLB → 到 ④ 替换�
 <p>即:<strong>TLBI 清"过去"(已缓存的旧副本),nT 管"未来"(空窗期内 walk
 不许重缓存)——两者配合让替换(④)发生的瞬间系统零副本。</strong>
 "性能差"(IDXRJK)的原因是空窗期每次访问都要 walk、TLB 不填充。</p>
-<p><strong>BBML1 的完整软件序列</strong>(ARM ARM 只说"可以用
-nT",逐步序列是 SMMU spec IHI 0070H.a 3.21.1.2 以 Note
-形式给出的权威操作;CPU 侧软件遵循同样的模式):</p>
+<p><strong>BBML1 的完整软件序列</strong>(ARM只说"可以用 nT",逐步序列是
+SMMU spec IHI 0070H.a 3.21.1.2 以 Note 形式给出的权威操作;CPU
+侧软件遵循同样的模式):</p>
 <p><strong>拆大页(block → pages,最常见,如热迁移拆大页)——必须
 nT-first,四步:</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">① 旧 Block descriptor: nT 0→1   (Valid 保持 1,翻译仍有效)</span><br><span class="line">② 广播 TLBI 该 block            (驱逐已缓存进去的旧 2MB 翻译)</span><br><span class="line">③ DSB                           (确保 TLBI 完成)</span><br><span class="line">④ 原子替换为 Table descriptor    (指向含 512 个等价 PTE 的新页表)</span><br><span class="line">⑤ 广播 TLBI 受影响范围</span><br><span class="line">⑥ DSB</span><br></pre></td></tr></table></figure>
@@ -1703,9 +1703,10 @@ invalid?"</strong> ——软件根本无法直接写 TLB entry。BBML1 全程
 Valid=1、没有"置 invalid"这一步,靠的是 nT(阻止未来缓存)+
 TLBI(清理过去缓存)的组合,而不是"写 invalid"。</p>
 <p><strong>SMMU 与 PE 的严格度差异</strong>(SMMU spec
-3.21.1.2,原文见附录B):PE 侧允许对 nT=1 报 Translation fault(ARM ARM
-fault-checking 序列第 8 步),SMMU Level 1 明确<strong>禁止</strong>此
-fault——SMMU 比 PE 更严格,因为设备的翻译 fault 更难恢复。</p>
+3.21.1.2,原文见附录B):PE 侧允许对 nT=1 报 Translation
+fault(ARMfault-checking 序列第 8 步),SMMU Level 1
+明确<strong>禁止</strong>此 fault——SMMU 比 PE 更严格,因为设备的翻译
+fault 更难恢复。</p>
 <p><strong>BBML1 与 Contiguous bit</strong>:BBML1 还顺带放开了
 Contiguous bit 的修改:</p>
 <ul>
@@ -1849,7 +1850,7 @@ BBML2 的前提是 RPVTFW(OA 和属性都没变,只变了粒度),旧 2MB 和新 
 <li><strong>"abort"≠"不返回"</strong>:abort 是报 TLB conflict abort
 <strong>异常</strong>,访问以异常结束(不是静默丢弃)。</li>
 </ul>
-<p>ARM ARM 侧的表述就是 3.3 的 RNGLXZ/RJQQTC;SMMU
+<p>ARM侧的表述就是 3.3 的 RNGLXZ/RJQQTC;SMMU
 spec(3.21.1.3,原文见附录B)说得更工程化:<strong>忽略 nT 位、自动消解任何
 multi-hit 场景、F_TLB_CONFLICT 永不发生;翻译至多使用一条匹配 entry
 的信息,绝不组合多条 entry、不组合描述符更新前后的状态。</strong></p>
@@ -2161,8 +2162,8 @@ DSB → TLBI → DSB → make → DSB),在任何硬件上都正确。</p>
 节。</p>
 </blockquote>
 <p>KVM 的 stage2 是 <strong>PE MMU 的第二级翻译</strong>:VTTBR_EL2
-指向页表,由 EL2 软件管理、PE 硬件遍历——所以前文所有 ARM ARM
-规则直接适用。</p>
+指向页表,由 EL2 软件管理、PE 硬件遍历——所以前文所有
+ARM规则直接适用。</p>
 <ul>
 <li><strong>策略</strong>:KVM <strong>不检测</strong>
 <code>ID_AA64MMFR2_EL1.BBM</code>,无条件按 BBML0
@@ -2553,7 +2554,7 @@ nT,但内核软件不碰它。</p>
 <p>BBML2 在内核中<strong>只有两个代码点</strong>,都在 SMMU 驱动里:</p>
 <p><strong>① 硬件探测——读 SMMU IDR3.BBM 字段:</strong></p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c</span></span><br><span class="line"><span class="keyword">if</span> (FIELD_GET(IDR3_BBM, reg) == <span class="number">2</span>)</span><br><span class="line">    smmu-&gt;features |= ARM_SMMU_FEAT_BBML2;</span><br></pre></td></tr></table></figure>
-<p>SMMU spec(IHI 0070H.a)比 ARM ARM 更严格:IDR3.BBM==2 时<strong>保证
+<p>SMMU spec(IHI 0070H.a)比 ARM更严格:IDR3.BBM==2 时<strong>保证
 F_TLB_CONFLICT 永不发生</strong>(3.21.1.3)——SMMU 的 BBML2 就等价于 ARM
 的 BBML3(noabort)。所以内核的 <code>ARM_SMMU_FEAT_BBML2</code>
 本质是"SMMU 侧的 BBML3"。</p>
@@ -3254,7 +3255,7 @@ common break-before-make Level must be used when updating the table."
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3.html">https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3.html</a>
             <p>Publish date：<a href="https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3.html">September 1st 2026, 1:08:59 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3.html">September 2nd 2026, 11:24:15 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3.html">September 3rd 2026, 10:18:52 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -4796,10 +4797,6 @@ common break-before-make Level must be used when updating the table."
         
         
         
-        
-        
-        
-        
     
     
     
@@ -5121,13 +5118,13 @@ common break-before-make Level must be used when updating the table."
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/15</span>
-            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/15</span>
-            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
         </li>
     
         
@@ -5467,11 +5464,6 @@ common break-before-make Level must be used when updating the table."
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="虚拟化">
-            <span class="iconfont-archer">&#xe60a;</span>
-            虚拟化
-        </span>
-    
         <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
             <span class="iconfont-archer">&#xe60a;</span>
             ARM64结构与编程实操
@@ -5482,14 +5474,9 @@ common break-before-make Level must be used when updating the table."
             内存
         </span>
     
-        <span class="sidebar-category-name" data-categories="内存">
+        <span class="sidebar-category-name" data-categories="虚拟化">
             <span class="iconfont-archer">&#xe60a;</span>
-            内存
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="C++知识点">
-            <span class="iconfont-archer">&#xe60a;</span>
-            C++知识点
+            虚拟化
         </span>
     
         <span class="sidebar-category-name" data-categories="Linux内核基础">
@@ -5497,9 +5484,19 @@ common break-before-make Level must be used when updating the table."
             Linux内核基础
         </span>
     
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
         <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
             <span class="iconfont-archer">&#xe60a;</span>
             重装-环境配置-计算机
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="内存">
+            <span class="iconfont-archer">&#xe60a;</span>
+            内存
         </span>
     
         <span class="sidebar-category-name" data-categories="计算机网络">
