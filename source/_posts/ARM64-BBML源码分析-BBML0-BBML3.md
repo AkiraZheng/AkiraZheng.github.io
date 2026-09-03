@@ -19,7 +19,41 @@ categories:
 
 <img src="2026-09-02-10-45-18.png">
 
+**多核拓扑（DynamIQ Shared Unit）：**
+
 <img src=2026-09-03-16-40-45.png>
+
+```
+SoC                                                                         
+├── DSU Cluster 0                    ← DynamIQ Shared Unit                  
+│   ├── Core 0  [私有 L1 I/D-TLB + L2 TLB + MMU]                            
+│   ├── Core 1  [私有 L1 I/D-TLB + L2 TLB + MMU]                            
+│   ├── Core 2  [私有 L1 I/D-TLB + L2 TLB + MMU]                            
+│   ├── Core 3  [私有 L1 I/D-TLB + L2 TLB + MMU]                            
+│   └── 共享 L3 Cache (SCU 维护一致性)                                      
+├── DSU Cluster 1  ...                                                      
+└── SMMU (System MMU, 如 MMU-700)   ← 为 DMA 设备做地址翻译
+```
+
+- 由于 MMU 是 CPU 独享的，所以 TLB 永远是每核私有的，不共享，但是多核之间可以通过 TLBI 广播同步。 L3 cache 可共享，但 TLB 不共享。
+
+**整体数据流：**
+
+```
+Core0 执行: LDR X0, [X1]                                                    
+  │                                                                         
+  ├─ VA → L1 D-TLB 查询                                                     
+  ├─ miss → L2 TLB 查询                                                     
+  ├─ miss → Page Walk Cache                                                 
+  ├─ miss → 访内存做 4/5 级页表遍历 → 填充 TLB                              
+  ├─ 得到 PA → L1 D-Cache → L2 → L3 (DSU 共享) → 内存                       
+  │                                                                         
+  └─ 若另一核修改了该页表项:                                                
+        → 该核执行 TLBI ...IS (Inner Shareable 广播)                        
+        → Core0 的 TLB 对应 entry 被 invalidate                             
+        → 下次访问重新 walk 
+```
+
 
 ---
 
