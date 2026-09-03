@@ -680,6 +680,14 @@ tail -f qemu.log
 
 > [qemu里增加trace的方法](https://wangzhou.github.io/qemu%E9%87%8C%E5%A2%9E%E5%8A%A0trace%E7%9A%84%E6%96%B9%E6%B3%95/)
 
+## qemu ioctl invalid argument
+
+一般是 ioctl 的参数错误，可以通过`strace`命令查看ioctl的参数，然后根据参数的错误信息进行修改：
+
+```shell
+strace -f -e trace=ioctl -o ioctl.log qemu-system-aarch64 <其他启虚机指令>
+```
+
 # tmp
 
 ftrace主要用于跟踪时延和行为

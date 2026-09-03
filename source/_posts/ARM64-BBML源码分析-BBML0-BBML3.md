@@ -19,6 +19,8 @@ categories:
 
 <img src="2026-09-02-10-45-18.png">
 
+<img src=2026-09-03-16-40-45.png>
+
 ---
 
 ## 一、BBM 与 TLB 维护
