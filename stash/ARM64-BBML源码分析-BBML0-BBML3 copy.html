@@ -20,23 +20,23 @@
     
     <meta name="description" content="">
     <meta name="description" content="ARM64 BBML 源码分析:BBML0~BBML3  源码基线: Linux 7.2-rc7 + BBML3 系列 patch(含 Mikołaj Lenczewski 的 BBML2 四部曲 3eb06f6ce3af&#x2F;5aa4b625762e&#x2F;212c439bdd8f&#x2F;83bbd6be7d17,以及 BBML3 演进 f8d0751426dd&#x2F;267b481d0b94&#x2F;06468bc3c93">
-<meta property="og:type" content="article">
+<meta property="og:type" content="website">
 <meta property="og:title" content="ARM64 BBML 源码分析:BBML0~BBML3">
-<meta property="og:url" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/index.html">
+<meta property="og:url" content="https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="ARM64 BBML 源码分析:BBML0~BBML3  源码基线: Linux 7.2-rc7 + BBML3 系列 patch(含 Mikołaj Lenczewski 的 BBML2 四部曲 3eb06f6ce3af&#x2F;5aa4b625762e&#x2F;212c439bdd8f&#x2F;83bbd6be7d17,以及 BBML3 演进 f8d0751426dd&#x2F;267b481d0b94&#x2F;06468bc3c93">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-02-10-45-18.png">
+<meta property="og:image" content="https://akirazheng.github.io/stash/2026-09-02-10-45-18.png">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/VLHTJzDW5BxlhpZPrPO8SwWtCn8iWW9RdB10J7PJjWBBIaj62L5Ziia6J0RZIpva83C6a0y7CibOHVwBzkt7l_2qRt4eYKblUivvdlESvvosPLJcalBOiC2C9kBY29VaXg6VYoO6azAO66kL12a9uqDncR-MZ_43t9WWjqkYt1D_oOElYP7Zii03sVZXyuDP-cQKzg1Db9Clt5fjddogUDJg78G3h1FKlo-HepMIAsl5Gu_-FaEof_gfmZ1SLCPsBkEYh2fd4T5D9hFQTXMyqDKRzBY06uMUFeOPGNdS80ykJ2EDMZr22gUfq-yMK0vIA9F9TOI-OW2YN386hi1jRy3d3JH1cEj7oRmb25jf-Iaolw1MPzHgIg_jqcxXEig6i88KJL08k7sFMMzJaAMLRBto3eGiTKxLtIwd8iIylYPTBnsYFFrICSeBr0rmayA-CN5XV3n0ephCpoTcQlulvPP_Lt99uGnLEdXbITigEee3TILeZBbQmJ8OvuG41gD3F48jcckp0vf75L26ljO_13QCAbMh5MtrZ9GprjxMzsYle3rJJnyqD3H36Fo0NaCet7OLOc-6GjT2OMXiRCP-6A9Dh7xO1HsWWb1invFdpuAitn4SuqUZoVW87ab4LCy_cAat-lAUMfjp9hL1jXiP3yFQxDQmVdj-wX8f7P1ibWdzBubIwrbh5q3EBxN58xgIgxIjsywwZVm4sQZekMaFE3MCACayz4koB0s3DE1mTNVtTZvYRPJZ_GDG5KMzUAVbqrenHs_OpbXBiGUvmMJnjBVtTNPH7hKwYzyMHQgNNxJbyuXeJEsJj_YsYRHupiPK1OyhNoFJ1-WLn3YPeyVW-PSSHyFrd9-PcrjQkQ0TbfnLWObtkRj32Wl0ia7ucLh61_1UKNH4VFhGIxz4_KGXMpDU_UiYgUru1mMfdnFCgLbIs2Q5DP9VqNApPZ5bxAH9TXhO9CybqBlTjA_ndkT-HDHhPMrpmboVfsFyIgM9KjCFPhILOsrjcnndS5GAPrfuCOQ_hDy0">
-<meta property="og:image" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-16-40-45.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-22-09-42.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-22-12-15.png">
+<meta property="og:image" content="https://akirazheng.github.io/stash/2026-09-03-16-40-45.png">
+<meta property="og:image" content="https://akirazheng.github.io/stash/2026-09-03-22-09-42.png">
+<meta property="og:image" content="https://akirazheng.github.io/stash/2026-09-03-22-12-15.png">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/VLHRJnf167tVN_75frqheVf80b7Rc9hMIi18q_AooYeRry4igurzmWlLj29ey5ulg5Yr4Qgn2YBoNzgTsULVzDj5Z9V4fvcTxypCETyviwrHJLIrqM65Ymx9P4HKnM7e4_k71jN8A0czYYWH5Jw7PKswLmz90-AeedL4YEQNlqZGtCnfigP8G3TkMbpGtjx53oYZqR132ql4CImEIO9Uc6URKzMrb5x9iNIHjnPhPHif6ElJD5za-JJ7uHsQt2-FY4I31hESrqiN3I16mHzuMAfc_fYPGvv-ZTEJLS66U7iUGdhUjTlhE7ASsmrw8SjshjbXXbudRPxWXaTCWQVnMRPyGbFpj7GbWDlDSIIYIH0ParJa02wenYQDzA4BkjjeSfNEBOCJQYICqnBT-ewVnjaYlJgeLOF42ODAf4zKgZC9cjm1tXTuyp7WPuKuJIm978TdEZn87K_-kx03REMdH3Hrt2ZdP38cAd88-5vhSByKRh4enmPduBM_7LxWR1TeiS8MJx3IQI_iMINE0jxXgqUdrLYgVlmzKTwUfbj8O-CdtDg4-_S5C8vNQ7AliT4L9FOEgDDvOQ7fvPbnT1KaUgcabvVCNAMwahFlKaKILKHDZX3ei5BoKDy-jcgDBV-kdMWnpTfCBNTehimsR-hkwAMuhSODZx9YEuJUM0xDNZxh44qUOzXkWrTE0D_cTNvux_Itj7c58BdlWrv8qDGlYoZEgZzYvi44tjAdIkBG4uUCZNCsdwtfeB5hv7Cm2Rw0m-Fh5Xwq5V48gNUS5Yym8wYdGI_4p9bper8oymiDGSBJr5ntsx_O18xtWuGKaOn-lJwCRPGndLf_-4a27lc--upllW0yjlxETcmJpStPEUZ42PjD2J0eZjZkuvfUIj25ibuugOjfid9QQopcMS2waTvcIxD1GfDvSwhCqZTc1jMiMJpOrWNRcgRn2JDNGBblUxlCwQJrV2-tpSAnoug4Njbat_OTdjfhzB3jR4XMjN61QvL82FzE_m40">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/hLLTJzDG6BxlhtZ3RjQ5OTiDSOiG66nUE0p1nHiWfgnbD2ijwRfW51E_G0ZW1Xg3WHkC227Y1DGiBiYVwSVy5xwdxRe1YcXia-wSz-Cyppdlyvxr5dHUqujJCbN8Iyeqh_5JCCvdypbDBIf2logh6inCIhhOuXV42RuewobLqMzBzqLWMOhI9LqMmTpu7eb3t_3WrIYED-nlEp-sljItTgrIgNxooVxmtZnuWaPpxiW-gWMZDnEGqtYbA8lj4BqM7fTqkDD7KrIMrmHeosGImtUJwNkZIj2iF3Ftryqtk-rWBJytowkGPi1Tccu3lW0a5WAfr40Nmr3KD6w0pudGXb53P93Xnv5Ti9FbG5HqJH8Bc1P8TP8N7b007g8J9eY5h2PDwwesgY2b4JREZ44txj91IZCP22IO_kX0qi_hwEZmV8Ag4nhaeHws4c5RYFmpD7iUEXHAo6es7mgTocLl9C0iVJNtowVMOHhh90Z963wdINB_WoHtMPBSu8KakT-GZFo1P2X4_6UmYDH-WTNW71c2G8n99cFCHSiqOhbpmIW0ejAv0o0ICwfxj1TxHW-EJCE2EgE4UnmbnL7m8z6kU2GsHf6vxsE9xrOwqqUHeM_cccQknOpyFJEbgBe8cfIRr46T8AL6agW-irGnQjlMUiNh1MlXDJX5YQC_x1hZODTsxDe-zfTHNO8PNiuxJZSEcg9g1_kaLg-isXkVhHVRviTbQw5CYOe01FmS1SwXm85PNhRByvV7Q-hZx_0YGmGlWhbxzQV7PCkaaa6dx6DWFLu3bdPP6DKLZ33dLwob-Q1rk6LjBY8He_e8xoZQYN2De6J0E5vfWPJ579aue1Wusmq_tcxM5m_9oB_ioAI-i-QPVTdDaWIuxZL93uxTainwTvjFmRtWqCwoVfBR4IJ9EINyRHoH-Oua1B5AL_3aQFGmpJHNhoJDQPvc5ZP64C_AgBwqN-tI3IpScxj3gXS_-E_m4m00">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/dPD1QnD15CVlyoaUUab2nPtTODAYeOcG7goaA7ZH72R9TBjaioEJ2O96IA4LFDGjAYZMKZsOW5W81QMardwNikEstyAtkw4sfOVG7LZu_T-RUV-TztQ-hPXKdPPBsat7UyeaQq6DrPks51slSLUuGiAp5KVnS_46NsOTLvM5fnuwppbGurnGyhfYdkroU440IXUEkbwEdoWYP8FBIVKbKOx2dNhhJtOEzEUXtku5XnjwPqSFHtft4uvxxq5lheMZWVP_eQ1tF-fttuFHrbdk4o-LlLS2MpAlu_8PoEPlr1m5ZuetAyKq8V_TNSF5sl20U49ng0cbH0l4CWhTEv2SdWhttkfHFmseP7F7lRur2wb58sOh7x61J6CsPv5DYcmcR21J4zcAcL9aJDUhVZWuYAM_ldzoD0n_zF4hmazhQ1wwf7jxV1a5o6GMAPHSKMy2NIXbCe2n9URo1ScvLu1AyLAXR4Ih04cXgPLnpKhnSJOtPnbLeFdetYuQCiU6pFjJ6xgQmma_9gs2cRlCZmLBpEQ0BR-odMdyJRYXPXMiMuaRxZKW6Y12N6v781rxHP7muEZazHxW8E60hdyxwpIsEIfo-lMdtXzWmqcuEXmdRd_GhzQJaXX81ViRk7S61pSuV8F2QSyFVdz9HmMJIcGUN_ZV_WC0">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/LL9TJzfG6BxlhtWleU6YBLJq88cLIBPaSmICB6cvADAvnd9AoY7xY1TiWhjm3hClTKCoiYKiBYEIRCQCwFwBuRJmBtPQcDcktZxFUSxxF7tVirGbkaDgPOkhRfcueZjw6OhwnjQcOzTmAMLRjWEF7fh4-EUyP3pGQnP9svZapAS6Y297J68PG3zUoGWctP_ZxbSmC76U0Er-6tzkUbz-ZQxsuBh-5fZVfY71dIXas0VhLTrmp0gn7OuBed38FVf4pngJTjqTF4TmEwE0y5YKeZ5vBZuFrxkl8M0OM53aM5J38VTaPt9y0Dby15PjfwnRa5-EW99EYk44X_vJ1_VTrW5jlMSnwKKF0S_VKzHO78bI0P9_fJoluSpQ2j3MAVr-D9L6O7Inpn3jltJV_Q3jCtfIJsXutFyzEUoxX-VUXuOlt6tIPoslDsGMunUdiAx0wF8LY18h-n0A-lkns63eeEFMUun66bRIgYWKaY9iG-wMke3c2qcXA0PGKZ9g7CtDY50s7zRmNQEi4EAeCfAcl7-INmup_VrLLOuXESfuXb9iIQhiYwQUtc18Etk-9nHDeeg-PMYsZ70au88OeNNTCalCYJRFHvV7VlRiIaxm9yGQUSE6lzNX6xVJHjD9tOnkSP7zwpP3CK48QdHMKpEOcXODy_pDfNWwpVC9zWBi2hTau19xa7y0">
-<meta property="og:image" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-22-06-05.png">
-<meta property="og:image" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-22-17-25.png">
+<meta property="og:image" content="https://akirazheng.github.io/stash/2026-09-03-22-06-05.png">
+<meta property="og:image" content="https://akirazheng.github.io/stash/2026-09-03-22-17-25.png">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/jLLTJnD157sVNp7Gb_90c5aes2OOMkX6ebLZYJ417ePsMJQqksGxA6AQOBGLOyM2YPY0Nua946DyKG8IyRyOjYt_mZkpszhYGlkWko_jFMVEt7lFpfsH76SsNyncK6xUC1UOpR9uXgNcTTjQDDEZLiQoyRqvWsjDU5gRPOiPhbecJnhB6gQa2RIr56Ucdj7m0uJXYVcAISIoqvhjHWEXK0Zb4U86XvKJrs9OCxbz7rUVxbNBnUhHoyhRny7JbQFQyNfjf-Xi7VSWz6UdxjjHJ9QeqZyG6XowX8FEuS_AnkUURino6A20giP9d22q0Bam7VXYWzFNtvpLpMv0G-A5T6LM3OvCO99Cuw2IYBbQ6l6AQY6EHXDuWkcmRUdmjF0Sg84uKOcgDf75as9sMgRAcJvbagKmdJALeHc3IsrExZ8VUWuQ3BH4p2Fbblqq4-DZGZ5KLyhwaFICDSCo7aDl4F9_5vIy1HMDCSvmiFRbo7doNPGa2bA9Rqatec9pw7muAkNJnF8h9NgpxyvrZy0M_0YSs-DcUgdECVmuQb_oYaV86hdKcJholYPIC77WQjr4-YzDb1_TbDa_sF2HNk0Z9E6HEl6HjlMH_byVQJiVQGS-qdO-qevzL5eEetA1ZvtQ1yMwdLGwENtAkQxLHR8T-T693T7OgDiUfPq9IfC9zUxbMyRZbV49IONHIt0WJEBnC3a7ftvuOZoPb0HmAgVWm5Y_U162FlRsNXPZCOATSgcokUzEtWP0pm11-7DoiEAixrQst_KqQChPzGWa1I8JZc0nAuV1CGI2NfZAi3nzBg98n4tGNT4rBFr5IAe8L0mc0E4m22kGb95nsX97fiKrR1lw7CVMhDmDsdfoyB7oveER9eQEuM6SXLlGw0My2t3nhU3AsewpkbzPswk-VnY1OECISLwyWgjeSc0eej3f1a2R0Qe803usN2izShQ-EgM2K_w4OMPu0K1_5JUmsqDniTNAFvpjNKYijb8uENpc50j8CzDOf8z6u1TSwxy1">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RLDRJnDH47xVNp6FRS1KCF6XX4ZHa9Y0ahGI7_fos9ws9zsU9Rkd4dogIaiHiQ2rOC4BAa92e7WBbUj_8NlsyY-StKKamilCPCzSllc-sG5J44EKYffY5XYV80OfmZXH2pb3B_7CRLtJ3PZCCq4ll6TebfGqCQHpaMIFAVJqAe89ZO9SERuPXv6H1-2S7BZjHNUlBO-duRJS05cfsH_M8JKys0r5PffWpyx39D4AYX8WKE9Z2N1tJhob7OXeEib034oX6nIzh3Vj5pFHFYLklv_soXyXHNBG3sC9RslPEfg7Bd2_LfsLfloo8NVhQTvrDjxgFBSwStPp1Y99gfOC9gPY1isn8esDZToz4qiaqUGqVPnes9nb8OBmG2uUMPtjMr4GUSeXCaNDg08GTngRpk5hkRqSzfPFMlQxPzxR1Vjp6HTByqXY5A4-l8ScsOknNDqCEyblJu7oh6wej4Yvm4a0_gomt2ktt9EP_wVXlFi9t4lFPaqgm9uxj5-kTv_n8wiLXE6tePf98SBriv9HQlZKCft3a2zGaC8pBAjSJFHd-yI3IjGy_RikBe3EM_hfx6_uAY77uwWe0ZQcefVHkNi_4BOxjov_VyUA49BRFa2fhW3cbHSmoNyEyhorN-xQPfeFNuVJwYiOxWbTR-Xk_8EDfS6bNKEWAfvV3kH-NTQM4EmZeZ7_HaBDCKWCeGavFQSuG0_swgpzfcPr6hBU3YMyWcwvjYKh5N_plk03rmK5W-No8WuyrTy3JciQ1ZLTBOISfBdLcRSEM-wdhR3dvQrJ1k6cHiIv7WWx85xMTe7nS8CGehCz6xsWLc3n-YUK0Opnv_m3">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/dLLVRzfM57_tfpXgNe0bQg12rQYeMhAWLMgbIA3beKoJ0PDOaEl8SLPrJwdK96GL9KrIw4QQb5GPD9b3EcMfWJA-ZE-r-HOxlau8PBGFUx7bUyuzv_VdtEjxIvgeQiiBEM4fAvD5KHKN82ccidEgiapIKqfEKU79lAn90_6qb16NSrfK8LfC_aK2ltyWI1HDkee41Y8ps4XEoOiYqMR4T5ecS-0F2fgivIIWbNzkX_1PiMe5Y4GUFGIhLQFvO-ltvp0JdmPMEMEbKrPgqiz5scYoneuWB5xLWnjsfs6sps-0k0InsU5Gh_gtNQrxwDegrTzuUSfCV3Wb_Z02Ds5Mp6MdnDIyn7DmJH32OOvc4h6jwam_j5eDjnDj5Mc-31wwtx9QtN4mssspyzgg_eanfh-tgYTU28S58JOB4tUn7uI0bMiIqTIdTEqtkde8ClbPpCbfyFpWlCAJtejS1qi8lej5u47iU_W6QBFBjdHSVO0V5yk2azJFxNtus5lPnFA1Hn7WBGJ71L3bkNaDb0nF6uj6exUcfZ3TvtkSL2KnExuWPYKlM4TbMdplyoM8oy4-wVRA9xowAfAbdAZ92e6eu_WW6vS5cX8NasWWRtl9nUz5g45_m3IEqBoHl3ouqrMZsB1hpxnzgVqX876pKq2lMJKFdkZq_VXFF32E7jIj-ej-Zqjz7uzbWjzAayaV1vIEv9HKraNb58J9YRl-QwfWwbXq6aMvpKKXyR3Vv-ER7QXygzakqDrwWdWS-Tb6WHchtZk0q9_Wg9X6mVgyZJCrHF3Ahb4cqKz_kNjmiD4jgzks6w-k2pJIlKkW-EKK-T2w0mu8u4Gz3dXlWhZrsEu6UvqtEsl32FyZ4tsvJ_LDLkcome5fj0QC_08ZTm2lmSFKiNGgav9S6OSy6aSrt_7BudBA-Zu7Gk2U5dhIfDt20kR84tZH3BWQ2AI2GQaFry8xuENXgBb3Wv3gnO72iuYqT-eaphkRXjuhdpdelQDqpKXIG0fmvCu5KwxHvZaAvWo2c5HK3SUJ5bzPE_i9ml8bqrYnry-izZRRs_LOxRVOoTuhqCtyyE5bkojMEyyLmqts-f7r_9nzUiC-dlRftmgvAg2axDJ0EhpR_o4_YbNVZxwij7XaTtTePS-ba20-7-ze7nnRVpnZ-W5QCvh2TGPVSPzND8rVJUC5AwqxuXmS9qXlPOjsjdYCRMopaYxSaqWQVpd_0W00">
@@ -45,10 +45,10 @@
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/dLDTIzjG6BxFhtXnDmbJjEeO53gSeeFHkLe5nvOHJfFJ6emd9JcjkglArbaHTJ3nOrPPnzn4S7RCrMXH_yj8Jj9_iTDQfjqSWrsTaESy7-TvUVjiYYoQcJ84Ur8dQMIXAKWWTJ9bcHcY3PY6QS7qX4xnDLp3IPGnw919wAZ-0aCeT0qa9iLNIFSr9CQDT5LF8q9ZIDDqaeBG7O7grC3WRPs7kiAWScAQOaYQXWPilUAThdY79-nm5NxaLg6__r6q2x9suwC7nE58h__nr3rVb0GXVIKERS7PeLkjo4HiwYdyp6ABIcs0R1WTRxrTAtqFIdjYjESIZesrmcFH_iP_VWf297AP8WpUHRvMghBYWkiSrDQFg97G8H8HXD5nwBZ7HI0CYiAzqqeAKmKHJL4DZ2nHWfbUcGHpxxmtXVj3dPfkqTbsVd-GENdNETL95XcwrfJXdWsTf96n9nJkeLY8fB0eoQHXU1iqEo7KAmTBJqrGC9DDZb_wubviU_cAMrsB3Neh-tvnqIkKPT8qO8KrjbQkzwEd01DgpROcjtbedjvkvlLURthvNNWMVzokFf_fROaNb5_wgtj1Bi-AERzQg0VxLLGFXu-_1HVp_zNINrgvEQA_TSIMTtyF-cStjv8OT-DkBi7MFulnyNOYkSuoBqEiSoJlfE8TR8Hb4Xz-47toj3F-S6HaR40cA65QL6oyoVyqnmu-y1dm4bqd5ymV-TMtRASe-jLjrraATfRuRAL_TSJfJfujBt1d7kHo13UarTIaYkzoYVeippQ7EqAkiy-NbYzDWoEJslRxO7xVVrLXnnliQrdemqJZ2_qJ">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLDTJzDG6BxlhpZXQeqNfP1uCME0WGe9wkAMe6Ot7IlGhBHaEsZqQfC1KzPj8J0s6SYCVFW16mQnT8xz5-rxkluBJrl11VJcv3tlUVkSv-DqC8c519wVbPbaN5BcX8GmYwB2P7mweSuhiM5LLXFe-Oo4nQxpc3WbpCluhghWaFHIH3pFO0dB8eBDSvxt8xDzHDREI7a76XdhwoeOUxweh4x6EIn4PH4-x4EZy2kL7gRVIzCeAc6MR9nQRpEaT4PgMJlrcgnyP1YN62DD8HyKFZbuMmjsfMYsD3GKv1u_u49zGy415k4PKK4-Kgwp349-oB-3QeDE1yDtq0r42oZcm-E1CUHxT2yOV3BAHXHJr-ngghEN3WJkq_R4wDE94EtH1Zb-nTwYC4cipZ6Yd1JftSKzbX6Lc3JbKLbQXCEoTTo4xHKeb25N6a0FX_vK4MLQLgE2REfvUslRg-rb3GexrtYQpQRPMgS4nYrZ7xAVxOMMG-4u3OkQFwB0KOwidzmaXxjq18m2P3SkcFw3e1zPHjqpclDCzGXr4xTgNypcALchavoZUxoFwxzAoXdhj8kTMWwg1rGesT65g9h0flx6r5T8QPaAz5a_3BlshVEz3kSPRf9UDeT5pZBQ9BNl1SvUGQLYFRTxI4Ed6bt87hEzrQcdgLA7Ip_oZOr0FKETXSe1oPQiIWkA6cZhhjYk85mubpxLl7b2yhkmL875NL9gY0fEl8WeDFDgocfcdSp9sYaqpbq8ruSkmnoCNew_a7tL7NxWkWebxBrFFrB2jtdqSsaLkG_BASXccsZlBtlK9wh2JgLe2APkU6bU9lbVKRr-z3TuRvOYISepGPPY57ia5A2hSy7bPbQ8Yzw6xTBfhkuR6QGr_Rb_0m00">
 <meta property="article:published_time" content="2026-09-01T05:08:59.000Z">
-<meta property="article:modified_time" content="2026-09-05T12:11:09.240Z">
+<meta property="article:modified_time" content="2026-09-05T17:52:50.459Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-02-10-45-18.png">
+<meta name="twitter:image" content="https://akirazheng.github.io/stash/2026-09-02-10-45-18.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
@@ -253,8 +253,6 @@
         }
     </script>
     
-        <body class="post-body">
-    
         <!-- header -->
         <header class="header header-mobile">
     <!-- top read progress line -->
@@ -284,17 +282,6 @@
     </div>
     <!-- toggle banner for post layout -->
     
-        
-            <div class="banner">
-        
-            <div class="blog-title header-element">
-                <a href="/">AkiraZheng&#39;s Time.</a>
-            </div>
-            <div class="post-title header-element">
-                <a href="#" class="post-name">ARM64 BBML 源码分析:BBML0~BBML3</a>
-            </div>
-        </div>
-    
 </header>
 
         <!-- fixed footer -->
@@ -321,71 +308,24 @@
 
 
 
-    height:50vh;
-
 ">
     
     <!-- 主页  -->
-    
-        
-    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
-            
-                ARM64 BBML 源码分析:BBML0~BBML3
-            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
-                
-            <!-- 404 -->
-            
         </p>
         <!-- 文章页 meta -->
-        
-            <div class="post-intros">
-                <!-- 文章页标签  -->
-                
-                
-                    <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">15.3k</span>Reading time: <span class="post-count reading-time">63 min</span></span>
-                    </div>
-                
-                <div class="post-intro-meta">
-                    <!-- 撰写日期 -->
-                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2026/09/01</span>
-                    <!-- busuanzi -->
-                    
-                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
-                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
-                            <span id="busuanzi_value_page_pv"></span>
-                        </span>
-                    
-                    <!-- 文章分享 -->
-                    <span class="share-wrapper">
-                        <span class="iconfont-archer share-icon">&#xe71d;</span>
-                        <span class="share-text">Share</span>
-                        <ul class="share-list">
-                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
-                                <div class="share-qrcode"></div>
-                            </li>
-                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
-                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
-                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
-                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
-                        </ul>
-                    </span>
-                </div>
-            </div>
         
     </div>
 </div>
@@ -535,7 +475,7 @@ SVA 一节)</p>
 stage1(进程/内核页表)和 stage2(KVM 给虚机配的第二级翻译)。SMMU/IOMMU
 是另一套翻译器,只在对照处出现</p>
 </blockquote>
-<p><img src="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-02-10-45-18.png"></p>
+<p><img src="/stash/2026-09-02-10-45-18.png"></p>
 <hr>
 <h2 id="一bbm-与-tlb-维护">一、BBM 与 TLB 维护</h2>
 <h3 id="两个对象页表-entry-与-tlb-entry">1.1 两个对象:页表 entry 与 TLB
@@ -682,14 +622,14 @@ WRITE_ONCE/cmpxchg 把 bits[63:60] 写成 LOCKED;</li>
 </ul>
 <h3 id="tlbi-指令族">1.3 TLBI 指令族</h3>
 <p><strong>多核拓扑（DynamIQ Shared Unit）：</strong></p>
-<p><img src="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-16-40-45.png"></p>
+<p><img src="/stash/2026-09-03-16-40-45.png"></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SoC                                                                         </span><br><span class="line">├── DSU Cluster 0                    ← DynamIQ Shared Unit                  </span><br><span class="line">│   ├── Core 0  [私有 L1 I/D-TLB + L2 TLB + MMU]                            </span><br><span class="line">│   ├── Core 1  [私有 L1 I/D-TLB + L2 TLB + MMU]                            </span><br><span class="line">│   ├── Core 2  [私有 L1 I/D-TLB + L2 TLB + MMU]                            </span><br><span class="line">│   ├── Core 3  [私有 L1 I/D-TLB + L2 TLB + MMU]                            </span><br><span class="line">│   └── 共享 L3 Cache (SCU 维护一致性)                                      </span><br><span class="line">├── DSU Cluster 1  ...                                                      </span><br><span class="line">└── SMMU (System MMU, 如 MMU-700)   ← 为 DMA 设备做地址翻译</span><br></pre></td></tr></table></figure>
 <ul>
 <li>由于 MMU 是 CPU 独享的，所以 TLB
 永远是每核私有的，不共享，但是多核之间可以通过 TLBI 广播同步。</li>
 </ul>
-<p><img src="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-22-09-42.png"></p>
-<p><img src="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-22-12-15.png"></p>
+<p><img src="/stash/2026-09-03-22-09-42.png"></p>
+<p><img src="/stash/2026-09-03-22-12-15.png"></p>
 <p><strong>整体数据流：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Core0 执行: LDR X0, [X1]                                                    </span><br><span class="line">  │                                                                         </span><br><span class="line">  ├─ VA → L1 D-TLB 查询                                                     </span><br><span class="line">  ├─ miss → L2 TLB 查询                                                     </span><br><span class="line">  ├─ miss → Page Walk Cache                                                 </span><br><span class="line">  ├─ miss → 访内存做 4/5 级页表遍历 → 填充 TLB                              </span><br><span class="line">  ├─ 得到 PA → L1 D-Cache → L2 → L3 (DSU 共享) → 内存                       </span><br><span class="line">  │                                                                         </span><br><span class="line">  └─ 若另一核修改了该页表项:                                                </span><br><span class="line">        → 该核执行 TLBI ...IS (Inner Shareable 广播)                        </span><br><span class="line">        → Core0 的 TLB 对应 entry 被 invalidate                             </span><br><span class="line">        → 下次访问重新 walk </span><br></pre></td></tr></table></figure>
 <p><strong>TLBI(TLB Invalidation)</strong> 是 ARM 的 TLB
@@ -1215,9 +1155,9 @@ state、翻译 regime、VMID(stage2)、global/非 global、ASID(非全局)</td>
 </tbody>
 </table>
 <p>TLB表项结构如下所示：</p>
-<p><img src="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-22-06-05.png"></p>
+<p><img src="/stash/2026-09-03-22-06-05.png"></p>
 <!-- <img src=2026-09-03-22-11-51.png> -->
-<p><img src="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/2026-09-03-22-17-25.png"></p>
+<p><img src="/stash/2026-09-03-22-17-25.png"></p>
 <p>各级叶子在 TLB 中的存储(4KB granule、48-bit VA)——TLB
 <strong>区分</strong> block 和 L3 page，依据就是键里的覆盖大小:</p>
 <table>
@@ -2901,9 +2841,9 @@ tlbi,瞬态 multi-hit 由 RNGLXZ/RJQQTC 兜底,最终 TLBI +
     
         <div class="license-wrapper">
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
-            <p>Link：<a href="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/">https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/</a>
-            <p>Publish date：<a href="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/">September 1st 2026, 1:08:59 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/">September 5th 2026, 8:11:09 pm</a>
+            <p>Link：<a href="https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy.html">https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy.html</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy.html">September 1st 2026, 1:08:59 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/stash/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy.html">September 6th 2026, 1:52:50 am</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -2911,18 +2851,8 @@ tlbi,瞬态 multi-hit 由 RNGLXZ/RJQQTC 兜底,最终 TLBI +
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href="/2026/09/05/%E8%99%9A%E6%8B%9F%E5%8C%96-%E8%AF%BB%E5%86%99%E6%9D%83%E9%99%90%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/" title="虚拟化:读写权限相关源码详解">
-                    <div class="nextTitle">虚拟化:读写权限相关源码详解</div>
-                </a>
-            
         </li>
         <li class="previous">
-            
-                <div class="prevSlogan">Previous Post</div>
-                <a href="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/" title="ARM64 BBML 源码分析:BBML0~BBML3">
-                    <div class="prevTitle">ARM64 BBML 源码分析:BBML0~BBML3</div>
-                </a>
             
         </li>
     </ul>
@@ -3054,46 +2984,6 @@ tlbi,瞬态 multi-hit 由 RNGLXZ/RJQQTC 兜底,最终 TLBI +
 
         </div>
         <!-- toc -->
-        
-            <div class="toc-wrapper toc-wrapper-loding" style=
-
-
-
-
-
-
-
-    top:50vh;
-
->
-                <div class="toc-catalog">
-                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
-                </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#arm64-bbml-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90bbml0bbml3"><span class="toc-text">ARM64 BBML
-源码分析:BBML0~BBML3</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80bbm-%E4%B8%8E-tlb-%E7%BB%B4%E6%8A%A4"><span class="toc-text">一、BBM 与 TLB 维护</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E5%AF%B9%E8%B1%A1%E9%A1%B5%E8%A1%A8-entry-%E4%B8%8E-tlb-entry"><span class="toc-text">1.1 两个对象:页表 entry 与 TLB
-entry</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbm-%E7%9A%84%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8Bbreak-make"><span class="toc-text">1.2 BBM 的完整流程:Break + Make</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tlbi-%E6%8C%87%E4%BB%A4%E6%97%8F"><span class="toc-text">1.3 TLBI 指令族</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dsb-%E4%B8%8E-isb"><span class="toc-text">1.4 DSB 与 ISB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%93%AA%E4%BA%9B-pte-%E4%BF%AE%E6%94%B9%E9%9C%80%E8%A6%81-bbm%E6%A6%82%E8%A7%88"><span class="toc-text">1.5 哪些 PTE 修改需要 BBM(概览)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%85%E9%A1%BB-bbm-%E7%9A%84%E5%9B%9B%E7%B1%BB%E5%9C%BA%E6%99%AFrwhzws-%E8%AF%A6%E8%A7%A3"><span class="toc-text">1.6 必须 BBM 的四类场景:RWHZWS
-详解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E9%A2%84%E5%A4%87%E7%9F%A5%E8%AF%86"><span class="toc-text">二、预备知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#oaoutput-address"><span class="toc-text">2.1 OA(Output Address)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%8F%E8%BF%B0%E7%AC%A6%E6%A0%BC%E5%BC%8Ftable-block-page"><span class="toc-text">2.2 描述符格式:Table &#x2F; Block &#x2F;
-Page</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tlb-entry-%E7%BB%93%E6%9E%84%E4%B8%8E-multi-hit"><span class="toc-text">2.3 TLB entry 结构与 multi-hit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mmu-%E7%BF%BB%E8%AF%91%E8%B7%AF%E5%BE%84"><span class="toc-text">2.5 MMU 翻译路径</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89bbml0bbml3-%E5%9B%9B%E7%BA%A7%E5%AE%9E%E7%8E%B0"><span class="toc-text">三、BBML0~BBML3 四级实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E7%BA%A7%E6%80%BB%E8%A7%88%E4%B8%8E%E6%BC%94%E8%BF%9B%E9%93%BE"><span class="toc-text">3.0 四级总览与演进链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E6%A3%80%E6%B5%8Bid_aa64mmfr2_el1.bbm"><span class="toc-text">3.1
-硬件检测:ID_AA64MMFR2_EL1.BBM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml0%E5%85%AD%E6%AD%A5%E7%BA%AF%E8%BD%AF%E4%BB%B6%E5%BA%8F%E5%88%97"><span class="toc-text">3.2 BBML0:六步纯软件序列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml1nt-%E4%BD%8D%E6%96%B9%E6%A1%88"><span class="toc-text">3.3 BBML1:nT 位方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#nt-%E4%BD%8D%E7%9A%84-spec-%E5%AE%9A%E4%B9%89"><span class="toc-text">3.3.1 nT 位的 spec 定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tlb-%E7%8A%B6%E6%80%81%E6%97%B6%E9%97%B4%E7%BA%BF%E4%B8%8E%E7%A9%BA%E7%AA%97%E6%9C%9F%E8%AF%A6%E8%A7%A3"><span class="toc-text">3.3.2 TLB
-状态时间线与空窗期详解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E8%BD%AF%E4%BB%B6%E5%BA%8F%E5%88%97%E4%B8%8E%E4%B8%A4%E6%AC%A1-tlbi"><span class="toc-text">3.3.3 完整软件序列与两次 TLBI</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#smmu-%E4%B8%8E-pe-%E7%9A%84%E4%B8%A5%E6%A0%BC%E5%BA%A6%E5%B7%AE%E5%BC%82"><span class="toc-text">3.3.4 SMMU 与 PE 的严格度差异</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#contiguous-bit-%E6%94%BE%E5%BC%80%E4%B8%8E-l3-%E5%8F%8C%E6%9C%BA%E5%88%B6"><span class="toc-text">3.3.5 Contiguous bit 放开与 L3
-双机制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml2%E7%A1%AC%E4%BB%B6%E5%AE%B9%E5%BF%8D-multi-hit"><span class="toc-text">3.4 BBML2:硬件容忍 multi-hit</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E6%97%A7-entry-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%90%8C%E6%97%B6%E5%AD%98%E5%9C%A8"><span class="toc-text">3.4.1 新旧 entry
-为什么会同时存在</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#multi-hit-%E6%97%B6%E7%A1%AC%E4%BB%B6%E8%BF%94%E5%9B%9E%E5%93%AA%E6%9D%A1"><span class="toc-text">3.4.2 multi-hit 时硬件返回哪条</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%80%E7%BB%88-tlbi-%E4%B8%8E%E6%94%B6%E6%95%9B"><span class="toc-text">3.4.3 最终 TLBI 与收敛</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">3.4.4 适用场景</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml3bbml2-%E6%B0%B8%E4%B8%8D-abort-%E7%9A%84%E6%9E%B6%E6%9E%84%E5%8C%96"><span class="toc-text">3.5 BBML3:BBML2 + 永不 abort
-的架构化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E8%AF%AF%E8%A7%A3%E7%BA%A0%E9%94%99"><span class="toc-text">3.6 常见误解纠错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E7%BA%A7%E5%88%AB%E6%94%AF%E6%8C%81%E7%9F%A9%E9%98%B5%E9%80%9F%E6%9F%A5"><span class="toc-text">3.7 场景×级别支持矩阵(速查)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9Bkvm-stage2-%E6%8B%86%E5%A4%A7%E9%A1%B5-bbml0-%E7%BA%AF%E8%BD%AF%E4%BB%B6%E6%96%B9%E6%A1%88"><span class="toc-text">四、KVM Stage2 拆大页 ——
-BBML0 纯软件方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A6%E5%8F%91%E5%9C%BA%E6%99%AF"><span class="toc-text">4.1 触发场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#walker-%E5%9B%9E%E8%B0%83%E6%9C%BA%E5%88%B6%E6%A1%86%E6%9E%B6%E4%B8%8E%E4%B8%9A%E5%8A%A1%E5%88%86%E5%B1%82"><span class="toc-text">4.2 walker
-回调机制:框架与业务分层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stage2_split_walker%E4%B8%89%E6%AD%A5%E7%AD%96%E7%95%A5"><span class="toc-text">4.3
-stage2_split_walker:三步策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stage2_try_break_pte-rddmvt-%E5%85%AD%E6%AD%A5%E6%98%A0%E5%B0%84"><span class="toc-text">4.4 stage2_try_break_pte ↔︎
-RDDMVT 六步映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kvm_tlb_flush_vmid_ipatlbi-%E7%9A%84%E7%A1%AC%E4%BB%B6%E7%BB%86%E8%8A%82"><span class="toc-text">4.5
-__kvm_tlb_flush_vmid_ipa:TLBI 的硬件细节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#skip_bbm_tlbi-%E7%9A%84%E7%9C%9F%E5%AE%9E%E8%AF%AD%E4%B9%89-bbml2"><span class="toc-text">4.6 SKIP_BBM_TLBI 的真实语义(≠
-BBML2)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kvm-bbml3rfc-%E9%A2%84%E8%A7%88%E6%9C%AA%E5%90%88%E5%85%A5%E4%B8%BB%E7%BA%BF"><span class="toc-text">4.7 KVM BBML3(RFC
-预览,未合入主线)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%A8%E6%8E%A7%E4%B8%89%E4%B8%AA%E6%9D%A1%E4%BB%B6%E5%90%8C%E6%97%B6%E6%BB%A1%E8%B6%B3"><span class="toc-text">门控:三个条件同时满足</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E5%BA%8F%E5%88%97make-first-tlbi-%E5%90%8E%E7%BD%AE"><span class="toc-text">新序列:Make-first + TLBI 后置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E8%B7%AF%E5%BE%84"><span class="toc-text">代码路径</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%97%E7%9B%8A%E8%8C%83%E5%9B%B4%E4%B8%8D%E6%AD%A2-split"><span class="toc-text">受益范围：不止 split</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94bbml3-%E5%9C%A8%E5%86%85%E6%A0%B8%E4%B8%AD%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">五、BBML3 在内核中的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml1%E8%A2%AB%E8%B7%B3%E8%BF%87%E7%9A%84%E4%B8%80%E7%BA%A7%E6%97%A0%E5%86%85%E6%A0%B8%E5%AE%9E%E7%8E%B0"><span class="toc-text">5.1
-BBML1:被跳过的一级(无内核实现)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml2smmu-%E4%BE%A7%E6%A3%80%E6%B5%8B-sva-%E9%97%A8%E6%8E%A7"><span class="toc-text">5.2 BBML2:SMMU 侧检测 + SVA 门控</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bbml3cpu-%E4%BE%A7%E6%A3%80%E6%B5%8B-%E4%BA%94%E4%B8%AA%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">5.3 BBML3:CPU 侧检测 +
-五个使用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A3%80%E6%B5%8Bcpu_supports_bbml3"><span class="toc-text">5.3.1 检测:cpu_supports_bbml3()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A0contpte_convertmthp-contiguous-pte-%E6%8A%98%E5%8F%A0%E5%B1%95%E5%BC%80"><span class="toc-text">5.3.2
-使用场景①:contpte_convert()——mTHP contiguous PTE 折叠&#x2F;展开</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A1force_pte_mapping%E7%BA%BF%E6%80%A7%E6%98%A0%E5%B0%84%E4%BF%9D%E7%95%99-block"><span class="toc-text">5.3.3
-使用场景②:force_pte_mapping()——线性映射保留 block</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A2kfence-pool-%E5%88%9D%E5%A7%8B%E5%8C%96larger-entries-may-safely-linger"><span class="toc-text">5.3.4
-使用场景③:KFENCE pool 初始化——&quot;larger entries may safely linger&quot;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A3kpti-%E6%B7%B7%E5%90%88-cpu-%E6%8B%93%E6%89%91idmap_kpti_bbml3_flag-%E6%8F%A1%E6%89%8B"><span class="toc-text">5.3.5
-使用场景④:KPTI 混合 CPU 拓扑——idmap_kpti_bbml3_flag 握手</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E2%91%A4kvm-%E9%9A%90%E8%97%8F-bbm-%E5%AD%97%E6%AE%B5%E4%B8%8D%E5%90%91-guest-%E6%9A%B4%E9%9C%B2"><span class="toc-text">5.3.6 使用场景⑤:KVM
-隐藏 BBM 字段——不向 Guest 暴露</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%94%E8%BF%9B%E6%97%B6%E9%97%B4%E7%BA%BFcommit-%E9%93%BE"><span class="toc-text">5.4 演进时间线(commit 链)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E6%80%BB%E7%BB%93"><span class="toc-text">六、总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-text">6.1 决策树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E7%BB%93%E8%AE%BA"><span class="toc-text">6.2 核心结论</span></a></li></ol></li></ol></li></ol>
-            </div>
         
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
@@ -3561,18 +3451,7 @@ BBML1:被跳过的一级(无内核实现)</span></a></li><li class="toc-item toc
         
         
         
-        
-        
-        
-        
-        
     
-        
-        
-        
-        
-        
-        
         
         
         
@@ -4529,7 +4408,7 @@ BBML1:被跳过的一级(无内核实现)</span></a></li><li class="toc-item toc
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 92
+        Total : 91
         </div>
         <!-- search  -->
         
@@ -4551,12 +4430,6 @@ BBML1:被跳过的一级(无内核实现)</span></a></li><li class="toc-item toc
         <li class="archive-post-item">
             <span class="archive-post-date">09/05</span>
             <a class="archive-post-title" href="/2026/09/05/%E8%99%9A%E6%8B%9F%E5%8C%96-%E8%AF%BB%E5%86%99%E6%9D%83%E9%99%90%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/">虚拟化:读写权限相关源码详解</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">09/01</span>
-            <a class="archive-post-title" href="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3%20copy/">ARM64 BBML 源码分析:BBML0~BBML3</a>
         </li>
     
         
@@ -5202,6 +5075,11 @@ BBML1:被跳过的一级(无内核实现)</span></a></li><li class="toc-item toc
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
+        <span class="sidebar-category-name" data-categories="虚拟化">
+            <span class="iconfont-archer">&#xe60a;</span>
+            虚拟化
+        </span>
+    
         <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
             <span class="iconfont-archer">&#xe60a;</span>
             ARM64结构与编程实操
@@ -5212,19 +5090,9 @@ BBML1:被跳过的一级(无内核实现)</span></a></li><li class="toc-item toc
             内存
         </span>
     
-        <span class="sidebar-category-name" data-categories="虚拟化">
+        <span class="sidebar-category-name" data-categories="内存">
             <span class="iconfont-archer">&#xe60a;</span>
-            虚拟化
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="Linux内核基础">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Linux内核基础
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
-            <span class="iconfont-archer">&#xe60a;</span>
-            重装-环境配置-计算机
+            内存
         </span>
     
         <span class="sidebar-category-name" data-categories="C++知识点">
@@ -5232,9 +5100,14 @@ BBML1:被跳过的一级(无内核实现)</span></a></li><li class="toc-item toc
             C++知识点
         </span>
     
-        <span class="sidebar-category-name" data-categories="内存">
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
             <span class="iconfont-archer">&#xe60a;</span>
-            内存
+            重装-环境配置-计算机
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核基础">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核基础
         </span>
     
         <span class="sidebar-category-name" data-categories="计算机网络">
@@ -5349,16 +5222,7 @@ BBML1:被跳过的一级(无内核实现)</span></a></li><li class="toc-item toc
         
         <!-- async load share.js -->
         
-            <script src="/scripts/share.js?v=20211217" async></script>
-        
         <!-- mermaid -->
-        
-            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js'></script>
-            <script>
-                if (window.mermaid) {
-                    mermaid.initialize({theme: 'neutral'});
-                }
-            </script>
         
     </body>
 </html>

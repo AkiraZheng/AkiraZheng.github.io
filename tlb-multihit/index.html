@@ -41,7 +41,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .mhb{border-radius:12px;padding:16px;margin-top:12px;font-size:14px;line-height:1.8;display:none}
 .mhb.show{display:block;animation:popin .5s}
 .mhb.multi{background:#fee2e2;border:2px solid #ef4444;color:#991b1b}
-.mhb.ok{background:#dcfce7;border:2px solid #22c55e;color:#166534}
 .mhb.warn{background:#fef3c7;border:2px solid #f59e0b;color:#92400e}
 .mhb b{font-size:16px}
 .si{display:flex;gap:6px;margin-top:12px;justify-content:center}
@@ -67,17 +66,15 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div class="fn">关键：merge(小变大)方向才会 multi-hit；split(大变小)方向旧大 entry 吸收所有访问，不会产生新 entry</div>
 </div>
 <script>
-var step=0,totalSteps=9;
+var step=0,totalSteps=7;
 var steps=[
 {n:'<b>初始状态:</b> 512 个连续 4KB 页(L2 Table → 512 个 L3 PTE)。CPU 之前访问过页 #0(VA 0x12340000)，TLB 缓存了 4KB entry。',tlb:'old4kb',ops:[],mhb:''},
-{n:'<b>软件直接改页表(BBML2 方式):</b> L2 Table entry → Block entry(2MB)。<b>不 invalid、不 TLBI</b>。但硬件只实现 BBML0(无 BBML2 消解能力)。',tlb:'old4kb',ops:[{c:'st-none',t:'软件: L2 Table→Block(直接写)'}],mhb:'warn'},
+{n:'<b>软件直接改页表:</b> L2 Table entry → Block entry(2MB)。<b>不 invalid、不 TLBI</b>。但硬件只实现 BBML0(无 BBML2 消解能力)。',tlb:'old4kb',ops:[{c:'st-none',t:'软件: L2 Table→Block(直接写)'}],mhb:'warn'},
 {n:'<b>CPU 访问页 #1(VA 0x12341000):</b> 旧 4KB entry 只覆盖页 #0，<b>盖不住页 #1</b> → TLB miss → 硬件 walk。',tlb:'old4kb',ops:[{c:'st-visit',t:'访问页#1',a:1},{c:'st-walk',t:'miss → walk',a:1}],mhb:''},
 {n:'<b>walk 读到新 Block entry:</b> L2 现在是 Block(2MB) → 翻译在 L2 完成 → <b>填充 2MB entry 到 TLB</b>。',tlb:'both',ops:[{c:'st-walk',t:'walk 读到 2MB Block',a:0},{c:'st-fill',t:'填充 2MB entry',a:1}],mhb:'multi'},
 {n:'<b>TLB 两条并存!</b> 旧 4KB(页#0) + 新 2MB(覆盖#0~#511)。Tag 不同(VA[47:12]+4KB ≠ VA[47:21]+2MB)，能共存。',tlb:'both-detail',ops:[],mhb:'multi-detail'},
 {n:'<b>CPU 再次访问页 #0(VA 0x12340000):</b> TLB 查找: 4KB entry 匹配(VA[47:12]) <b>AND</b> 2MB entry 也匹配(VA[47:21]) → <b>MULTI-HIT!</b>',tlb:'both-detail',ops:[{c:'st-query',t:'访问页#0',a:1},{c:'st-query',t:'双命中!',a:1}],mhb:'disaster'},
-{n:'<b>BBML0 硬件无法处理 multi-hit:</b> 架构行为 = CONSTRAINED UNPREDICTABLE — 可能 TLB conflict abort，可能融合两条 entry 的属性(危险: 权限/内存类型拼凑)，可能返回错误翻译。<b>系统出错!</b>',tlb:'both-detail',ops:[],mhb:'disaster-detail'},
-{n:'<b>正确做法: BBM 六步序列</b> ① 旧 entry 置 invalid → ② DSB → ③ 广播 TLBI(含 walk cache) → ④ DSB → ⑤ 写新 Block entry → ⑥ DSB。Break 窗口期访问 → Translation Fault → fault handler 重试。',tlb:'bbm',ops:[{c:'st-none',t:'① invalid + ② DSB'}, {c:'st-none',t:' TLBI + ④ DSB'}, {c:'st-none',t:'⑤ 写新 entry + ⑥ DSB'}],mhb:'ok'},
-{n:'<b>总结:</b> 不遵循 BBM + 硬件无 BBML2/3 消解 = multi-hit 灾难。BBML0 必须走六步; BBML2 硬件容忍 multi-hit(abort 或一致结果); BBML3 永不 abort。',tlb:'bbm',ops:[],mhb:'done'}
+{n:'<b>BBML0 硬件无法处理 multi-hit:</b> 架构行为 = CONSTRAINED UNPREDICTABLE — 可能 TLB conflict abort，可能融合两条 entry 的属性(危险: 权限/内存类型拼凑)，可能返回错误翻译。<b>系统出错!</b>',tlb:'both-detail',ops:[],mhb:'disaster-detail'}
 ];
 
 function tlbHTML(type){
@@ -91,8 +88,6 @@ entries+='<div class="tent s2 new-entry">VA=0x12340000~0x12540000 (2MB)<br>tag V
 entries='<div class="tent s4">VA=0x12340000 (页#0)<br>tag VA[47:12]=0x12340 (4KB)<br>OA=0x67890, RW, WB<br><small>旧 entry — 只覆盖页#0</small></div>';
 entries+='<div class="tent s2">VA=0x12340000~0x12540000 (2MB)<br>tag VA[47:21]=0x91A0 (2MB)<br>OA=0x67890, RW, WB<br><small>新 entry — 覆盖#0~#511</small></div>';
 entries+='<div style="text-align:center;color:#ef4444;font-weight:bold;margin-top:8px">⚠ 同一 VA 0x12340000 同时匹配两条!</div>';
-}else if(type==='bbm'){
-entries='<div class="tent empty">️ TLB 为空<br><small>BBM 六步: invalid + TLBI 清掉旧 entry<br>之后 walk 只填充新 2MB entry</small></div>';
 }
 return '<div class="tlb-box tlb-private"><h4>🔒 CPU 私有 TLB (per-CPU, MMU 内)</h4>'+entries+'</div>';
 }
@@ -109,8 +104,6 @@ if(type==='multi')return '<div class="mhb show multi"><b> 新旧 entry 并存!</
 if(type==='multi-detail')return '<div class="mhb show multi"><b>⚠ MULTI-HIT 条件成立!</b><br>2MB entry 的覆盖范围包含 4KB entry 的页<br>同一 VA 0x12340000 同时命中两条 entry<br><br>split(大变小)方向不会这样: 旧 2MB entry 在场时所有访问都 hit，不会 walk 出新 4KB entry</div>';
 if(type==='disaster')return '<div class="mhb show multi"><b>💥 MULTI-HIT!</b><br>CPU 访问页#0 → 同时命中 4KB entry 和 2MB entry<br>硬件必须选择一条或融合 — 但 BBML0 硬件没有定义安全行为</div>';
 if(type==='disaster-detail')return '<div class="mhb show multi"><b>💥 硬件无法处理!</b><br>BBML0 硬件对 multi-hit 的行为 = CONSTRAINED UNPREDICTABLE:<br>- TLB conflict abort(系统崩溃)<br>- 融合两条 entry 的属性(危险: 可能拼凑出错误权限/内存类型)<br>- 返回错误翻译(数据损坏)<br><br>这就是 BBM 存在的根本原因: 杜绝 multi-hit</div>';
-if(type==='ok')return '<div class="mhb show ok"><b>✅ BBM 六步序列</b><br>① 旧 entry 置 invalid → ② DSB → ③ 广播 TLBI(含 walk cache) → ④ DSB → ⑤ 写新 Block → ⑥ DSB<br>Break 窗口期([④,⑤))访问 → Translation Fault → fault handler 重试<br>保证任意时刻系统里同一地址只有一份有效翻译</div>';
-if(type==='done')return '<div class="mhb show ok"><b>✅ 总结</b><br>不遵循 BBM + 硬件无 BBML2/3 = multi-hit 灾难<br>BBML0: 必须走六步(软件杜绝)<br>BBML2: 硬件容忍 multi-hit(abort 或一致结果,绝不融合)<br>BBML3: 永不 abort(只返回一致结果)</div>';
 return '';
 }
 

@@ -68,7 +68,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <body>
 <div class="c">
 <h1>BBML0 六步序列演示</h1>
-<div class="sub">拆大页时逐步行走 RDDMVT 六步：Break(①~④) → Make(⑤~⑥)</div>
+<div class="sub">合并页表(小变大)时逐步行走 RDDMVT 六步：Break(①~④) → Make(⑤~⑥)</div>
 <div class="ctl">
 <button id="bPrev" onclick="prev()">← 上一步</button>
 <button id="bNext" onclick="next()">下一步 →</button>
@@ -83,24 +83,24 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <script>
 var step=0,totalSteps=7;
 var steps=[
-{n:'<b>初始状态:</b> 访问 VA 0x12345678，L2 Block(2MB) 映射正常，TLB 缓存了对应的 2MB entry。现在要拆大页。',pt:'block',tlb:'old2mb',ops:[],win:''},
-{n:'<b>① 置 invalid:</b> 软件把 L2 Block entry 改为 invalid(Valid=0)。从源头切断旧翻译，后续 walk 读不到旧值。',pt:'invalid',tlb:'old2mb',ops:[{c:'st-invalid',t:'① 置 invalid',a:1}],win:''},
-{n:'<b>② DSB:</b> 确保 ① 的 invalid 写对其他 PE 可见。此时内存已改，但 TLB 里还有旧 entry。',pt:'invalid',tlb:'old2mb',ops:[{c:'st-invalid',t:'① 置 invalid',a:0},{c:'st-dsb',t:'② DSB',a:1}],win:''},
-{n:'<b>③ 广播 TLBI:</b> 驱逐 TLB 中已缓存的旧 2MB entry。此刻 TLB 里该地址为空。',pt:'invalid',tlb:'empty',ops:[{c:'st-invalid',t:'① 置 invalid',a:0},{c:'st-dsb',t:'② DSB',a:0},{c:'st-tlbi',t:'③ 广播 TLBI',a:1}],win:''},
+{n:'<b>初始状态:</b> 访问 VA 0x12340000，L2 Table → 512 个 L3 Page(4KB) 映射正常，TLB 缓存了页#0 的 4KB entry。现在要合并为大页(2MB)。',pt:'table',tlb:'old4kb',ops:[],win:''},
+{n:'<b>① 置 invalid:</b> 软件把 L2 Table entry 改为 invalid(Valid=0)。从源头切断旧翻译，后续 walk 读不到旧值，但此时旧 TLB entry 仍然有效。',pt:'invalid',tlb:'old4kb',ops:[{c:'st-invalid',t:'① 置 invalid',a:1}],win:''},
+{n:'<b>② DSB:</b> 确保 ① 的 invalid 写对其他 PE 可见。此时内存已改，但 TLB 里还有旧 entry。',pt:'invalid',tlb:'old4kb',ops:[{c:'st-invalid',t:'① 置 invalid',a:0},{c:'st-dsb',t:'② DSB',a:1}],win:''},
+{n:'<b>③ 广播 TLBI:</b> 驱逐 TLB 中已缓存的旧 4KB entry。此刻 TLB 里该地址为空。',pt:'invalid',tlb:'empty',ops:[{c:'st-invalid',t:'① 置 invalid',a:0},{c:'st-dsb',t:'② DSB',a:0},{c:'st-tlbi',t:'③ 广播 TLBI',a:1}],win:''},
 {n:'<b>④ DSB:</b> 确保 TLBI 驱逐广播完成。<b>[④, ⑤) 窗口期开始</b>：entry invalid + TLB 已空 → 任何访问得到 Translation Fault！',pt:'invalid',tlb:'empty',ops:[{c:'st-invalid',t:'① 置 invalid',a:0},{c:'st-dsb',t:'② DSB',a:0},{c:'st-tlbi',t:'③ 广播 TLBI',a:0},{c:'st-dsb',t:'④ DSB',a:1}],win:'fault'},
-{n:'<b>⑤ 写新 entry:</b> 把 L2 invalid 替换为 Table descriptor，指向含 512 个 L3 Page 的新页表。窗口期结束。',pt:'table',tlb:'empty',ops:[{c:'st-invalid',t:'① 置 invalid',a:0},{c:'st-dsb',t:'② DSB',a:0},{c:'st-tlbi',t:'③ 广播 TLBI',a:0},{c:'st-dsb',t:'④ DSB',a:0},{c:'st-make',t:'⑤ 写新 entry',a:1}],win:'ok'},
-{n:'<b>⑥ DSB:</b> 确保新 entry 对其他 PE 可见。后续访问 TLB miss → walk 读到新 Table → L3 Page → 填充新 4KB entry。拆大页完成！',pt:'table',tlb:'new4kb',ops:[{c:'st-invalid',t:'① 置 invalid',a:0},{c:'st-dsb',t:'② DSB',a:0},{c:'st-tlbi',t:'③ 广播 TLBI',a:0},{c:'st-dsb',t:'④ DSB',a:0},{c:'st-make',t:'⑤ 写新 entry',a:0},{c:'st-dsb',t:'⑥ DSB',a:1}],win:''}
+{n:'<b>⑤ 写新 entry:</b> 把 L2 invalid 替换为 Block(2MB) descriptor。窗口期结束。',pt:'block',tlb:'empty',ops:[{c:'st-invalid',t:'① 置 invalid',a:0},{c:'st-dsb',t:'② DSB',a:0},{c:'st-tlbi',t:'③ 广播 TLBI',a:0},{c:'st-dsb',t:'④ DSB',a:0},{c:'st-make',t:'⑤ 写新 entry',a:1}],win:'ok'},
+{n:'<b>⑥ DSB:</b> 确保新 entry 对其他 PE 可见。后续访问 TLB miss → walk 读到 L2 Block(2MB) → 填充新 2MB entry。合并完成！',pt:'block',tlb:'new2mb',ops:[{c:'st-invalid',t:'① 置 invalid',a:0},{c:'st-dsb',t:'② DSB',a:0},{c:'st-tlbi',t:'③ 广播 TLBI',a:0},{c:'st-dsb',t:'④ DSB',a:0},{c:'st-make',t:'⑤ 写新 entry',a:0},{c:'st-dsb',t:'⑥ DSB',a:1}],win:''}
 ];
 function ptreeHTML(type){
-var blk=type==='block'?'<div class="pnode block changing"><span class="lbl">L2</span>Block(2MB) OA=0x6789A, Valid=1</div>':'';
-var inv=type==='invalid'?'<div class="pnode invalid changing"><span class="lbl">L2</span>Block(2MB) Valid=0 (INVALID)</div>':'';
-var tbl=type==='table'?'<div class="pnode table changing"><span class="lbl">L2</span>Table → 指向新 L3 页表</div><div class="indent"><div class="pnode page"><span class="lbl">L3[0]</span>Page(4KB) OA=0x6789A+0</div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x6789A+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
-return '<div class="pnode table"><span class="lbl">L1</span>Table → 指向 L2</div><div class="arrow">↓</div>'+blk+inv+tbl;
+var tbl=type==='table'?'<div class="pnode table changing"><span class="lbl">L2</span>Table → 指向 L3 页表</div><div class="indent"><div class="pnode page"><span class="lbl">L3[0]</span>Page(4KB) OA=0x67890</div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x67891</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
+var inv=type==='invalid'?'<div class="pnode invalid changing"><span class="lbl">L2</span>Table Valid=0 (INVALID)</div>':'';
+var blk=type==='block'?'<div class="pnode block changing"><span class="lbl">L2</span>Block(2MB) OA=0x67890, Valid=1</div>':'';
+return '<div class="pnode table"><span class="lbl">L1</span>Table → 指向 L2</div><div class="arrow">↓</div>'+tbl+inv+blk;
 }
 function tlbHTML(type){
-if(type==='old2mb')return '<div class="tent s2"><span class="tag">VA=0x12345678 → tag VA[47:21]=0x91</span><span class="sz">2MB</span><br><small>OA=0x6789A, RW, WB</small></div>';
+if(type==='old4kb')return '<div class="tent s4"><span class="tag">VA=0x12340000 → tag VA[47:12]=0x12340</span><span class="sz">4KB</span><br><small>OA=0x67890, RW, WB</small></div>';
 if(type==='empty')return '<div class="tlb-empty">🗑️ TLB 为空（该地址）<br><small>entry invalid + 已驱逐</small></div>';
-if(type==='new4kb')return '<div class="tent s4"><span class="tag">VA=0x12345678 → tag VA[47:12]=0x12345</span><span class="sz">4KB</span><br><small>OA=0x6789A, RW, WB</small><br><small style="color:#166534">✓ walk 后填充的新 entry</small></div>';
+if(type==='new2mb')return '<div class="tent s2"><span class="tag">VA=0x12340000 → tag VA[47:21]=0x91A0</span><span class="sz">2MB</span><br><small>OA=0x67890, RW, WB</small><br><small style="color:#166534">✓ walk 后填充的新 entry</small></div>';
 return '';
 }
 function opsHTML(ops){

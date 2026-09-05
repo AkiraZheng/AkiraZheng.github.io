@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBML0 多核竞争安全性图解</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f8f9fa;padding:14px;color:#333}
+.c{max-width:860px;margin:0 auto}
+h1{font-size:17px;margin-bottom:4px;color:#1a1a2e}
+.sub{font-size:12.5px;color:#666;margin-bottom:10px}
+.prem{font-size:12px;background:#fff3cd;border-left:4px solid #ffc107;padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:12px;line-height:1.6}
+.prem b{color:#92400e}
+.ctl{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+button{padding:7px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+button:disabled{opacity:.4;cursor:not-allowed}
+#bPrev{background:#e0e0e0;color:#333}
+#bNext{background:#4a6fa5;color:#fff}
+#bNext:hover:not(:disabled){background:#3d5d8a}
+#bRst{background:#95a5a6;color:#fff}
+.sp{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.nar{background:#eef5ff;border-left:4px solid #4a6fa5;padding:10px 14px;border-radius:0 8px 8px 0;margin-bottom:14px;font-size:13px;line-height:1.7}
+.nar b{color:#4a6fa5}
+.nar code{background:#fff;padding:1px 5px;border-radius:3px;font-size:12px}
+.stwrap{overflow-x:auto;margin-bottom:14px}
+.stage{position:relative;width:680px;height:410px;margin:0 auto}
+.core{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;position:absolute;z-index:3}
+.cpu0{background:#4a6fa5;left:106px;top:0}
+.cpu1{background:#e07a3f;left:506px;top:183px}
+.cap{position:absolute;font-size:10.5px;color:#888;z-index:3;line-height:1.4}
+.cap0{left:158px;top:12px}
+.cap1{left:340px;top:194px;width:155px;text-align:right}
+.vline{position:absolute;left:127px;top:44px;width:3px;height:328px;background:#d0d8e0;z-index:1;border-radius:2px}
+.sbox{position:absolute;left:28px;width:200px;height:30px;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:600;z-index:2;white-space:nowrap;transition:all .4s;border:1.5px solid}
+.sbox.done{opacity:.4}
+.sbox.active{box-shadow:0 0 10px rgba(74,111,165,.5);transform:translateX(4px)}
+.sbox.pending{background:#f5f5f5!important;color:#bbb!important;border-color:#e5e5e5!important}
+.s1{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.s2,.s4,.s6{background:#ede9fe;color:#5b21b6;border-color:#c4b5fd}
+.s3{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.s5{background:#dcfce7;color:#166534;border-color:#86efac}
+.snum{font-size:13px;margin-right:5px}
+.sdesc{font-size:10.5px;font-weight:400;margin-left:auto;opacity:.8}
+.acc{position:absolute;left:228px;width:278px;z-index:2;transition:top .4s}
+.acc-line{height:2px;background:linear-gradient(90deg,transparent,#4a6fa5 10%,#4a6fa5 90%,transparent);position:relative}
+.acc.fw .acc-line{background:linear-gradient(90deg,transparent,#f59e0b 10%,#f59e0b 90%,transparent)}
+.acc-arrow{position:absolute;left:-2px;top:-5px;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-right:8px solid #4a6fa5}
+.acc.fw .acc-arrow{border-right-color:#f59e0b}
+.acc-label{position:absolute;left:80px;top:-20px;background:#4a6fa5;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap}
+.acc.fw .acc-label{background:#f59e0b}
+.twocol{display:flex;gap:14px;margin-top:6px}
+.col{flex:1;min-width:0}
+.col h3{font-size:11px;color:#666;text-align:center;margin-bottom:6px;letter-spacing:.5px}
+.case{background:#f9fafb;border:1px solid #e0e0e0;border-radius:8px;padding:12px;min-height:90px;font-size:12px;line-height:1.6}
+.case.a{border-left:3px solid #22c55e}
+.case.b{border-left:3px solid #3b82f6}
+.case .ct{font-weight:700;margin-bottom:4px;font-size:12.5px}
+.case .cr{font-weight:600;color:#166534;margin-bottom:4px}
+.case .cr.fault{color:#92400e}
+.case .cd{color:#555;font-size:11.5px}
+.note{background:#fef9e7;border:1px solid #fde68a;border-radius:6px;padding:8px 12px;margin-top:10px;font-size:11.5px;color:#78350f;line-height:1.6}
+.verd{text-align:center;margin-top:10px;font-size:13px;font-weight:700;padding:8px;border-radius:8px}
+.verd.ok{background:#dcfce7;color:#166534}
+.si{display:flex;gap:6px;margin-top:14px;justify-content:center}
+.sd{width:10px;height:10px;border-radius:50%;background:#ddd;transition:background .3s;cursor:pointer}
+.sd.act{background:#4a6fa5}
+.sd.done{background:#93c5fd}
+.fn{text-align:center;font-size:11px;color:#aaa;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="c">
+<h1>BBML0 六步序列 × CPU1 任意时刻访问</h1>
+<div class="sub">CPU0 修改 OA（PA_old → PA_new）｜ CPU1 在任意时刻访问该 VA</div>
+<div class="prem"><b>关键前提</b>：旧页（PA_old）的回收/复用不早于 Break 完成（④）——BBML0 的软件约定（KVM unmap 路径"置 invalid → TLBI → put_page"）。有了它，命中旧 entry 返回的 PA_old 永远落在活着的旧页上。</div>
+<div class="ctl">
+<button id="bPrev" onclick="prev()">← 上一步</button>
+<button id="bNext" onclick="next()">下一步 →</button>
+<button id="bRst" onclick="rst()">↺ 重置</button>
+</div>
+<div class="sp">
+<div id="content"></div>
+<div class="si" id="si"></div>
+</div>
+<div class="fn">共 7 步：① 之前 + 五个步骤间隙 + ⑥ 之后，逐步推导为什么任意时刻访问都安全</div>
+</div>
+<script>
+var step=0,totalSteps=7;
+var gapY=[18,93,151,209,267,325,383];
+var steps=[
+{
+n:'<b>① 之前：稳态旧映射</b>。CPU0 还没开始 BBM 序列。PTE = Valid(1), PA_old；TLBI 从没发过。',
+acc:0,fw:false,
+pte:'Valid=1, PA_old',tlb:'可能有旧 entry (VA→PA_old)',
+aC:'有旧 entry',aR:'TLB hit → PA_old',aRc:'ok',aD:'稳态映射，完整有效。',
+bC:'无 entry',bR:'miss → walk → 读到旧 PTE → PA_old',bRc:'ok',bD:'walk 填充 TLB，返回旧映射。',
+note:'',verd:'✓ 稳态旧映射，安全',verdc:'ok'
+},
+{
+n:'<b>① 与 ② 之间</b>：① 已把 PTE 置 invalid（但 <code>② DSB</code> 未完成，这次写可能还没传播到 CPU1）；TLBI 还没发。',
+acc:1,fw:false,
+pte:'invalid (Valid=0) ※写可能未传播',tlb:'旧 entry 仍在（TLBI 未发）',
+aC:'有旧 entry',aR:'TLB hit → PA_old',aRc:'ok',aD:'TLBI 还没发，entry 必然还在。旧页未回收（前提），合法的旧翻译，无害。',
+bC:'无 entry',bR:'miss → walk → PA_old 或 Fault',bRc:'ok',bD:'walker 没看到 ① 的写 → 读到旧 PTE → 填充 → PA_old，无害；已看到 → invalid → Translation Fault → fault handler 重试。',
+note:'walk 竟能读到旧 PTE，这正是 <b>③ 必须排在 ① 之后</b>的原因——若先 TLBI 再改页表，竞态中的 walk 会把旧 entry 重新填回 TLB，清了等于白清。',
+verd:'✓ PA_old（旧页未回收）或 Fault（重试），都安全',verdc:'ok'
+},
+{
+n:'<b>② 与 ③ 之间</b>：<code>② DSB</code> 完成，invalid 写已对全域可见；TLBI 还没发。',
+acc:2,fw:false,
+pte:'invalid (已全域可见)',tlb:'旧 entry 仍在',
+aC:'有旧 entry',aR:'TLB hit → PA_old',aRc:'ok',aD:'entry 还在（TLBI 未发），旧页未回收，无害。',
+bC:'无 entry',bR:'miss → walk → 必读到 invalid → Fault',bRc:'fault',bD:'② 保证 invalid 已可见，walk 必被拒 → Translation Fault → 重试。',
+note:'② 关掉了"walk 读到旧 PTE"的窗口——两种情况自此收敛为"hit 旧 entry 或 Fault"。',
+verd:'✓ PA_old 或 Fault，都安全',verdc:'ok'
+},
+{
+n:'<b>③ 与 ④ 之间</b>：<code>③ TLBI</code> 已广播，<code>④ DSB</code> 未完成——CPU1 可能已观察到驱逐，也可能还没有。',
+acc:3,fw:false,
+pte:'invalid',tlb:'旧 entry 可能已驱逐，也可能还在',
+aC:'有旧 entry',aR:'hit → PA_old 或 miss → Fault',aRc:'ok',aD:'未观察到广播 → entry 还在 → PA_old，无害；已观察到 → entry 被驱逐 → 按"无 entry"走。',
+bC:'无 entry',bR:'miss → walk → invalid → Fault',bRc:'fault',bD:'页表仍 invalid，walk 必被拒 → 重试。',
+note:'<b>④ DSB</b> 的意义：把"所有核都观察到驱逐"从未定变成确定。',
+verd:'✓ PA_old 或 Fault，都安全',verdc:'ok'
+},
+{
+n:'<b>④ 与 ⑤ 之间</b>：<code>④ DSB</code> 完成，所有核 TLB 中该 VA 的 entry 必已清空；PTE 仍 invalid。这就是 <b>[④, ⑤) fault 窗口</b>。',
+acc:4,fw:true,
+pte:'invalid',tlb:'空（④ 保证全域驱逐完成）',
+aC:'有无 entry 已无区别',aR:'一律 miss → walk → invalid → Fault',aRc:'fault',aD:'④ 保证旧 entry 已被全域驱逐，"有没有"已无意义。',
+bC:'—',bR:'同上',bRc:'fault',bD:'访问只会 Translation Fault → fault handler 重试，绝不返回任何 PA。',
+note:'这就是 BBML0 的 <b>fault 窗口</b>——任何访问都得到干净的 Fault，绝不会踩空。窗口期的 fault 抖动正是 BBML1 出现的动机之一。',
+verd:'✓ 一律 Translation Fault（绝不返回任何 PA）',verdc:'ok'
+},
+{
+n:'<b>⑤ 与 ⑥ 之间</b>：⑤ 已写入新 entry（PA_new），<code>⑥ DSB</code> 未完成——新值可能还没对 CPU1 的 walker 可见；TLB 该地址仍空。',
+acc:5,fw:false,
+pte:'Valid=1, PA_new ※可能未传播',tlb:'空（窗口期 walk 只会 fault，不填充）',
+aC:'有 entry',aR:'hit → PA_new',aRc:'ok',aD:'能留在 TLB 里的只可能是 ⑤ 之后 walk 填充的新 entry——窗口期 walk 只会 fault，旧值填不进来。',
+bC:'无 entry',bR:'miss → walk → PA_new 或 Fault',bRc:'ok',bD:'新 PTE 已可见 → PA_new，填充 TLB；尚未可见 → invalid → Fault → 重试，下次重试即见新值。',
+note:'⑥ 完成后新 entry 全域可见，进入稳态新映射。',
+verd:'✓ PA_new 或 Fault，都安全',verdc:'ok'
+},
+{
+n:'<b>⑥ 之后：稳态新映射</b>。<code>⑥ DSB</code> 完成，新 entry 全域可见。',
+acc:6,fw:false,
+pte:'Valid=1, PA_new',tlb:'可能有新 entry (VA→PA_new)',
+aC:'有新 entry',aR:'TLB hit → PA_new',aRc:'ok',aD:'稳态新映射，完整有效。',
+bC:'无 entry',bR:'miss → walk → 读到新 PTE → PA_new',bRc:'ok',bD:'walk 填充 TLB，返回新映射。',
+note:'至此 BBML0 六步全部完成。旧页可以安全回收——此刻起无人能再持有旧翻译。',
+verd:'✓ 稳态新映射，安全',verdc:'ok'
+}
+];
+function stageHTML(s){
+var h='<div class="core cpu0">CPU0</div><div class="cap cap0">执行 BBML0<br>（改 OA）</div>';
+h+='<div class="core cpu1">CPU1</div><div class="cap cap1">随时访问该 VA</div>';
+h+='<div class="vline"></div>';
+var labels=['旧 entry 置 invalid','DSB','广播 TLBI','DSB','写新 entry (PA_new)','DSB'];
+var cls=['s1','s2','s3','s4','s5','s6'];
+var descs=['Valid=0','① 可见','驱逐旧 entry','驱逐完成','Valid=1','新值可见'];
+for(var i=0;i<6;i++){
+var st='pending';
+if(i+1<step)st='done';
+else if(i+1===step)st='active';
+var stCls=st==='done'?' done':st==='active'?' active':'';
+h+='<div class="sbox '+cls[i]+stCls+'" style="top:'+(50+i*58)+'px"><span class="snum">'+'①②③④⑤⑥'[i]+'</span>'+labels[i]+'<span class="sdesc">'+descs[i]+'</span></div>';
+}
+var ac=steps[s];
+var top=gapY[ac.acc];
+h+='<div class="acc'+(ac.fw?' fw':'')+'" style="top:'+top+'px">';
+h+='<div class="acc-arrow"></div><div class="acc-line"></div>';
+var lbl='① 之前';
+if(ac.acc===1)lbl='①·② 之间';
+else if(ac.acc===2)lbl='②·③ 之间';
+else if(ac.acc===3)lbl='③·④ 之间';
+else if(ac.acc===4)lbl='④·⑤ 之间';
+else if(ac.acc===5)lbl='⑤·⑥ 之间';
+else if(ac.acc===6)lbl='⑥ 之后';
+h+='<div class="acc-label">CPU1 访问：'+lbl+'</div></div>';
+return h;
+}
+function render(){
+var s=steps[step];
+var html='<div class="nar">'+s.n+'</div>';
+html+='<div class="stwrap"><div class="stage">'+stageHTML(step)+'</div></div>';
+html+='<div class="twocol">';
+html+='<div class="col"><h3>情况 A：CPU1 的 TLB 里有 entry</h3><div class="case a"><div class="ct">'+s.aC+'</div><div class="cr'+(s.aRc==='fault'?' fault':'')+'">'+s.aR+'</div><div class="cd">'+s.aD+'</div></div></div>';
+html+='<div class="col"><h3>情况 B：CPU1 的 TLB 里没有 entry</h3><div class="case b"><div class="ct">'+s.bC+'</div><div class="cr'+(s.bRc==='fault'?' fault':'')+'">'+s.bR+'</div><div class="cd">'+s.bD+'</div></div></div>';
+html+='</div>';
+if(s.note)html+='<div class="note">'+s.note+'</div>';
+html+='<div class="verd '+s.verdc+'">'+s.verd+'</div>';
+document.getElementById('content').innerHTML=html;
+document.getElementById('bPrev').disabled=step<=0;
+document.getElementById('bNext').disabled=step>=totalSteps-1;
+var d='';for(var i=0;i<totalSteps;i++)d+='<div class="sd'+(i===step?' act':i<step?' done':'')+'" onclick="goto('+i+')"></div>';
+document.getElementById('si').innerHTML=d;
+}
+function next(){if(step<totalSteps-1)step++;render()}
+function prev(){if(step>0)step--;render()}
+function goto(i){step=i;render()}
+function rst(){step=0;render()}
+rst();
+</script>
+</body>
+</html>
