@@ -66,7 +66,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <body>
 <div class="c">
 <h1>BBML3 永不 abort 演示</h1>
-<div class="sub">直接改页表 → 新旧并存 → multi-hit 时硬件只返回一致结果，abort 被禁止</div>
+<div class="sub">页表合并(小变大) → 直接改页表 → 新旧并存 → multi-hit 时 BBML3 永不 abort</div>
 <div class="ctl">
 <button id="bPrev" onclick="prev()">← 上一步</button>
 <button id="bNext" onclick="next()">下一步 →</button>
@@ -76,38 +76,38 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="content"></div>
 <div class="si" id="si"></div>
 </div>
-<div class="fn">BBML3 = BBML2 的全部放松 + "永不产生 TLB conflict abort"</div>
+<div class="fn">BBML3 = BBML2 的全部放松 + "永不产生 TLB conflict abort" → 内核关键路径安全</div>
 </div>
 <script>
 var step=0,totalSteps=7;
 var steps=[
-{n:'<b>初始状态:</b> 访问 VA 0x12345678，L2 Block(2MB) 映射正常，TLB 缓存了对应的 2MB entry。现在要拆大页。',pt:'block',tlb:'old2mb',ops:[],mhb:''},
-{n:'<b>直接改页表:</b> 把 L2 Block 换成 Table，指向新页表页。<b>不 invalid、不用 nT、无中间 TLBI</b>！旧 2MB entry 仍然在 TLB 里。',pt:'table',tlb:'old2mb',ops:[{c:'st-write',t:'✏️ 直接写 Table',a:1},{c:'st-none',t:'❌ 无 invalid'},{c:'st-none',t:'❌ 无 nT'},{c:'st-none',t:'❌ 无中间 TLBI'}],mhb:''},
-{n:'<b>walk 填充新 entry:</b> 某次访问 miss → walk 读到新 Table → L3 Page → 填充 4KB entry 到 TLB。walk 不检查"是否已有其他粒度 entry"，直接填入。',pt:'table-walk',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-none',t:'❌ 无 TLBI'}],mhb:''},
-{n:'<b>MULTI-HIT!</b> 旧 2MB + 新 4KB 同时存在于 TLB。旧 Tag(VA[47:21]+2MB) ≠ 新 Tag(VA[47:12]+4KB)，所以能共存。同一个 VA 同时命中两条。',pt:'table',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0}],mhb:'multi'},
-{n:'<b>BBML2 下：可能 abort</b>。CPU 侧 BBML2 不禁止 TLB conflict abort（IHYQMB）。如果内核缺页路径（abort 上下文）里触发 conflict abort → 递归 abort，无法恢复！',pt:'table',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0}],mhb:'abort-bbml2'},
-{n:'<b>BBML3 下：永不 abort</b>！abort 被架构禁止，multi-hit 时硬件只返回与任一编程值一致的结果。内核关键路径（缺页处理/mTHP 折叠）不会被递归 abort 打断。',pt:'table',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0}],mhb:'abort-bbml3'},
-{n:'<b>最终 TLBI 收尾:</b> 调用者做一次最终 TLBI，把新旧 entry 全部清掉。之后访问 miss → walk 读到新页表 → 只填充新 4KB entry。拆大页完成！',pt:'table',tlb:'empty',ops:[{c:'st-tlbi',t:'📡 最终 TLBI',a:1}],mhb:''}
+{n:'<b>初始状态:</b> 512 个连续 4KB 页(L2 Table → 512 个 L3 PTE)。CPU 之前访问过页 #0(VA 0x12340000)，TLB 缓存了 4KB entry。',pt:'table',tlb:'old4kb',ops:[],mhb:''},
+{n:'<b>直接改页表(BBML2/BBML3 方式):</b> L2 Table entry → Block entry(2MB)。<b>不 invalid、不用 nT、无中间 TLBI</b>！旧 4KB entry 仍然在 TLB 里。',pt:'block',tlb:'old4kb',ops:[{c:'st-write',t:'✏️ 直接写 Block',a:1},{c:'st-none',t:' 无 invalid'},{c:'st-none',t:'❌ 无 nT'},{c:'st-none',t:'❌ 无中间 TLBI'}],mhb:''},
+{n:'<b>CPU 访问页 #1(VA 0x12341000):</b> 旧 4KB entry 只覆盖页 #0，<b>盖不住页 #1</b> → TLB miss → walk → 填充 2MB entry。',pt:'block',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-none',t:' 访问页#1 miss → walk → 填充 2MB'}],mhb:'multi'},
+{n:'<b>MULTI-HIT!</b> 旧 4KB(页#0) + 新 2MB(覆盖#0~#511) 同时存在于 TLB。Tag 不同，能共存。访问页 #0 时同时命中两条。',pt:'block',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0}],mhb:'multi-detail'},
+{n:'<b>BBML2 下：可能 abort!</b> CPU 侧 BBML2 不禁止 TLB conflict abort（IHYQMB）。如果内核缺页路径（abort 上下文）里触发 conflict abort → <b>递归 abort，无法恢复!</b>',pt:'block',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0}],mhb:'abort-bbml2'},
+{n:'<b>BBML3 下：永不 abort!</b> abort 被架构禁止，multi-hit 只返回与任一编程值一致的结果。内核关键路径（缺页处理/mTHP 折叠）不会被递归 abort 打断 → <b>可用于任意内核映射</b>。',pt:'block',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0}],mhb:'abort-bbml3'},
+{n:'<b>最终 TLBI 收尾:</b> 调用者做一次最终 TLBI，把新旧 entry 全部清掉。之后访问 miss → walk 读到新页表 → 只填充新 2MB entry。页表合并完成！',pt:'block',tlb:'empty',ops:[{c:'st-tlbi',t:'📡 最终 TLBI',a:1}],mhb:''}
 ];
 function ptreeHTML(type){
-var blk=type==='block'?'<div class="pnode block changing"><span class="lbl">L2</span>Block(2MB) OA=0x6789A, Valid=1</div>':'';
-var walk=type==='table-walk'?'<div class="pnode table"><span class="lbl">L2</span>Table → 指向新 L3 页表</div><div class="indent"><div class="pnode page changing"><span class="lbl">L3[0]</span>Page(4KB) OA=0x6789A+0 <span style="color:#8b5cf6">⬅ walk</span></div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x6789A+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
-var tbl=type==='table'?'<div class="pnode table"><span class="lbl">L2</span>Table → 指向新 L3 页表</div><div class="indent"><div class="pnode page"><span class="lbl">L3[0]</span>Page(4KB) OA=0x6789A+0</div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x6789A+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
-return '<div class="pnode table"><span class="lbl">L1</span>Table → 指向 L2</div><div class="arrow">↓</div>'+blk+walk+tbl;
+var tbl=type==='table'?'<div class="pnode table"><span class="lbl">L2</span>Table → 指向 L3 页表</div><div class="indent"><div class="pnode page"><span class="lbl">L3[0]</span>Page(4KB) OA=0x67890+0</div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x67890+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
+var blk=type==='block'?'<div class="pnode block changing"><span class="lbl">L2</span>Block(2MB) OA=0x67890, Valid=1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">L3 页表已释放</div>':'';
+return '<div class="pnode table"><span class="lbl">L1</span>Table → 指向 L2</div><div class="arrow">↓</div>'+tbl+blk;
 }
 function tlbHTML(type){
-if(type==='old2mb')return '<div class="tent s2"><span class="age old">旧</span><span class="tag">VA=0x12345678 → tag VA[47:21]=0x91</span><span class="sz">2MB</span><br><small>OA=0x6789A, RW, WB</small></div>';
-if(type==='both')return '<div class="tent s2"><span class="age old">旧</span><span class="tag">VA=0x12345678 → tag VA[47:21]=0x91</span><span class="sz">2MB</span><br><small>OA=0x6789A, RW, WB</small></div><div class="tent s4 new"><span class="age new">新</span><span class="tag">VA=0x12345678 → tag VA[47:12]=0x12345</span><span class="sz">4KB</span><br><small>OA=0x6789A, RW, WB</small></div>';
-if(type==='new4kb')return '<div class="tent s4"><span class="tag">VA=0x12345678 → tag VA[47:12]=0x12345</span><span class="sz">4KB</span><br><small>OA=0x6789A, RW, WB</small><br><small style="color:#166534">✓ 最终 TLBI 新旧全部清掉</small></div>';
+if(type==='old4kb')return '<div class="tent s4"><span class="age old">旧</span><span class="tag">VA=0x12340000 (页#0) → tag VA[47:12]=0x12340</span><span class="sz">4KB</span><br><small>OA=0x67890, RW, WB</small></div>';
+if(type==='both')return '<div class="tent s4"><span class="age old">旧</span><span class="tag">VA=0x12340000 (页#0) → tag VA[47:12]=0x12340</span><span class="sz">4KB</span><br><small>OA=0x67890, RW, WB</small></div><div class="tent s2 new"><span class="age new">新</span><span class="tag">VA=0x12340000~0x12540000 → tag VA[47:21]=0x91A0</span><span class="sz">2MB</span><br><small>OA=0x67890, RW, WB</small></div>';
+if(type==='empty')return '<div class="tent s4"><span class="tag">VA=0x12340000~0x12540000 → tag VA[47:21]=0x91A0</span><span class="sz">2MB</span><br><small>OA=0x67890, RW, WB</small><br><small style="color:#166534">✓ 最终 TLBI 后只剩新 entry</small></div>';
 return '';
 }
 function opsHTML(ops){
 if(!ops.length)return '';
-return '<div class="ops">'+ops.map(function(o){return '<span class="step-tag '+o.c+(o.a!==undefined?(o.a?' active':' done'):'')+'">'+o.t+'</span>'}).join('')+'</div>';
+return '<div class="ops">'+ops.map(function(o){var cls=o.a===undefined?'':(o.a?' active':' done');return '<span class="step-tag '+o.c+cls+'">'+o.t+'</span>'}).join('')+'</div>';
 }
 function mhbHTML(type){
 if(!type)return '';
-if(type==='multi')return '<div class="mhb show multi"><b>⚠ MULTI-HIT!</b><br>旧 2MB + 新 4KB 同时存在于 TLB<br>同一个 VA 同时命中两条 entry</div>';
+if(type==='multi')return '<div class="mhb show multi"><b>⚠ MULTI-HIT 条件成立!</b><br>旧 4KB(页#0) + 新 2MB(覆盖#0~#511)<br>Tag 不同(4KB vs 2MB)，能共存</div>';
+if(type==='multi-detail')return '<div class="mhb show multi"><b>⚠ MULTI-HIT!</b><br>访问页 #0(VA 0x12340000) → 同时命中两条:<br>• 4KB entry: tag VA[47:12]=0x12340 ✓<br>• 2MB entry: tag VA[47:21]=0x91A0 ✓</div>';
 if(type==='abort-bbml2')return '<div class="mhb show abort-bbml2"><b>BBML2: 可能 abort!</b><br>CPU 侧不禁止 TLB conflict abort（IHYQMB）<br>如果发生在内核 abort 上下文 → <b>递归 abort，无法恢复</b></div>';
 if(type==='abort-bbml3')return '<div class="mhb show abort-bbml3"><b>BBML3: 永不 abort!</b><br>abort 被架构禁止，multi-hit 只返回一致结果<br>内核关键路径不被递归 abort 打断 → <b>可用于任意内核映射</b></div>';
 return '';

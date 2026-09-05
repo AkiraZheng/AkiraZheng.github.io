@@ -55,7 +55,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .mhb{border-radius:12px;padding:16px;margin-top:12px;font-size:14px;line-height:1.8;display:none}
 .mhb.show{display:block;animation:popin .5s}
 .mhb.multi{background:#fee2e2;border:2px solid #ef4444;color:#991b1b}
-.mhb.resolve{background:#fef3c7;border:2px solid #f59e0b;color:#92400e}
+.mhb.resolve{background:#fef3c7;border:2px solid #f59e0b;color:#92400b}
 .mhb.ok{background:#dcfce7;border:2px solid #22c55e;color:#166534}
 .mhb b{font-size:16px}
 .si{display:flex;gap:6px;margin-top:12px;justify-content:center}
@@ -68,7 +68,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <body>
 <div class="c">
 <h1>BBML2 硬件容忍 multi-hit 演示</h1>
-<div class="sub">直接改页表，无 invalid / 无 nT / 无中间 TLBI → multi-hit 由硬件消解 → 最终 TLBI 收尾</div>
+<div class="sub">页表合并(小变大) → 直接改页表，无 invalid / 无 nT / 无中间 TLBI → multi-hit 由硬件消解 → 最终 TLBI 收尾</div>
 <div class="ctl">
 <button id="bPrev" onclick="prev()">← 上一步</button>
 <button id="bNext" onclick="next()">下一步 →</button>
@@ -78,31 +78,29 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="content"></div>
 <div class="si" id="si"></div>
 </div>
-<div class="fn">关键：旧 entry Tag(VA[47:21]+2MB) ≠ 新 entry Tag(VA[47:12]+4KB)，能共存 → multi-hit 由硬件消解</div>
+<div class="fn">关键：merge(小变大)方向 → 旧小 entry 盖不住兄弟页 → walk 装大 entry → 覆盖旧小 entry 的页 → multi-hit</div>
 </div>
 <script>
 var step=0,totalSteps=8;
 var steps=[
-{n:'<b>初始状态:</b> 访问 VA 0x12345678，L2 Block(2MB) 映射正常，TLB 缓存了对应的 2MB entry。现在要拆大页。',pt:'block',tlb:'old2mb',ops:[],mhb:''},
-{n:'<b>① 直接改页表:</b> 把 L2 Block 换成 Table，指向新页表页。<b>不 invalid、不用 nT、无中间 TLBI</b>！旧 2MB entry 仍然在 TLB 里。',pt:'table',tlb:'old2mb',ops:[{c:'st-write',t:'✏️ 直接写 Table',a:1},{c:'st-none',t:'❌ 无 invalid'},{c:'st-none',t:'❌ 无 nT'},{c:'st-none',t:'❌ 无中间 TLBI'}],mhb:''},
-{n:'<b>② walk 填充新 entry:</b> 某次访问 miss → walk 读到新 Table → L3 Page → 填充 4KB entry。walk 不检查"是否已有其他粒度 entry"，直接填入。',pt:'table-walk',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:1}],mhb:''},
-{n:'<b>③ MULTI-HIT!</b> 旧 2MB + 新 4KB 同时存在于 TLB。旧 Tag(VA[47:21]+2MB) ≠ 新 Tag(VA[47:12]+4KB)，所以能共存。同一个 VA 同时命中两条。',pt:'table',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:0}],mhb:'multi'},
-{n:'<b>④ 硬件消解:</b> BBML2 硬件消解 multi-hit 后果——要么 TLB conflict abort（实现定义），要么返回与某一条 entry 完整一致的翻译。<b>绝不融合</b>(不会把旧 OA + 新权限拼在一起)。',pt:'table',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:0}],mhb:'resolve'},
-{n:'<b>注意：CPU 侧 BBML2 不禁止 abort</b>（IHYQMB）。改完不做 TLBI → 可产生 TLB conflict abort。这是 BBML2 与 BBML3 的关键区别。',pt:'table',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:0}],mhb:'resolve'},
-{n:'<b>⑤ 最终 TLBI:</b> 调用者做一次最终 TLBI，把新旧 entry 全部清掉。这是 BBML2 的唯一一次 TLBI——不是"中间"的，而是"最终"的。',pt:'table',tlb:'empty',ops:[{c:'st-tlbi',t:'📡 最终 TLBI',a:1}],mhb:''},
-{n:'<b>完成:</b> 最终 TLBI 把新旧 entry 全部清掉（TLBI 按地址失效，不区分新旧）。之后访问 miss → walk 读到新页表 → 只填充新 4KB entry。拆大页完成！<b>全程 0 次中间 TLBI</b>。',pt:'table',tlb:'empty',ops:[{c:'st-tlbi',t:'📡 最终 TLBI',a:0}],mhb:'ok'}
+{n:'<b>初始状态:</b> 512 个连续 4KB 页(L2 Table → 512 个 L3 PTE)。CPU 之前访问过页 #0(VA 0x12340000)，TLB 缓存了 4KB entry。',pt:'table',tlb:'old4kb',ops:[],mhb:''},
+{n:'<b>① 直接改页表(BBML2 方式):</b> L2 Table entry → Block entry(2MB)。<b>不 invalid、不用 nT、无中间 TLBI</b>！旧 4KB entry 仍然在 TLB 里。',pt:'block',tlb:'old4kb',ops:[{c:'st-write',t:'✏️ 直接写 Block',a:1},{c:'st-none',t:' 无 invalid'},{c:'st-none',t:'❌ 无 nT'},{c:'st-none',t:'❌ 无中间 TLBI'}],mhb:''},
+{n:'<b> CPU 访问页 #1(VA 0x12341000):</b> 旧 4KB entry 只覆盖页 #0，<b>盖不住页 #1</b> → TLB miss → 硬件 walk。',pt:'block',tlb:'old4kb',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 访问页#1 miss',a:1}],mhb:''},
+{n:'<b>③ walk 填充新 entry:</b> walk 读到 L2 Block(2MB) → 翻译在 L2 完成 → <b>填充 2MB entry 到 TLB</b>。walk 不检查"是否已有其他粒度 entry"，直接填入。',pt:'block',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充 2MB',a:1}],mhb:'multi'},
+{n:'<b> MULTI-HIT!</b> 旧 4KB(页#0) + 新 2MB(覆盖#0~#511) 同时存在于 TLB。Tag 不同(VA[47:12]+4KB ≠ VA[47:21]+2MB)，能共存。访问页 #0 时同时命中两条。',pt:'block',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:0}],mhb:'multi-detail'},
+{n:'<b>⑤ 硬件消解:</b> BBML2 硬件消解 multi-hit 后果——要么 TLB conflict abort（实现定义），要么返回与某一条 entry 完整一致的翻译。<b>绝不融合</b>(不会把旧 OA + 新权限拼在一起)。',pt:'block',tlb:'both',ops:[{c:'st-write',t:'✏️ 直接写',a:0},{c:'st-walk',t:'🔍 walk 填充',a:0}],mhb:'resolve'},
+{n:'<b>⑥ 最终 TLBI:</b> 调用者做一次最终 TLBI，把新旧 entry 全部清掉。这是 BBML2 的唯一一次 TLBI——不是"中间"的，而是"最终"的。',pt:'block',tlb:'empty',ops:[{c:'st-tlbi',t:' 最终 TLBI',a:1}],mhb:''},
+{n:'<b>完成:</b> 最终 TLBI 把新旧 entry 全部清掉（TLBI 按地址失效，不区分新旧）。之后访问 miss → walk 读到新页表 → 只填充新 2MB entry。页表合并完成！<b>全程 0 次中间 TLBI</b>。',pt:'block',tlb:'empty',ops:[{c:'st-tlbi',t:'📡 最终 TLBI',a:0}],mhb:'ok'}
 ];
 function ptreeHTML(type){
-var blk=type==='block'?'<div class="pnode block changing"><span class="lbl">L2</span>Block(2MB) OA=0x6789A, Valid=1</div>':'';
-var walk=type==='table-walk'?'<div class="pnode table"><span class="lbl">L2</span>Table → 指向新 L3 页表</div><div class="indent"><div class="pnode page changing"><span class="lbl">L3[0]</span>Page(4KB) OA=0x6789A+0 <span style="color:#8b5cf6">⬅ walk</span></div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x6789A+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
-var tbl=type==='table'?'<div class="pnode table"><span class="lbl">L2</span>Table → 指向新 L3 页表</div><div class="indent"><div class="pnode page"><span class="lbl">L3[0]</span>Page(4KB) OA=0x6789A+0</div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x6789A+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
-return '<div class="pnode table"><span class="lbl">L1</span>Table → 指向 L2</div><div class="arrow">↓</div>'+blk+walk+tbl;
+var tbl=type==='table'?'<div class="pnode table"><span class="lbl">L2</span>Table → 指向 L3 页表</div><div class="indent"><div class="pnode page"><span class="lbl">L3[0]</span>Page(4KB) OA=0x67890+0</div><div class="pnode page"><span class="lbl">L3[1]</span>Page(4KB) OA=0x67890+1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">... 共 512 个</div></div>':'';
+var blk=type==='block'?'<div class="pnode block changing"><span class="lbl">L2</span>Block(2MB) OA=0x67890, Valid=1</div><div style="font-size:10px;color:#999;text-align:center;padding:4px">L3 页表已释放</div>':'';
+return '<div class="pnode table"><span class="lbl">L1</span>Table → 指向 L2</div><div class="arrow">↓</div>'+tbl+blk;
 }
 function tlbHTML(type){
-if(type==='old2mb')return '<div class="tent s2"><span class="age old">旧</span><span class="tag">VA=0x12345678 → tag VA[47:21]=0x91</span><span class="sz">2MB</span><br><small>OA=0x6789A, RW, WB</small></div>';
-if(type==='both')return '<div class="tent s2"><span class="age old">旧</span><span class="tag">VA=0x12345678 → tag VA[47:21]=0x91</span><span class="sz">2MB</span><br><small>OA=0x6789A, RW, WB</small></div><div class="tent s4 new"><span class="age new">新</span><span class="tag">VA=0x12345678 → tag VA[47:12]=0x12345</span><span class="sz">4KB</span><br><small>OA=0x6789A, RW, WB</small></div>';
+if(type==='old4kb')return '<div class="tent s4"><span class="age old">旧</span><span class="tag">VA=0x12340000 (页#0) → tag VA[47:12]=0x12340</span><span class="sz">4KB</span><br><small>OA=0x67890, RW, WB</small></div>';
+if(type==='both')return '<div class="tent s4"><span class="age old">旧</span><span class="tag">VA=0x12340000 (页#0) → tag VA[47:12]=0x12340</span><span class="sz">4KB</span><br><small>OA=0x67890, RW, WB</small></div><div class="tent s2 new"><span class="age new">新</span><span class="tag">VA=0x12340000~0x12540000 → tag VA[47:21]=0x91A0</span><span class="sz">2MB</span><br><small>OA=0x67890, RW, WB</small></div>';
 if(type==='empty')return '<div class="tlb-empty">🗑️ TLB 为空<br><small>最终 TLBI 清掉了新旧全部</small></div>';
-if(type==='new4kb')return '<div class="tent s4"><span class="tag">VA=0x12345678 → tag VA[47:12]=0x12345</span><span class="sz">4KB</span><br><small>OA=0x6789A, RW, WB</small><br><small style="color:#166534">✓ 最终 TLBI 后只剩新 entry</small></div>';
 return '';
 }
 function opsHTML(ops){
@@ -111,9 +109,10 @@ return '<div class="ops">'+ops.map(function(o){var cls=o.a===undefined?'':(o.a?'
 }
 function mhbHTML(type){
 if(!type)return '';
-if(type==='multi')return '<div class="mhb show multi"><b>⚠ MULTI-HIT!</b><br>旧 2MB + 新 4KB 同时存在于 TLB<br>同一个 VA 0x12345678 同时命中两条 entry</div>';
+if(type==='multi')return '<div class="mhb show multi"><b>⚠ MULTI-HIT 条件成立!</b><br>旧 4KB(页#0) + 新 2MB(覆盖#0~#511)<br>Tag 不同(4KB vs 2MB)，能共存<br>这是 merge(小变大)方向特有的现象</div>';
+if(type==='multi-detail')return '<div class="mhb show multi"><b>⚠ MULTI-HIT!</b><br>访问页 #0(VA 0x12340000) → 同时命中两条:<br>• 4KB entry: tag VA[47:12]=0x12340 ✓<br>• 2MB entry: tag VA[47:21]=0x91A0 ✓<br><br>split(大变小)方向不会这样: 旧 2MB entry 在场时所有访问都 hit，不会 walk 出新 4KB entry</div>';
 if(type==='resolve')return '<div class="mhb show resolve"><b>硬件消解 multi-hit</b><br>• BBML2: abort 或一致结果（实现定义），绝不融合<br>• CPU 侧不禁止 abort（IHYQMB）<br>• 收敛靠最终 TLBI 或自然淘汰</div>';
-if(type==='ok')return '<div class="mhb show ok"><b>✅ 拆大页完成！</b><br>全程 0 次中间 TLBI，multi-hit 由硬件消解</div>';
+if(type==='ok')return '<div class="mhb show ok"><b>✅ 页表合并完成！</b><br>全程 0 次中间 TLBI，multi-hit 由硬件消解</div>';
 return '';
 }
 function render(){

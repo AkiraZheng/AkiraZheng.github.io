@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TLB Multi-Hit 演示(SMMU 场景)</title>
+<title>TLB Multi-Hit 演示</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f8f9fa;padding:16px;color:#333}
@@ -20,13 +20,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .sp{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:20px;min-height:420px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .nar{background:#eef5ff;border-left:4px solid #4a6fa5;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;font-size:14px;line-height:1.7}
 .nar b{color:#4a6fa5}
-.dev-row{display:flex;gap:16px;margin:12px 0;align-items:stretch}
-.dev-box{flex:1;border:1px solid #ddd;border-radius:8px;padding:12px;min-height:100px}
-.dev-box h4{font-size:12px;color:#666;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
-.dev1{background:#eff6ff;border-color:#93c5fd}
-.dev2{background:#fef3f2;border-color:#fca5a5}
-.smmu-tlb{background:#f9fafb;border:2px dashed #d1d5db;border-radius:8px;padding:12px;margin:12px 0}
-.smmu-tlb h4{font-size:12px;color:#666;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.tlb-box{border:1px solid #ddd;border-radius:8px;padding:12px;margin:12px 0;min-height:80px}
+.tlb-box h4{font-size:12px;color:#666;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.tlb-private{background:#eff6ff;border-color:#93c5fd}
 .tent{padding:8px 10px;margin:4px 0;border-radius:6px;font-size:11px;transition:all .5s;font-family:monospace}
 .tent.s2{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
 .tent.s4{background:#fef3c7;border:1px solid #fbbf24;color:#92400e}
@@ -46,19 +42,19 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .mhb.show{display:block;animation:popin .5s}
 .mhb.multi{background:#fee2e2;border:2px solid #ef4444;color:#991b1b}
 .mhb.ok{background:#dcfce7;border:2px solid #22c55e;color:#166534}
+.mhb.warn{background:#fef3c7;border:2px solid #f59e0b;color:#92400e}
 .mhb b{font-size:16px}
-.flow-arrow{text-align:center;color:#4a6fa5;font-size:14px;margin:4px 0;font-weight:bold}
 .si{display:flex;gap:6px;margin-top:12px;justify-content:center}
 .sd{width:10px;height:10px;border-radius:50%;background:#ddd;transition:background .3s}
 .sd.act{background:#4a6fa5}
 .sd.done{background:#93c5fd}
-.fn{text-align:center;font-size:11px;color:#aaa;margin-top:16px;line-height:1.6}
+.fn{text-align:center;font-size:11px;color:#aaa;margin-top:16px}
 </style>
 </head>
 <body>
 <div class="c">
 <h1>TLB Multi-Hit 交互演示</h1>
-<div class="sub">SMMU 场景：多设备共享 SMMU TLB → Device-2 walk 填入新 entry → 新旧并存 → multi-hit → 最终 TLBI 收敛</div>
+<div class="sub">单核 + per-CPU 私有 TLB → 页表合并(小变大) → 新旧 entry 并存 → multi-hit → BBML0 硬件无法处理</div>
 <div class="ctl">
 <button id="bPrev" onclick="prev()">← 上一步</button>
 <button id="bNext" onclick="next()">下一步 →</button>
@@ -68,65 +64,37 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="content"></div>
 <div class="si" id="si"></div>
 </div>
-<div class="fn">
-SMMU TLB 是架构中天然多设备共享的翻译结构——多个设备的 DMA 翻译填入同一 TLB，不同设备在不同时刻 walk 的结果可并存。<br>
-SMMU BBML2 ≈ ARM BBML3（noabort + 硬件消解 multi-hit）。SMMU spec 3.21.1.3: "automatically resolves any TLB multi-hit scenarios"
-</div>
+<div class="fn">关键：merge(小变大)方向才会 multi-hit；split(大变小)方向旧大 entry 吸收所有访问，不会产生新 entry</div>
 </div>
 <script>
-var step=0,totalSteps=10;
+var step=0,totalSteps=9;
 var steps=[
-{n:'<b>初始状态:</b> IOVA 0x12345678。页表 L2 是 Block(2MB)映射。Device-1(网卡)之前 DMA 过,SMMU TLB 缓存了 2MB entry。Device-2(GPU)还没有 DMA 过。',dev:'init',tlb:'old2mb',ops:[],mhb:''},
-{n:'<b>Device-1 再次 DMA:</b> SMMU TLB 命中旧 2MB entry → 直接返回翻译 → <b>不 walk</b>。',dev:'d1-hit',tlb:'old2mb',ops:[{c:'st-visit',t:'Device-1 DMA',a:1},{c:'st-none',t:'❌ 不 walk (hit)'}],mhb:''},
-{n:'<b>软件直接改页表(BBML2 方式):</b> L2 Block → Table,指向新 L3 页表。<b>不 invalid、不 TLBI</b>。SMMU TLB 里旧 2MB entry 还在。',dev:'d1-hit',tlb:'old2mb',ops:[{c:'st-none',t:'SMMU TLB: 旧 entry 还在'}],mhb:''},
-{n:'<b>Device-2 DMA IOVA 0x12345678:</b> SMMU TLB 里没有 Device-2 对应的 Stream 上下文 → <b>miss</b> → SMMU walk。',dev:'d2-miss',tlb:'old2mb',ops:[{c:'st-visit',t:'Device-2 DMA',a:1},{c:'st-walk',t:'🔍 miss → walk',a:1}],mhb:''},
-{n:'<b>SMMU walk 页表:</b> 读到新的 L2 Table → L3 Page → 翻译结果为 4KB。walk 结果<b>填入 SMMU TLB</b>。此时 SMMU TLB 里出现新 4KB entry,与旧 2MB entry 并存!',dev:'d2-walk',tlb:'both',ops:[{c:'st-walk',t:'🔍 walk 读到 4KB',a:0},{c:'st-fill',t:'① 填入 SMMU TLB',a:1}],mhb:'multi'},
-{n:'<b>SMMU TLB 两条并存!</b> 旧 2MB + 新 4KB,Tag 不同(VA[47:21]+2MB ≠ VA[47:12]+4KB),能共存。',dev:'both-have',tlb:'both',ops:[{c:'st-fill',t:'① 填入 SMMU TLB',a:0}],mhb:'multi-detail'},
-{n:'<b>Device-1 后续 DMA:</b> 查 SMMU TLB → <b>同时命中旧 2MB 和新 4KB = MULTI-HIT!</b>',dev:'d1-query',tlb:'both',ops:[{c:'st-query',t:'Device-1 查 SMMU TLB',a:1}],mhb:'multi-detail'},
-{n:'<b>最终 TLBI:</b> 软件发 CMD_TLBI_S2_IPA → <b>新旧全部清掉</b>(TLBI 按地址失效,不区分新旧版本)。SMMU TLB 里该地址为空。',dev:'clean',tlb:'empty',ops:[{c:'st-none',t:'📡 CMD_TLBI',a:1}],mhb:'ok'},
-{n:'<b>后续 Device-1 DMA 重新 walk:</b> SMMU TLB miss(已清空)→ walk 读到新页表 → 翻译结果为 4KB → <b>填入 SMMU TLB</b>。',dev:'rewalk',tlb:'empty',ops:[{c:'st-walk',t:'🔍 miss → walk',a:1},{c:'st-fill',t:'① 填入 SMMU TLB',a:1}],mhb:''},
-{n:'<b>SMMU TLB 里只有新 4KB entry:</b> <b>multi-hit 窗口结束</b>。任何设备后续 DMA 只命中这一条。拆大页全流程完成。',dev:'rewalk',tlb:'new4kb',ops:[{c:'st-fill',t:'① 填入 SMMU TLB',a:0}],mhb:'done'}
+{n:'<b>初始状态:</b> 512 个连续 4KB 页(L2 Table → 512 个 L3 PTE)。CPU 之前访问过页 #0(VA 0x12340000)，TLB 缓存了 4KB entry。',tlb:'old4kb',ops:[],mhb:''},
+{n:'<b>软件直接改页表(BBML2 方式):</b> L2 Table entry → Block entry(2MB)。<b>不 invalid、不 TLBI</b>。但硬件只实现 BBML0(无 BBML2 消解能力)。',tlb:'old4kb',ops:[{c:'st-none',t:'软件: L2 Table→Block(直接写)'}],mhb:'warn'},
+{n:'<b>CPU 访问页 #1(VA 0x12341000):</b> 旧 4KB entry 只覆盖页 #0，<b>盖不住页 #1</b> → TLB miss → 硬件 walk。',tlb:'old4kb',ops:[{c:'st-visit',t:'访问页#1',a:1},{c:'st-walk',t:'miss → walk',a:1}],mhb:''},
+{n:'<b>walk 读到新 Block entry:</b> L2 现在是 Block(2MB) → 翻译在 L2 完成 → <b>填充 2MB entry 到 TLB</b>。',tlb:'both',ops:[{c:'st-walk',t:'walk 读到 2MB Block',a:0},{c:'st-fill',t:'填充 2MB entry',a:1}],mhb:'multi'},
+{n:'<b>TLB 两条并存!</b> 旧 4KB(页#0) + 新 2MB(覆盖#0~#511)。Tag 不同(VA[47:12]+4KB ≠ VA[47:21]+2MB)，能共存。',tlb:'both-detail',ops:[],mhb:'multi-detail'},
+{n:'<b>CPU 再次访问页 #0(VA 0x12340000):</b> TLB 查找: 4KB entry 匹配(VA[47:12]) <b>AND</b> 2MB entry 也匹配(VA[47:21]) → <b>MULTI-HIT!</b>',tlb:'both-detail',ops:[{c:'st-query',t:'访问页#0',a:1},{c:'st-query',t:'双命中!',a:1}],mhb:'disaster'},
+{n:'<b>BBML0 硬件无法处理 multi-hit:</b> 架构行为 = CONSTRAINED UNPREDICTABLE — 可能 TLB conflict abort，可能融合两条 entry 的属性(危险: 权限/内存类型拼凑)，可能返回错误翻译。<b>系统出错!</b>',tlb:'both-detail',ops:[],mhb:'disaster-detail'},
+{n:'<b>正确做法: BBM 六步序列</b> ① 旧 entry 置 invalid → ② DSB → ③ 广播 TLBI(含 walk cache) → ④ DSB → ⑤ 写新 Block entry → ⑥ DSB。Break 窗口期访问 → Translation Fault → fault handler 重试。',tlb:'bbm',ops:[{c:'st-none',t:'① invalid + ② DSB'}, {c:'st-none',t:' TLBI + ④ DSB'}, {c:'st-none',t:'⑤ 写新 entry + ⑥ DSB'}],mhb:'ok'},
+{n:'<b>总结:</b> 不遵循 BBM + 硬件无 BBML2/3 消解 = multi-hit 灾难。BBML0 必须走六步; BBML2 硬件容忍 multi-hit(abort 或一致结果); BBML3 永不 abort。',tlb:'bbm',ops:[],mhb:'done'}
 ];
-
-function devHTML(type){
-var d1='',d2='';
-// Device-1
-if(type==='init'||type==='d1-hit'||type==='d2-miss'||type==='d2-walk'){
-d1='<div class="tent s2">IOVA=0x12345678<br>tag VA[47:21]=0x91 (2MB)<br>OA=0x6789A, RW, WB</div>';
-}else if(type==='d1-query'||type==='both-have'||type==='clean'){
-d1='<div class="tent s2">IOVA=0x12345678<br>tag VA[47:21]=0x91 (2MB)<br>OA=0x6789A, RW, WB</div>';
-}else if(type==='rewalk'){
-d1='<div class="tent s4 new-entry">IOVA=0x12345678<br>tag VA[47:12]=0x12345 (4KB)<br>OA=0x6789A, RW, WB<br><small>✓ walk 填入的新 entry</small></div>';
-}
-// Device-2
-if(type==='init'||type==='d1-hit'){
-d2='<div class="tent empty">没有该地址的 entry</div>';
-}else if(type==='d2-miss'){
-d2='<div class="tent empty">🔍 miss → 准备 walk</div>';
-}else if(type==='d2-walk'||type==='both-have'||type==='d1-query'){
-d2='<div class="tent s4 new-entry">IOVA=0x12345678<br>tag VA[47:12]=0x12345 (4KB)<br>OA=0x6789A, RW, WB<br><small>✓ walk 填入的新 entry</small></div>';
-}else if(type==='clean'){
-d2='<div class="tent empty">🗑️ TLBI 已清空</div>';
-}else if(type==='rewalk'){
-d2='<div class="tent empty">—</div>';
-}
-return '<div class="dev-row"><div class="dev-box dev1"><h4>🔌 Device-1 (网卡)</h4>'+d1+'</div><div class="dev-box dev2"><h4>🔌 Device-2 (GPU)</h4>'+d2+'</div></div>';
-}
 
 function tlbHTML(type){
 var entries='';
-if(type==='old2mb'){
-entries='<div class="tent s2">IOVA=0x12345678 → tag VA[47:21]=0x91<br>2MB | OA=0x6789A, RW, WB<br><small style="color:#991b1b">旧 entry（Device-1 DMA 前 walk 填入）</small></div>';
+if(type==='old4kb'){
+entries='<div class="tent s4">VA=0x12340000 (页#0)<br>tag VA[47:12]=0x12340 (4KB)<br>OA=0x67890, RW, WB<br><small>旧 entry(访问页#0时填充)</small></div>';
 }else if(type==='both'){
-entries='<div class="tent s2">IOVA=0x12345678 → tag VA[47:21]=0x91<br>2MB | OA=0x6789A, RW, WB<br><small style="color:#991b1b">旧 entry</small></div>';
-entries+='<div class="flow-arrow" style="color:#f59e0b">⬇ Device-2 walk 填入</div>';
-entries+='<div class="tent s4 new-entry">IOVA=0x12345678 → tag VA[47:12]=0x12345<br>4KB | OA=0x6789A, RW, WB<br><small style="color:#166534">新 entry</small></div>';
-}else if(type==='empty'){
-entries='<div class="tent empty">🗑️ SMMU TLB 为空<br><small>最终 TLBI 清掉了新旧全部</small></div>';
-}else if(type==='new4kb'){
-entries='<div class="tent s4 new-entry">IOVA=0x12345678 → tag VA[47:12]=0x12345<br>4KB | OA=0x6789A, RW, WB<br><small style="color:#166534">✓ walk 后填充的新 entry（唯一）</small></div>';
+entries='<div class="tent s4">VA=0x12340000 (页#0)<br>tag VA[47:12]=0x12340 (4KB)<br>OA=0x67890, RW, WB<br><small>旧 entry</small></div>';
+entries+='<div class="tent s2 new-entry">VA=0x12340000~0x12540000 (2MB)<br>tag VA[47:21]=0x91A0 (2MB)<br>OA=0x67890, RW, WB<br><small>新 entry(walk 填充)</small></div>';
+}else if(type==='both-detail'){
+entries='<div class="tent s4">VA=0x12340000 (页#0)<br>tag VA[47:12]=0x12340 (4KB)<br>OA=0x67890, RW, WB<br><small>旧 entry — 只覆盖页#0</small></div>';
+entries+='<div class="tent s2">VA=0x12340000~0x12540000 (2MB)<br>tag VA[47:21]=0x91A0 (2MB)<br>OA=0x67890, RW, WB<br><small>新 entry — 覆盖#0~#511</small></div>';
+entries+='<div style="text-align:center;color:#ef4444;font-weight:bold;margin-top:8px">⚠ 同一 VA 0x12340000 同时匹配两条!</div>';
+}else if(type==='bbm'){
+entries='<div class="tent empty">️ TLB 为空<br><small>BBM 六步: invalid + TLBI 清掉旧 entry<br>之后 walk 只填充新 2MB entry</small></div>';
 }
-return '<div class="smmu-tlb"><h4>🌐 SMMU TLB（多设备共享）</h4>'+entries+'</div>';
+return '<div class="tlb-box tlb-private"><h4>🔒 CPU 私有 TLB (per-CPU, MMU 内)</h4>'+entries+'</div>';
 }
 
 function opsHTML(ops){
@@ -136,17 +104,19 @@ return '<div class="ops">'+ops.map(function(o){var cls=o.a===undefined?'':(o.a?'
 
 function mhbHTML(type){
 if(!type)return '';
-if(type==='multi')return '<div class="mhb show multi"><b>⚠ SMMU TLB 里两条并存!</b><br>旧 2MB + 新 4KB,Tag 不同所以能共存<br>Device-2 walk 结果填入 SMMU TLB 是 multi-hit 的触发点</div>';
-if(type==='multi-detail')return '<div class="mhb show multi"><b>⚠ MULTI-HIT!</b><br>Device-1 查 SMMU TLB → 同时命中旧 2MB 和新 4KB<br>2MB 范围包含 4KB 范围,IOVA 落在两者之内<br><br>BBML2 硬件消解: abort 或一致结果(绝不融合)<br>BBML3: 永不 abort,只返回一致结果</div>';
-if(type==='ok')return '<div class="mhb show ok"><b>✅ 最终 TLBI 收尾</b><br>新旧 entry 全部清掉(TLBI 按地址失效,不区分新旧)<br>multi-hit 是 SMMU TLB 的瞬态</div>';
-if(type==='done')return '<div class="mhb show ok"><b>✅ 重新 walk 完成!</b><br>SMMU TLB 里只有新 4KB entry,multi-hit 窗口结束<br>拆大页全流程完成</div>';
+if(type==='warn')return '<div class="mhb show warn"><b>⚠ 违反 BBM!</b><br>软件直接改页表(不 break、不 TLBI)，但硬件只实现 BBML0(无 BBML2 消解能力)<br>这是"不严格遵循 BBML0 + 硬件不做优化"的灾难场景</div>';
+if(type==='multi')return '<div class="mhb show multi"><b> 新旧 entry 并存!</b><br>旧 4KB(页#0) + 新 2MB(覆盖#0~#511)<br>Tag 不同(4KB vs 2MB)，所以能共存<br>这是 merge(小变大)方向特有的现象</div>';
+if(type==='multi-detail')return '<div class="mhb show multi"><b>⚠ MULTI-HIT 条件成立!</b><br>2MB entry 的覆盖范围包含 4KB entry 的页<br>同一 VA 0x12340000 同时命中两条 entry<br><br>split(大变小)方向不会这样: 旧 2MB entry 在场时所有访问都 hit，不会 walk 出新 4KB entry</div>';
+if(type==='disaster')return '<div class="mhb show multi"><b>💥 MULTI-HIT!</b><br>CPU 访问页#0 → 同时命中 4KB entry 和 2MB entry<br>硬件必须选择一条或融合 — 但 BBML0 硬件没有定义安全行为</div>';
+if(type==='disaster-detail')return '<div class="mhb show multi"><b>💥 硬件无法处理!</b><br>BBML0 硬件对 multi-hit 的行为 = CONSTRAINED UNPREDICTABLE:<br>- TLB conflict abort(系统崩溃)<br>- 融合两条 entry 的属性(危险: 可能拼凑出错误权限/内存类型)<br>- 返回错误翻译(数据损坏)<br><br>这就是 BBM 存在的根本原因: 杜绝 multi-hit</div>';
+if(type==='ok')return '<div class="mhb show ok"><b>✅ BBM 六步序列</b><br>① 旧 entry 置 invalid → ② DSB → ③ 广播 TLBI(含 walk cache) → ④ DSB → ⑤ 写新 Block → ⑥ DSB<br>Break 窗口期([④,⑤))访问 → Translation Fault → fault handler 重试<br>保证任意时刻系统里同一地址只有一份有效翻译</div>';
+if(type==='done')return '<div class="mhb show ok"><b>✅ 总结</b><br>不遵循 BBM + 硬件无 BBML2/3 = multi-hit 灾难<br>BBML0: 必须走六步(软件杜绝)<br>BBML2: 硬件容忍 multi-hit(abort 或一致结果,绝不融合)<br>BBML3: 永不 abort(只返回一致结果)</div>';
 return '';
 }
 
 function render(){
 var s=steps[step];
 var html='<div class="nar">'+s.n+'</div>';
-html+=devHTML(s.dev);
 html+=tlbHTML(s.tlb);
 html+=opsHTML(s.ops);
 html+=mhbHTML(s.mhb);
