@@ -19,22 +19,27 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="参考：Proc目录常见文件和目录含义解析">
+    <meta name="description" content="同一个可写属性，在虚拟化栈的每一层长得都不一样：  QEMU（Quick EMUlator，虚拟机监控器的用户态部分）用 mmap 的 PROT_WRITE 申请 host 内核把它记成 vma-&gt;vm_flags 里的 VM_WRITE 位 KVM 在 fault（缺页&#x2F;权限异常）时把它翻译成软件枚举 KVM_PGTABLE_PROT_W 编码器最终把它写成 stage-2 PTE（Pag">
 <meta property="og:type" content="article">
-<meta property="og:title" content="linux文件系统">
-<meta property="og:url" content="https://akirazheng.github.io/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:title" content="虚拟化:写权限的下传链路详解">
+<meta property="og:url" content="https://akirazheng.github.io/2026/09/06/%E8%99%9A%E6%8B%9F%E5%8C%96-%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E4%B8%8B%E4%BC%A0%E9%93%BE%E8%B7%AF%E8%AF%A6%E8%A7%A3/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="参考：Proc目录常见文件和目录含义解析">
+<meta property="og:description" content="同一个可写属性，在虚拟化栈的每一层长得都不一样：  QEMU（Quick EMUlator，虚拟机监控器的用户态部分）用 mmap 的 PROT_WRITE 申请 host 内核把它记成 vma-&gt;vm_flags 里的 VM_WRITE 位 KVM 在 fault（缺页&#x2F;权限异常）时把它翻译成软件枚举 KVM_PGTABLE_PROT_W 编码器最终把它写成 stage-2 PTE（Pag">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-02-12T13:46:55.000Z">
-<meta property="article:modified_time" content="2026-02-12T13:47:28.317Z">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLLTJzjO47tthnZHbwwwKPkq59g7LO5c2offeoHBj1AIPOXB8v8uSapP3wq4b59e5d1fATyKLg16299KbLQ6DFI_LBxtcd-nSw-DQoAjd-8xPywScJdNkLys5DsOAEIbydYkM59qfG0ZokZucAvD5BDzMbxJOV9Ppb03yQpwL9d86pzhHIEL-qE5S3WG75NqRA-cPrNTJRxMAPu0eeJqofXw1TGjdW18qNLjyYg3PEICl0faw_nM5CZS1jrvSR5XsbR5_h97NbRf-rVimw5JdoFR3SH8abS7EjZnSTXvFHDrMdMx-I_TtRIjymvGoj3N7uO_9H2QeSEs5cphY9YBv6JDEQ_INJCwN4madwJb3Dm4yIEP6IvUVpGKbnCFqpszWp4y0Dl2X7MoNVr1S3xkYSTIFcSIwC9RShPwW-xiOst882LAjrkBTBr-CMM2c2IG-GDIssIRiouCmu8hcP7-kjf797IRTs9R1oZLFgkGsYuzCxrc8hS3tJpJoWOCnNly7f83wHXycrl1G_T5P272JoceXN9UCp23VgwIkR_9yf5JQy3Jl39M_l6op-KwwXUfgS4dwNPzTqATN9_R5LjgiDgQRIsnB-_PthIdyavdG6L1AScJUivGHl8grlKKt7puImBh7P1FCvIlr4sDP_mqzhNfrD-mcLFC6NzUaCiHMPIKHxL2QS9GvPAk6MwznFSaeG8pqF9ZQaGkguR0oOfXw68ogKXFGiOLwsfU-GqzjlI1d9YiLSDzt4WFzWu8njZZllQkx_AUtRMI-Ybx-T5hzMwWKxArXUrueDO_T6hQsQyE5qToHXVGbLqyZK8g37pczIOyn_56833ite5qghriLwYR5_QS2MWVqbeXjQzUzQxke1r-Bu7eEnH6CvVGmpW8vzKHNVf8r_T8OvPVg9CcMavaz__wVMv3_J5SHWKu1Ihq_Uxwfp_MBkiU5qMdcgpvrbDoBo0aWIv4xzFNgwJrILm6znxJXeNC5--cKOKtvmUSMTmd28L-GcaGnUfdTciLaUnTbHmi4dEUr9Ob3744cXaXGKy1tJd42_BjpTubXhls_q3x4cVWg3YlnLte-ayIMNx0NHAkZ9riNKmjI76NkY-1CT-Q4hxoK_GB7hjV7STiqNcJxH-xbrpYCOxXs-MyvcoRHoGHSMaU16Q1-q6yl_dcXjEOneb8_5nC0dTsEIowTaWiYsrN-ERc6pu66H4Zh01yAsJni_z5OGkdzdb5kgyMi_ZVy1y0">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLHjJnDP5Fu-l-94aqt1iB5Leo5POrbRD2lP2XK-29aCxQLCc9dRtBa5tPWDo8kY86KJvQMXqWI5RB2L3yjMRCj_CNDdff_u2tlc9HMpElFbtdlEVSxpFEVCt3AvmdX1roHpIZNo2bDq65SoKpb62qRsLwfH1ZEJAYVdubaoeHGqdgG67rB_812DdWioak6AaTD87sLPmWA4YzVyvroQmXYT-JOeSPLh14If5Uq5iRHbxyotjufM_QNLs1MB1_PMxQpnt3fvAQfb-wG8NvR-0hTPipuVs-Ljgzxo3rBf1DWlNelcqLbZMP8wPE12TtTxyzYk_cFLPy43MLuzQsoBex8zku-rnE8xgxvdrV-sL-QiJukTAjtTeyR3-uc11sCmFQ5IcP6SIWrPrvLyf0kG6AG6Vq_BWuduxIV-QcJmRZenQdXS7auHPX1j38O7WcDmJqimhIizDwTrUK9JSkPvGL_MTv5pfzmKvkWapCDQ7g9ACrppLs6KiiUogL7-ytVGAeXs0HGJyfDHk9XC9cyaBt_VaPCLy1iAziOnce96YAEd7IJdrKUdkc4_BmOs-uxyDZmm1WMJC9-YCauPZtG5gliVfC1--mv5nq6qDW2TacUOofLnZGGP7dSp9libvGpLymLEv3oZ2D4xQdWB-0MmWfpgJyVxxYNam69u0X5xfuBzxlf_T2HK6aEbbr5fyWUzNmQdySRPdKEPWHots4Hf_jmubKC4jvghdaIa3Uw_DT5Qw0NyH78a9fk4-pHbXNCMTcGe5a_98v5nbSDrD80HJNdKkHV9Sm8_mPyPZNKXUxmFujLRyQ7eDAjO1Yv1-bxVtP3v5PzvyWSz4gKIJa_HhQm4FGgvrlUSattdzBDRMpzhhBHBnsWxa4SgzoJq3yTzZlq5Od8OYWQRr3U7CNzp9pnqgosnzqpK5iI7JR5r43AxYipYtYj9tYZrPEcCqNFJDxitn6c_VsCVLjpgQNkZwfKODTpzzs9jFR2k9nRCb-HT-NhzYkIf_hg_Yd24UIQLoW6k91aKBMHgRf83dV1AIW1E-T2UdSCH1M8KT7-SyZb_llpsO8QzMHEhhv5HEDTYQT7PNX17i-tv0x6ssNwsXcvX7euHMFNLy9i_tV5aL-SbOcJ1AopTmXN-6ly3">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/NPBHIXj158RlvoaEUfSIT1SAHMXnMx9HIkXYmdeJaAsPR8AR6PcT4EXLfJQcDA6YhK6bK27GK2IjXMgmMtsNaiqcLtc5dirgI3fxCyp_pvbl_tEMNMa9MIuvnDqgicrBM2LuQMrksOANMUuPTxY0Ig4ewPIUetchx4YTCvaklgAWA5EYe9lIOhP3dtAHeoAgCFzmlAPibX2yCYiIMPGE1V_qHbq2lthS__ncUBmVdEpskgtXpk6msIPaKXtcx39rPUWRT6w7pGuaJMqEB1SgCAzhuJVZZiMIOt-lUnHyge-yMdHziFUj__FtoAi_DrEeDVmFtmTVTqRUkrWioo9ByB7ThrqDRa-3zdimKrgM6MilCXlhQwkP1Foj7a1KEAs0aKba6MBWOTBGi2Z2zVuqu35enXZDLf1Drn_fY_-nhV1fj90bw9mDRexkG0gXZ4-ZPgQYbr79iWTGeYNNuHBoZcMxMJQ5euOu8-y4IV1qnK3k2KvQrOoDzGX9HQH5HD89gK0ynoii_YG4NOBW_BpNVHqb3pWcDeqh19M9IRqpNTTdJ2eXZ4iAecWN9F0yLYC0zdrAs50OpmycUm7tNNpR_z955_R3lxhmMxl1VXN_Dl2kXsU_5i9XQ5xwhOPVkrn8hoRJYQI90M32U0Mx1b9Os-3NVW16HoZBGGX0bd67a_qF">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RLHTJnD157tVNt63BziWYQtnfObAY-KZbjZG2YzD9iDsscwwCxlEp1OqFcYKhoWn68c1HYC91AEXyA198r3-Y-csonD_mTbTm29kihkPdNFEFVVEoGuBYRbqgQM9ciaSp365MMpKAjnsMMd4jcmESrLJahxz4YbZrvAZDfDvync1-As-JK6Uk8GPP988WIiaPPaL1WPXal0-b7fAqp0Tp6JQvYN2eqetxeJNV-HIdDjpXQffr9WIXeIcILDQ1Bn6-tOIfiSpq6czwMs-Xdm2GdTdHylUwdftPTVVUjlz-VBiQ4NJ-gh2m9XBX2moFPEDnmO02mW_NCLKRI61KeNo5XUwNreHaDAhg8VJameHOYCO36UoYGXRgrDD2vLXw5wmWYJupPFJZqqOowMAB2_La8REFOCkENR0Mpw0G433XZJhM99G9U1UIgWdgc9MiWYg1E88pzfSwh4YyvO_zVOQIQ242ijMZjvzy_SFEyUhHJOOqao1vhWwK1IMr6CNmZJGhLECBDkkkOvUhUCO3CBOuvm--YYRHJDJ4uLCdoSr1VgNE1vqduz3hf01QWfnlyZAvhph85SGVb6go7ulleTwsRIHOvY8KkmWH_N_ppuj8vCfcaHEcUanyBTslAtlORNB0QWTPIuG29h1ioeATq5obsWbqc_nsjH48gg639iwhXg3m-smTF1M6bFm76RK_I0pFJ6IkSvtAc4r98A3Io3b822VhmIHeHx2KdBbF6WddqZbq4oHfTEJAXuRti9Ea54rf-lQ1hOiL7tgw8LiUaAfdiTQkUfkD4zVR7fBnztr0__WLU_3ruYjw56uaa0uKQVT-AoY4-yVGf2Tom1UW4-NLltzzIY8AeHnPLIPwhIsUxzsUoU7_lwQjtRSQUtTX5xZXzzk-yssjxsa3HDMKl-AFm00">
+<meta property="article:published_time" content="2026-09-06T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-07T11:22:54.386Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.plantuml.com/plantuml/svg/TLLTJzjO47tthnZHbwwwKPkq59g7LO5c2offeoHBj1AIPOXB8v8uSapP3wq4b59e5d1fATyKLg16299KbLQ6DFI_LBxtcd-nSw-DQoAjd-8xPywScJdNkLys5DsOAEIbydYkM59qfG0ZokZucAvD5BDzMbxJOV9Ppb03yQpwL9d86pzhHIEL-qE5S3WG75NqRA-cPrNTJRxMAPu0eeJqofXw1TGjdW18qNLjyYg3PEICl0faw_nM5CZS1jrvSR5XsbR5_h97NbRf-rVimw5JdoFR3SH8abS7EjZnSTXvFHDrMdMx-I_TtRIjymvGoj3N7uO_9H2QeSEs5cphY9YBv6JDEQ_INJCwN4madwJb3Dm4yIEP6IvUVpGKbnCFqpszWp4y0Dl2X7MoNVr1S3xkYSTIFcSIwC9RShPwW-xiOst882LAjrkBTBr-CMM2c2IG-GDIssIRiouCmu8hcP7-kjf797IRTs9R1oZLFgkGsYuzCxrc8hS3tJpJoWOCnNly7f83wHXycrl1G_T5P272JoceXN9UCp23VgwIkR_9yf5JQy3Jl39M_l6op-KwwXUfgS4dwNPzTqATN9_R5LjgiDgQRIsnB-_PthIdyavdG6L1AScJUivGHl8grlKKt7puImBh7P1FCvIlr4sDP_mqzhNfrD-mcLFC6NzUaCiHMPIKHxL2QS9GvPAk6MwznFSaeG8pqF9ZQaGkguR0oOfXw68ogKXFGiOLwsfU-GqzjlI1d9YiLSDzt4WFzWu8njZZllQkx_AUtRMI-Ybx-T5hzMwWKxArXUrueDO_T6hQsQyE5qToHXVGbLqyZK8g37pczIOyn_56833ite5qghriLwYR5_QS2MWVqbeXjQzUzQxke1r-Bu7eEnH6CvVGmpW8vzKHNVf8r_T8OvPVg9CcMavaz__wVMv3_J5SHWKu1Ihq_Uxwfp_MBkiU5qMdcgpvrbDoBo0aWIv4xzFNgwJrILm6znxJXeNC5--cKOKtvmUSMTmd28L-GcaGnUfdTciLaUnTbHmi4dEUr9Ob3744cXaXGKy1tJd42_BjpTubXhls_q3x4cVWg3YlnLte-ayIMNx0NHAkZ9riNKmjI76NkY-1CT-Q4hxoK_GB7hjV7STiqNcJxH-xbrpYCOxXs-MyvcoRHoGHSMaU16Q1-q6yl_dcXjEOneb8_5nC0dTsEIowTaWiYsrN-ERc6pu66H4Zh01yAsJni_z5OGkdzdb5kgyMi_ZVy1y0">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>linux文件系统 · AkiraZheng&#39;s Time</title>
+    <title>虚拟化:写权限的下传链路详解 · AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -272,7 +277,7 @@
                 <a href="/">AkiraZheng&#39;s Time.</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">linux文件系统</a>
+                <a href="#" class="post-name">虚拟化:写权限的下传链路详解</a>
             </div>
         </div>
     
@@ -318,7 +323,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                linux文件系统
+                虚拟化:写权限的下传链路详解
             <!-- 404 -->
             
         </h1>
@@ -337,13 +342,13 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">16</span>Reading time: <span class="post-count reading-time">1 min</span></span>
+                        <span>Word count: <span class="post-count word-count">4.8k</span>Reading time: <span class="post-count reading-time">20 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
                     <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2026/02/12</span>
+                    <span class="post-intro-time">2026/09/06</span>
                     <!-- busuanzi -->
                     
                         <span id="busuanzi_container_page_pv" class="busuanzi-pv">
@@ -498,18 +503,394 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <blockquote>
-<p>参考：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/9KG1ly3mg5I4i-rjL7UAXw">Proc目录常见文件和目录含义解析</a></p>
-</blockquote>
+        <p>同一个可写属性，在虚拟化栈的每一层长得都不一样：</p>
+<ul>
+<li>QEMU（Quick EMUlator，虚拟机监控器的用户态部分）用 mmap 的
+<code>PROT_WRITE</code> 申请</li>
+<li>host 内核把它记成 <code>vma-&gt;vm_flags</code> 里的
+<code>VM_WRITE</code> 位</li>
+<li>KVM 在 fault（缺页/权限异常）时把它翻译成软件枚举
+<code>KVM_PGTABLE_PROT_W</code></li>
+<li>编码器最终把它写成 stage-2 PTE（Page Table Entry，页表项）第 7 位的
+<code>S2AP_W</code></li>
+</ul>
+<p>把这条链走通，会发现一个反直觉的事实：<strong>KVM
+内部没有任何一处持久保存可写属性</strong>。arm64 的
+<code>struct kvm_arch_memory_slot</code> 是空结构体，memslot 也只存
+flags。</p>
+<p>真正持久的只有两处事实源，写权限因此分三层表示：</p>
+<ul>
+<li><strong>持久事实源</strong>：host 进程的 VMA（Virtual Memory
+Area，虚拟内存区域）与
+<code>kvm_memory_slot.flags</code>（<code>KVM_MEM_READONLY</code>、<code>KVM_MEM_LOG_DIRTY_PAGES</code>），建页权限全部从这两层现算</li>
+<li><strong>瞬态软件枚举</strong>：<code>enum kvm_pgtable_prot</code>，KVM
+内部传递权限的统一语言，单次 fault 内存活，从不持久化</li>
+<li><strong>硬件 PTE 位</strong>：stage-2 PTE 上的
+<code>S2AP_W</code>，编码器写入，wrprotect 可清，是投影而非事实源</li>
+</ul>
+<p>各章知识点的依赖关系如下，全文沿这张地图展开：</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/TLLTJzjO47tthnZHbwwwKPkq59g7LO5c2offeoHBj1AIPOXB8v8uSapP3wq4b59e5d1fATyKLg16299KbLQ6DFI_LBxtcd-nSw-DQoAjd-8xPywScJdNkLys5DsOAEIbydYkM59qfG0ZokZucAvD5BDzMbxJOV9Ppb03yQpwL9d86pzhHIEL-qE5S3WG75NqRA-cPrNTJRxMAPu0eeJqofXw1TGjdW18qNLjyYg3PEICl0faw_nM5CZS1jrvSR5XsbR5_h97NbRf-rVimw5JdoFR3SH8abS7EjZnSTXvFHDrMdMx-I_TtRIjymvGoj3N7uO_9H2QeSEs5cphY9YBv6JDEQ_INJCwN4madwJb3Dm4yIEP6IvUVpGKbnCFqpszWp4y0Dl2X7MoNVr1S3xkYSTIFcSIwC9RShPwW-xiOst882LAjrkBTBr-CMM2c2IG-GDIssIRiouCmu8hcP7-kjf797IRTs9R1oZLFgkGsYuzCxrc8hS3tJpJoWOCnNly7f83wHXycrl1G_T5P272JoceXN9UCp23VgwIkR_9yf5JQy3Jl39M_l6op-KwwXUfgS4dwNPzTqATN9_R5LjgiDgQRIsnB-_PthIdyavdG6L1AScJUivGHl8grlKKt7puImBh7P1FCvIlr4sDP_mqzhNfrD-mcLFC6NzUaCiHMPIKHxL2QS9GvPAk6MwznFSaeG8pqF9ZQaGkguR0oOfXw68ogKXFGiOLwsfU-GqzjlI1d9YiLSDzt4WFzWu8njZZllQkx_AUtRMI-Ybx-T5hzMwWKxArXUrueDO_T6hQsQyE5qToHXVGbLqyZK8g37pczIOyn_56833ite5qghriLwYR5_QS2MWVqbeXjQzUzQxke1r-Bu7eEnH6CvVGmpW8vzKHNVf8r_T8OvPVg9CcMavaz__wVMv3_J5SHWKu1Ihq_Uxwfp_MBkiU5qMdcgpvrbDoBo0aWIv4xzFNgwJrILm6znxJXeNC5--cKOKtvmUSMTmd28L-GcaGnUfdTciLaUnTbHmi4dEUr9Ob3744cXaXGKy1tJd42_BjpTubXhls_q3x4cVWg3YlnLte-ayIMNx0NHAkZ9riNKmjI76NkY-1CT-Q4hxoK_GB7hjV7STiqNcJxH-xbrpYCOxXs-MyvcoRHoGHSMaU16Q1-q6yl_dcXjEOneb8_5nC0dTsEIowTaWiYsrN-ERc6pu66H4Zh01yAsJni_z5OGkdzdb5kgyMi_ZVy1y0" alt="plantuml diagram"></p>
+<p>主链本身则压缩成四个阶段：</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/TLHjJnDP5Fu-l-94aqt1iB5Leo5POrbRD2lP2XK-29aCxQLCc9dRtBa5tPWDo8kY86KJvQMXqWI5RB2L3yjMRCj_CNDdff_u2tlc9HMpElFbtdlEVSxpFEVCt3AvmdX1roHpIZNo2bDq65SoKpb62qRsLwfH1ZEJAYVdubaoeHGqdgG67rB_812DdWioak6AaTD87sLPmWA4YzVyvroQmXYT-JOeSPLh14If5Uq5iRHbxyotjufM_QNLs1MB1_PMxQpnt3fvAQfb-wG8NvR-0hTPipuVs-Ljgzxo3rBf1DWlNelcqLbZMP8wPE12TtTxyzYk_cFLPy43MLuzQsoBex8zku-rnE8xgxvdrV-sL-QiJukTAjtTeyR3-uc11sCmFQ5IcP6SIWrPrvLyf0kG6AG6Vq_BWuduxIV-QcJmRZenQdXS7auHPX1j38O7WcDmJqimhIizDwTrUK9JSkPvGL_MTv5pfzmKvkWapCDQ7g9ACrppLs6KiiUogL7-ytVGAeXs0HGJyfDHk9XC9cyaBt_VaPCLy1iAziOnce96YAEd7IJdrKUdkc4_BmOs-uxyDZmm1WMJC9-YCauPZtG5gliVfC1--mv5nq6qDW2TacUOofLnZGGP7dSp9libvGpLymLEv3oZ2D4xQdWB-0MmWfpgJyVxxYNam69u0X5xfuBzxlf_T2HK6aEbbr5fyWUzNmQdySRPdKEPWHots4Hf_jmubKC4jvghdaIa3Uw_DT5Qw0NyH78a9fk4-pHbXNCMTcGe5a_98v5nbSDrD80HJNdKkHV9Sm8_mPyPZNKXUxmFujLRyQ7eDAjO1Yv1-bxVtP3v5PzvyWSz4gKIJa_HhQm4FGgvrlUSattdzBDRMpzhhBHBnsWxa4SgzoJq3yTzZlq5Od8OYWQRr3U7CNzp9pnqgosnzqpK5iI7JR5r43AxYipYtYj9tYZrPEcCqNFJDxitn6c_VsCVLjpgQNkZwfKODTpzzs9jFR2k9nRCb-HT-NhzYkIf_hg_Yd24UIQLoW6k91aKBMHgRf83dV1AIW1E-T2UdSCH1M8KT7-SyZb_llpsO8QzMHEhhv5HEDTYQT7PNX17i-tv0x6ssNwsXcvX7euHMFNLy9i_tV5aL-SbOcJ1AopTmXN-6ly3" alt="plantuml diagram"></p>
+<p>两张图各司其职：图0 标注章节依赖，图1
+压缩主链为四阶段。全文沿下传方向自顶向下展开：先辨析软件枚举的三个名字（第
+1 节），再依次追两个事实源怎么装进 host VMA（第 2 节）与 memslot（第 3
+节），然后看 fault 时两层事实源在哪个函数里合成枚举（第 4
+节）、枚举怎么编码进 PTE（第 5 节），最后横向对照各层写位的形态（第 6
+节），并回答两个延伸问题：复合宏 <code>KVM_PGTABLE_PROT_RW</code>
+到底给谁用（第 7 节）、为什么日常环境里见不到它的使用者（第 8
+节）。fault 主链内部的两层查证细节、权限真值表、relax 放权与 dirty
+logging（脏页日志）拉锯见<a href="https://akirazheng.github.io/2026/09/05/%E8%99%9A%E6%8B%9F%E5%8C%96-%E8%AF%BB%E5%86%99%E6%9D%83%E9%99%90%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/">前篇</a>，memslot
+从 QEMU 的 MemoryRegion 树到 ioctl 的完整诞生链路见<a href="https://akirazheng.github.io/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/">VFIO
+篇一</a>。代码取自主线 Linux（约 7.3）与 openEuler QEMU。</p>
+<h1 id="三个名字prot_wprot_rw-与不存在的-kvm_pgtable_rw">1.
+三个名字：PROT_W、PROT_RW 与不存在的 KVM_PGTABLE_RW</h1>
+<p>先解决命名。arm64 KVM 传递权限的软件枚举定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/include/asm/kvm_pgtable.h */</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">kvm_pgtable_prot</span> &#123;</span></span><br><span class="line">	KVM_PGTABLE_PROT_PX			= BIT(<span class="number">0</span>),   <span class="comment">/* 特权执行 */</span></span><br><span class="line">	KVM_PGTABLE_PROT_UX			= BIT(<span class="number">1</span>),   <span class="comment">/* 非特权执行 */</span></span><br><span class="line">	KVM_PGTABLE_PROT_X			= KVM_PGTABLE_PROT_PX |</span><br><span class="line">					  KVM_PGTABLE_PROT_UX,</span><br><span class="line">	KVM_PGTABLE_PROT_W			= BIT(<span class="number">2</span>),   <span class="comment">/* 写 */</span></span><br><span class="line">	KVM_PGTABLE_PROT_R			= BIT(<span class="number">3</span>),   <span class="comment">/* 读 */</span></span><br><span class="line"></span><br><span class="line">	KVM_PGTABLE_PROT_DEVICE			= BIT(<span class="number">4</span>),   <span class="comment">/* 设备内存属性 */</span></span><br><span class="line">	KVM_PGTABLE_PROT_NORMAL_NC		= BIT(<span class="number">5</span>),   <span class="comment">/* 非缓存正常内存 */</span></span><br><span class="line"></span><br><span class="line">	KVM_PGTABLE_PROT_SW0			= BIT(<span class="number">55</span>),  <span class="comment">/* 软件位, nested 存映射层级 */</span></span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 同文件, 复合宏一栏 */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> KVM_PGTABLE_PROT_RW	(KVM_PGTABLE_PROT_R | KVM_PGTABLE_PROT_W)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> KVM_PGTABLE_PROT_RWX	(KVM_PGTABLE_PROT_RW | KVM_PGTABLE_PROT_X)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PKVM_HOST_MEM_PROT	KVM_PGTABLE_PROT_RWX   <span class="comment">/* pKVM host RAM */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PKVM_HOST_MMIO_PROT	KVM_PGTABLE_PROT_RW    <span class="comment">/* pKVM host MMIO */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_HYP		KVM_PGTABLE_PROT_RW    <span class="comment">/* hyp 自身数据段 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_HYP_EXEC		(KVM_PGTABLE_PROT_R | KVM_PGTABLE_PROT_X)  <span class="comment">/* 无 W */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_HYP_RO		(KVM_PGTABLE_PROT_R)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PAGE_HYP_DEVICE		(PAGE_HYP | KVM_PGTABLE_PROT_DEVICE)</span></span><br></pre></td></tr></table></figure>
+<p>三个名字的关系：</p>
+<ul>
+<li><strong><code>KVM_PGTABLE_PROT_W</code></strong>：枚举成员，单独一个写位。guest
+stage-2 的建页路径只用它</li>
+<li><strong><code>KVM_PGTABLE_PROT_RW</code></strong>：宏，R|W
+的语法糖。guest stage-2 路径<strong>从不使用</strong>，它只服务 hyp
+自身映射与 pKVM（protected KVM，保护虚拟化；第 7 节展开）</li>
+<li><strong><code>KVM_PGTABLE_RW</code></strong>：不存在，全树无此标识符</li>
+</ul>
+<p>为什么 guest 路径不用复合宏？因为写位是<strong>条件位</strong>。dirty
+logging 迭代期读 fault 必须故意建只读映射，让未来的写再 fault
+出来标脏（真值表见前篇第 4 节），所以 prot 只能逐次现算，不存在恒 RW
+的静态选择。实际的建页代码全部是 R 打底、条件加 W 的写法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/mmu.c, kvm_s2_fault_compute_prot() */</span></span><br><span class="line">*prot = KVM_PGTABLE_PROT_R;                     <span class="comment">/* 1: 恒可读, 基线 */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 2: 可写的三个充分条件 */</span></span><br><span class="line"><span class="keyword">if</span> (s2vi-&gt;map_writable &amp;&amp; (s2vi-&gt;device ||</span><br><span class="line">			   !memslot_is_logging(s2fd-&gt;memslot) ||</span><br><span class="line">			   kvm_is_write_fault(s2fd-&gt;vcpu)))</span><br><span class="line">	*prot |= KVM_PGTABLE_PROT_W;            <span class="comment">/* 逐位拼, 不是复合宏 */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* linux/arch/arm64/kvm/mmu.c, kvm_phys_addr_ioremap() 也是同款模式 */</span></span><br><span class="line">prot = KVM_PGTABLE_PROT_DEVICE | KVM_PGTABLE_PROT_R |</span><br><span class="line">       (writable ? KVM_PGTABLE_PROT_W : <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>读是恒置基线，写是逐 fault 判定。<code>map_writable</code>
+从哪来，就是接下来三节的主线。</p>
+<h1 id="事实源①host-vma写权限的原始源头">2. 事实源①：host
+VMA，写权限的原始源头</h1>
+<p>先澄清一个容易混淆的问题：guest 也有自己的
+VMA，但它不在本文的链路里。guest 是完整的 Linux 内核，guest 用户进程的
+mmap 照常创建 VMA、填 Guest S1 PTE（GVA→GPA），这些结构对 KVM
+完全不可见，KVM 眼中 guest 只是一个 GPA 地址空间加一份 memslot
+台账。写权限因此是两道独立的门，各管各的事实源：</p>
+<ul>
+<li><strong>第一道门 Guest S1</strong>：归 guest 管，权限来自 guest
+VMA。fault（缺页、写时复制、权限不足）由 guest
+内核自己处理，写失败就是给 guest 进程发 SIGSEGV，KVM 察觉不到</li>
+<li><strong>第二道门 Guest S2</strong>：归 KVM 管，权限来自 host VMA 与
+memslot flags，与 guest VMA 没有任何关系</li>
+</ul>
+<p><img src="http://www.plantuml.com/plantuml/svg/NPBHIXj158RlvoaEUfSIT1SAHMXnMx9HIkXYmdeJaAsPR8AR6PcT4EXLfJQcDA6YhK6bK27GK2IjXMgmMtsNaiqcLtc5dirgI3fxCyp_pvbl_tEMNMa9MIuvnDqgicrBM2LuQMrksOANMUuPTxY0Ig4ewPIUetchx4YTCvaklgAWA5EYe9lIOhP3dtAHeoAgCFzmlAPibX2yCYiIMPGE1V_qHbq2lthS__ncUBmVdEpskgtXpk6msIPaKXtcx39rPUWRT6w7pGuaJMqEB1SgCAzhuJVZZiMIOt-lUnHyge-yMdHziFUj__FtoAi_DrEeDVmFtmTVTqRUkrWioo9ByB7ThrqDRa-3zdimKrgM6MilCXlhQwkP1Foj7a1KEAs0aKba6MBWOTBGi2Z2zVuqu35enXZDLf1Drn_fY_-nhV1fj90bw9mDRexkG0gXZ4-ZPgQYbr79iWTGeYNNuHBoZcMxMJQ5euOu8-y4IV1qnK3k2KvQrOoDzGX9HQH5HD89gK0ynoii_YG4NOBW_BpNVHqb3pWcDeqh19M9IRqpNTTdJ2eXZ4iAecWN9F0yLYC0zdrAs50OpmycUm7tNNpR_z955_R3lxhmMxl1VXN_Dl2kXsU_5i9XQ5xwhOPVkrn8hoRJYQI90M32U0Mx1b9Os-3NVW16HoZBGGX0bd67a_qF" alt="plantuml diagram"></p>
+<p>写访问要两道门都放行。guest 驱动 <code>ioremap(GPA)</code> 建 Guest
+S1 时 device 属性由 guest 内核定，host VMA 的 <code>VM_PFNMAP</code>
+与非缓存属性由 host VFIO
+定，两边互不知晓，靠硬件两级翻译拼起来。唯一沾到 guest
+页表的例外是嵌套虚拟化（nested virtualization）：L1 给 L2 自建的 guest
+S2 表会被 KVM 走查并取权限交集，但那是 L1 的页表，同样不是 VMA。</p>
+<p>本文剩余部分的 VMA 全部指 host VMA。它里面存的是 HVA 区间加权限，HPA
+是 Host S1 PTE 懒填充后才出现的（lazy 语义见 VFIO
+篇一）。可写性最原始的源头在 QEMU 发起的那次 mmap，以 VFIO 设备直通的
+BAR（Base Address Register，PCI 基地址寄存器）为例，QEMU 先通过
+<code>VFIO_DEVICE_GET_REGION_INFO</code> 拿到 host VFIO 驱动报告的
+region flags，再把 READ/WRITE 位翻译成 mmap 的 prot 参数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/hw/vfio/helpers.c, vfio_region_mmap() */</span></span><br><span class="line">prot |= region-&gt;flags &amp; VFIO_REGION_INFO_FLAG_READ ? PROT_READ : <span class="number">0</span>;</span><br><span class="line">prot |= region-&gt;flags &amp; VFIO_REGION_INFO_FLAG_WRITE ? PROT_WRITE : <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">region-&gt;mmaps[i].mmap = mmap(<span class="literal">NULL</span>, region-&gt;mmaps[i].size, prot,</span><br><span class="line">			     MAP_SHARED, region-&gt;vbasedev-&gt;fd,</span><br><span class="line">			     region-&gt;fd_offset + region-&gt;mmaps[i].offset);</span><br><span class="line"><span class="comment">/* 返回的 HVA 存入 mmaps[i].mmap, 经 memory_region_init_ram_device_ptr()</span></span><br><span class="line"><span class="comment">   成为 L3 MR 的 ram_block-&gt;host (链路见 VFIO 篇一) */</span></span><br></pre></td></tr></table></figure>
+<p>普通 Guest RAM 同理，QEMU 用 <code>PROT_READ|PROT_WRITE</code>
+匿名映射自己的内存，VMA 一样拿到 VM_WRITE。mmap 进入内核后，通用路径把
+PROT_WRITE 翻译成 VM_WRITE：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/include/linux/mman.h, calc_vm_prot_bits() */</span></span><br><span class="line"><span class="keyword">return</span> _calc_vm_trans(prot, PROT_READ,  VM_READ) |</span><br><span class="line">       _calc_vm_trans(prot, PROT_WRITE, VM_WRITE) |   <span class="comment">/* VM_WRITE 的唯一来源 */</span></span><br><span class="line">       _calc_vm_trans(prot, PROT_EXEC,  VM_EXEC) |</span><br><span class="line">       <span class="comment">//...</span></span><br></pre></td></tr></table></figure>
+<p>整条链的关键在于分工：VM_WRITE 由 mmap
+系统调用的通用路径写入，设备驱动只做增量修饰。VFIO 的 PCI mmap
+回调不碰写位，只设置 IO 相关的标志与缓存属性：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/drivers/vfio/pci/vfio_pci_core.c, vfio_pci_core_mmap() */</span></span><br><span class="line">vma-&gt;vm_page_prot = pgprot_noncached(vma-&gt;vm_page_prot);  <span class="comment">/* 只改缓存属性 */</span></span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">vm_flags_set(vma, VM_ALLOW_ANY_UNCACHED | VM_IO | VM_PFNMAP |</span><br><span class="line">	    VM_DONTEXPAND | VM_DONTDUMP);                  <span class="comment">/* 只加 IO 标志 */</span></span><br><span class="line">vma-&gt;vm_ops = &amp;vfio_pci_mmap_ops;                        <span class="comment">/* 首访 fault 回调 */</span></span><br></pre></td></tr></table></figure>
+<p>调用栈全景：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[QEMU]   vfio_region_mmap()                      <span class="comment">/* hw/vfio/helpers.c */</span></span><br><span class="line">            +-&gt; mmap(<span class="literal">NULL</span>, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, off)</span><br><span class="line">                <span class="comment">/* syscall 陷入内核, 返回 HVA */</span></span><br><span class="line"></span><br><span class="line">[kernel] sys_mmap_pgoff()                        <span class="comment">/* mm/mmap.c, mmap 系统调用入口 */</span></span><br><span class="line">            +-&gt; ksys_mmap_pgoff()</span><br><span class="line">              +-&gt; do_mmap()</span><br><span class="line">                +-&gt; calc_vm_prot_bits(prot)      <span class="comment">/* PROT_WRITE → VM_WRITE */</span></span><br><span class="line">                +-&gt; mmap_region()                <span class="comment">/* mm/vma.c */</span></span><br><span class="line">                  +-&gt; __mmap_region()</span><br><span class="line">                    +-&gt; <span class="comment">//... vma 创建与 vm_flags 填充</span></span><br><span class="line">                    +-&gt; __mmap_new_file_vma()</span><br><span class="line">                      +-&gt; mmap_file()            <span class="comment">/* 驱动回调入口 */</span></span><br><span class="line">                        +-&gt; vfio_pci_core_mmap()  <span class="comment">/* drivers/vfio/pci */</span></span><br></pre></td></tr></table></figure>
+<p>至此事实源①就位：<code>vma-&gt;vm_flags</code> 里有
+VM_WRITE，<code>vma-&gt;vm_page_prot</code> 携带含写的页属性。Host S1
+PTE（宿主机自己的一级页表）此刻还是空的，按需填充：QEMU 或
+GUP（get_user_pages，内核抓页接口）首次触碰这片 HVA
+时，<code>vfio_pci_mmap_page_fault()</code> 被触发，用
+<code>vmf_insert_pfn()</code> 沿 <code>vma-&gt;vm_page_prot</code> 把
+BAR 的物理地址填进 Host S1 PTE。这一步为第 4 节的写权限查证埋下伏笔：KVM
+将来读到的写位，就来自这个由 VMA 派生的 PTE。</p>
+<h1 id="事实源②memslot注册时不存可写">3.
+事实源②：memslot，注册时不存可写</h1>
+<p>VMA 是 host 进程的账本，KVM 还需要一份自己的登记。QEMU 在 FlatView
+变更后把每个叶子 ram MR 注册成 memslot（链路见 VFIO 篇一第 5
+节），注册时携带的权限信息只有 flags：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/accel/kvm/kvm-all.c, kvm_mem_flags() */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">kvm_mem_flags</span><span class="params">(MemoryRegion *mr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">bool</span> readonly = mr-&gt;readonly || memory_region_is_romd(mr);</span><br><span class="line">	<span class="keyword">int</span> flags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (memory_region_get_dirty_log_mask(mr) != <span class="number">0</span>)</span><br><span class="line">		flags |= KVM_MEM_LOG_DIRTY_PAGES;      <span class="comment">/* 脏页跟踪 */</span></span><br><span class="line">	<span class="keyword">if</span> (readonly &amp;&amp; kvm_readonly_mem_allowed)</span><br><span class="line">		flags |= KVM_MEM_READONLY;             <span class="comment">/* 只读槽 */</span></span><br><span class="line">	<span class="keyword">return</span> flags;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* VFIO BAR 的 ram_device MR: readonly=false, dirty_log_mask=0 → flags=0 */</span></span><br></pre></td></tr></table></figure>
+<p>flags 为 0 意味着这个 slot 对 KVM 完全可写。ioctl 到达内核后，arm64
+的 prepare 钩子只做合法性校验，不做权限记录：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/mmu.c, kvm_arch_prepare_memory_region() */</span></span><br><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">	vma = find_vma_intersection(current-&gt;mm, hva, reg_end);</span><br><span class="line">	<span class="keyword">if</span> (!vma)</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (kvm_has_mte(kvm) &amp;&amp; !kvm_vma_mte_allowed(vma)) &#123;   <span class="comment">/* MTE 标签检查 */</span></span><br><span class="line">		ret = -EINVAL;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (vma-&gt;vm_flags &amp; VM_PFNMAP) &#123;</span><br><span class="line">		<span class="comment">/* IO region dirty page logging not allowed */</span></span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">new</span>-&gt;flags &amp; KVM_MEM_LOG_DIRTY_PAGES) &#123;</span><br><span class="line">			ret = -EINVAL;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">//...</span></span><br><span class="line">	&#125;</span><br><span class="line">	hva = min(reg_end, vma-&gt;vm_end);</span><br><span class="line">&#125; <span class="keyword">while</span> (hva &lt; reg_end);</span><br><span class="line"><span class="comment">/* 全程没有读 VM_WRITE: 注册阶段既不校验也不保存可写性 */</span></span><br></pre></td></tr></table></figure>
+<p>调用栈：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[QEMU]   kvm_region_commit()                         <span class="comment">/* accel/kvm/kvm-all.c */</span></span><br><span class="line">            +-&gt; kvm_set_phys_mem(section, add=<span class="literal">true</span>)</span><br><span class="line">              +-&gt; kvm_mem_flags(mr)                  <span class="comment">/* VFIO BAR → 0 */</span></span><br><span class="line">              +-&gt; kvm_set_user_memory_region(kml, mem, <span class="literal">true</span>)</span><br><span class="line">                +-&gt; ioctl(KVM_SET_USER_MEMORY_REGION, &#123;GPA, HVA, size, flags&#125;)</span><br><span class="line"></span><br><span class="line">[KVM]    kvm_set_memory_region()                     <span class="comment">/* virt/kvm/kvm_main.c */</span></span><br><span class="line">            +-&gt; kvm_set_memslot(kvm, old, <span class="keyword">new</span>, change)</span><br><span class="line">              +-&gt; kvm_prepare_memory_region()</span><br><span class="line">                +-&gt; kvm_arch_prepare_memory_region()  <span class="comment">/* 仅校验, 不读 VM_WRITE */</span></span><br></pre></td></tr></table></figure>
+<p>两个事实形成了闭环：其一，<code>struct kvm_memory_slot</code>
+里与权限相关的字段只有 flags 与 dirty_bitmap，arm64 的
+<code>kvm_arch_memory_slot</code> 是空结构体，<strong>可写性在 KVM
+侧没有任何持久字段</strong>；其二，注册时也不填 stage-2 PTE，arm64 是
+demand-paged（按需分页），等 Guest 首次访问触发 fault
+才建页。所以可写性的判定只能发生在 fault 时刻，从 VMA 与 memslot flags
+两层现算。</p>
+<h1 id="fault-时刻两层事实源现算成枚举">4. fault
+时刻：两层事实源现算成枚举</h1>
+<p>Guest 首次访问 GPA 触发 stage-2
+fault，<code>kvm_handle_guest_abort()</code> 先用 memslot 做初筛，再进入
+<code>user_mem_abort()</code> 三步走（主链分诊见前篇第 3 节）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[KVM]    kvm_handle_guest_abort()             <span class="comment">/* arch/arm64/kvm/mmu.c */</span></span><br><span class="line">            +-&gt; gfn_to_hva_memslot_prot(memslot, gfn, &amp;writable)  <span class="comment">/* 初筛: memslot 只读位 */</span></span><br><span class="line">            +-&gt; user_mem_abort(&amp;s2fd)</span><br><span class="line">              +-&gt; kvm_s2_fault_pin_pfn()      <span class="comment">/* 查证写权限 */</span></span><br><span class="line">                +-&gt; kvm_s2_fault_get_vma_info()  <span class="comment">/* vma_lookup() 快照 */</span></span><br><span class="line">                +-&gt; __kvm_faultin_pfn()       <span class="comment">/* virt/kvm/kvm_main.c */</span></span><br><span class="line">                  +-&gt; kvm_follow_pfn()</span><br><span class="line">                    +-&gt; hva_to_pfn()          <span class="comment">/* GUP / pfnmap 两路 */</span></span><br><span class="line">              +-&gt; kvm_s2_fault_compute_prot()  <span class="comment">/* ★ 翻译点 */</span></span><br><span class="line">              +-&gt; kvm_s2_fault_map()          <span class="comment">/* 落 PTE, 第 5 节 */</span></span><br></pre></td></tr></table></figure>
+<p>写权限的查证在 <code>kvm_s2_fault_pin_pfn()</code>
+里完成，输出一个布尔量 <code>map_writable</code>，它就是第 1 节
+<code>kvm_s2_fault_compute_prot()</code>
+里那个条件的第一项。两层各把守一道门：</p>
+<ul>
+<li><strong>memslot 层</strong>：<code>kvm_follow_pfn()</code> 发现 slot
+带 <code>KVM_MEM_READONLY</code>，直接把 <code>map_writable</code> 置
+false，后续不再尝试可写。写 fault
+配只读槽在更早的初筛就被拦下，根本到不了建页</li>
+<li><strong>VMA 层</strong>：写 fault 的请求天然带
+FOLL_WRITE，GUP（get_user_pages）拿不到可写页就说明 VMA 没有
+VM_WRITE（第 2 节的账本说了不算）。读 fault 也会用 FOLL_WRITE
+探测一次可写并升级引用，细节见前篇第 4 节</li>
+</ul>
+<p>VFIO BAR 走的是 VMA 层的特殊通道。它的 VMA 带
+<code>VM_IO|VM_PFNMAP</code>，GUP 不走常规抓页，而是先触发第 2 节埋下的
+<code>vfio_pci_mmap_page_fault()</code> 补填 Host S1 PTE，再读回这个 PTE
+的写位：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/virt/kvm/kvm_main.c, hva_to_pfn_remapped() */</span></span><br><span class="line"><span class="keyword">if</span> (write_fault &amp;&amp; !args.writable) &#123;       <span class="comment">/* args.writable = pte_write(host S1 pte) */</span></span><br><span class="line">	*p_pfn = KVM_PFN_ERR_RO_FAULT;</span><br><span class="line">	<span class="keyword">goto</span> out;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>args.writable</code> 来自 Host S1 PTE 的写位，而那个 PTE 是用
+<code>vma-&gt;vm_page_prot</code> 填的，<code>vm_page_prot</code> 又源自
+QEMU 的 PROT_WRITE。溯源到此闭合：<strong>VFIO BAR
+的可写性判定，本质是读回了第 2 节那条链的产物</strong>。</p>
+<p>回到 <code>kvm_s2_fault_pin_pfn()</code>
+本身，它还有一个旁支判定：VMA 带 <code>VM_PFNMAP|VM_MIXEDMAP</code>
+且页帧号不在正常内存区（<code>pfn_is_map_memory()</code>
+为假）时，<code>s2vi-&gt;device</code> 置真，这决定 compute_prot 里
+device 页绕过 dirty logging 直接给写位（真值表见前篇第 4 节），也决定第
+5 节编码时选用 DEVICE_nGnRE 内存属性。</p>
+<h1 id="落进-pte编码器与两条写入路径">5. 落进
+PTE：编码器与两条写入路径</h1>
+<p><code>map_writable</code> 与真值表在
+<code>kvm_s2_fault_compute_prot()</code>
+合成出枚举后，<code>kvm_s2_fault_map()</code> 按 mapping_size
+与权限故障粒度是否相等分叉（分叉判据见前篇第 5 节）：相等走 relax_perms
+放权，不等走 map 建页。</p>
+<p><strong>map
+路径</strong>（缺页或需换映射尺寸）先由编码器把枚举翻译成硬件位。读写翻译是一对一的，没有任何附加条件：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/hyp/pgtable.c, stage2_set_prot_attr() */</span></span><br><span class="line"><span class="comment">//... MemAttr 三选一 (DEVICE/NORMAL_NC/NORMAL), XN 编码 ...</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (prot &amp; KVM_PGTABLE_PROT_R)</span><br><span class="line">	attr |= KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R;   <span class="comment">/* bit 6 */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (prot &amp; KVM_PGTABLE_PROT_W)</span><br><span class="line">	attr |= KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W;   <span class="comment">/* bit 7 */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//... SH = Inner-Shareable, AF 恒置, 软件位直通 ...</span></span><br><span class="line">*ptep = attr;</span><br></pre></td></tr></table></figure>
+<p>随后走完整的建页 walker：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[KVM]    user_mem_abort()                               <span class="comment">/* 起点见第 4 节 */</span></span><br><span class="line">            +-&gt; kvm_s2_fault_map()</span><br><span class="line">              +-&gt; kvm_pgtable_stage2_map()              <span class="comment">/* arch/arm64/kvm/hyp/pgtable.c */</span></span><br><span class="line">                +-&gt; stage2_set_prot_attr()              <span class="comment">/* 编码: PROT_W → S2AP_W */</span></span><br><span class="line">                +-&gt; kvm_pgtable_walk()</span><br><span class="line">                  +-&gt; stage2_map_walker()</span><br><span class="line">                    +-&gt; stage2_map_walk_leaf()</span><br><span class="line">                      +-&gt; stage2_map_walker_try_leaf()</span><br><span class="line">                        +-&gt; kvm_init_valid_leaf_pte()   <span class="comment">/* phys|attr|TYPE|VALID */</span></span><br><span class="line">                        +-&gt; stage2_pte_needs_update()   <span class="comment">/* 仅权限差异 → -EAGAIN */</span></span><br><span class="line">                        +-&gt; stage2_try_break_pte()      <span class="comment">/* BBM-break + TLBI */</span></span><br><span class="line">                        +-&gt; stage2_make_pte()           <span class="comment">/* BBM-make 写入 */</span></span><br></pre></td></tr></table></figure>
+<p><code>kvm_init_valid_leaf_pte()</code>
+把物理地址、属性、页表层级类型、VALID 位拼成完整
+PTE，<code>stage2_try_break_pte()</code> 与
+<code>stage2_make_pte()</code> 执行
+BBM（break-before-make，先断后建）保证多核可见性。并发的权限位竞态由
+<code>stage2_pte_needs_update()</code> 的 PERMS 过滤让出，返回的 -EAGAIN
+在 <code>kvm_s2_fault_map()</code> 末尾转成 0，vCPU
+恢复运行等指令重试（机制见前篇第 6 节）。</p>
+<p><strong>relax 路径</strong>（权限 fault
+且粒度相等）不重建映射，只对已建 PTE 做权限位原子置位：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/hyp/pgtable.c, kvm_pgtable_stage2_relax_perms() */</span></span><br><span class="line"><span class="keyword">if</span> (prot &amp; KVM_PGTABLE_PROT_R)</span><br><span class="line">	<span class="built_in">set</span> |= KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (prot &amp; KVM_PGTABLE_PROT_W)</span><br><span class="line">	<span class="built_in">set</span> |= KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W;    <span class="comment">/* 只加不减 */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">ret = stage2_update_leaf_attrs(pgt, addr, <span class="number">1</span>, <span class="built_in">set</span>, clr, <span class="literal">NULL</span>, &amp;level, flags);</span><br><span class="line"><span class="keyword">if</span> (!ret || ret == -EAGAIN)</span><br><span class="line">	kvm_call_hyp(__kvm_tlb_flush_vmid_ipa_nsh, pgt-&gt;mmu, addr, ...);</span><br></pre></td></tr></table></figure>
+<p><code>stage2_attr_walker()</code> 里就是一句
+<code>pte = (pte &amp; ~clr) | set</code> 的 cmpxchg 更新加 TLBI（TLB
+无效化）。两条路径汇合后，<code>kvm_s2_fault_map()</code> 对
+<code>writable &amp;&amp; !ret</code> 的页调用
+<code>mark_page_dirty_in_slot()</code> 记脏，写 fault 的 relax
+顺带完成脏页记账（闭环见前篇第 7、8 节）。</p>
+<h1 id="各层写位形态对照">6. 各层写位形态对照</h1>
+<p>四层走完，把每一层可写的具体形态排成一张表：</p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr>
+<th>层</th>
+<th>载体</th>
+<th>可写的表示</th>
+<th>位</th>
+<th>极性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QEMU → syscall</td>
+<td>mmap 参数</td>
+<td><code>PROT_WRITE</code></td>
+<td>无位概念</td>
+<td>正</td>
+</tr>
+<tr>
+<td>VMA</td>
+<td><code>vma-&gt;vm_flags</code></td>
+<td><code>VM_WRITE</code></td>
+<td>bit 1</td>
+<td>正</td>
+</tr>
+<tr>
+<td>Host S1 PTE</td>
+<td>pte</td>
+<td><code>PTE_RDONLY</code>（AP[2]）清零，配合
+<code>PTE_WRITE</code>（同 DBM 位）</td>
+<td>bit 7 / bit 51</td>
+<td><strong>反</strong></td>
+</tr>
+<tr>
+<td>KVM 软件枚举</td>
+<td><code>enum kvm_pgtable_prot</code></td>
+<td><code>KVM_PGTABLE_PROT_W</code></td>
+<td>BIT(2)</td>
+<td>正</td>
+</tr>
+<tr>
+<td>Guest S2 PTE</td>
+<td>pte</td>
+<td><code>S2AP_W</code></td>
+<td>bit 7</td>
+<td>正</td>
+</tr>
+</tbody>
+</table>
+<p>连接各层的翻译点只有两个：VMA 到 Host S1 PTE 由 mm
+核心完成（<code>vmf_insert_pfn()</code> 沿 <code>vm_page_prot</code>
+填页），枚举到 S2AP_W 由 <code>stage2_set_prot_attr()</code> 完成。</p>
+<p>这张表里藏着一个容易踩坑的巧合：Host S1 和 Guest S2 的** bit 7
+位置相同、语义相反**。stage-1 描述符里 bit 7 是 AP[2]，置 1
+表示只读；stage-2 描述符里 bit 7 是 S2AP_W，置 1 表示可写。手工解 PTE
+或对照 ptdump（debugfs 页表转储，前篇第 11 节）输出时，同一个 bit
+在两种页表里必须反着读。</p>
+<h1 id="prot_rw-的归宿hyp-stage-1-与-pkvm">7. PROT_RW 的归宿：hyp
+stage-1 与 pKVM</h1>
+<p>第 1 节说复合宏只服务 hyp 自控映射，现在展开。这里的 hyp 指 KVM
+运行在 EL2 的那一小部分代码，与 guest stage-2 是两套完全不同的页表。</p>
+<p><strong>hyp stage-1 是什么</strong>。KVM 代码分两半：host
+内核里的大半（<code>arch/arm64/kvm/*.c</code>）和 EL2 上的 hyp
+镜像（<code>arch/arm64/kvm/hyp/</code>，世界切换入口、TLB 操作等）。EL2
+有自己的翻译机制（<code>TTBR0_EL2</code>），只做一级翻译，描述符是
+stage-1 格式（AP/AttrIndx/XN 那套位），没有 stage-2 叠加，所以这套表叫
+hyp stage-1。它只映射 KVM 自用的一小块：hyp
+代码段（R+X）、<code>.data/.bss</code> 与 EL2 栈（R+W）、host 与 hyp
+共享的数据结构。</p>
+<p><strong>编码器是另一个</strong>。hyp stage-1 用的不是第 5 节的
+<code>stage2_set_prot_attr()</code>，而是
+<code>hyp_set_prot_attr()</code>，同一个枚举喂进去，落成的是 S1 AP
+字段而不是 S2AP：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/hyp/pgtable.c, hyp_set_prot_attr() */</span></span><br><span class="line">u32 ap = (prot &amp; KVM_PGTABLE_PROT_W) ? KVM_PTE_LEAF_ATTR_LO_S1_AP_RW :</span><br><span class="line">				       KVM_PTE_LEAF_ATTR_LO_S1_AP_RO;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!(prot &amp; KVM_PGTABLE_PROT_R))</span><br><span class="line">	<span class="keyword">return</span> -EINVAL;                     <span class="comment">/* 1: R 强制 */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//...</span></span><br><span class="line"><span class="keyword">if</span> (prot &amp; KVM_PGTABLE_PROT_X) &#123;</span><br><span class="line">	<span class="keyword">if</span> (prot &amp; KVM_PGTABLE_PROT_W)</span><br><span class="line">		<span class="keyword">return</span> -EINVAL;             <span class="comment">/* 2: W/X 互斥, 比 stage-2 严格 */</span></span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line">attr |= FIELD_PREP(KVM_PTE_LEAF_ATTR_LO_S1_AP, ap);   <span class="comment">/* 3: 写进 S1 AP 字段 */</span></span><br></pre></td></tr></table></figure>
+<p>注意第 2 点：hyp 自身映射强制写与执行互斥，guest stage-2 则允许 RWX
+的正常内存映射。hyp 的安全边界比 guest 严格。</p>
+<p><strong><code>KVM_PGTABLE_PROT_RW</code> 的全部使用点</strong>：</p>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>消费点</th>
+<th>场景</th>
+<th>映射对象</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PAGE_HYP</code> 别名</td>
+<td>hyp stage-1 建映射</td>
+<td>hyp <code>.data/.bss</code>、EL2 栈、percpu、host↔︎hyp
+共享结构（<code>init_hyp_mode()</code>、<code>kvm_share_hyp()</code>、<code>create_hyp_stack()</code>、nVHE
+初始化）</td>
+</tr>
+<tr>
+<td><code>PKVM_HOST_MMIO_PROT</code> 别名</td>
+<td>pKVM host stage-2</td>
+<td>host 尚未 idmap（恒等映射）的 MMIO 区</td>
+</tr>
+<tr>
+<td><code>kvm_pgtable_hyp_pte_prot()</code></td>
+<td>hyp stage-1 解码器</td>
+<td>全树对 <code>KVM_PGTABLE_PROT_RW</code> 的唯一直接引用</td>
+</tr>
+</tbody>
+</table>
+<p>解码器那处直接引用读的正是 S1 AP 字段：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/hyp/pgtable.c, kvm_pgtable_hyp_pte_prot() */</span></span><br><span class="line">ap = FIELD_GET(KVM_PTE_LEAF_ATTR_LO_S1_AP, pte);</span><br><span class="line"><span class="keyword">if</span> (ap == KVM_PTE_LEAF_ATTR_LO_S1_AP_RO)</span><br><span class="line">	prot |= KVM_PGTABLE_PROT_R;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (ap == KVM_PTE_LEAF_ATTR_LO_S1_AP_RW)</span><br><span class="line">	prot |= KVM_PGTABLE_PROT_RW;</span><br></pre></td></tr></table></figure>
+<p>pKVM 那一栏属于另一层表。protected KVM 模式下，hypervisor 给整个 host
+内存套一层 host stage-2，host 首次访问未映射区域时按性质补映射：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/hyp/nvhe/mem_protect.c, host_stage2_idmap() */</span></span><br><span class="line">prot = is_memory ? PKVM_HOST_MEM_PROT : PKVM_HOST_MMIO_PROT;</span><br><span class="line"><span class="comment">/* RAM → RWX, MMIO → RW (设备不可执行) */</span></span><br></pre></td></tr></table></figure>
+<p><strong>为什么这些场景敢把 RW 写死</strong>。三个共性：</p>
+<ul>
+<li>映射对象是 KVM/hyp 自己拥有并完全控制的内存，没有 VMA（不依赖 QEMU
+的 mmap 账本）</li>
+<li>没有 dirty logging（hyp 自身不参与热迁移，不存在读 fault
+建只读的语义）</li>
+<li>权限在映射时一次定死，没有运行期收权放权的拉锯</li>
+</ul>
+<p>对照 <code>PAGE_HYP</code>
+家族看得更清楚，权限是逐类精确选的：<code>PAGE_HYP_EXEC</code> 是 R|X 无
+W（代码段），<code>PAGE_HYP_RO</code> 是纯
+R（rodata），<code>PAGE_HYP</code> 才是
+R|W（数据段），<code>PAGE_HYP_DEVICE</code> 是 RW 加设备属性（EL2
+下访问的 MMIO）。</p>
+<p>pKVM 的 host stage-2
+还有一个与本文主题呼应的细节：源码注释明说这层页表是相关状态的<strong>唯一软件存储</strong>，所以映射强制
+page 级，避免表级操作意外抹掉状态。这是事实源下沉到 PTE 的特例，普通 VM
+的事实源在 VMA 与 memslot，pKVM host 的事实源直接活在 PTE 里。</p>
+<h1 id="vhe-与-nvhe为什么日常看不到-hyp-stage-1">8. VHE 与
+nVHE：为什么日常看不到 hyp stage-1</h1>
+<p>第 7 节的 <code>PAGE_HYP</code> 调用点日常调试几乎碰不到，原因是现代
+ARM 默认跑 VHE（Virtualization Host Extension，虚拟化宿主扩展）。</p>
+<p><strong>VHE 下 hyp stage-1 不存在</strong>。host 内核直接运行在
+EL2，复用同一套内核页表，hyp 映射全部退化为 no-op：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/mmu.c, create_hyp_mappings() */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">create_hyp_mappings</span><span class="params">(<span class="keyword">void</span> *from, <span class="keyword">void</span> *to, <span class="keyword">enum</span> kvm_pgtable_prot prot)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	<span class="keyword">if</span> (is_kernel_in_hyp_mode())</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;               <span class="comment">/* VHE: host 内核已在 EL2, 无需另建映射 */</span></span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>arch/arm64/kvm/hyp/vhe/</code>
+目录里只剩世界切换、TLB、寄存器保存恢复的胶水代码，没有任何地址空间建立逻辑。第
+4、5 节的 fault 处理链在 VHE 下也因此极其扁平，整条链在 host
+内核一个执行流里完成：</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/RLHTJnD157tVNt63BziWYQtnfObAY-KZbjZG2YzD9iDsscwwCxlEp1OqFcYKhoWn68c1HYC91AEXyA198r3-Y-csonD_mTbTm29kihkPdNFEFVVEoGuBYRbqgQM9ciaSp365MMpKAjnsMMd4jcmESrLJahxz4YbZrvAZDfDvync1-As-JK6Uk8GPP988WIiaPPaL1WPXal0-b7fAqp0Tp6JQvYN2eqetxeJNV-HIdDjpXQffr9WIXeIcILDQ1Bn6-tOIfiSpq6czwMs-Xdm2GdTdHylUwdftPTVVUjlz-VBiQ4NJ-gh2m9XBX2moFPEDnmO02mW_NCLKRI61KeNo5XUwNreHaDAhg8VJameHOYCO36UoYGXRgrDD2vLXw5wmWYJupPFJZqqOowMAB2_La8REFOCkENR0Mpw0G433XZJhM99G9U1UIgWdgc9MiWYg1E88pzfSwh4YyvO_zVOQIQ242ijMZjvzy_SFEyUhHJOOqao1vhWwK1IMr6CNmZJGhLECBDkkkOvUhUCO3CBOuvm--YYRHJDJ4uLCdoSr1VgNE1vqduz3hf01QWfnlyZAvhph85SGVb6go7ulleTwsRIHOvY8KkmWH_N_ppuj8vCfcaHEcUanyBTslAtlORNB0QWTPIuG29h1ioeATq5obsWbqc_nsjH48gg639iwhXg3m-smTF1M6bFm76RK_I0pFJ6IkSvtAc4r98A3Io3b822VhmIHeHx2KdBbF6WddqZbq4oHfTEJAXuRti9Ea54rf-lQ1hOiL7tgw8LiUaAfdiTQkUfkD4zVR7fBnztr0__WLU_3ruYjw56uaa0uKQVT-AoY4-yVGf2Tom1UW4-NLltzzIY8AeHnPLIPwhIsUxzsUoU7_lwQjtRSQUtTX5xZXzzk-yssjxsa3HDMKl-AFm00" alt="plantuml diagram"></p>
+<p>三个扁平化的来源：</p>
+<ul>
+<li>GUP 走 Host S1 是纯软件遍历，不切异常级不换表基址</li>
+<li><code>pgtable.c</code> 直接链接进内核镜像</li>
+<li>TLBI 的 <code>kvm_call_hyp()</code> 在 VHE 下就是普通函数调用</li>
+</ul>
+<p>唯一的模式切换是处理完 eret 回 Guest。Guest 运行时硬件只用 Guest S1
+与 Guest S2 两套表，Host S1 仅在 fault 处理时被软件遍历（三套表的分工见
+VFIO 篇一第 2 节）。</p>
+<p><strong>nVHE 一笔带过</strong>。老硬件或保护虚拟化下，EL2
+是独立编译的 hyp 镜像，<code>hyp/</code> 目录里 <code>pgtable.o</code>
+与 <code>pgtable.nvhe.o</code>
+同源双编译并存，前者进内核，后者进镜像；镜像有自己的 VA 空间与 hyp
+stage-1（第 7 节那批 <code>PAGE_HYP</code> 映射的归宿），TLB 操作经
+hcall（hypercall，超级调用）陷入镜像执行。但 guest stage-2 的建表仍由
+host 侧调用同一份 <code>pgtable.c</code> 完成，本文第 2 到 5
+节的下传链路在 nVHE 下逐字不变。</p>
+<h1 id="总结投影与兜底">9. 总结：投影与兜底</h1>
+<p>整条下传链可以压缩成三句话：</p>
+<ul>
+<li><strong>事前</strong>：可写属性写进两个持久事实源，VMA 的
+VM_WRITE（源自 QEMU 的 PROT_WRITE）与 memslot 的 flags</li>
+<li><strong>fault 时</strong>：<code>kvm_s2_fault_pin_pfn()</code>
+查证两层得
+<code>map_writable</code>，<code>kvm_s2_fault_compute_prot()</code> 以 R
+打底条件拼 W，枚举是单次 fault 的局部变量</li>
+<li><strong>落表</strong>：map 路径经
+<code>stage2_set_prot_attr()</code> 编码成 S2AP_W 全量建页，relax
+路径对已建 PTE 原子置位，写 fault 顺带记脏</li>
+</ul>
+<p>因为 PTE 只是投影，写权限永不锁死：dirty logging 的 wrprotect 只清
+PTE 的 S2AP_W，不碰 VMA 与 memslot，下轮写 fault 从事实源现算出
+RW，relax 放权恢复（拉锯全周期见前篇第 8 节）。反向也成立，memslot 换成
+<code>KVM_MEM_READONLY</code> 或 VMA 失去 VM_WRITE 后，无论 PTE
+上残留什么权限，下一次 fault
+都会按事实源收敛。理解了事实源与投影的分层，也就理解了 KVM
+权限体系全部收放操作的边界在哪。</p>
 
     </article>
     <!-- license -->
     
         <div class="license-wrapper">
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
-            <p>Link：<a href="https://akirazheng.github.io/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">https://akirazheng.github.io/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/</a>
-            <p>Publish date：<a href="https://akirazheng.github.io/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">February 12th 2026, 9:46:55 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">February 12th 2026, 9:47:28 pm</a>
+            <p>Link：<a href="https://akirazheng.github.io/2026/09/06/%E8%99%9A%E6%8B%9F%E5%8C%96-%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E4%B8%8B%E4%BC%A0%E9%93%BE%E8%B7%AF%E8%AF%A6%E8%A7%A3/">https://akirazheng.github.io/2026/09/06/%E8%99%9A%E6%8B%9F%E5%8C%96-%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E4%B8%8B%E4%BC%A0%E9%93%BE%E8%B7%AF%E8%AF%A6%E8%A7%A3/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2026/09/06/%E8%99%9A%E6%8B%9F%E5%8C%96-%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E4%B8%8B%E4%BC%A0%E9%93%BE%E8%B7%AF%E8%AF%A6%E8%A7%A3/">September 6th 2026, 10:00:00 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/09/06/%E8%99%9A%E6%8B%9F%E5%8C%96-%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E4%B8%8B%E4%BC%A0%E9%93%BE%E8%B7%AF%E8%AF%A6%E8%A7%A3/">September 7th 2026, 7:22:54 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -517,17 +898,12 @@
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href="/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/" title="Mac中配置使用claude">
-                    <div class="nextTitle">Mac中配置使用claude</div>
-                </a>
-            
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/" title="虚拟化:VFIO传统热迁移">
-                    <div class="prevTitle">虚拟化:VFIO传统热迁移</div>
+                <a href="/2026/09/05/%E8%99%9A%E6%8B%9F%E5%8C%96-%E8%AF%BB%E5%86%99%E6%9D%83%E9%99%90%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/" title="虚拟化:读写权限相关源码详解">
+                    <div class="prevTitle">虚拟化:读写权限相关源码详解</div>
                 </a>
             
         </li>
@@ -675,7 +1051,14 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E4%B8%AA%E5%90%8D%E5%AD%97prot_wprot_rw-%E4%B8%8E%E4%B8%8D%E5%AD%98%E5%9C%A8%E7%9A%84-kvm_pgtable_rw"><span class="toc-text">1.
+三个名字：PROT_W、PROT_RW 与不存在的 KVM_PGTABLE_RW</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8B%E5%AE%9E%E6%BA%90%E2%91%A0host-vma%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E5%8E%9F%E5%A7%8B%E6%BA%90%E5%A4%B4"><span class="toc-text">2. 事实源①：host
+VMA，写权限的原始源头</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8B%E5%AE%9E%E6%BA%90%E2%91%A1memslot%E6%B3%A8%E5%86%8C%E6%97%B6%E4%B8%8D%E5%AD%98%E5%8F%AF%E5%86%99"><span class="toc-text">3.
+事实源②：memslot，注册时不存可写</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#fault-%E6%97%B6%E5%88%BB%E4%B8%A4%E5%B1%82%E4%BA%8B%E5%AE%9E%E6%BA%90%E7%8E%B0%E7%AE%97%E6%88%90%E6%9E%9A%E4%B8%BE"><span class="toc-text">4. fault
+时刻：两层事实源现算成枚举</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%90%BD%E8%BF%9B-pte%E7%BC%96%E7%A0%81%E5%99%A8%E4%B8%8E%E4%B8%A4%E6%9D%A1%E5%86%99%E5%85%A5%E8%B7%AF%E5%BE%84"><span class="toc-text">5. 落进
+PTE：编码器与两条写入路径</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%84%E5%B1%82%E5%86%99%E4%BD%8D%E5%BD%A2%E6%80%81%E5%AF%B9%E7%85%A7"><span class="toc-text">6. 各层写位形态对照</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#prot_rw-%E7%9A%84%E5%BD%92%E5%AE%BFhyp-stage-1-%E4%B8%8E-pkvm"><span class="toc-text">7. PROT_RW 的归宿：hyp
+stage-1 与 pKVM</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#vhe-%E4%B8%8E-nvhe%E4%B8%BA%E4%BB%80%E4%B9%88%E6%97%A5%E5%B8%B8%E7%9C%8B%E4%B8%8D%E5%88%B0-hyp-stage-1"><span class="toc-text">8. VHE 与
+nVHE：为什么日常看不到 hyp stage-1</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E6%8A%95%E5%BD%B1%E4%B8%8E%E5%85%9C%E5%BA%95"><span class="toc-text">9. 总结：投影与兜底</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
