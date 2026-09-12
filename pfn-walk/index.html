@@ -121,7 +121,7 @@ VA ──MMU 四级页表(硬件自动, 略)──▶ PTE ──取 OA 字段─
     <div class="ftitle" id="folio-title"></div>
     <table>
       <tr><td class="f">mapping</td><td>归属对象,最低位是类型标签(1=匿名 0=文件)</td></tr>
-      <tr><td class="f">index</td><td>页在映射里的偏移(rmap 反推 VA 用)</td></tr>
+      <tr><td class="f">index</td><td>页在映射里的偏移;rmap 用它反推这页在每个映射它的进程里各自的 VA(父子进程算出的不同)</td></tr>
       <tr><td class="f">flags</td><td>冷热两位计数器 · PG_dirty · PG_swapbacked</td></tr>
       <tr><td class="f">lru</td><td>挂 lruvec 链表的节点</td></tr>
       <tr><td class="f">_refcount</td><td>几个地方在用我(归 0 才能释放)</td></tr>
