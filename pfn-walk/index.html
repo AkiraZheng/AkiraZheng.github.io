@@ -132,6 +132,9 @@ VA ──MMU 四级页表(硬件自动, 略)──▶ PTE ──取 OA 字段─
 
 <footer>
   演示值:vmemmap 基址取 48 位 VA / 4KB 页配置的典型值,sizeof(struct page) 按 64 字节。
+  注意:动画算出的 folio 地址是<b>内核虚拟地址</b>,struct page 本身也存在物理内存里,
+  但那块内存在哪由 vmemmap 建映射时的页表决定,<b>没有算术公式</b>;对比数据页的
+  PA = PFN × 4096 + offset 有公式——这正是"账本无公式、金库有公式"的差别。
   内核写法见 include/asm-generic/memory_model.h(SPARSEMEM_VMEMMAP 分支):
   __pfn_to_page(pfn) = vmemmap + pfn;&nbsp;&nbsp;__page_to_pfn(page) = page - vmemmap(指针算术,单位是"格")。
   配套文章:《Linux 页面回收全景》。
@@ -209,13 +212,14 @@ function forward(pfn) {
     `拿到柜号:PFN = <b>${hex(pfn)}</b> —— 来自 PTE 的 OA 字段(VA[47:12])`,
     `内核指针算术:<span class="formula">folio = vmemmap + pfn = ${hex(VMEMMAP_START)} + ${hex(pfn)}</span><br>
      vmemmap 是 <span class="mono">struct page *</span>,+pfn 天生以"格"为单位,一格 64 字节`,
-    `落到格子:<span class="formula">${hex(VMEMMAP_START)} + ${hex(pfn)} × 64 = ${hex(addr)}</span>`,
+    `落到格子:<span class="formula">${hex(VMEMMAP_START)} + ${hex(pfn)} × 64 = ${hex(addr)}</span><br>
+     这是 folio 的<b>内核虚拟地址</b>(vmemmap 区),不是物理地址`,
     `翻开账本:这一格就是 ${hex(pfn)} 号柜的账,回收读 flags/计数器、改状态,全在这里,不碰柜内数据`,
   ], [tframe, null, tpage, () => {
     document.getElementById('vline').classList.add('on');
     document.getElementById('vlabel').classList.add('on');
     document.getElementById('folio-title').textContent =
-      'struct folio @ ' + hex(addr) + '(PFN=' + hex(pfn) + ' 的账本)';
+      'struct folio @ ' + hex(addr) + '(内核 VA' + ',PFN=' + hex(pfn) + ' 的账本)';
     document.getElementById('folio').classList.add('on');
   }]);
 }
@@ -226,7 +230,7 @@ function backward(pfn) {
   const tframe = () => document.querySelector('#frames .target').classList.add('hl');
   const tpage  = () => document.querySelector('#pages .target').classList.add('hl');
   play([
-    `拿到账本指针:page = <b>${hex(addr)}</b> —— 内核路径手里的一格(如 rmap 顺 mapping 走到的)`,
+    `拿到账本指针:page = <b>${hex(addr)}</b>(内核 VA)—— 内核路径手里的一格,如 rmap 顺 mapping 走到的`,
     `反算柜号:<span class="formula">pfn = page - vmemmap = ${hex(addr)} - ${hex(VMEMMAP_START)}</span><br>
      内核写法 <span class="mono">__page_to_pfn(page) = page - vmemmap</span>,指针相减自带除法,单位是"格"`,
     `算出字节偏移再除格宽:<span class="formula">${hex(off)} ÷ 64 = ${hex(pfn)}</span>`,
