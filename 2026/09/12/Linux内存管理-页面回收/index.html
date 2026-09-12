@@ -19,18 +19,32 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="https://akirazheng.github.io/archives/2026/03/index.html">
+    <meta name="description" content="内存不够用了,内核敢抢谁的页?凭什么抢这一页而不是那一页?抢之前要不要跟正在用它的进程打个招呼?进程下次访问被抢走的页,又会发生什么? 这四个问题覆盖了页面回收(Page Reclaim)子系统的全部主干。本文基于主线内核 v7.3-rc 的代码,以一个匿名页的一生为主线把答案串成完整的故事线。《深入理解 Linux 内核》第 17 章的框架依然成立,但实现早已换代:page 变成了 folio,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 页面回收:跟随一个匿名页的一生">
+<meta property="og:url" content="https://akirazheng.github.io/2026/09/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E9%A1%B5%E9%9D%A2%E5%9B%9E%E6%94%B6/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="内存不够用了,内核敢抢谁的页?凭什么抢这一页而不是那一页?抢之前要不要跟正在用它的进程打个招呼?进程下次访问被抢走的页,又会发生什么? 这四个问题覆盖了页面回收(Page Reclaim)子系统的全部主干。本文基于主线内核 v7.3-rc 的代码,以一个匿名页的一生为主线把答案串成完整的故事线。《深入理解 Linux 内核》第 17 章的框架依然成立,但实现早已换代:page 变成了 folio,">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RPJRJjj048Rl_HGhxgDo2XTSL9LGJr9LeQgzisGPnoGMpXev3XMgAYM594HA214Xj8H3GWb51PfK768S0Y_ZNPktwCHht51wOrip_x_xxSoidoKCKJUISPKp54EL4QdT34yYaZcYrPoprtHRMRBTXY37pOlId1YLqP1pScARAUUuFedk6XVErh9h7TlTdjjA3o4nWQPUZQ1F74AIg4VGKCBGavA1PZLLqNXCQhkqSccRURjxIPgRF5Rr97g2PbKnce1tN9oVLt2KBJCIh27eygoa9R61IBb7wrVaT8t70eZzu9Nf79Pe8KStshvrXllyaDSgUBoaL2HhPVgrJjhBFkpe0Ao8DImin4L42jRTvZcjbtaiBaY8xkuxLeyPHWEreIyAXYOaCP3mc9ePkfgd-HJTpgFfzyzzzICIC--Hl7dt0P5inraw9IjPvx3hqumDq8GHtMdShT-uZIDQ-8AWL0kon7HZWSWs3-nUqVtLWCEJRqSyPgUb9mswRTdNM_HimxVC11wl6O8KawMvVcbbNSQIdE0ni97KDLav8DaptoJzWqzgDLP8hv7q8atRvuvrwzEF3pO-fYjuJc1xgKh2WFMj2fp8kQwIKiVjjCYDtuFnm3JzKeWekh6860HKjPg3KO4niyrLKhWbQqNl-m3illTngoiUeVlZa9JAO0D2g91F61uWx1ytqoIbx_Htparl8PyOQn6PgSE1bAtHxvrro-EuWc5OLUqZF6DADEQh7v9qLrYXxg7XdlHlJMNFKxzu_NQ0n6tjGY94pxjkPodafjAaKELnY1RtISxoNfacssG2zk2cHb0ez1I62qtUNna4u--sqq5g35BzkmM3GzP_SZ27B3uEyQ1hKArHUjhaeCt_pmv3bdM2cmh_bS16TAV92in1n4jCeFlVXcrsmSuzat44_Yj_0000">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/NLBBRjD05DtFLrnrowEmO9CDNPKD2uJ4pb8qs9DYoHv7dd44GaY5bAQeAMr87ocqnKO1eaefGOYIXzpy2_ACxR_WMYuFiRkFSyyvS-yi2Kbz6RWEaRPq60Zf1wQ4ckVONWNKknEzUwwsJzNBRshUpEQ7gXKcyHOXfaE5W8L_uGQtkUa45bjqR1uyNdJTgdnIP-BwemMW0fRXAG6eENH5G0NktQbIKzeD1bUAs6SrvZDkCilWoRYF4jbPfFT6wd1m5NJOKki_qkOGvrrQhzjy1HbKUwvsjlBekswtW7AFLnikDRZURoMpyzzbo_AP45LHfoR3tj5g4hz6SXLtqwypTRA9rEdm0daTFq1EtNwXDaP5qc0cf6_N37uBz744T-y_WBnxaKM3PBAPZ5Tnel1iUW6NXPTEhCE96kuO_0OWAErFqK5-_44FPyaqAj1e_0zwCau_RQC_VA31hzsydD07OJATwbweHcla6I7SammUUb9wBdWrM4QMyXxeAnc_KltFwNudFpZBct7MZDNH0C-Ztt-i82uRFSSytHteZSvj-Bd-vgy-Th68-ypcFTtxWbij0ULX_jjz2KOzrSUj5XggUrhYBmz16BUWS4gMCC9_z0i0">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLJBJjj05DtFLronAbAZqcsaLgIFI5r4hKJ52iboRGDMuuTi1wcjAcK1X0Z2MtsHfe6oIA6Wq1984uNyI-KP9t_HUyS9OK4tzlMSCsUEpxtsf1-eNf2piYmmWwm1VAF4DxV4foglBoOXRAz7nH_Hvd9_lo6ALtobBefvKIx2YvTF6PitTGCComtUW6xuccUwWUdOp7zjsgxggHPeMTNtKq7WcQzoWV5CS-mfywq14un91CPcdQpfZ87gGnhUCG1BTLtJdeCaYBL2VtlbBeXoFkoiXvqIx-n4PsrUMHNLGdHoXMG5sPgJimEazmwEUQ4QDe_86SJssVlXCQhjsCg2fSxOT_XQbs-My7MYBujYvP9lV1Vbd-FIGcfQUl1UAPxZa2XVQ_K_delgrWqbNVSCtrTyLzKCb1CV2c7xuXQjAQbbAXQQ_8_Km9IYpQkcFMEBoa7Kwc3cpJm_FEzrAp2oFLh3nu7PnqCXoUXrzwBQAXf1gZXj83Lgd_1odN_DnsVBNTEPbFIrO2coxt2FIiFMupNB8gjdbR2rpdUECCrOTUJPedrUJWkaMYOZnTmv7RTXfBtzcgZ-6R6n5P97BI5Yxsg75rgnANYUWWSm6gxzPRvnYPnK6ZqzUPJ1wxIQDNLKOsb891vIUoZ7GVim--6mnFCHTKxX_lYGEqKZ97jp6pTijc1YdA6YaqXGbCWUjdtKAHGXc39B3Zjv0yLTCSg8GQTY7iauHeObhT2Rowz8XjHhrEEK6AqJdaOKWy1XvtkLwp0Oivt00C-Scm_0cOKqveAusBt0vYAEmObVtUZqX6QYKKyYJAj_bxUlFo2goI7TSJwGGLLykYp90Tr5Swd_-H3ni5cATckYUCoNQj7lTjJ-Dl2Aqm7aXqrYXJ-AVm00">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/VP9VQzDG5CVVxwSux6aJXgsFXShw988F8lXafCJcbeMbDoEv4tphcEtSNC11MtKMjJAnp2u4VzGuhFqoEJV9j_2qIUiKyIqtztE-vto_zsouKdVaJiDYqfGMXrjtxWAslyLxvoM8mjDeuYN-G7K3V3d4zcVqJzB1r_ZaCHvFakapnZPDWmDlRCj7O72tvfZRqhG58r79OSKKUasQ3pbS1TK_mn_Tk3FKnEqRrUntkG101uVNkSD5ZHlbmWheBjmi_4CWgqwc-r7OLAF1VsMAcKnn8PDnbqioeiBOlIltONtzElM44gXUGFQmzHxx5vgesvPfLtN3g5hEpkeQ8sHE5ecCHoCe0isH-DFqkQ-9UEB_EGGZRePNSlhQPJgJRkZE5WrKuwxBZTKrJQ2t7rzymEzZ5RR-KgiinR3j9Uy-BfJKqHa-2I2F2K-_f7l379vRMbm4F-aYQUxYKKyJxgPZYgqyYwfbklAtlLaWrEJLQzKPfys3A3nVyjdKESw4JT4-iAMq6s3NAKkOBSpIf3hmCZjGXlJ59tNOmyDXYI3S7MFG8GlgEAItZCAdj4yK-xpUIrjUsfsg_fkq7wBtDf-VSM70h27Re2_Qrby0">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/PPBVIW916CNlzoa6h_J25n0AHJUG8aAiguLbsHrnS1rbTmowCqpxPqGXfbZPbe5TY9ALeARl4iwk-nRjhgqMmLmCpFcTSxwF2Qf4K4WkBJC44Ha2shZNAn-qsDRhtG2O3IlwdMQCg_HoC1zqwUI8OP98WW2ci-G0I50L5PGbA8CPouT0u35UXkRDAuTdu_fi_6RqHyQewG622ZPYBEkA41P4WlOXs8hjSfZcwsR-z2UuF7JKqUrGs5N_rXg5ZgczkwfGEEwAzCveDjGuRBtgMeb-Ni-djNyT8cmemZ1s4-3thpiX802-hXw0NktPliLdizRaS28ZemmlI18lApclZx5o_W8QeBs9MMZFyuUqNEMmcbGGJl6BfhoCL69HZjh6RDoc7W4zQT5IVsqnXPiZ9g6OuXMOW0h48bIzFWxFfnLh8JOPtGl5sPNNiiAJQqPB5yRjkNMMr2RBxgm8UsY7Q2q9PzNBreiMYz8Spk6qa0L-G4jrer6pBkRncLwPC4689UkRV0C0">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLDTQnf157tVNt4V5GfzLqf3QIc5beRIlWdBTXtZuhehwvYGDvl4Bwg9QKpG6feO8fM2nc2IYglnp-pCxFwBtbrj24dxiimEzvvpxZrdLh9KiMWkhKjKepg1RDBIZ9ISC7NDb7KjIoFWZFDUvrfyts7j7xnnmw-_yE6LcCmbAUYL8ewz2vgXg5HR9y26jzvsZ-qTiTA4vLjUleBDKKbBG6ZrjQoRQeh4WPUF0FysB8sIpugQUXu6cYG6X7Zp8Ym1H5YXnlksLzeNbUeJ48SjTjoxuuXYHPnGHKrAn8Xh2IcoaAicYPgIBP8W5Z5KaWs5WPzqsVHGD7eB1QnypeeZU0PYku-o7jFMIZWa_8ScGAZEMRs6lSwumOz_iKBNcPppsfcO7h1-yn7WGfYYuznoTaF9e2HtS0R-4H24_vp5Z4LDMh5ISbopwAOl-xJa3ePiNl0wDYksHBiPlQV1dJVvSSMTjqNlAs-Uik7E8rvgRShKb7D6Ek3qEXEmy0XyNE2LF7R3wiTNCGC_uExiERCQl7pn3lXboMiNMNdecnDekK_xzmx4R80T3pdz4dvKSkoRVsmM9V7AWGzh4LLNj3Jmngs_whSVFiKCNA6mMt0N1y1quMmu-G8m6Y0ilG0WUfRSSsA9dr7MY9cZE2sRRl5-5xk3FSSClbT71lVYDx_SOhMHEsyWSynuy_Gzi46Lb-kileitxd0RuutvVKWNR62PD1a7I9lh1FtAP3HZpJThlubPzvz8a04qr294LaqzBlkQV46pR-YPCsqvqoinieLz4iMtOsQa5KJ5j_S7">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/PPBBJi9G48Rtvobc2GaRTGT6tHcYneLRagRHeeHQ2DGOTn2bK1JgDH0H5HElHAWNX3HYNwPpUleM7caqCInd9kV_l_dFp6LLCQDkRSf4JQYo15ZIl4A55cwyt1NhT_5hBmpKV7U65TJUi7FEMWVEm29az8o41K6KvTIga1RNfMmW2EmkxxLw4PA8Gy1zjBpQAozX1fnXrLUP3OAw8IaGeFLka024qMx_MON0RRpJwYtTjrdFZF1nLasbYQIi9U8al2qcfQsqaCnkY-crG32ceD7sj6CyhA9XEdOJxpNUw-mwWzoFNEEIddvWoVJQTT-QwXMtsVBPc5rtdtNygh5UVmo9Jy1t0Lg-uKAZbVx3-A2-2QYP7K5D2V6C9Fqc4LDOyGdxBrX-eFf-29pFEXPAhdKF4vFWvOwnQCGKsZNOiECsElIw25Ey_nlTZoqdR_KSInjFpF-YqY6MhyQm_ZAV1dgHGzFmTmTdS4fhrynkuCjPJ5bUNeA5X2nB6SwYkxhbwgzuaaVZ25QYymlHnSK86SdESLr-7Dy0">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/LP7TIW917CNlvoa6hohe1Re8BQGMIc6pRjgGnHrgGMSNTosyiwzLp2r1gImfb28fK26YHKrVnjcFjsXsJAkRFvm_lpbppanGqyMqdaabWIxhIGJ7LcvilPBIY9HDh_7Xt9tHZLDz1E10bX14ALNFGWbfYRIiwhA20Jsl8nXmEm-K4h2an4Miu6nAoMXnLTn7S_C1A6fmXUDZwrFOhfkasB3hb7URR-xetcbTk9q-CMgCtGhpE-6PSUwObAu5xDLCKkX26Oi9NJv4a7I7tccByQ6r6MsRJPBl2PXQGUr8L24fNthvebqTqZ9sms1yT3isvSVz2kbL1CnO7tdvcaI8HVb_fkVFh9lF_Qt5HG3ONTY3YulBFnNPP7fIWqscQKou1CdLBJ4-WI_y9StYBmjFn7Y7V7Xr8yHj0d_975WADfdc8fITF1SnJBSzycxQ0dO6FPgS34w8PG6A_DuTH5YYN_iD">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/NP9TQzfG6CVlpwTuy4hP2jlTA7GKNEy5nzo54Cvcs8Gi4vDHTjSLNoOsMB5lLbSRiTErrCbOrn0DVfay9ycts9DatUnkGiZvdT___voJJKtdPVt3EuNfHLsHeV1UqhPvIIhnD_8w26E8rGkiJhn9ax4IaSNNnH9NTKZuonvzJ03N87D_nLlOWNc3YrsqB1nLlFrQH6szl8-j9YLJ4V8i-v_AjKTKmLjqyFea8h9fLk0wVyKr6HBXTd3d7RGxyMAEiGoiFQKeM0T_kWoEftZxmnzUXNFKRU-qudTFHNE0_Hb-sM644KoXHB_WIh6myGY8WSpphRoAZM-kqtKT0pP0sov9iggNFqfwNat6YTYwXGVW_noBir_qdcAXXtJPDDcm-baCBkBUZ2iwK0tHRxYsZQqZx9qn2Bcrl-bUrn66wLexhdL9PoVC6fCL6b7qBx7jkDOrRRZpvuWF9o-gKbdc1VwM7ibKNWrC6wslmR3YVvzxFIlOdSCJ85cObLl94eSpOKpHlAAR5KUpFt7__EcepzoVpbPFdybguMx4s4Ed147T88NOgzDCMAiI5_Qu4MC75uVUmSIVcXI7zHOypgkn55i6xhV5oJdEAh6GZ56lJqCS6Q8nziszXtIjIzVfYUDprsvYg-qT3DWcLQ0VzJS0">
+<meta property="article:published_time" content="2026-09-12T08:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-12T04:14:48.276Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.plantuml.com/plantuml/svg/RPJRJjj048Rl_HGhxgDo2XTSL9LGJr9LeQgzisGPnoGMpXev3XMgAYM594HA214Xj8H3GWb51PfK768S0Y_ZNPktwCHht51wOrip_x_xxSoidoKCKJUISPKp54EL4QdT34yYaZcYrPoprtHRMRBTXY37pOlId1YLqP1pScARAUUuFedk6XVErh9h7TlTdjjA3o4nWQPUZQ1F74AIg4VGKCBGavA1PZLLqNXCQhkqSccRURjxIPgRF5Rr97g2PbKnce1tN9oVLt2KBJCIh27eygoa9R61IBb7wrVaT8t70eZzu9Nf79Pe8KStshvrXllyaDSgUBoaL2HhPVgrJjhBFkpe0Ao8DImin4L42jRTvZcjbtaiBaY8xkuxLeyPHWEreIyAXYOaCP3mc9ePkfgd-HJTpgFfzyzzzICIC--Hl7dt0P5inraw9IjPvx3hqumDq8GHtMdShT-uZIDQ-8AWL0kon7HZWSWs3-nUqVtLWCEJRqSyPgUb9mswRTdNM_HimxVC11wl6O8KawMvVcbbNSQIdE0ni97KDLav8DaptoJzWqzgDLP8hv7q8atRvuvrwzEF3pO-fYjuJc1xgKh2WFMj2fp8kQwIKiVjjCYDtuFnm3JzKeWekh6860HKjPg3KO4niyrLKhWbQqNl-m3illTngoiUeVlZa9JAO0D2g91F61uWx1ytqoIbx_Htparl8PyOQn6PgSE1bAtHxvrro-EuWc5OLUqZF6DADEQh7v9qLrYXxg7XdlHlJMNFKxzu_NQ0n6tjGY94pxjkPodafjAaKELnY1RtISxoNfacssG2zk2cHb0ez1I62qtUNna4u--sqq5g35BzkmM3GzP_SZ27B3uEyQ1hKArHUjhaeCt_pmv3bdM2cmh_bS16TAV92in1n4jCeFlVXcrsmSuzat44_Yj_0000">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
     
-    <title>AkiraZheng&#39;s Time</title>
+    <title>Linux 页面回收:跟随一个匿名页的一生 · AkiraZheng&#39;s Time</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -230,6 +244,8 @@
         }
     </script>
     
+        <body class="post-body">
+    
         <!-- header -->
         <header class="header header-mobile">
     <!-- top read progress line -->
@@ -259,6 +275,17 @@
     </div>
     <!-- toggle banner for post layout -->
     
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">AkiraZheng&#39;s Time.</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">Linux 页面回收:跟随一个匿名页的一生</a>
+            </div>
+        </div>
+    
 </header>
 
         <!-- fixed footer -->
@@ -285,24 +312,71 @@
 
 
 
+    height:50vh;
+
 ">
     
     <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
+            
+                Linux 页面回收:跟随一个匿名页的一生
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
+                
+            <!-- 404 -->
+            
         </p>
         <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">3.4k</span>Reading time: <span class="post-count reading-time">12 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/09/12</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
         
     </div>
 </div>
@@ -432,128 +506,341 @@
 
             <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
             <div class="container container-unloaded">
-                <main class="main index-page">
-    
-        
-        
-        
-        
-            
-        
-        <article class="index-post">
-            <a class="abstract-title" href="/2026/03/21/Linux-early-param%E5%8F%82%E6%95%B0/">
-                
-                <span class="abstract-title-text">Linux内核学习：early_param机制</span>
-            </a>
-            <div class="abstract-content">
-                
-            </div>
-            <!-- read more -->
-            
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/21">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/03/21</span>
-                </div>
-                <!-- tags -->
-                
-                    <div class= abstract-tags >
-    
-        
-        
-            
-        
-        
-        <span class="post-category" data-categories="Linux内核基础"">
-            <i class="fas fa-folder post-category-icon"></i>
-            <span class="post-category-text">
-                Linux内核基础
-            </span>
-        </span>
-    
-    
-</div>
+                <main class="main post-page">
+    <article class="article-entry">
+        <p>内存不够用了,内核敢抢谁的页?凭什么抢这一页而不是那一页?抢之前要不要跟正在用它的进程打个招呼?进程下次访问被抢走的页,又会发生什么?</p>
+<p>这四个问题覆盖了页面回收(Page
+Reclaim)子系统的全部主干。本文基于主线内核 v7.3-rc
+的代码,以<strong>一个匿名页的一生</strong>为主线把答案串成完整的故事线。《深入理解
+Linux 内核》第 17 章的框架依然成立,但实现早已换代:page 变成了 folio,zone
+让位给 node,还添了 MGLRU 和 DAMON 两员新将。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/RPJRJjj048Rl_HGhxgDo2XTSL9LGJr9LeQgzisGPnoGMpXev3XMgAYM594HA214Xj8H3GWb51PfK768S0Y_ZNPktwCHht51wOrip_x_xxSoidoKCKJUISPKp54EL4QdT34yYaZcYrPoprtHRMRBTXY37pOlId1YLqP1pScARAUUuFedk6XVErh9h7TlTdjjA3o4nWQPUZQ1F74AIg4VGKCBGavA1PZLLqNXCQhkqSccRURjxIPgRF5Rr97g2PbKnce1tN9oVLt2KBJCIh27eygoa9R61IBb7wrVaT8t70eZzu9Nf79Pe8KStshvrXllyaDSgUBoaL2HhPVgrJjhBFkpe0Ao8DImin4L42jRTvZcjbtaiBaY8xkuxLeyPHWEreIyAXYOaCP3mc9ePkfgd-HJTpgFfzyzzzICIC--Hl7dt0P5inraw9IjPvx3hqumDq8GHtMdShT-uZIDQ-8AWL0kon7HZWSWs3-nUqVtLWCEJRqSyPgUb9mswRTdNM_HimxVC11wl6O8KawMvVcbbNSQIdE0ni97KDLav8DaptoJzWqzgDLP8hv7q8atRvuvrwzEF3pO-fYjuJc1xgKh2WFMj2fp8kQwIKiVjjCYDtuFnm3JzKeWekh6860HKjPg3KO4niyrLKhWbQqNl-m3illTngoiUeVlZa9JAO0D2g91F61uWx1ytqoIbx_Htparl8PyOQn6PgSE1bAtHxvrro-EuWc5OLUqZF6DADEQh7v9qLrYXxg7XdlHlJMNFKxzu_NQ0n6tjGY94pxjkPodafjAaKELnY1RtISxoNfacssG2zk2cHb0ez1I62qtUNna4u--sqq5g35BzkmM3GzP_SZ27B3uEyQ1hKArHUjhaeCt_pmv3bdM2cmh_bS16TAV92in1n4jCeFlVXcrsmSuzat44_Yj_0000" alt="plantuml diagram"></p>
+<h1 id="一页的身份证struct-folio">一、页的身份证:struct folio</h1>
+<p>一切从"内核怎么描述一个物理页"开始。老书里的 <code>struct page</code>
+还在,但回收路径的代码如今全部操作它的封装
+<strong><code>struct folio</code></strong>。区别在于 folio
+可以代表一整块复合页:透明大页 THP 一次管 2MB,如果还按 4KB page
+逐个处理,一个页要重复处理 512 次。folio
+把"这一摞页"当成一个整体,这是大页时代的必然选择。</p>
+<p>回收只关心 folio 里的几个字段,按用途分三组:</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/NLBBRjD05DtFLrnrowEmO9CDNPKD2uJ4pb8qs9DYoHv7dd44GaY5bAQeAMr87ocqnKO1eaefGOYIXzpy2_ACxR_WMYuFiRkFSyyvS-yi2Kbz6RWEaRPq60Zf1wQ4ckVONWNKknEzUwwsJzNBRshUpEQ7gXKcyHOXfaE5W8L_uGQtkUa45bjqR1uyNdJTgdnIP-BwemMW0fRXAG6eENH5G0NktQbIKzeD1bUAs6SrvZDkCilWoRYF4jbPfFT6wd1m5NJOKki_qkOGvrrQhzjy1HbKUwvsjlBekswtW7AFLnikDRZURoMpyzzbo_AP45LHfoR3tj5g4hz6SXLtqwypTRA9rEdm0daTFq1EtNwXDaP5qc0cf6_N37uBz744T-y_WBnxaKM3PBAPZ5Tnel1iUW6NXPTEhCE96kuO_0OWAErFqK5-_44FPyaqAj1e_0zwCau_RQC_VA31hzsydD07OJATwbweHcla6I7SammUUb9wBdWrM4QMyXxeAnc_KltFwNudFpZBct7MZDNH0C-Ztt-i82uRFSSytHteZSvj-Bd-vgy-Th68-ypcFTtxWbij0ULX_jjz2KOzrSUj5XggUrhYBmz16BUWS4gMCC9_z0i0" alt="plantuml diagram"></p>
+<p>两个引用计数值得记住一辈子:</p>
+<ul>
+<li><strong><code>_refcount</code>
+是页面的命根子</strong>。它统计所有持有这个页的引用(进程映射、页缓存、内核临时引用),归零页面就死亡,归还伙伴系统</li>
+<li><strong><code>_mapcount</code>
+是页面的幸福指数</strong>。它只统计有多少个用户态 PTE 映射到这个页,-1
+表示无人映射。回收前必须把它降到 -1,这就是反向映射要解决的事</li>
+</ul>
+<p><code>mapping</code> 字段还有个"抠位"技巧:<code>anon_vma</code> 和
+<code>address_space</code> 都是 4 字节对齐的指针,最低两位必然为
+0,内核用最低位当类型标签,1 是匿名页,0
+是文件页,一个布尔量白捡。第二章会看到这个标签怎么用。</p>
+<h1 id="二页与进程的契约反向映射">二、页与进程的契约:反向映射</h1>
+<p>回收一个页之前,必须把<strong>所有</strong>指向它的 PTE
+清掉,否则进程还在通过旧映射访问已释放的内存,读到的是被复用的垃圾数据。</p>
+<p>难点在于:物理页不知道谁在用它。页表里只有"虚拟地址到物理页"的正向记录,反着查没有索引。暴力解法是扫描所有进程的所有页表,几
+GB 内存配几百个进程,天文数字。</p>
+<p>内核的解法是<strong>登记户口,而不是挨家搜查</strong>。匿名页出生时,把包含它的
+vma(进程的一段连续地址区间)登记进
+<code>anon_vma</code>;要找映射时,先查户口本拿到 vma 列表,再从每个 vma
+的页表根走到具体 PTE。vma 的数量比 PTE 少好几个数量级。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/TLJBJjj05DtFLronAbAZqcsaLgIFI5r4hKJ52iboRGDMuuTi1wcjAcK1X0Z2MtsHfe6oIA6Wq1984uNyI-KP9t_HUyS9OK4tzlMSCsUEpxtsf1-eNf2piYmmWwm1VAF4DxV4foglBoOXRAz7nH_Hvd9_lo6ALtobBefvKIx2YvTF6PitTGCComtUW6xuccUwWUdOp7zjsgxggHPeMTNtKq7WcQzoWV5CS-mfywq14un91CPcdQpfZ87gGnhUCG1BTLtJdeCaYBL2VtlbBeXoFkoiXvqIx-n4PsrUMHNLGdHoXMG5sPgJimEazmwEUQ4QDe_86SJssVlXCQhjsCg2fSxOT_XQbs-My7MYBujYvP9lV1Vbd-FIGcfQUl1UAPxZa2XVQ_K_delgrWqbNVSCtrTyLzKCb1CV2c7xuXQjAQbbAXQQ_8_Km9IYpQkcFMEBoa7Kwc3cpJm_FEzrAp2oFLh3nu7PnqCXoUXrzwBQAXf1gZXj83Lgd_1odN_DnsVBNTEPbFIrO2coxt2FIiFMupNB8gjdbR2rpdUECCrOTUJPedrUJWkaMYOZnTmv7RTXfBtzcgZ-6R6n5P97BI5Yxsg75rgnANYUWWSm6gxzPRvnYPnK6ZqzUPJ1wxIQDNLKOsb891vIUoZ7GVim--6mnFCHTKxX_lYGEqKZ97jp6pTijc1YdA6YaqXGbCWUjdtKAHGXc39B3Zjv0yLTCSg8GQTY7iauHeObhT2Rowz8XjHhrEEK6AqJdaOKWy1XvtkLwp0Oivt00C-Scm_0cOKqveAusBt0vYAEmObVtUZqX6QYKKyYJAj_bxUlFo2goI7TSJwGGLLykYp90Tr5Swd_-H3ni5cATckYUCoNQj7lTjJ-Dl2Aqm7aXqrYXJ-AVm00" alt="plantuml diagram"></p>
+<p><code>anon_vma_chain</code>(avc) 是图里的枢纽,一头连
+<code>anon_vma</code>,一头连 vma。fork 之后父子进程共享匿名页,每个进程的
+vma 各挂一条 avc 到同一个 <code>anon_vma</code>
+上,找到任何一个就能顺藤摸瓜找到全部。</p>
+<p>执行清除的是 <code>try_to_unmap()</code>,它顺着 rmap 对每个 PTE 调用
+<code>try_to_unmap_one()</code>,里面有个体现"良心"的检查:<strong>发现
+PTE 的 AF 位是
+1(刚被访问过),立即放弃这页</strong>,返回失败。回收者绝不动热页。</p>
+<p>顺带一个 ARM64 细节:PTE 里的 <strong>DBM</strong>
+是硬件维护的映射级脏位,清映射时它会被汇集到 folio 的软件级
+<strong>PG_dirty</strong> 标志上。第四章的写盘判决读的是后者。</p>
+<h1 id="三冷热分离lru-与第二次机会法">三、冷热分离:LRU
+与第二次机会法</h1>
+<p>户口有了,接下来的问题是:挑谁?依据是<strong>局部性原理</strong>:很久没人访问的页,将来被访问的概率也小。</p>
+<p>内核给页排队的方式是 LRU 链表,而且按"匿名/文件"和"活跃/不活跃"分成 4
+条,外加一条不可回收链表:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* include/linux/mmzone.h */</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">lru_list</span> &#123;</span></span><br><span class="line">    LRU_INACTIVE_ANON, LRU_ACTIVE_ANON,</span><br><span class="line">    LRU_INACTIVE_FILE, LRU_ACTIVE_FILE,</span><br><span class="line">    LRU_UNEVICTABLE,      <span class="comment">/* mlock 的页住这, 永不回收 */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>链表不再挂在 zone 上,而是挂在 <strong>lruvec</strong> 上:每个 NUMA
+节点的每个 memcg
+各有一套。这样容器(cgroup)之间互不偷页,谁的内存超了就收谁的。</p>
+<p>冷热怎么判断?靠 folio 的两个标志位 <code>PG_referenced</code> 和
+<code>PG_active</code>
+组成的<strong>两位计数器</strong>。硬件在进程访问页时自动置 PTE 的 AF
+位,内核定期收割这些 AF
+位折算成软件标志。判断规则是<strong>第二次机会法</strong>,像缓刑制度:第一次被抓(被访问)不处决,清掉标记放回,再犯才处理。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/VP9VQzDG5CVVxwSux6aJXgsFXShw988F8lXafCJcbeMbDoEv4tphcEtSNC11MtKMjJAnp2u4VzGuhFqoEJV9j_2qIUiKyIqtztE-vto_zsouKdVaJiDYqfGMXrjtxWAslyLxvoM8mjDeuYN-G7K3V3d4zcVqJzB1r_ZaCHvFakapnZPDWmDlRCj7O72tvfZRqhG58r79OSKKUasQ3pbS1TK_mn_Tk3FKnEqRrUntkG101uVNkSD5ZHlbmWheBjmi_4CWgqwc-r7OLAF1VsMAcKnn8PDnbqioeiBOlIltONtzElM44gXUGFQmzHxx5vgesvPfLtN3g5hEpkeQ8sHE5ecCHoCe0isH-DFqkQ-9UEB_EGGZRePNSlhQPJgJRkZE5WrKuwxBZTKrJQ2t7rzymEzZ5RR-KgiinR3j9Uy-BfJKqHa-2I2F2K-_f7l379vRMbm4F-aYQUxYKKyJxgPZYgqyYwfbklAtlLaWrEJLQzKPfys3A3nVyjdKESw4JT4-iAMq6s3NAKkOBSpIf3hmCZjGXlJ59tNOmyDXYI3S7MFG8GlgEAItZCAdj4yK-xpUIrjUsfsg_fkq7wBtDf-VSM70h27Re2_Qrby0" alt="plantuml diagram"></p>
+<p>为什么两次才升级?设想一个每小时写一次日志的进程,如果一次访问就标热,它会永远霸占
+active 链表。两次访问确认的是"近期反复使用",这才是热的确凿证据。</p>
+<p>真正做判决的函数是 <code>folio_check_references()</code>,它综合 PTE
+的 AF 收割结果和软件标志,给出三值判决:</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>判决</th>
+<th>去向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>无任何引用,AF 全 0</td>
+<td>RECLAIM</td>
+<td>进入回收流程</td>
+</tr>
+<tr>
+<td>匿名页有引用,或可执行文件页有引用</td>
+<td>ACTIVATE</td>
+<td>升回 active</td>
+</tr>
+<tr>
+<td>文件页第一次被引用</td>
+<td>KEEP</td>
+<td>留在 inactive,下次再判</td>
+</tr>
+</tbody>
+</table>
+<h1 id="四回收流水线shrink_folio_list">四、回收流水线:shrink_folio_list</h1>
+<p>前面三章的机制,在 <code>shrink_folio_list()</code>
+里串成一条流水线。先看全景,五条编号路径:</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/PPBVIW916CNlzoa6h_J25n0AHJUG8aAiguLbsHrnS1rbTmowCqpxPqGXfbZPbe5TY9ALeARl4iwk-nRjhgqMmLmCpFcTSxwF2Qf4K4WkBJC44Ha2shZNAn-qsDRhtG2O3IlwdMQCg_HoC1zqwUI8OP98WW2ci-G0I50L5PGbA8CPouT0u35UXkRDAuTdu_fi_6RqHyQewG622ZPYBEkA41P4WlOXs8hjSfZcwsR-z2UuF7JKqUrGs5N_rXg5ZgczkwfGEEwAzCveDjGuRBtgMeb-Ni-djNyT8cmemZ1s4-3thpiX802-hXw0NktPliLdizRaS28ZemmlI18lApclZx5o_W8QeBs9MMZFyuUqNEMmcbGGJl6BfhoCL69HZjh6RDoc7W4zQT5IVsqnXPiZ9g6OuXMOW0h48bIzFWxFfnLh8JOPtGl5sPNNiiAJQqPB5yRjkNMMr2RBxgm8UsY7Q2q9PzNBreiMYz8Spk6qa0L-G4jrer6pBkRncLwPC4689UkRV0C0" alt="plantuml diagram"></p>
+<p>逐条拆解:</p>
+<ul>
+<li><strong>①
+新页入队</strong>:缺页异常分配新页后,<code>folio_add_lru()</code>
+把它挂上 inactive 链表。注意新页一出生就在 inactive,不是 active</li>
+<li><strong>② 尾部老化</strong>:<code>shrink_active_list()</code> 从
+active 尾部摘页,<code>folio_referenced()</code> 收割 AF
+位。有引用的可执行文件页留在 active,其余降级去 inactive,并打上
+workingset 标记</li>
+<li><strong>③④⑤ 是流水线对每个候选页的三种判决结局</strong>,ACTIVATE
+升回去,KEEP 留下来,RECLAIM 走完流水线</li>
+</ul>
+<h2 id="流水线内部">流水线内部</h2>
+<p>对判决为 RECLAIM 的页,依次执行:</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/TLDTQnf157tVNt4V5GfzLqf3QIc5beRIlWdBTXtZuhehwvYGDvl4Bwg9QKpG6feO8fM2nc2IYglnp-pCxFwBtbrj24dxiimEzvvpxZrdLh9KiMWkhKjKepg1RDBIZ9ISC7NDb7KjIoFWZFDUvrfyts7j7xnnmw-_yE6LcCmbAUYL8ewz2vgXg5HR9y26jzvsZ-qTiTA4vLjUleBDKKbBG6ZrjQoRQeh4WPUF0FysB8sIpugQUXu6cYG6X7Zp8Ym1H5YXnlksLzeNbUeJ48SjTjoxuuXYHPnGHKrAn8Xh2IcoaAicYPgIBP8W5Z5KaWs5WPzqsVHGD7eB1QnypeeZU0PYku-o7jFMIZWa_8ScGAZEMRs6lSwumOz_iKBNcPppsfcO7h1-yn7WGfYYuznoTaF9e2HtS0R-4H24_vp5Z4LDMh5ISbopwAOl-xJa3ePiNl0wDYksHBiPlQV1dJVvSSMTjqNlAs-Uik7E8rvgRShKb7D6Ek3qEXEmy0XyNE2LF7R3wiTNCGC_uExiERCQl7pn3lXboMiNMNdecnDekK_xzmx4R80T3pdz4dvKSkoRVsmM9V7AWGzh4LLNj3Jmngs_whSVFiKCNA6mMt0N1y1quMmu-G8m6Y0ilG0WUfRSSsA9dr7MY9cZE2sRRl5-5xk3FSSClbT71lVYDx_SOhMHEsyWSynuy_Gzi46Lb-kileitxd0RuutvVKWNR62PD1a7I9lh1FtAP3HZpJThlubPzvz8a04qr294LaqzBlkQV46pR-YPCsqvqoinieLz4iMtOsQa5KJ5j_S7" alt="plantuml diagram"></p>
+<p>三个环节值得展开。</p>
+<p><strong>匿名页为什么必须写盘?</strong>
+因为匿名页在磁盘上没有备份,内存里这份就是唯一原件。直接丢掉的话,进程不会收到友好报错,要么缺页后拿到一个清零的空页,数据悄悄消失,要么读到被复用的垃圾数据,静默损坏。干脆杀进程重开也不行,以网络服务为例,连接全断、缓存全冷、十几
+GB 的模型重新加载,重启代价极高。</p>
+<p>swap
+的答案是:把冷匿名页抄一份到磁盘再释放内存,进程真要用时缺页异常自动取回,只是慢一点,状态一个不少。AgentENV
+沙箱用的是同一个思想:沙箱里跑了几小时的环境(激活的 conda、加载的十几 GB
+模型),直接销毁再重建代价不可接受,所以快照时把内存状态落盘、恢复时 mmap
+装回。<strong>用磁盘 I/O 换进程状态的完整保留</strong>,swap
+就是内核里这套机制的自动化版本,区别只是粒度:AgentENV 快照整台虚机,swap
+只搬冷页。</p>
+<p><strong>PG_dirty
+判决的两条路</strong>。<code>folio_test_dirty()</code>
+置位后,文件页和匿名页待遇完全不同:</p>
+<ul>
+<li>脏文件页:回收路径不负责写回(内核 v6.19 起,commit "mm: vmscan:
+simplify the logic for activating dirty file folios" 改掉的老行为),只打
+PG_reclaim 标记放回 LRU,交给 writeback 子系统的 flusher
+线程,下轮扫描发现干净了再直接丢。回收线程绝不能被磁盘速度拖死</li>
+<li>脏匿名页:<code>pageout()</code>
+只是提交写请求就返回,<code>__swap_writepage()</code> 发 bio 写 swap
+区,I/O 完成后回调 <code>end_swap_bio_write()</code>
+收尾。全流程异步化</li>
+</ul>
+<p><strong>页槽去哪了?</strong> 换出后 PTE 不能浪费,ARM64 上 Valid
+位清零让描述符变无效,触发 Translation Fault(缺页异常),剩余位存
+<code>swp_entry_t</code>(swap 区号 + 页槽号)。一个 64
+位字既当地址又当失踪去向登记条,零额外内存开销。</p>
+<p>没有 swap 会怎样?<code>get_scan_count()</code> 里的
+<code>can_reclaim_anon_pages()</code> 发现 swap 余量为 0
+就只扫文件链表,匿名页全部跳过,压力全砸在文件页缓存上,挤干之后来的就不是回收而是
+OOM Killer。</p>
+<h1 id="五谁扣扳机三个入口与水位">五、谁扣扳机:三个入口与水位</h1>
+<p>流水线随时待命,问题是何时启动。答案藏在<strong>水位</strong>里,像水库的三条刻度线:</p>
+<ul>
+<li><strong>高水位</strong>:内存充裕,kswapd 睡觉</li>
+<li><strong>低水位</strong>:空闲页跌破此线,<code>wakeup_kswapd()</code>
+叫醒后台清洁工,它一路回收到高水位才睡,避免频繁醒睡抖动</li>
+<li><strong>最小水位</strong>:留给紧急分配的保命水,跌破此线直接回收都可能不够,就要请
+OOM Killer 了</li>
+</ul>
+<p><img src="http://www.plantuml.com/plantuml/svg/PPBBJi9G48Rtvobc2GaRTGT6tHcYneLRagRHeeHQ2DGOTn2bK1JgDH0H5HElHAWNX3HYNwPpUleM7caqCInd9kV_l_dFp6LLCQDkRSf4JQYo15ZIl4A55cwyt1NhT_5hBmpKV7U65TJUi7FEMWVEm29az8o41K6KvTIga1RNfMmW2EmkxxLw4PA8Gy1zjBpQAozX1fnXrLUP3OAw8IaGeFLka024qMx_MON0RRpJwYtTjrdFZF1nLasbYQIi9U8al2qcfQsqaCnkY-crG32ceD7sj6CyhA9XEdOJxpNUw-mwWzoFNEEIddvWoVJQTT-QwXMtsVBPc5rtdtNygh5UVmo9Jy1t0Lg-uKAZbVx3-A2-2QYP7K5D2V6C9Fqc4LDOyGdxBrX-eFf-29pFEXPAhdKF4vFWvOwnQCGKsZNOiECsElIw25Ey_nlTZoqdR_KSInjFpF-YqY6MhyQm_ZAV1dgHGzFmTmTdS4fhrynkuCjPJ5bUNeA5X2nB6SwYkxhbwgzuaaVZ25QYymlHnSK86SdESLr-7Dy0" alt="plantuml diagram"></p>
+<p>三个入口殊途同归。直接回收走慢速路径,kswapd
+是后台内核线程,主动回收由用户发起:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 入口一: 直接回收, 要内存的人自己动手 */</span></span><br><span class="line">__alloc_pages_noprof                    <span class="comment">/* mm/page_alloc.c */</span></span><br><span class="line">+-&gt; get_page_from_freelist               <span class="comment">/* 快速路径, 查水位 */</span></span><br><span class="line">+-&gt; __alloc_pages_slowpath               <span class="comment">/* 慢速路径 */</span></span><br><span class="line">    +-&gt; wake_all_kswapds                 <span class="comment">/* 先叫醒 kswapd */</span></span><br><span class="line">    +-&gt; __alloc_pages_direct_reclaim</span><br><span class="line">        +-&gt; __perform_reclaim</span><br><span class="line">            +-&gt; try_to_free_pages        <span class="comment">/* mm/vmscan.c */</span></span><br><span class="line">                +-&gt; do_try_to_free_pages</span><br><span class="line">                    +-&gt; shrink_zones</span><br><span class="line">                        +-&gt; shrink_node  <span class="comment">/* 汇聚点 */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 入口二: kswapd, 每个 NUMA 节点一个 */</span></span><br><span class="line">kswapd                                   <span class="comment">/* mm/vmscan.c */</span></span><br><span class="line">+-&gt; balance_pgdat</span><br><span class="line">    +-&gt; kswapd_shrink_node</span><br><span class="line">        +-&gt; shrink_node                  <span class="comment">/* 汇聚点 */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 入口三: 主动回收, 用户说了算 */</span></span><br><span class="line">madvise(MADV_PAGEOUT)                    <span class="comment">/* mm/madvise.c */</span></span><br><span class="line">+-&gt; reclaim_pages                        <span class="comment">/* mm/vmscan.c */</span></span><br><span class="line">    +-&gt; reclaim_folio_list</span><br><span class="line">        +-&gt; shrink_folio_list            <span class="comment">/* 直达流水线 */</span></span><br></pre></td></tr></table></figure>
+<p><code>shrink_node()</code> 内部还有一次分叉,MGLRU 开启时走多代 LRU
+的新算法,否则走传统路径:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">shrink_node                              <span class="comment">/* mm/vmscan.c */</span></span><br><span class="line">+-&gt; lru_gen_shrink_node                  <span class="comment">/* MGLRU: 按代组织, 见第六章 */</span></span><br><span class="line">+-&gt; shrink_node_memcgs                   <span class="comment">/* 传统路径: 遍历 memcg */</span></span><br><span class="line">    +-&gt; shrink_lruvec</span><br><span class="line">        +-&gt; shrink_list</span><br><span class="line">            +-&gt; shrink_active_list       <span class="comment">/* 路径② 老化 */</span></span><br><span class="line">            +-&gt; shrink_inactive_list</span><br><span class="line">                +-&gt; isolate_lru_folios   <span class="comment">/* 从 LRU 摘页 */</span></span><br><span class="line">                +-&gt; shrink_folio_list    <span class="comment">/* 路径⑤ 真正回收 */</span></span><br></pre></td></tr></table></figure>
+<h1 id="六二十年演进书里的老朋友去哪了">六、二十年演进:书里的老朋友去哪了</h1>
+<p>老书基于 2.6 时代的代码,对照 v7.3,思想未变,骨架已换:</p>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>旧(2.6 时代)</th>
+<th>新(v7.3)</th>
+<th>为什么改</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>struct page</code></td>
+<td><code>struct folio</code></td>
+<td>大页时代逐 page 处理太碎</td>
+</tr>
+<tr>
+<td>per-zone LRU</td>
+<td>per-node + per-memcg lruvec</td>
+<td>NUMA 与容器隔离</td>
+</tr>
+<tr>
+<td>两位计数器 LRU</td>
+<td>+ MGLRU 按代分代</td>
+<td>扫描开销更低, 冷热更准</td>
+</tr>
+<tr>
+<td>只能释放或 swap</td>
+<td>+ demotion 降级到慢速内存层</td>
+<td>DRAM + CXL 多层硬件</td>
+</tr>
+<tr>
+<td>被动等水位</td>
+<td>+ DAMON 主动监控</td>
+<td>冷热检测与回收解耦</td>
+</tr>
+<tr>
+<td>回收路径写回脏文件页</td>
+<td>v6.19 起只打标记等 writeback</td>
+<td>回收线程不被磁盘拖死</td>
+</tr>
+</tbody>
+</table>
+<p>两句展开最值得记的两个:</p>
+<p><strong>MGLRU</strong>(Multi-Gen
+LRU)把"两个状态位"升级成"多个世代"。页按访问时间归入不同代,年轻代留在内存,年老代优先回收,判定冷热不再靠两次访问的启发式,而是直接看它落在第几代。<code>struct lru_gen_folio</code>
+里最多维护 4 代,开启后传统 LRU 链表闲置。</p>
+<p><strong>DAMON</strong>
+不再被动等水位,而是主动巡逻:把地址空间切成区域,每个区域只抽样一个页的 AF
+位代表整体,按访问模式动态合并拆分区域。冷得彻底的区域直接交给
+<code>reclaim_pages()</code> 回收,配合 kdamond
+内核线程,把"找冷页"和"收冷页"两件事彻底解耦。</p>
+<h1 id="终章一个匿名页的一生">终章:一个匿名页的一生</h1>
+<p>现在让前面所有机制在一个页身上依次发生。这是全文的检验:能不看文章讲完这个故事,就真的学会了。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/LP7TIW917CNlvoa6hohe1Re8BQGMIc6pRjgGnHrgGMSNTosyiwzLp2r1gImfb28fK26YHKrVnjcFjsXsJAkRFvm_lpbppanGqyMqdaabWIxhIGJ7LcvilPBIY9HDh_7Xt9tHZLDz1E10bX14ALNFGWbfYRIiwhA20Jsl8nXmEm-K4h2an4Miu6nAoMXnLTn7S_C1A6fmXUDZwrFOhfkasB3hb7URR-xetcbTk9q-CMgCtGhpE-6PSUwObAu5xDLCKkX26Oi9NJv4a7I7tccByQ6r6MsRJPBl2PXQGUr8L24fNthvebqTqZ9sms1yT3isvSVz2kbL1CnO7tdvcaI8HVb_fkVFh9lF_Qt5HG3ONTY3YulBFnNPP7fIWqscQKou1CdLBJ4-WI_y9StYBmjFn7Y7V7Xr8yHj0d_975WADfdc8fITF1SnJBSzycxQ0dO6FPgS34w8PG6A_DuTH5YYN_iD" alt="plantuml diagram"></p>
+<p><strong>诞生</strong>。进程第一次写一个匿名 mmap 区,缺页异常走进
+<code>do_anonymous_page()</code>,分配新页,建立
+PTE,<code>folio_add_lru()</code> 把它挂上 inactive 匿名链表。此刻它
+<code>_mapcount</code> 为 0,<code>PG_active</code> 和
+<code>PG_referenced</code> 都是 0,一个刚出生的冷页。</p>
+<p><strong>服务期</strong>。进程频繁读写它,硬件自动置 PTE 的 AF
+位。回收扫描时 <code>folio_referenced()</code> 收割 AF 位,第一次访问置
+<code>PG_referenced</code>,第二次访问 <code>folio_mark_accessed()</code>
+把它升级进 active 链表。它是热页,没人动得了它。</p>
+<p><strong>老化</strong>。进程转向别的工作,很久不碰这个页。它从 active
+头部慢慢沉到尾部,<code>shrink_active_list()</code> 一刀把它降回
+inactive,<code>PG_workingset</code>
+打上"曾经热过"的标记。它开始排队等待审判。</p>
+<p><strong>换出</strong>。内存吃紧,流水线找上了它。<code>folio_alloc_swap()</code>
+在 swap 区订一个页槽,<code>folio_mark_dirty()</code>
+标记必须写盘,<code>try_to_unmap()</code> 清掉 PTE(脏位 DBM 汇集到
+PG_dirty),<code>pageout()</code> 异步写入 swap 区,I/O
+完成回调收尾,页框归还伙伴系统。PTE 里
+Valid=0,剩余位记着它去了哪个页槽,一张失踪登记条。</p>
+<p><strong>仓库</strong>。它躺在 swap 区的页槽里,不占一字节内存,只有 PTE
+里那串编码记得它。</p>
+<p><strong>换入</strong>。某天进程又访问那个虚拟地址,Valid=0 触发
+Translation Fault,<code>do_swap_page()</code> 从 PTE 解析出
+<code>swp_entry_t</code>,先查交换缓存(可能别人已取回,白捡),没有则
+<code>swapin_readahead()</code> 顺带预读相邻 8 页,新页框填好数据,PTE
+重新指回内存,反向映射重新登记。进程恢复执行,仿佛无事发生,只是慢了一点。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/NP9TQzfG6CVlpwTuy4hP2jlTA7GKNEy5nzo54Cvcs8Gi4vDHTjSLNoOsMB5lLbSRiTErrCbOrn0DVfay9ycts9DatUnkGiZvdT___voJJKtdPVt3EuNfHLsHeV1UqhPvIIhnD_8w26E8rGkiJhn9ax4IaSNNnH9NTKZuonvzJ03N87D_nLlOWNc3YrsqB1nLlFrQH6szl8-j9YLJ4V8i-v_AjKTKmLjqyFea8h9fLk0wVyKr6HBXTd3d7RGxyMAEiGoiFQKeM0T_kWoEftZxmnzUXNFKRU-qudTFHNE0_Hb-sM644KoXHB_WIh6myGY8WSpphRoAZM-kqtKT0pP0sov9iggNFqfwNat6YTYwXGVW_noBir_qdcAXXtJPDDcm-baCBkBUZ2iwK0tHRxYsZQqZx9qn2Bcrl-bUrn66wLexhdL9PoVC6fCL6b7qBx7jkDOrRRZpvuWF9o-gKbdc1VwM7ibKNWrC6wslmR3YVvzxFIlOdSCJ85cObLl94eSpOKpHlAAR5KUpFt7__EcepzoVpbPFdybguMx4s4Ed147T88NOgzDCMAiI5_Qu4MC75uVUmSIVcXI7zHOypgkn55i6xhV5oJdEAh6GZ56lJqCS6Q8nziszXtIjIzVfYUDprsvYg-qT3DWcLQ0VzJS0" alt="plantuml diagram"></p>
+<h1 id="总结">总结</h1>
+<ul>
+<li><strong><code>_refcount</code> 是命根子,<code>_mapcount</code>
+是幸福指数</strong>,回收的全部前提都在这两个计数器里</li>
+<li><strong>LRU
+的两位计数器是缓刑制度</strong>,两次访问才升级,一次访问只留标记,防的是偶尔被摸一下的页霸占内存</li>
+<li><strong>回收判决读 PG_dirty,不读 PTE 的
+DBM</strong>,清映射时硬件脏位才汇集到软件标志上</li>
+<li><strong>文件页丢了有原版,匿名页丢了就是丢了</strong>,所以 swap
+不是可选项而是匿名页的保命机制,AgentENV 快照与它同构,都是用磁盘 I/O
+换状态保留</li>
+<li><strong>水位是水库的三条刻度线</strong>,跌破低水位叫醒
+kswapd,跌破最小水位才轮到 OOM Killer,中间隔着整套回收机制在工作 ```</li>
+</ul>
 
-                
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
+    </article>
+    <!-- license -->
     
-        
-        
-        
-        
-            
-        
-        <article class="index-post">
-            <a class="abstract-title" href="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
-                
-                <span class="abstract-title-text">ARM64结构与编程:内存管理</span>
-            </a>
-            <div class="abstract-content">
-                
-            </div>
-            <!-- read more -->
-            
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/08/22">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/03/21</span>
-                </div>
-                <!-- tags -->
-                
-                    <div class= abstract-tags >
+        <div class="license-wrapper">
+            <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
+            <p>Link：<a href="https://akirazheng.github.io/2026/09/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E9%A1%B5%E9%9D%A2%E5%9B%9E%E6%94%B6/">https://akirazheng.github.io/2026/09/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E9%A1%B5%E9%9D%A2%E5%9B%9E%E6%94%B6/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2026/09/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E9%A1%B5%E9%9D%A2%E5%9B%9E%E6%94%B6/">September 12th 2026, 4:00:00 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/09/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E9%A1%B5%E9%9D%A2%E5%9B%9E%E6%94%B6/">September 12th 2026, 12:14:48 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
     
-        
-        
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
             
-        
+        </li>
+        <li class="previous">
             
-        
-        
-        <span class="post-category" data-categories="ARM64结构与编程实操/内存"">
-            <i class="fas fa-folder post-category-icon"></i>
-            <span class="post-category-text">
-                ARM64结构与编程实操/内存
-            </span>
-        </span>
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/09/06/%E8%99%9A%E6%8B%9F%E5%8C%96-%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E4%B8%8B%E4%BC%A0%E9%93%BE%E8%B7%AF%E8%AF%A6%E8%A7%A3/" title="虚拟化:写权限的下传链路详解">
+                    <div class="prevTitle">虚拟化:写权限的下传链路详解</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
     
-    
-</div>
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
 
-                
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-    
-        
-        
-        
-        
+    <div id="lv-container" data-id="city" data-uid= MTAyMC81NjEyMS8zMjU4NA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活 JavaScript</noscript>
+    </div>
+
+
             
-        
-        <article class="index-post">
-            <a class="abstract-title" href="/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/">
-                
-                <span class="abstract-title-text">Mac中配置使用claude</span>
-            </a>
-            <div class="abstract-content">
-                
-            </div>
-            <!-- read more -->
+
             
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/05/10">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/03/06</span>
-                </div>
-                <!-- tags -->
-                
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
     
-    <!-- paginator  -->
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
     
 </main>
 
@@ -637,6 +924,24 @@
 
         </div>
         <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E9%A1%B5%E7%9A%84%E8%BA%AB%E4%BB%BD%E8%AF%81struct-folio"><span class="toc-text">一、页的身份证:struct folio</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E9%A1%B5%E4%B8%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E5%A5%91%E7%BA%A6%E5%8F%8D%E5%90%91%E6%98%A0%E5%B0%84"><span class="toc-text">二、页与进程的契约:反向映射</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E5%86%B7%E7%83%AD%E5%88%86%E7%A6%BBlru-%E4%B8%8E%E7%AC%AC%E4%BA%8C%E6%AC%A1%E6%9C%BA%E4%BC%9A%E6%B3%95"><span class="toc-text">三、冷热分离:LRU
+与第二次机会法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E5%9B%9E%E6%94%B6%E6%B5%81%E6%B0%B4%E7%BA%BFshrink_folio_list"><span class="toc-text">四、回收流水线:shrink_folio_list</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%81%E6%B0%B4%E7%BA%BF%E5%86%85%E9%83%A8"><span class="toc-text">流水线内部</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E8%B0%81%E6%89%A3%E6%89%B3%E6%9C%BA%E4%B8%89%E4%B8%AA%E5%85%A5%E5%8F%A3%E4%B8%8E%E6%B0%B4%E4%BD%8D"><span class="toc-text">五、谁扣扳机:三个入口与水位</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E4%BA%8C%E5%8D%81%E5%B9%B4%E6%BC%94%E8%BF%9B%E4%B9%A6%E9%87%8C%E7%9A%84%E8%80%81%E6%9C%8B%E5%8F%8B%E5%8E%BB%E5%93%AA%E4%BA%86"><span class="toc-text">六、二十年演进:书里的老朋友去哪了</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BB%88%E7%AB%A0%E4%B8%80%E4%B8%AA%E5%8C%BF%E5%90%8D%E9%A1%B5%E7%9A%84%E4%B8%80%E7%94%9F"><span class="toc-text">终章:一个匿名页的一生</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+            </div>
         
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
@@ -2927,7 +3232,16 @@
         
         <!-- async load share.js -->
         
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
         <!-- mermaid -->
+        
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js'></script>
+            <script>
+                if (window.mermaid) {
+                    mermaid.initialize({theme: 'neutral'});
+                }
+            </script>
         
     </body>
 </html>
