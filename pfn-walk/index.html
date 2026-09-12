@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PFN 与 folio: vmemmap 双向换算</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #fafbfc; color: #24292f; padding: 20px; max-width: 820px; margin: 0 auto;
+  }
+  h1 { font-size: 21px; margin-bottom: 4px; }
+  .sub { color: #57606a; font-size: 13px; margin-bottom: 10px; line-height: 1.7; }
+  .oneline {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px;
+    background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px;
+    padding: 8px 12px; margin-bottom: 16px; color: #57606a; overflow-x: auto; white-space: nowrap;
+  }
+  .oneline b { color: #24292f; }
+  .ctrl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .ctrl label { font-size: 14px; font-weight: 600; }
+  #pfn-input {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 15px;
+    width: 110px; padding: 6px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+  }
+  #pfn-input.err { border-color: #cf222e; background: #fff1f0; }
+  button {
+    font-size: 13.5px; padding: 6px 13px; border: 1px solid #d0d7de; border-radius: 6px;
+    background: #f6f8fa; cursor: pointer;
+  }
+  button:hover { background: #eef1f4; }
+  button.primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+  button.primary:hover { background: #1a5fd0; }
+  button.green { background: #2da44e; border-color: #2da44e; color: #fff; }
+  button.green:hover { background: #2c9746; }
+
+  .stage { background: #fff; border: 1px solid #d0d7de; border-radius: 10px; padding: 18px 16px; }
+  .rowlabel { text-align: center; font-size: 12.5px; color: #57606a; margin: 4px 0 6px; }
+  .memrow { display: flex; gap: 6px; justify-content: center; align-items: stretch; flex-wrap: nowrap; }
+  .box {
+    flex: 0 0 62px; height: 42px; border: 1.5px solid #d0d7de; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+    background: #f6f8fa; transition: all .45s;
+  }
+  .box.target { flex: 0 0 96px; font-weight: 700; font-size: 13px; }
+  .dots { align-self: center; color: #8b949e; letter-spacing: 2px; }
+  .frow .box.hl { background: #ddf4ff; border-color: #54aeff; transform: translateY(-3px); box-shadow: 0 3px 10px rgba(84,174,255,.4); }
+  .prow .box.hl { background: #dafbe1; border-color: #2da44e; transform: translateY(3px); box-shadow: 0 3px 10px rgba(45,164,78,.4); }
+  .linkzone { height: 36px; position: relative; }
+  .vline {
+    position: absolute; right: 47px; top: 2px; bottom: 2px; width: 0;
+    border-left: 2.5px dashed #2da44e; opacity: 0; transition: opacity .5s;
+  }
+  .vline.on { opacity: 1; }
+  .vlabel {
+    position: absolute; right: 58px; top: 8px; font-size: 11px; color: #116329;
+    opacity: 0; transition: opacity .5s; white-space: nowrap;
+  }
+  .vlabel.on { opacity: 1; }
+
+  .steps { margin: 16px 0 4px; }
+  .step {
+    display: flex; gap: 10px; padding: 8px 12px; border-left: 3px solid #d0d7de;
+    background: #f6f8fa; margin: 6px 0; border-radius: 0 6px 6px 0;
+    opacity: .3; transition: all .45s;
+  }
+  .step.on { opacity: 1; border-left-color: #1f6feb; background: #ddf4ff; }
+  .step .no { font-weight: 700; color: #1f6feb; min-width: 18px; font-size: 13.5px; }
+  .step .txt { font-size: 13.5px; line-height: 1.7; }
+  .formula {
+    font-family: ui-monospace, Menlo, monospace; font-size: 14px; background: #fff;
+    border: 1px dashed #d0d7de; padding: 5px 10px; border-radius: 6px;
+    margin-top: 5px; display: inline-block; word-break: break-all;
+  }
+  .folio {
+    border: 2px solid #2da44e; border-radius: 10px; background: #fff;
+    padding: 12px 14px; margin-top: 12px; display: none;
+  }
+  .folio.on { display: block; animation: fadein .4s; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+  .folio .ftitle { font-weight: 700; color: #116329; margin-bottom: 6px; font-size: 14px; }
+  .folio table { width: 100%; border-collapse: collapse; }
+  .folio td { font-size: 12.5px; padding: 3px 6px; border-top: 1px solid #eaeef2; }
+  .folio td.f { font-family: ui-monospace, Menlo, monospace; color: #0969da; white-space: nowrap; }
+  footer { margin-top: 12px; font-size: 12px; color: #57606a; line-height: 1.7; }
+  .okmark { color: #116329; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<h1>PFN 与 folio:vmemmap 双向换算</h1>
+<p class="sub">MMU 的部分一笔带过:CPU 访问 VA,硬件走四级页表 pgd→pud→pmd→pte 取出 PTE,PTE 的 OA 字段就是 PFN。本页演示软件侧的两个方向:<b>正向</b>拿着柜号查账本,<b>反向</b>拿着账本指针反算柜号。</p>
+
+<div class="oneline">
+VA ──MMU 四级页表(硬件自动, 略)──▶ PTE ──取 OA 字段──▶ <b>PFN</b> ⇄ <b>folio</b> &nbsp;(本页主角)
+</div>
+
+<div class="ctrl">
+  <label for="pfn-input">PFN = 0x</label>
+  <input id="pfn-input" value="16789" spellcheck="false" maxlength="5">
+  <button id="btn-fwd" class="primary">正向 ▸ 柜号 → 账本</button>
+  <button id="btn-bwd" class="green">反向 ▸ 账本 → 柜号</button>
+  <button id="btn-reset">重置 ↺</button>
+</div>
+
+<div class="stage">
+  <div class="rowlabel">物理内存(金库,按 PFN 编号的储物柜,柜里是用户数据)</div>
+  <div class="memrow frow" id="frames"></div>
+  <div class="linkzone">
+    <div class="vline" id="vline"></div>
+    <div class="vlabel" id="vlabel">一柜一格</div>
+  </div>
+  <div class="memrow prow" id="pages"></div>
+  <div class="rowlabel">vmemmap(登记簿,struct page 数组,PFN 就是下标)</div>
+
+  <div class="steps" id="steps"></div>
+
+  <div class="folio" id="folio">
+    <div class="ftitle" id="folio-title"></div>
+    <table>
+      <tr><td class="f">mapping</td><td>归属对象,最低位是类型标签(1=匿名 0=文件)</td></tr>
+      <tr><td class="f">index</td><td>页在映射里的偏移(rmap 反推 VA 用)</td></tr>
+      <tr><td class="f">flags</td><td>冷热两位计数器 · PG_dirty · PG_swapbacked</td></tr>
+      <tr><td class="f">lru</td><td>挂 lruvec 链表的节点</td></tr>
+      <tr><td class="f">_refcount</td><td>几个地方在用我(归 0 才能释放)</td></tr>
+      <tr><td class="f">_mapcount</td><td>几个 PTE 指着我(-1 = 无人映射)</td></tr>
+    </table>
+  </div>
+</div>
+
+<footer>
+  演示值:vmemmap 基址取 48 位 VA / 4KB 页配置的典型值,sizeof(struct page) 按 64 字节。
+  内核写法见 include/asm-generic/memory_model.h(SPARSEMEM_VMEMMAP 分支):
+  __pfn_to_page(pfn) = vmemmap + pfn;&nbsp;&nbsp;__page_to_pfn(page) = page - vmemmap(指针算术,单位是"格")。
+  配套文章:《Linux 页面回收全景》。
+</footer>
+
+<script>
+'use strict';
+const VMEMMAP_START = 0xFFFFFFE000000000n;
+const SPAGE = 64n;
+const MAX_PFN = 0xFFFFFn;
+
+const hex = v => '0x' + v.toString(16).toUpperCase();
+
+let timers = [];
+function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
+function parse() {
+  const el = document.getElementById('pfn-input');
+  const raw = el.value.trim().replace(/^0x/i, '');
+  if (!/^[0-9a-fA-F]{1,5}$/.test(raw) || BigInt('0x' + raw) > MAX_PFN) {
+    el.classList.add('err'); return null;
+  }
+  el.classList.remove('err');
+  return BigInt('0x' + raw);
+}
+
+function buildRows(pfn) {
+  const mk = (label, isTarget) =>
+    `<div class="box${isTarget ? ' target' : ''}">${label}</div>`;
+  let frames = '', pages = '';
+  for (let i = 0n; i < 5n; i++) {
+    frames += mk('柜 ' + i, false);
+    pages += mk('页 ' + i, false);
+  }
+  frames += '<div class="dots">⋯</div>' + mk(hex(pfn), true);
+  pages += '<div class="dots">⋯</div>' + mk(hex(pfn), true);
+  document.getElementById('frames').innerHTML = frames;
+  document.getElementById('pages').innerHTML = pages;
+}
+
+function resetVisual() {
+  document.querySelectorAll('.box.hl').forEach(b => b.classList.remove('hl'));
+  document.getElementById('vline').classList.remove('on');
+  document.getElementById('vlabel').classList.remove('on');
+  document.getElementById('folio').classList.remove('on');
+}
+
+function setSteps(arr) {
+  const box = document.getElementById('steps');
+  box.innerHTML = arr.map((s, i) =>
+    `<div class="step" data-i="${i}"><span class="no">${i + 1}</span><div class="txt">${s}</div></div>`
+  ).join('');
+}
+
+function play(steps, actions) {
+  clearTimers();
+  resetVisual();
+  setSteps(steps);
+  const els = document.querySelectorAll('.step');
+  steps.forEach((_, i) => {
+    later(() => {
+      els.forEach((e, j) => e.classList.toggle('on', j <= i));
+      if (actions[i]) actions[i]();
+    }, 400 + i * 1400);
+  });
+}
+
+function forward(pfn) {
+  const off = pfn * SPAGE;
+  const addr = VMEMMAP_START + off;
+  const tframe = () => document.querySelector('#frames .target').classList.add('hl');
+  const tpage  = () => document.querySelector('#pages .target').classList.add('hl');
+  play([
+    `拿到柜号:PFN = <b>${hex(pfn)}</b> —— 来自 PTE 的 OA 字段(VA[47:12])`,
+    `内核指针算术:<span class="formula">folio = vmemmap + pfn = ${hex(VMEMMAP_START)} + ${hex(pfn)}</span><br>
+     vmemmap 是 <span class="mono">struct page *</span>,+pfn 天生以"格"为单位,一格 64 字节`,
+    `落到格子:<span class="formula">${hex(VMEMMAP_START)} + ${hex(pfn)} × 64 = ${hex(addr)}</span>`,
+    `翻开账本:这一格就是 ${hex(pfn)} 号柜的账,回收读 flags/计数器、改状态,全在这里,不碰柜内数据`,
+  ], [tframe, null, tpage, () => {
+    document.getElementById('vline').classList.add('on');
+    document.getElementById('vlabel').classList.add('on');
+    document.getElementById('folio-title').textContent =
+      'struct folio @ ' + hex(addr) + '(PFN=' + hex(pfn) + ' 的账本)';
+    document.getElementById('folio').classList.add('on');
+  }]);
+}
+
+function backward(pfn) {
+  const off = pfn * SPAGE;
+  const addr = VMEMMAP_START + off;
+  const tframe = () => document.querySelector('#frames .target').classList.add('hl');
+  const tpage  = () => document.querySelector('#pages .target').classList.add('hl');
+  play([
+    `拿到账本指针:page = <b>${hex(addr)}</b> —— 内核路径手里的一格(如 rmap 顺 mapping 走到的)`,
+    `反算柜号:<span class="formula">pfn = page - vmemmap = ${hex(addr)} - ${hex(VMEMMAP_START)}</span><br>
+     内核写法 <span class="mono">__page_to_pfn(page) = page - vmemmap</span>,指针相减自带除法,单位是"格"`,
+    `算出字节偏移再除格宽:<span class="formula">${hex(off)} ÷ 64 = ${hex(pfn)}</span>`,
+    `闭环验证:与正向一致 <span class="okmark">✓</span> 第 ${hex(pfn)} 格就是第 ${hex(pfn)} 号柜的账,一柜一格`,
+  ], [tpage, null, null, () => {
+    tframe();
+    document.getElementById('vline').classList.add('on');
+    document.getElementById('vlabel').classList.add('on');
+  }]);
+}
+
+document.getElementById('btn-fwd').onclick = () => { const p = parse(); if (p) forward(p); };
+document.getElementById('btn-bwd').onclick = () => { const p = parse(); if (p) backward(p); };
+document.getElementById('btn-reset').onclick = () => {
+  clearTimers(); resetVisual();
+  document.getElementById('steps').innerHTML = '';
+};
+document.getElementById('pfn-input').addEventListener('input', () => {
+  clearTimers(); resetVisual();
+  const p = parse();
+  if (p) buildRows(p);
+});
+
+const init = parse();
+if (init) buildRows(init);
+</script>
+</body>
+</html>
