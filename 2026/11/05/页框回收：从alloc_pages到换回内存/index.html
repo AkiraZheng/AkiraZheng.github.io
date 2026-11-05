@@ -19,23 +19,25 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
     
     <meta name="description" content="">
-    <meta name="description" content="开篇思考题  内存不够用的时候，内核怎么知道该收哪些页？ 一个物理页被三个进程共享，回收它之前要拆掉谁的页表项？怎么找到这三个进程？ 回收掉的页下次被访问，内核怎么把内容找回来？  全文知识地图  二、页框回收什么时候发生 进程申请内存，最终都走 alloc_pages() 从伙伴系统领取页框。分配结果取决于当前空闲内存量与三条水位线的关系。 三条水位线的分工 每个 zone 有三条水位线，从高">
+    <meta name="description" content="物理内存永远比所有进程想要的少。内核既不能拒绝合理的分配请求，也不能无限透支，只能把“暂时没人用”的页收回来腾给更紧急的进程，腾内存的这套机制就是页框回收（page reclaim）。 页框（page frame）是物理内存按页划分的分配单位，也是回收的目标。参与页框回收流程的组件有四个：  衡量内存紧张程度的水位线：决定了是否触发回收 按冷热给页排队的 LRU 链表：决定了应该回收哪些页 负责找">
 <meta property="og:type" content="article">
 <meta property="og:title" content="页框回收：从 alloc_pages 到换回内存">
 <meta property="og:url" content="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="开篇思考题  内存不够用的时候，内核怎么知道该收哪些页？ 一个物理页被三个进程共享，回收它之前要拆掉谁的页表项？怎么找到这三个进程？ 回收掉的页下次被访问，内核怎么把内容找回来？  全文知识地图  二、页框回收什么时候发生 进程申请内存，最终都走 alloc_pages() 从伙伴系统领取页框。分配结果取决于当前空闲内存量与三条水位线的关系。 三条水位线的分工 每个 zone 有三条水位线，从高">
+<meta property="og:description" content="物理内存永远比所有进程想要的少。内核既不能拒绝合理的分配请求，也不能无限透支，只能把“暂时没人用”的页收回来腾给更紧急的进程，腾内存的这套机制就是页框回收（page reclaim）。 页框（page frame）是物理内存按页划分的分配单位，也是回收的目标。参与页框回收流程的组件有四个：  衡量内存紧张程度的水位线：决定了是否触发回收 按冷热给页排队的 LRU 链表：决定了应该回收哪些页 负责找">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/TLHTJnf157tdLqpe2wOn6grD-z98ZVIbZKsJlf6GbLrnmp93PfUIfcb2hM8nyc5Ar8YjrSf3KwKyg1YqyD2_iZCh_w9tPlbO82vXXhrpxhbxphtBl6afr4eb39yPrt5IeKe2BIlHU8oI55ONY44eUX1Q51yF8gfG5Ntm8RYUZu6dGuz2JzmpGbMDTkCp2xEBSzE-ZnwQ9EGgCUrU9dcDCpsT2yu57mEJhqVWTyxExERstTOQOb-odOsyVLrWbU-yVCKsggpuqzyj8P_RhnW6YKQIa6W69iAOjNztCaTtZJ-ijOwc4DyuwT_waM8Y2VUasyqo_tQCNhvvYpfVMs7CTpVjcwifjjrcfJpwjuUSp-TJBDj03r4AQ-_qgAKi6vgaCcZAItHJ009MR_6TVJGxWph7bs5iDq-HkKfr78-i44Cd4KCthS04w3fbjGF9uXwFwR_E2VsmmTFn-eNzD-yqss246-a9yXgngiTMGR51qh0cT0pLXxETWtNmapMgicuweT2u9prkffMaYbYfm8frr-um3h3RDNvUdP0PBiAJubGkUA4wm9Qs-rXLfrhKyc2NbbwXk6uO6fNdX2H69RDAHROysm3BNOD4uujvLjhX-pzOVKHlC0GwNx-8K6r5engEQgfGVCfhb-osw6nTySmdVjYKrQ1lga1uihsya7TJS7A_d58MkiPpBI4fb-67kLvTuA099Ud9T-S4uE2gVPrnoaSIjQ8RGrNa68sX54pm-CINXVpEPfxlrkzgxSvURLYlS1zfsABl4S-VmAiGnYg9YAYS_e1hlBZN9RcST3H9OIoioMToMk4x27G7pztGf4hI6ABkMCXr0ErsVYJQxR6x3SAYjIEaVVzxFmPeQQjO1Y7fuN186YRYVSgkJd4m6flNi0h_WVy1">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/NLJRJXfH57sVhpZngKrhZBSN7ne9GccgXOA65nCpbL69E10OOzgc2KH5KMvQgo1u8rXjHS762qM5fDyovypCNtIVCmYZ3v0pizRUi_PUQsOm9F51QNxEnuLclMA03_9pw1C_EJiTzC-B7hFVvm-YXHcl91XmZp35p_iagr-KNDul0khkvYIlv1CGNZubsolAmR5QZk9y1UVg71U0PloqW3h-dNGpGhRSWVWGCjkwqLSEeKa-w44TlC_ddvm8034qC2xYnXbPBiZL8jaxKc_BkBx4Iap3mtPpgmHWvV9EExf-BTUsW8Y6dMD8-rvdL3ZtjvWaTaPIAMqveHNse7jeWGy4lA8G2Y6vcbGR6oH_G5RJ95zYfH_7xACcxjiJvJr8lWlBVrV9pWqEPydMJNE47iC8SZK6AaZbIdv8ABN6k3Zd5Rjy_eMk6U_q3EExHrhaMIh2Wt0wYLEmf_t7bkzTRfDZg4LJSbSaUQpZw1MosqSOQ-YTqs8UDJpv3g-T6heud7OJu4zdw4K0gvL8KtglGJfi3HUlbCNpr_HKgUFeBMFPsjisMU7vZhSJGM5A20hYfE01cr9nzU5KBKT8ua8toEgqMDlYIoMv5YUb8vAloVUxZE6oc9_9waCadAIhRIsrpw0Cfn8ulK4oXxYo1DOfiLzAEWgUarYTpXiBatmCEKOjhDGvOd8OxO1uu8TDVD60IhbQmFUBNL24ezakaYZWbHehieyzNrG_ed1klocdto27keO4KGf-fXsBvEAQshEMqsTpjtWU_mIbia2_UAbxvcfh8ziLc45jP4YcJ7PEuCme7onkAeN577Lslccc0GqWzJQk75uXI1F2MqKjkcaWwM5eao1sI5tvZMylvUewpjSuzuYXsUDLCqBqFM7NBFMqIIM2YxlqlxBHHcrcW20L416ItDGo1vnDVpXpl8Lf-R3wCw87WjCXIWBJQUTocUo5jSmVibRaw2qAKSlqSbY25ex9rNEEtQCWM0COMO_YYxWU0RmQ9TSHZWAiiPlMnXiudO1ovKSM9eRl1JbSuG1YOyBMuSVETBs3WkY1Zzr_">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RLHDRzDO5DtxLxnb8XLLWbab4h11Q1QeB6OvacMvBwrLnuviXsfO1THycCHfMW8aRJJz8A65fcc7QQ7DfyHFGNxFzh_WFZydJL6pS6I_U-yxzvnpxsFJaWmhcrO5Ix5KZ8A3ItfG8Bl_qletcXluHoL124E4XAIgkYncf1LindHZ6HlnfA2aKCpxt0y-V8L4zDFk85LVH_JymXqvZ-B8MiKQYj76MLn0AB62hJ1TJ1bw6XuOguffnTWPcPm4kJt_-naPRtYx5xJQ8QL2a7TegKRUx2KXmhJqZ81L4wCOgNqAw_cJNPBlqFpXB9LLofV8y3KzxP1wEoXiepLpNSeintuStGUuM5jMKa88n9GbJPJrhCO0q8gDM5n6qR1f8h9TyITRjBK7rzDML-1OI6L2QiuYVLzq1z-2jsDlPuFQ9tHpCoXk9eM4OkggP65HDR9YIbSLtOJ2xg2A54sIBUK5SFjsJCx7rBw61BhLG0_kCxgJWe4pMB9Gmbmr56sD9ukS6XJaQX13IctIso6ZRTARC38OxJnCNiNoccZW53Qm9eCoyIdhxi3n3q_8y9rNFsPqyIp-JeRznFEdDsdBo9yqIEluRusMtfFsZdlr1Jt_wmc2DtVmqTj_HNkN0ECtGTalGPjbuXJ1CEYcosHuU4kiCDORzT3jQsbzp5Ad54M1NhVhzYkqUq1RVNUu0-8zY4SrGm6djUc7VRVVvoqbIE4xWtZJQIWNV7AlwhJr1SmIIena2JXxT5Shd55kSnOQcvvm_NawFHg1jnUuz-OgtiO7rIpZ7z7InQoMdbMYvGAjsjJEqPOD1RpZClDGOv-SRq2FVqGzCl2HoGukxm8QTdVzbHHpTvt2rI9GdDPVO34TMde5V0H-8yK-OkCtZpSC3uflk0xkiEaEBxp_1zvWRthEcVOtDkVgptIKLKb98t_KlT5_5kMTsl2L59fUVmAT-hMHjzjOSA_A_gX72WxibxcUvvcBV3ELRoOFmwvdsL1Gvn2Q8QLpph_V6vDsCGgBlJIazEBBy81iZTohKr9gahpZVNm5zwC_5vTcLu9bcWnYhyBMJAtAUVZDQE5_DA7hguhAR6TVaq8U9WPav18fPYJ1lOS830_RW6qtq1wiFbi6Y4y-J36atgOwmHqM51t_xDq2QV_dNtGOx6hP6tvUN5fw5kslS0a-1aomi7y1">
 <meta property="og:image" content="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/水位线.png">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/JPBBIiD068NtynG_NQM2g5iNKdSkr8NGZLRAc0msD4r2CoNegWeMKwK5gIXOjQqMBwLKHMkDYkyYoIHz2wU9lMm6PkPy_pbdc9X1SPRcCWgYCbK8f0qJwn9unIxBxx6gBR1EsUazmcfyPH7yuhwt_-7qylmaYb1AbWYGZ4vtG2A6c9LrAciguXCfWGXxV_OkwmdL45D4oYb4Y89RlVytI9fOfk3qYX701gU9FiJSYojMwJgzTaBTmWfMHPBKjoLCXMWWDRLiUYHzAdC7ltFAIesnJvBA6QBbgB2qFZCt6qseGhzkC-l8hTps2oUG5hMCZaKgXVDeLiOAGXjJcp0zlH0c6Ip1Rc06ys3YDCdfoJ2vm2Tw3tR_xALVV_FVZxtQAoYQYGBj1EJ_dBEg1RkQIi3vBZbs2LBoTeh3dtVUPvjPBLXUYqDOTqm7UJZEhFm8_xMQ0Ol2os7EWKdGdLMltS81EwivjXssJAYiVUD-bTs39d-X2MuORe9pouT-enLoA4PKYN-6Fm00">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/LPB1Rjf048RlVefHJb0rgdhfWKEL1w2DL2cdka8MM8s5iP7j2kL6eW26158gcbH0Wg6WA44EfI90tGJU9VAixRVeccrB8krfT-RR-R_TBTqGDEDJHkOCoP15I2G4MLQJYQpmKTGJkgpcieAn6ud6S7mGhehbMVjUyv3KBj6SajjzRbTAYI1ciiOUf4GzgKbPGr8LZd8D4JOUwXRWoJ0eVe6qdXEogGZU7H1x4EMLXteNI6E1D_Te_e2Cf83dB8DIrHzzHRCO5AeR8EYWYOQsjwRrm6jDI6s0hGlIcCRyqZNEngGyXFYxdH3v_TzvxSYxkufXgUulBxpVTj2zNU5ogfPUqmQmlVq6qf8iYnglaECog6eceITLJGHodYVjF5OjB1RG_aOphm2qWEFUF_i0cvklsN0G0rmEWtp7durmSOZziJyPy8ftvGHdF_tPiMTDW7haM77O5hRJfbL8Odx6IiTVDcWYEYJf5dabWcPptGZORsArGYKHk-_E7MBteezWOI9A--lF_TLnvrNiTxZL_fCXLyfUC3EaNNQTIomvlEBE6wHzpJJ1orVWtz_GsKdvQ8sWeIdWIKdGcZ805nu-liSlBEWsi_OylFHym5xrVoNBJyuiF1c5cirJzev-ZseiktERLvWSfWNUxiJZt9QefEW__GC0">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/PLDDJzj04BtxLwmu9LKujCSUAb0LAbGa4AAzr9MriXUombb7jYdbHjjyja4fQY1yjGHKMbH2Y1056aBuCzwr_IywjjiamD7hUM_Ul7apOjdOj1VIkcHJMoV8kLnsBd-9ZJflPVszt-vM5bxSwcxCwTJTgrqqCVqYBgMeHX19P-mbf15BDMd6fWQJWCecQ8ZdB_mlNKGPLctwXiXCrEh89BF494mbsX325b8DNRjTBxEfPqg_AiPpA-BuoY-ikgLoFCGiOZFz7-D-E0vwH1t2lod3_l_JorO2wSSbllsDvpTbvbutKSYkwfYc4zvr0_uCWZLgsakBcFOe-CMfN_WegY0hzXQR9bv2xjecib9OCnOZENC68vBqwi5hD3py91m8FKRUoPNRQKDtx-SFNbdrzxFm8hDPgfCqpYXOqvHPGwT6B8vuxW1by1n1AbPJu1BF7V8_fxomd13bzptt48p9lvz98N_GA7016hcD1dg8H6FFQzxujIQq26YLD3Rd5QognBB0mxWKLWSmiESVwj5zLDWAvWP0K3SmJz2zrVMMt_7okioib4dPV5HE59rQDY3kAWDhHVLSb8v4fI9gvsAdn3jhRlLGPcEJ4-EJqyanvNaoEHK3BKwx35h4JjlfRDtJscE8uBnI55yF1aX6dywClnoTIVO511i9WBMwqsv7g4HaAIn4PWe486s0SDX4Xh8vs85OtU25zi0Q-cIzIDnbTAxpG2SsJY1cS1vtquLkfKlgqmou2g4CejaiY-9dT-SJBxO626GMCC3JhGYqkb8uNjyVdb_nzeyWNhoodl0BAsAz5Npam2EntOK3yMuAlBWPN1vUq6taRfz1q-Xmf172D3Zwlm00">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/PLDTJnD157tVNp7XQMlA0oQ-a60WfXWY2OIWBwxPhBi3tNHtjjaT9FY4N_tGLaYiL2XA8H8qG6CC0gaj9FwMdTdsNtXdbXQqRvEPSyuzzvuxum4rVBhaEWgrgOCHArsozN9tzrUqzJeyNuqgEshOgaU_Tz3qtCE4ahOjZB2RfIl8me7fsrbgUqG14OhH4CkTTJzS89iO9hMVOOtmQXtvU07xc9ZO6a96W4pFiVx5QsJslluVQjdmtHugUdKiL6DD-PhsQE-Hb_TOlXcU7sk4bUieM3Qoo3JCD4Rye1sson8lRlirptvsyszvHPITJur90YRKNv78HOzWHNbywmaQ7huhlQ9Hn7ARKQi9Cu5AC90aBxtizuZ06ljwef69oR6HPDHk86X6Y3urp0os52aXj4H7e1KT7Q4Hn8zsEutBRhMXaGNFiJtTDVoCRfWc3W9igGb5eWKDMhrYtHvaIGlG5H04xePbuUh7HMVr1IjjQ2H8-pR9n72iEtP0rOH6r2ktovwViSbYW6bYm2whVU6LKruyv6jhl7hAjukizJ6gVDF8vCpqrCnSQb9_a4hDgc0mR9R08DzkXgsjWGRw2Z6ThHNuv_qR8XFtvgSUJSodhWt8O81OhOVDPinATbUBa7GSUNy6ZkEPSk9g0i4AnB5h8b6TUleISSNBA6IDWCWBw-WwSaKUHJMHErHxBY_O-tTHwpilR8ZWQvzOemGqZUYmfAu70mJ5B0mCwiMRf4ZsTRCiL-xi7VQYiZpfJiyQYn2KCC7UxAj_3kv01Bns0TlTkSopmgRuACQIGr5KEu6nnrklZ6DYmU_y2m00">
 <meta property="og:image" content="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/文件页与匿名页换出路径.jpg">
 <meta property="article:published_time" content="2026-11-05T12:00:00.000Z">
-<meta property="article:modified_time" content="2026-11-05T05:00:51.194Z">
+<meta property="article:modified_time" content="2026-11-05T07:06:20.190Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://www.plantuml.com/plantuml/svg/TLHTJnf157tdLqpe2wOn6grD-z98ZVIbZKsJlf6GbLrnmp93PfUIfcb2hM8nyc5Ar8YjrSf3KwKyg1YqyD2_iZCh_w9tPlbO82vXXhrpxhbxphtBl6afr4eb39yPrt5IeKe2BIlHU8oI55ONY44eUX1Q51yF8gfG5Ntm8RYUZu6dGuz2JzmpGbMDTkCp2xEBSzE-ZnwQ9EGgCUrU9dcDCpsT2yu57mEJhqVWTyxExERstTOQOb-odOsyVLrWbU-yVCKsggpuqzyj8P_RhnW6YKQIa6W69iAOjNztCaTtZJ-ijOwc4DyuwT_waM8Y2VUasyqo_tQCNhvvYpfVMs7CTpVjcwifjjrcfJpwjuUSp-TJBDj03r4AQ-_qgAKi6vgaCcZAItHJ009MR_6TVJGxWph7bs5iDq-HkKfr78-i44Cd4KCthS04w3fbjGF9uXwFwR_E2VsmmTFn-eNzD-yqss246-a9yXgngiTMGR51qh0cT0pLXxETWtNmapMgicuweT2u9prkffMaYbYfm8frr-um3h3RDNvUdP0PBiAJubGkUA4wm9Qs-rXLfrhKyc2NbbwXk6uO6fNdX2H69RDAHROysm3BNOD4uujvLjhX-pzOVKHlC0GwNx-8K6r5engEQgfGVCfhb-osw6nTySmdVjYKrQ1lga1uihsya7TJS7A_d58MkiPpBI4fb-67kLvTuA099Ud9T-S4uE2gVPrnoaSIjQ8RGrNa68sX54pm-CINXVpEPfxlrkzgxSvURLYlS1zfsABl4S-VmAiGnYg9YAYS_e1hlBZN9RcST3H9OIoioMToMk4x27G7pztGf4hI6ABkMCXr0ErsVYJQxR6x3SAYjIEaVVzxFmPeQQjO1Y7fuN186YRYVSgkJd4m6flNi0h_WVy1">
+<meta name="twitter:image" content="http://www.plantuml.com/plantuml/svg/NLJRJXfH57sVhpZngKrhZBSN7ne9GccgXOA65nCpbL69E10OOzgc2KH5KMvQgo1u8rXjHS762qM5fDyovypCNtIVCmYZ3v0pizRUi_PUQsOm9F51QNxEnuLclMA03_9pw1C_EJiTzC-B7hFVvm-YXHcl91XmZp35p_iagr-KNDul0khkvYIlv1CGNZubsolAmR5QZk9y1UVg71U0PloqW3h-dNGpGhRSWVWGCjkwqLSEeKa-w44TlC_ddvm8034qC2xYnXbPBiZL8jaxKc_BkBx4Iap3mtPpgmHWvV9EExf-BTUsW8Y6dMD8-rvdL3ZtjvWaTaPIAMqveHNse7jeWGy4lA8G2Y6vcbGR6oH_G5RJ95zYfH_7xACcxjiJvJr8lWlBVrV9pWqEPydMJNE47iC8SZK6AaZbIdv8ABN6k3Zd5Rjy_eMk6U_q3EExHrhaMIh2Wt0wYLEmf_t7bkzTRfDZg4LJSbSaUQpZw1MosqSOQ-YTqs8UDJpv3g-T6heud7OJu4zdw4K0gvL8KtglGJfi3HUlbCNpr_HKgUFeBMFPsjisMU7vZhSJGM5A20hYfE01cr9nzU5KBKT8ua8toEgqMDlYIoMv5YUb8vAloVUxZE6oc9_9waCadAIhRIsrpw0Cfn8ulK4oXxYo1DOfiLzAEWgUarYTpXiBatmCEKOjhDGvOd8OxO1uu8TDVD60IhbQmFUBNL24ezakaYZWbHehieyzNrG_ed1klocdto27keO4KGf-fXsBvEAQshEMqsTpjtWU_mIbia2_UAbxvcfh8ziLc45jP4YcJ7PEuCme7onkAeN577Lslccc0GqWzJQk75uXI1F2MqKjkcaWwM5eao1sI5tvZMylvUewpjSuzuYXsUDLCqBqFM7NBFMqIIM2YxlqlxBHHcrcW20L416ItDGo1vnDVpXpl8Lf-R3wCw87WjCXIWBJQUTocUo5jSmVibRaw2qAKSlqSbY25ex9rNEEtQCWM0COMO_YYxWU0RmQ9TSHZWAiiPlMnXiudO1ovKSM9eRl1JbSuG1YOyBMuSVETBs3WkY1Zzr_">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
@@ -343,7 +345,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">2k</span>Reading time: <span class="post-count reading-time">7 min</span></span>
+                        <span>Word count: <span class="post-count word-count">5.6k</span>Reading time: <span class="post-count reading-time">21 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -504,178 +506,454 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <!-- 原始写作Prompt（备份保留，勿删）
-
-以 ARM64 Linux 内核为基础，讲解页框回收的完整框架。
-要求：高层抽象优先，讲清"为什么这样设计"而非罗列代码细节。
-以 alloc_pages 分配路径为入口，展开三条水位线、LRU 冷热判定、反向映射、文件页与匿名页的两条回收路径、以及换入流程。
--->
-<h2 id="开篇思考题">开篇思考题</h2>
-<ol type="1">
-<li>内存不够用的时候，内核怎么知道该收哪些页？</li>
-<li>一个物理页被三个进程共享，回收它之前要拆掉谁的页表项？怎么找到这三个进程？</li>
-<li>回收掉的页下次被访问，内核怎么把内容找回来？</li>
-</ol>
-<h2 id="全文知识地图">全文知识地图</h2>
-<p><img src="http://www.plantuml.com/plantuml/svg/TLHTJnf157tdLqpe2wOn6grD-z98ZVIbZKsJlf6GbLrnmp93PfUIfcb2hM8nyc5Ar8YjrSf3KwKyg1YqyD2_iZCh_w9tPlbO82vXXhrpxhbxphtBl6afr4eb39yPrt5IeKe2BIlHU8oI55ONY44eUX1Q51yF8gfG5Ntm8RYUZu6dGuz2JzmpGbMDTkCp2xEBSzE-ZnwQ9EGgCUrU9dcDCpsT2yu57mEJhqVWTyxExERstTOQOb-odOsyVLrWbU-yVCKsggpuqzyj8P_RhnW6YKQIa6W69iAOjNztCaTtZJ-ijOwc4DyuwT_waM8Y2VUasyqo_tQCNhvvYpfVMs7CTpVjcwifjjrcfJpwjuUSp-TJBDj03r4AQ-_qgAKi6vgaCcZAItHJ009MR_6TVJGxWph7bs5iDq-HkKfr78-i44Cd4KCthS04w3fbjGF9uXwFwR_E2VsmmTFn-eNzD-yqss246-a9yXgngiTMGR51qh0cT0pLXxETWtNmapMgicuweT2u9prkffMaYbYfm8frr-um3h3RDNvUdP0PBiAJubGkUA4wm9Qs-rXLfrhKyc2NbbwXk6uO6fNdX2H69RDAHROysm3BNOD4uujvLjhX-pzOVKHlC0GwNx-8K6r5engEQgfGVCfhb-osw6nTySmdVjYKrQ1lga1uihsya7TJS7A_d58MkiPpBI4fb-67kLvTuA099Ud9T-S4uE2gVPrnoaSIjQ8RGrNa68sX54pm-CINXVpEPfxlrkzgxSvURLYlS1zfsABl4S-VmAiGnYg9YAYS_e1hlBZN9RcST3H9OIoioMToMk4x27G7pztGf4hI6ABkMCXr0ErsVYJQxR6x3SAYjIEaVVzxFmPeQQjO1Y7fuN186YRYVSgkJd4m6flNi0h_WVy1" alt="plantuml diagram"></p>
-<h2 id="二页框回收什么时候发生">二、页框回收什么时候发生</h2>
-<p>进程申请内存，最终都走 <code>alloc_pages()</code>
-从伙伴系统领取页框。分配结果取决于当前空闲内存量与三条水位线的关系。</p>
-<h3 id="三条水位线的分工">三条水位线的分工</h3>
-<p>每个 zone 有三条水位线，从高到低：</p>
+        <p>物理内存永远比所有进程想要的少。内核既不能拒绝合理的分配请求，也不能无限透支，只能把“暂时没人用”的页收回来腾给更紧急的进程，腾内存的这套机制就是页框回收（page
+reclaim）。</p>
+<p>页框（page
+frame）是物理内存按页划分的分配单位，也是回收的目标。参与页框回收流程的组件有四个：</p>
 <ul>
-<li><strong>high</strong>：kswapd 的工作目标。空闲页降到 low 以下唤醒
-kswapd，kswapd 一直收到 high 以上才睡回；</li>
-<li><strong>low</strong>：kswapd 的唤醒线。空闲页跌破
-low，分配路径顺手叫醒 kswapd，让它后台慢慢补；</li>
-<li><strong>min</strong>：分配的硬底线。慢速路径把放行线从 low 放宽到
-min 再试一次，真跌破 min 才升级到直接回收。</li>
+<li>衡量内存紧张程度的<strong>水位线</strong>：决定了是否触发回收</li>
+<li>按冷热给页排队的 <strong>LRU
+链表</strong>：决定了应该回收哪些页</li>
+<li>负责找回所有映射的<strong>反向映射</strong>：决定了回收的页被哪些进程引用</li>
+<li>以及匿名页的落脚点 <strong>swap
+设备</strong>：决定了回收后放到哪</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">zone 空闲页数随消耗不断下降 ──────────────────────────►</span><br><span class="line"></span><br><span class="line"> high ─────────────────────────────  kswapd 完成任务的分割线:</span><br><span class="line">      │                               回收到此才肯睡</span><br><span class="line">      │  ← 间距 tmp(缓冲带,防频繁醒睡抖动)</span><br><span class="line">      │</span><br><span class="line"> low  ─────────────────────────────  警戒线:低于此线,</span><br><span class="line">      │                               分配路径唤醒 kswapd</span><br><span class="line">      │  ← 间距 tmp</span><br><span class="line">      │</span><br><span class="line"> min  ─────────────────────────────  保命线:留给紧急/原子</span><br><span class="line">      │                               分配的最后储备,慢速路径</span><br><span class="line">      │                               放宽到这条线仍可分配</span><br><span class="line">    0  ┴</span><br></pre></td></tr></table></figure>
-<p><img src="/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/水位线.png" width="80%"></p>
-<h3 id="分配路径的三级策略">分配路径的三级策略</h3>
-<p>分配失败后进入慢速路径
-<code>__alloc_pages_slowpath()</code>，层层加码：</p>
-<ul>
-<li><strong>第一级（异步借势）</strong>：叫醒
-kswapd。唤醒只是叫一声就走，全程没有任何"等
-kswapd"的步骤。同时把分配线从 low 放宽到 min，立刻重试分配。刚跌破 low
-时离 min 还有整段缓冲，这一试多半当场成功；</li>
-<li><strong>第二级（同步自己干）</strong>：真跌破
-min，重试失败，才亲自下场做同步的直接回收。调用进程自己变成回收器，扫
-LRU、发换出/写回 I/O 并等其完成。收完回去再试分配，循环往复，连续 16
-轮零产出才认输；</li>
-<li><strong>第三级（终极兜底）</strong>：OOM killer 按 oom_score
-挑最占内存的进程杀掉，腾出内存再回来重试。仍不行则分配返回 NULL。</li>
-</ul>
-<p><img src="http://www.plantuml.com/plantuml/svg/LPB1Rjf048RlVefHJb0rgdhfWKEL1w2DL2cdka8MM8s5iP7j2kL6eW26158gcbH0Wg6WA44EfI90tGJU9VAixRVeccrB8krfT-RR-R_TBTqGDEDJHkOCoP15I2G4MLQJYQpmKTGJkgpcieAn6ud6S7mGhehbMVjUyv3KBj6SajjzRbTAYI1ciiOUf4GzgKbPGr8LZd8D4JOUwXRWoJ0eVe6qdXEogGZU7H1x4EMLXteNI6E1D_Te_e2Cf83dB8DIrHzzHRCO5AeR8EYWYOQsjwRrm6jDI6s0hGlIcCRyqZNEngGyXFYxdH3v_TzvxSYxkufXgUulBxpVTj2zNU5ogfPUqmQmlVq6qf8iYnglaECog6eceITLJGHodYVjF5OjB1RG_aOphm2qWEFUF_i0cvklsN0G0rmEWtp7durmSOZziJyPy8ftvGHdF_tPiMTDW7haM77O5hRJfbL8Odx6IiTVDcWYEYJf5dabWcPptGZORsArGYKHk-_E7MBteezWOI9A--lF_TLnvrNiTxZL_fCXLyfUC3EaNNQTIomvlEBE6wHzpJJ1orVWtz_GsKdvQ8sWeIdWIKdGcZ805nu-liSlBEWsi_OylFHym5xrVoNBJyuiF1c5cirJzev-ZseiktERLvWSfWNUxiJZt9QefEW__GC0" alt="plantuml diagram"></p>
-<h2 id="三lru-链页的排队与冷热判定">三、LRU 链：页的排队与冷热判定</h2>
-<h3 id="五条链">五条链</h3>
-<p>内核把所有可回收的页排进 LRU（Least Recently Used）链表。每个 zone
-维护五条链，<strong>链头是热页（最近被访问过），链尾是冷页（最久没碰）</strong>：</p>
+<p>其中，回收的对象有两类页：</p>
 <table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
 <thead>
 <tr>
-<th>链</th>
-<th>谁在里面</th>
+<th>类型</th>
+<th>例子</th>
+<th>磁盘上有没有副本</th>
+<th>回收动作</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>匿名热链 (active anon)</td>
-<td>正在被频繁访问的匿名页</td>
+<td>匿名页（anonymous page）</td>
+<td>堆、栈</td>
+<td>没有，内存是唯一副本</td>
+<td>先写 swap 才能释放</td>
 </tr>
 <tr>
-<td>匿名冷链 (inactive anon)</td>
-<td>近期没被访问的匿名页（回收目标）</td>
-</tr>
-<tr>
-<td>文件热链 (active file)</td>
-<td>正在被频繁访问的文件页</td>
-</tr>
-<tr>
-<td>文件冷链 (inactive file)</td>
-<td>近期没被访问的文件页（回收目标）</td>
-</tr>
-<tr>
-<td>unevictable</td>
-<td>被 mlock 锁住的页</td>
+<td>文件页（file-backed page）</td>
+<td>代码段、page cache</td>
+<td>有，文件本体就是副本</td>
+<td>干净页直接丢，脏页先写回</td>
 </tr>
 </tbody>
 </table>
-<p>新页从链头进，回收从链尾摘。回收器每次从冷链尾部批量摘 32 页，交给
-<code>shrink_folio_list()</code> 逐页判定回收方式。</p>
-<h3 id="冷热的证据af-位与-pg_referenced">冷热的证据：AF 位与
-PG_referenced</h3>
-<p>LRU 判冷热靠一套两层证据体系：</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/NLJRJXfH57sVhpZngKrhZBSN7ne9GccgXOA65nCpbL69E10OOzgc2KH5KMvQgo1u8rXjHS762qM5fDyovypCNtIVCmYZ3v0pizRUi_PUQsOm9F51QNxEnuLclMA03_9pw1C_EJiTzC-B7hFVvm-YXHcl91XmZp35p_iagr-KNDul0khkvYIlv1CGNZubsolAmR5QZk9y1UVg71U0PloqW3h-dNGpGhRSWVWGCjkwqLSEeKa-w44TlC_ddvm8034qC2xYnXbPBiZL8jaxKc_BkBx4Iap3mtPpgmHWvV9EExf-BTUsW8Y6dMD8-rvdL3ZtjvWaTaPIAMqveHNse7jeWGy4lA8G2Y6vcbGR6oH_G5RJ95zYfH_7xACcxjiJvJr8lWlBVrV9pWqEPydMJNE47iC8SZK6AaZbIdv8ABN6k3Zd5Rjy_eMk6U_q3EExHrhaMIh2Wt0wYLEmf_t7bkzTRfDZg4LJSbSaUQpZw1MosqSOQ-YTqs8UDJpv3g-T6heud7OJu4zdw4K0gvL8KtglGJfi3HUlbCNpr_HKgUFeBMFPsjisMU7vZhSJGM5A20hYfE01cr9nzU5KBKT8ua8toEgqMDlYIoMv5YUb8vAloVUxZE6oc9_9waCadAIhRIsrpw0Cfn8ulK4oXxYo1DOfiLzAEWgUarYTpXiBatmCEKOjhDGvOd8OxO1uu8TDVD60IhbQmFUBNL24ezakaYZWbHehieyzNrG_ed1klocdto27keO4KGf-fXsBvEAQshEMqsTpjtWU_mIbia2_UAbxvcfh8ziLc45jP4YcJ7PEuCme7onkAeN577Lslccc0GqWzJQk75uXI1F2MqKjkcaWwM5eao1sI5tvZMylvUewpjSuzuYXsUDLCqBqFM7NBFMqIIM2YxlqlxBHHcrcW20L416ItDGo1vnDVpXpl8Lf-R3wCw87WjCXIWBJQUTocUo5jSmVibRaw2qAKSlqSbY25ex9rNEEtQCWM0COMO_YYxWU0RmQ9TSHZWAiiPlMnXiudO1ovKSM9eRl1JbSuG1YOyBMuSVETBs3WkY1Zzr_" alt="plantuml diagram"></p>
+<p>带着三个问题往下读，全文按这三个问题展开：</p>
 <ul>
-<li><strong>PTE AF（Access
-Flag）</strong>：硬件侧原始证据。每次访问由硬件自动置
-1，回收扫描时由内核清 0 并计数；</li>
-<li><strong>PG_referenced</strong>：folio
-侧汇总证据。记录"上一次观察窗是否被访问过"。</li>
+<li>分配内存的进程怎么发现“内存不够”？发现之后由谁收、什么时候收？</li>
+<li>内核怎么判断一页是热还是冷？</li>
+<li>被选中的页可能同时映射在多个进程的页表里，怎么拆干净？拆完之后进程再访问这个地址，会发生什么？</li>
 </ul>
-<p>"热"的定义是<strong>连续两个正采样</strong>。AF
-记录当前窗口，PG_referenced
-记住上一个窗口。两次都为正，才判定真热，晋升热链。</p>
-<p><img src="http://www.plantuml.com/plantuml/svg/PLDDJzj04BtxLwmu9LKujCSUAb0LAbGa4AAzr9MriXUombb7jYdbHjjyja4fQY1yjGHKMbH2Y1056aBuCzwr_IywjjiamD7hUM_Ul7apOjdOj1VIkcHJMoV8kLnsBd-9ZJflPVszt-vM5bxSwcxCwTJTgrqqCVqYBgMeHX19P-mbf15BDMd6fWQJWCecQ8ZdB_mlNKGPLctwXiXCrEh89BF494mbsX325b8DNRjTBxEfPqg_AiPpA-BuoY-ikgLoFCGiOZFz7-D-E0vwH1t2lod3_l_JorO2wSSbllsDvpTbvbutKSYkwfYc4zvr0_uCWZLgsakBcFOe-CMfN_WegY0hzXQR9bv2xjecib9OCnOZENC68vBqwi5hD3py91m8FKRUoPNRQKDtx-SFNbdrzxFm8hDPgfCqpYXOqvHPGwT6B8vuxW1by1n1AbPJu1BF7V8_fxomd13bzptt48p9lvz98N_GA7016hcD1dg8H6FFQzxujIQq26YLD3Rd5QognBB0mxWKLWSmiESVwj5zLDWAvWP0K3SmJz2zrVMMt_7okioib4dPV5HE59rQDY3kAWDhHVLSb8v4fI9gvsAdn3jhRlLGPcEJ4-EJqyanvNaoEHK3BKwx35h4JjlfRDtJscE8uBnI55yF1aX6dywClnoTIVO511i9WBMwqsv7g4HaAIn4PWe486s0SDX4Xh8vs85OtU25zi0Q-cIzIDnbTAxpG2SsJY1cS1vtquLkfKlgqmou2g4CejaiY-9dT-SJBxO626GMCC3JhGYqkb8uNjyVdb_nzeyWNhoodl0BAsAz5Npam2EntOK3yMuAlBWPN1vUq6taRfz1q-Xmf172D3Zwlm00" alt="plantuml diagram"></p>
-<iframe src="/lru-lifecycle/index.html" width="100%" height="650" frameborder="0" style="border:1px solid #e3e7ee;border-radius:12px;margin:8px 0">
+<h1 id="全景从-alloc_pages-说起">1. 全景：从 alloc_pages() 说起</h1>
+<p>进程要内存（fork
+复制页表、缺页分配物理页），以及内核自身的分配（页表、网络缓冲），最终都汇聚为
+<code>alloc_pages()</code> 从伙伴系统（buddy
+allocator）领取页框，一次拿走 <code>2^order</code>
+个连续页。这条路径有两种命运：</p>
+<ul>
+<li>内存充足：空闲页数不低于 low 水位线，快速路径直接分配；</li>
+<li>内存不足：进入慢速路径，先异步唤醒 kswapd
+后台回收，仍不够时当前进程同步做直接回收（direct
+reclaim），最后还有内存压缩与 OOM 兜底（§2）。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">alloc_pages()                            <span class="comment">/* include/linux/gfp.h,宏 */</span></span><br><span class="line">  +-&gt; alloc_pages_noprof()</span><br><span class="line">    +-&gt; __alloc_pages_noprof()           <span class="comment">/* mm/page_alloc.c */</span></span><br><span class="line">      +-&gt; __alloc_frozen_pages_noprof()</span><br><span class="line">        +-&gt; get_page_from_freelist()     <span class="comment">/* 快速路径:逐 zone 检查水位并分配 */</span></span><br><span class="line">        +-&gt; __alloc_pages_slowpath()     <span class="comment">/* 慢速路径:水位不达标才进入(§2) */</span></span><br></pre></td></tr></table></figure>
+<h2 id="回收什么两类页五条链">1.1 回收什么：两类页，五条链</h2>
+<p>所有可回收页分为匿名页和文件页两类，分别挂在五条 LRU 链上：两类 ×
+冷热，外加一条不可回收链。五条链挂在 <code>struct lruvec</code> 里，每个
+NUMA 节点一份；启用内存 cgroup 后每个 cgroup
+再各有一套，限额内的页在组内自己的链上排队。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* include/linux/mmzone.h */</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">lru_list</span> &#123;</span></span><br><span class="line">	LRU_INACTIVE_ANON,			<span class="comment">/* 匿名页,冷链 */</span></span><br><span class="line">	LRU_ACTIVE_ANON,			<span class="comment">/* 匿名页,热链 */</span></span><br><span class="line">	LRU_INACTIVE_FILE,			<span class="comment">/* 文件页,冷链 */</span></span><br><span class="line">	LRU_ACTIVE_FILE,			<span class="comment">/* 文件页,热链 */</span></span><br><span class="line">	LRU_UNEVICTABLE,			<span class="comment">/* mlock 等不可回收页 */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>一个页挂哪组链，判据是 folio 上的 <code>PG_swapbacked</code> 标志，为
+1 表示这页的后备存储是 swap 空间而不是磁盘文件：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">folio_is_file_lru</span><span class="params">(<span class="keyword">const</span> struct folio *folio)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> !folio_test_swapbacked(folio);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>两类页各自住在哪里：内存里有 page cache 和 swap cache
+两级索引，磁盘上有文件数据与 swap 槽位。</p>
+<pre class="mermaid">flowchart TB
+    subgraph DRAM["DRAM（内存）"]
+        subgraph PC["Page Cache（文件页缓存）"]
+            PCK["key: 文件 inode + 页偏移<br>value: folio"]
+            PCF["folio（文件页数据）"]
+            PCK --> PCF
+        end
+
+        subgraph SC["Swap Cache（swap 槽位索引）"]
+            SCK["key: swp_entry_t(type + offset)<br>value: folio"]
+            SCF["folio（匿名页数据）"]
+            SCK --> SCF
+        end
+
+        MM["进程页表 PTE"]
+        MM -- "文件映射：指向 page cache folio" --> PCF
+        MM -- "匿名页换出后：PTE 变成 swap 条目" --> SCK
+        MM -- "匿名页在内存：直接指向匿名 folio" --> SCF
+    end
+
+    subgraph DISK["磁盘"]
+        FS["文件系统 / 块设备<br>（文件数据）"]
+        SW["Swap 设备 / Swap 文件<br>（swap 槽位，按 PAGE_SIZE 切分）"]
+    end
+
+    PCF -- "回写 / 读入" --> FS
+    SCK -- "offset 换算槽位" --> SW
+    SCF -- "换出写 / 换入读" --> SW</pre>
+<p>两类页的回收代价不同，这是后续所有策略的出发点：</p>
+<ul>
+<li><strong>文件页</strong>：磁盘上另有副本。干净文件页直接丢弃，零
+I/O；脏文件页需先写回文件。回收开销小。</li>
+<li><strong>匿名页</strong>：磁盘上原本没有副本，首次回收前必须先写入
+swap 设备。回收开销大。</li>
+</ul>
+<p>所以默认配额下文件链分到的扫描压力更大，但两条链都在扫，不是只扫文件。</p>
+<h2 id="扫描配额swappiness-与近期成本">1.2 扫描配额：swappiness
+与近期成本</h2>
+<p>“文件页便宜”也不是绝对的：如果每次收走的文件页很快又被访问，引发重新读盘，开销同样会变大。因此内核的
+<code>get_scan_count()</code>
+会为两类链各算一个扫描配额，按近期回收成本动态调整。某类页回收越吃亏，下一轮配额越少，扫描压力更多分给成本更低的那条链。</p>
+<p>简单记：swappiness 相当于匿名链的权重，（200 −
+swappiness）是文件链的权重，实际扫描压力 = 权重 ÷ 自身近期回收成本。</p>
+<p>几个走极端的场景：</p>
+<ul>
+<li>没装 swap 或 swap 已用满：匿名页换不出去，配额全额给文件链；</li>
+<li>临近 OOM：内存快见底，不再精打细算，两条链不加偏向、全力扫描；</li>
+<li>冷链文件页充足且没在抖动（流式读写文件的典型状态）：暂时只扫文件链，不无谓换出匿名页。</li>
+</ul>
+<h2 id="回收的执行总览">1.3 回收的执行：总览</h2>
+<p>慢速路径确定要回收后，所有回收路径（直接回收、kswapd、主动回收）都在
+<code>shrink_node()</code> 汇聚，往下三步：</p>
+<ul>
+<li><code>get_scan_count()</code> 按 1.2
+的规则算出匿名/文件链各扫多少；</li>
+<li><code>isolate_lru_folios()</code> 从 inactive
+链表尾部，也就是最久没人碰的冷页，批量摘取 32 页；</li>
+<li><code>shrink_folio_list()</code> 对这批页逐页判定最终归宿。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">__alloc_pages_direct_reclaim()            <span class="comment">/* mm/page_alloc.c,直接回收入口 */</span></span><br><span class="line">  +-&gt; __perform_reclaim()</span><br><span class="line">    +-&gt; try_to_free_pages()               <span class="comment">/* mm/vmscan.c */</span></span><br><span class="line">      +-&gt; do_try_to_free_pages()</span><br><span class="line">        +-&gt; shrink_zones()</span><br><span class="line">          +-&gt; shrink_node()               <span class="comment">/* kswapd 从 balance_pgdat() 汇入同一套 */</span></span><br><span class="line">            +-&gt; shrink_node_memcgs()</span><br><span class="line">              +-&gt; shrink_lruvec()</span><br><span class="line">                +-&gt; get_scan_count()          <span class="comment">/* 算配额 */</span></span><br><span class="line">                +-&gt; shrink_list()</span><br><span class="line">                  +-&gt; shrink_inactive_list()</span><br><span class="line">                    +-&gt; isolate_lru_folios()  <span class="comment">/* 链尾摘冷页 */</span></span><br><span class="line">                    +-&gt; shrink_folio_list()   <span class="comment">/* 逐页判定归宿 */</span></span><br><span class="line">                      +-&gt; folio_check_references()  <span class="comment">/* 热还是冷(§3) */</span></span><br><span class="line">                      +-&gt; try_to_unmap()            <span class="comment">/* 拆映射(§4) */</span></span><br><span class="line">                      +-&gt; pageout()                 <span class="comment">/* 脏匿名页换出 */</span></span><br><span class="line">                      +-&gt; __remove_mapping()        <span class="comment">/* 摘除并释放(§4) */</span></span><br></pre></td></tr></table></figure>
+<p>整个判定流程一张图看清，细节在后文各节展开：</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/RLHDRzDO5DtxLxnb8XLLWbab4h11Q1QeB6OvacMvBwrLnuviXsfO1THycCHfMW8aRJJz8A65fcc7QQ7DfyHFGNxFzh_WFZydJL6pS6I_U-yxzvnpxsFJaWmhcrO5Ix5KZ8A3ItfG8Bl_qletcXluHoL124E4XAIgkYncf1LindHZ6HlnfA2aKCpxt0y-V8L4zDFk85LVH_JymXqvZ-B8MiKQYj76MLn0AB62hJ1TJ1bw6XuOguffnTWPcPm4kJt_-naPRtYx5xJQ8QL2a7TegKRUx2KXmhJqZ81L4wCOgNqAw_cJNPBlqFpXB9LLofV8y3KzxP1wEoXiepLpNSeintuStGUuM5jMKa88n9GbJPJrhCO0q8gDM5n6qR1f8h9TyITRjBK7rzDML-1OI6L2QiuYVLzq1z-2jsDlPuFQ9tHpCoXk9eM4OkggP65HDR9YIbSLtOJ2xg2A54sIBUK5SFjsJCx7rBw61BhLG0_kCxgJWe4pMB9Gmbmr56sD9ukS6XJaQX13IctIso6ZRTARC38OxJnCNiNoccZW53Qm9eCoyIdhxi3n3q_8y9rNFsPqyIp-JeRznFEdDsdBo9yqIEluRusMtfFsZdlr1Jt_wmc2DtVmqTj_HNkN0ECtGTalGPjbuXJ1CEYcosHuU4kiCDORzT3jQsbzp5Ad54M1NhVhzYkqUq1RVNUu0-8zY4SrGm6djUc7VRVVvoqbIE4xWtZJQIWNV7AlwhJr1SmIIena2JXxT5Shd55kSnOQcvvm_NawFHg1jnUuz-OgtiO7rIpZ7z7InQoMdbMYvGAjsjJEqPOD1RpZClDGOv-SRq2FVqGzCl2HoGukxm8QTdVzbHHpTvt2rI9GdDPVO34TMde5V0H-8yK-OkCtZpSC3uflk0xkiEaEBxp_1zvWRthEcVOtDkVgptIKLKb98t_KlT5_5kMTsl2L59fUVmAT-hMHjzjOSA_A_gX72WxibxcUvvcBV3ELRoOFmwvdsL1Gvn2Q8QLpph_V6vDsCGgBlJIazEBBy81iZTohKr9gahpZVNm5zwC_5vTcLu9bcWnYhyBMJAtAUVZDQE5_DA7hguhAR6TVaq8U9WPav18fPYJ1lOS830_RW6qtq1wiFbi6Y4y-J36atgOwmHqM51t_xDq2QV_dNtGOx6hP6tvUN5fw5kslS0a-1aomi7y1" alt="plantuml diagram"></p>
+<p>§2 回答“什么时候收”，§3 回答“收谁”，§4 回答“怎么收”，§5
+回答“收完再访问”。</p>
+<h1 id="什么时候收三条水位线与三条路径">2.
+什么时候收：三条水位线与三条路径</h1>
+<h2 id="三条水位线">2.1 三条水位线</h2>
+<p>内核用水位线（watermark）衡量每个 zone 的内存紧张程度，三条线刻在
+<code>zone-&gt;_watermark[]</code> 里，枚举为
+<code>WMARK_MIN / WMARK_LOW / WMARK_HIGH</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">zone 空闲页数随消耗不断下降 ──────────────────────────►</span><br><span class="line"></span><br><span class="line"> high ─────────────────────────────  kswapd 的任务完成线:</span><br><span class="line">      │                               回收到此才肯睡</span><br><span class="line">      │  ← 间距 tmp(缓冲带,防频繁醒睡抖动)</span><br><span class="line">      │</span><br><span class="line"> low  ─────────────────────────────  警戒线:低于此线,</span><br><span class="line">      │                               分配路径唤醒 kswapd</span><br><span class="line">      │  ← 间距 tmp</span><br><span class="line">      │</span><br><span class="line"> min  ─────────────────────────────  紧急/原子分配的最后储备,</span><br><span class="line">      │                               慢速路径放宽到这条线仍可分配</span><br><span class="line">   0  ┴</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/水位线.png" alt="水位线">
+<figcaption aria-hidden="true">水位线</figcaption>
+</figure>
+<p>min 是留给紧急、原子分配的最后储备；low 是唤醒 kswapd 的警戒线；high
+是 kswapd 的任务完成线。睡回的判据是 high 而不是
+low：醒一次就干到充裕，把 low 到 high 之间的缓冲带攒出来，这是防止
+kswapd 频繁醒睡的抖动抑制设计。</p>
+<h2 id="路径一kswapd-后台回收">2.2 路径一：kswapd 后台回收</h2>
+<p>kswapd 是每个 NUMA
+节点一个的内核线程，睡在该节点的等待队列上。它是被动唤醒的：没有定时器，不做巡检，只有
+<code>wakeup_kswapd()</code> 显式叫它才干活。分配路径跌破 low
+水位时叫，NUMA balancing 页迁移失败时也叫。</p>
+<p>醒来后执行 <code>balance_pgdat()</code>，把所有 zone 回收到 high
+水位以上。达到目标后先以 <code>HZ/10</code>
+的假睡试探，期间没人再叫才进入深睡。试探期顺手叫醒 kcompactd
+做碎片整理：回收只把页变“闲”，THP
+这类高阶分配还需要“连续”，整理交给专职线程。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/JPBBIiD068NtynG_NQM2g5iNKdSkr8NGZLRAc0msD4r2CoNegWeMKwK5gIXOjQqMBwLKHMkDYkyYoIHz2wU9lMm6PkPy_pbdc9X1SPRcCWgYCbK8f0qJwn9unIxBxx6gBR1EsUazmcfyPH7yuhwt_-7qylmaYb1AbWYGZ4vtG2A6c9LrAciguXCfWGXxV_OkwmdL45D4oYb4Y89RlVytI9fOfk3qYX701gU9FiJSYojMwJgzTaBTmWfMHPBKjoLCXMWWDRLiUYHzAdC7ltFAIesnJvBA6QBbgB2qFZCt6qseGhzkC-l8hTps2oUG5hMCZaKgXVDeLiOAGXjJcp0zlH0c6Ip1Rc06ys3YDCdfoJ2vm2Tw3tR_xALVV_FVZxtQAoYQYGBj1EJ_dBEg1RkQIi3vBZbs2LBoTeh3dtVUPvjPBLXUYqDOTqm7UJZEhFm8_xMQ0Ol2os7EWKdGdLMltS81EwivjXssJAYiVUD-bTs39d-X2MuORe9pouT-enLoA4PKYN-6Fm00" alt="plantuml diagram"></p>
+<h2 id="路径二直接回收慢速路径的兜底">2.3
+路径二：直接回收，慢速路径的兜底</h2>
+<p>分配从 low 水位开始（快速路径的门槛），跌破 low 转入
+<code>__alloc_pages_slowpath()</code>，策略是先礼后兵、层层加码：</p>
+<ul>
+<li>第一级：叫醒 kswapd 异步回收，同时把分配线放宽到 min
+水位，立刻重试。刚跌破 low 时离 min
+还有整段缓冲，这一试多半当场成功，缺口交给 kswapd 在后台慢慢补；</li>
+<li>第二级：真跌破 min
+且重试失败，才亲自下场做同步的直接回收。调用进程自己变成回收器，扫
+LRU、发换出 I/O 并等它完成，阻塞发生在自己身上，连续 16
+轮零产出才认为失败；</li>
+<li>第三级：OOM killer 按 oom_score
+挑最占内存的进程杀掉，腾出内存再回来重试；仍不行则分配返回 NULL。</li>
+</ul>
+<p>oom_score 怎么算：分数 ≈ RSS ＋ swap 条目 ＋
+页表占用，占用越多分越高；<code>/proc/&lt;pid&gt;/oom_score_adj</code>
+是唯一的加减分手段，范围 −1000 到 1000，写成 −1000 就是禁止这个进程被
+OOM 杀死。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/LPB1Rjf048RlVefHJb0rgdhfWKEL1w2DL2cdka8MM8s5iP7j2kL6eW26158gcbH0Wg6WA44EfI90tGJU9VAixRVeccrB8krfT-RR-R_TBTqGDEDJHkOCoP15I2G4MLQJYQpmKTGJkgpcieAn6ud6S7mGhehbMVjUyv3KBj6SajjzRbTAYI1ciiOUf4GzgKbPGr8LZd8D4JOUwXRWoJ0eVe6qdXEogGZU7H1x4EMLXteNI6E1D_Te_e2Cf83dB8DIrHzzHRCO5AeR8EYWYOQsjwRrm6jDI6s0hGlIcCRyqZNEngGyXFYxdH3v_TzvxSYxkufXgUulBxpVTj2zNU5ogfPUqmQmlVq6qf8iYnglaECog6eceITLJGHodYVjF5OjB1RG_aOphm2qWEFUF_i0cvklsN0G0rmEWtp7durmSOZziJyPy8ftvGHdF_tPiMTDW7haM77O5hRJfbL8Odx6IiTVDcWYEYJf5dabWcPptGZORsArGYKHk-_E7MBteezWOI9A--lF_TLnvrNiTxZL_fCXLyfUC3EaNNQTIomvlEBE6wHzpJJ1orVWtz_GsKdvQ8sWeIdWIKdGcZ805nu-liSlBEWsi_OylFHym5xrVoNBJyuiF1c5cirJzev-ZseiktERLvWSfWNUxiJZt9QefEW__GC0" alt="plantuml diagram"></p>
+<h2 id="路径三主动回收">2.4 路径三：主动回收</h2>
+<p>前两条路径都是被内存压力逼出来的，第三条是用户主动指定“收这里的内存”：</p>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>触发方式</th>
+<th>调用链</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>madvise(MADV_PAGEOUT)</code></td>
+<td><code>madvise_pageout()</code> → <code>reclaim_pages()</code></td>
+<td>用户指定地址范围，绕过 LRU 挑选直达逐页判定</td>
+</tr>
+<tr>
+<td>写 cgroup 的 <code>memory.reclaim</code></td>
+<td><code>try_to_free_mem_cgroup_pages()</code> →
+<code>shrink_node()</code></td>
+<td>写"64M"就收 64M</td>
+</tr>
+<tr>
+<td>DAMON</td>
+<td><code>damon_pa_pageout()</code> → <code>reclaim_pages()</code></td>
+<td>内核自动采样识别冷的物理地址区域</td>
+</tr>
+</tbody>
+</table>
+<h2 id="三条路径对比">2.5 三条路径对比</h2>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>kswapd 后台回收</th>
+<th>直接回收</th>
+<th>主动回收</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>触发条件</td>
+<td>空闲页 &lt; low（被动）</td>
+<td>分配慢速路径兜底（被动）</td>
+<td>用户/策略显式发起</td>
+</tr>
+<tr>
+<td>执行者</td>
+<td>后台内核线程</td>
+<td>当前分配进程</td>
+<td>发起调用的进程</td>
+</tr>
+<tr>
+<td>对业务的影响</td>
+<td>业务无感</td>
+<td>阻塞当前分配</td>
+<td>阻塞调用者</td>
+</tr>
+<tr>
+<td>挑页方式</td>
+<td>LRU 扫描</td>
+<td>LRU 扫描</td>
+<td>用户指定范围 / DAMON 识别</td>
+</tr>
+</tbody>
+</table>
+<p>“什么时候收”到此解决，剩下的核心问题是“收谁”。</p>
+<h1 id="收谁lru-链上的冷热判决">3. 收谁：LRU 链上的冷热判决</h1>
+<p>直觉上应该收“最久没人用的页”，LRU（Least Recently
+Used，最近最少使用）链就是按这个原则给页排队的：最近用过的靠热端，久未使用的沉到冷端，回收从最冷处下手。每条链都是双向链表，链头是热页，链尾是冷页，新页从链头进，回收从链尾摘：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">     active 链(热)</span><br><span class="line">链头(热)                                     链尾(冷)</span><br><span class="line">┌────┬──────┬──────┬──────┬──────┬──────┐</span><br><span class="line">│    │      │      │      │      │ 即将 │</span><br><span class="line">│    │      │      │      │      │ 老化 │────┐</span><br><span class="line">└────┴──────┴──────┴──────┴──────┴──────┘    │ shrink_active_list()</span><br><span class="line">  ▲                                         │ 从链尾摘页降级,</span><br><span class="line">  │ folio_activate()                        ▼ 送到 inactive 链头</span><br><span class="line">  │ 扫描时发现被引用,晋升链头</span><br><span class="line">  │ (AF==1 &amp;&amp; ref==1)</span><br><span class="line">┌────┬──────┬──────┬──────┬──────┬──────┐</span><br><span class="line">│    │      │      │      │      │ 最老 │────► isolate_lru_folios()</span><br><span class="line">└────┴──────┴──────┴──────┴──────┴──────┘      回收从链尾摘冷页</span><br><span class="line">  ▲     inactive 链(冷)              │</span><br><span class="line">  │ folio_add_lru()                 ▼</span><br><span class="line">  │ 新页入链,进链头         shrink_folio_list() 逐页判定:</span><br><span class="line">新页                    干净文件页 -&gt; 释放回伙伴系统</span><br><span class="line">                       脏文件页 -&gt; 置 PG_reclaim 等回写</span><br><span class="line">                       匿名页 -&gt; 换出 swap(§4)</span><br></pre></td></tr></table></figure>
+<h2 id="冷热的证据af-与-pg_referenced">3.1 冷热的证据：AF 与
+PG_referenced</h2>
+<p>LRU 判断冷热，证据从哪来？页被访问时硬件不会去动链表，它只在
+PTE（Page Table Entry，页表项）里留痕迹。内核用的证据一硬一软：</p>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr>
+<th>位</th>
+<th>是什么</th>
+<th>谁置 1</th>
+<th>谁清 0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PTE AF（Access Flag，访问标志）</td>
+<td>硬件侧证据，每个映射该页的进程各有一份</td>
+<td>缺页装配 PTE 时软件置 1，之后硬件自动维护</td>
+<td>回收器沿反向映射（§4）扫所有 PTE 清 0</td>
+</tr>
+<tr>
+<td>PG_referenced</td>
+<td>软件侧证据，整个物理页一份</td>
+<td>访问路径报告访问时置 1</td>
+<td>晋升 active 时清 0</td>
+</tr>
+</tbody>
+</table>
+<p>清 AF
+的动作本身就是一次观察。回收扫描扫到一页，先沿反向映射看一眼所有 PTE 的
+AF，清 0，然后给第二次机会，放回 inactive
+链头重新排队。从链头老化回链尾这一整圈就是观察窗。下次扫描再看：观察窗内
+AF 又变成 1，说明真有人用，晋升 active；仍是
+0，才是真冷页，进入回收。</p>
+<p>晋升判据一句话：<strong>AF=1 且
+PG_referenced=1，晋升热链</strong>，兑现时两位清
+0。为什么必须“看两眼”？页出生时 PTE 自带
+AF=1，单看一次分不清“刚出生”和“真被访问”。第一次扫到引用只给第二次机会，第二次还在被访问才晋升。这套机制防的是误杀热页：正在用的页被收走，进程立刻缺页把它换回来，内存没省多少，CPU
+和 I/O 全浪费在搬运上，这就是抖动（thrashing）。</p>
+<h2 id="动画一个页的一生">3.2 动画：一个页的一生</h2>
+<p>下面这个交互动画把一个匿名页从出生到回收的完整一生逐步走一遍，重点看
+AF 和 PG_referenced 两位怎么配合，建议单步播放：</p>
+<iframe src="/lru-lifecycle/index.html" style="width:100%;height:700px;border:1px solid #ddd;border-radius:8px" title="一个页的一生:AF 与 PG_referenced 双轨演示">
 </iframe>
-<h3 id="三选一回收时的判定">三选一：回收时的判定</h3>
-<p>回收扫描摘到一个页，问"最近还有人用它吗"，<code>folio_check_references()</code>
-沿反向映射清掉每个 PTE 的 AF 并计数，然后三选一：</p>
+<h2 id="状态机全景">3.3 状态机全景</h2>
+<p>把上面的循环画成状态机，以匿名页为例：</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/PLDTJnD157tVNp7XQMlA0oQ-a60WfXWY2OIWBwxPhBi3tNHtjjaT9FY4N_tGLaYiL2XA8H8qG6CC0gaj9FwMdTdsNtXdbXQqRvEPSyuzzvuxum4rVBhaEWgrgOCHArsozN9tzrUqzJeyNuqgEshOgaU_Tz3qtCE4ahOjZB2RfIl8me7fsrbgUqG14OhH4CkTTJzS89iO9hMVOOtmQXtvU07xc9ZO6a96W4pFiVx5QsJslluVQjdmtHugUdKiL6DD-PhsQE-Hb_TOlXcU7sk4bUieM3Qoo3JCD4Rye1sson8lRlirptvsyszvHPITJur90YRKNv78HOzWHNbywmaQ7huhlQ9Hn7ARKQi9Cu5AC90aBxtizuZ06ljwef69oR6HPDHk86X6Y3urp0os52aXj4H7e1KT7Q4Hn8zsEutBRhMXaGNFiJtTDVoCRfWc3W9igGb5eWKDMhrYtHvaIGlG5H04xePbuUh7HMVr1IjjQ2H8-pR9n72iEtP0rOH6r2ktovwViSbYW6bYm2whVU6LKruyv6jhl7hAjukizJ6gVDF8vCpqrCnSQb9_a4hDgc0mR9R08DzkXgsjWGRw2Z6ThHNuv_qR8XFtvgSUJSodhWt8O81OhOVDPinATbUBa7GSUNy6ZkEPSk9g0i4AnB5h8b6TUleISSNBA6IDWCWBw-WwSaKUHJMHErHxBY_O-tTHwpilR8ZWQvzOemGqZUYmfAu70mJ5B0mCwiMRf4ZsTRCiL-xi7VQYiZpfJiyQYn2KCC7UxAj_3kv01Bns0TlTkSopmgRuACQIGr5KEu6nnrklZ6DYmU_y2m00" alt="plantuml diagram"></p>
 <ul>
-<li><strong>FOLIOREF_KEEP</strong>：有引用但属首次。置 PG_referenced
-放回链头重新排队——这就是<strong>第二次机会</strong>；</li>
-<li><strong>FOLIOREF_ACTIVATE</strong>：引用来得更凶。晋升热链，退出本轮回收；</li>
-<li><strong>FOLIOREF_RECLAIM</strong>：无人引用，真冷页。进入处置流水线。</li>
+<li>出生：写缺页分配新页（读缺页直接映射共享零页，不分配），挂 inactive
+链头，PTE 自带 AF=1，folio 上只有 PG_swapbacked；</li>
+<li>爬升：第一次访问置 PG_referenced，第二次访问晋升 active；</li>
+<li>老化：<code>shrink_active_list()</code> 从 active
+链尾把长期不动的页降级，送回 inactive 链头重新排队；</li>
+<li>回收：冷到链尾且无人引用，进入换出流程（§4）；</li>
+<li>换回：再被访问时 <code>do_swap_page()</code> 换入（§5）。</li>
 </ul>
-<h2 id="四反向映射从物理页找回所有映射">四、反向映射：从物理页找回所有映射</h2>
-<h3 id="要解决的问题">要解决的问题</h3>
-<p>回收要清
-AF、要拆映射，都需要找到所有映射这个物理页的进程。但页表只存正向
-VA→PA，物理页自身不记录任何虚拟地址。反向映射的完整输出是一组
-<strong>(进程, addr)</strong> 对，拿着它才能定位到每一个要操作的
-PTE。</p>
-<h3 id="两步接力">两步接力</h3>
-<p><strong>第一步：枚举候选 vma</strong>。<code>folio-&gt;index</code>
-存了页的逻辑位置，但它单独推不出
-addr——同一个物理页在不同进程映射到的地址不同。必须先枚举"哪些 vma
-可能映射了这个 folio"：</p>
+<p>热链也不是保险箱。被降级的热页会带上 PG_workingset
+标志，回收后在索引里留下“影子条目”记录死亡时间；下次换回时用时间差判断这次换入是正常缺页还是热页被误杀的抖动，后者直接放回热链，算是抖动的第二道保险。</p>
+<p>文件页的一生与上面完全同构，差别只在归宿：page cache
+里的页始终有磁盘副本，干净页回收等于丢弃，唯一需要 I/O
+的是脏页。而脏页的落盘不发生在回收路径里，这是下一章的重点之一。</p>
+<h1 id="怎么收反向映射与三类归宿">4. 怎么收：反向映射与三类归宿</h1>
+<h2 id="为什么需要反向映射">4.1 为什么需要反向映射</h2>
+<p>页表只存正向
+VA→PA。可回收器拿到的是物理页，它要做的两件事都需要反方向的信息：</p>
 <ul>
-<li><strong>文件页</strong>：vma 建立时直接挂上
-<code>address_space-&gt;i_mmap</code> 区间树，fork 出的子 vma
-也插同一棵树。关系静态，不需要中间节点；</li>
-<li><strong>匿名页</strong>：映射集合因 fork 动态扩大，vma 又会被
-mprotect/split/merge 频繁销毁重建。页指向长寿锚点
-<code>anon_vma</code>，(vma, anon_vma) 的关联用边节点
-<code>anon_vma_chain</code> 表示。fork 只复制边节点、新建一个
-anon_vma，不碰任何页。</li>
+<li>判冷热要清 AF：任何一个映射该页的 PTE 的
+AF=1，都该给它第二次机会（§3.1）；</li>
+<li>回收要拆映射：这页可能同时映射在多个进程的页表里（fork
+之后子进程共享父进程的页，多个进程 mmap 同一个文件），必须把所有 PTE
+拆干净才能释放。</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">匿名页:  folio ──► anon_vma ◄── anon_vma_chain ──► vma(fork 各代)</span><br><span class="line">文件页:  folio ──► address_space.i_mmap ──► vma(按偏移的区间树)</span><br></pre></td></tr></table></figure>
-<p><strong>第二步：用 index 算 addr，走页表</strong>。对每个候选
-vma，用正反同一公式换算：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 正向(fault 时): addr → pgoff,存入 folio-&gt;index */</span></span><br><span class="line">pgoff = ((addr - vma-&gt;vm_start) &gt;&gt; PAGE_SHIFT) + vma起始页偏移;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 反向(回收时): pgoff → addr */</span></span><br><span class="line">addr = vma-&gt;vm_start + ((pgoff - vma起始页偏移) &lt;&lt; PAGE_SHIFT);</span><br></pre></td></tr></table></figure>
-<p>然后按 (mm, addr) 走该进程页表定位 PTE，执行操作。</p>
-<h2 id="五文件页与匿名页的两条回收路径">五、文件页与匿名页的两条回收路径</h2>
-<p>回收扫到冷页后，文件页和匿名页走完全不同的处置流水线：</p>
-<h3 id="文件页回收-丢弃">文件页：回收 = 丢弃</h3>
-<p>文件页始终有磁盘副本（page cache 里那份就是），回收只需要把 page
-cache 里的引用摘掉。唯一的成本是再次访问时要从磁盘重新读入。</p>
-<p>脏文件页需要先等回写线程落盘。回收器的动作是置 PG_reclaim、转回
-active 链安静地等，不自己发 I/O。</p>
-<h3 id="匿名页回收-换出">匿名页：回收 = 换出</h3>
-<p>匿名页没有磁盘副本，换出必须先占一个 swap
-槽位（<code>folio_alloc_swap()</code>），并把每个映射它的 PTE 替换成
-<strong>swap entry</strong>——一个 64 位的非有效条目，编码 (type, offset)
-记录"内容在 swap 设备的哪个槽位"。这是下次换入的路标。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">回收发现脏 → 置 PG_reclaim,放回 active 链</span><br><span class="line">   ↓ 间隔 0~30 秒,回写线程从 page cache 扫到它,写盘</span><br><span class="line">   ↓ 写回完成看到 PG_reclaim:转到 inactive 链尾</span><br><span class="line">下轮回收从链尾摘走 → __remove_mapping → 释放回伙伴系统</span><br></pre></td></tr></table></figure>
-<p><img src="/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/文件页与匿名页换出路径.jpg" width="80%"></p>
-<h2 id="六重新访问换入">六、重新访问：换入</h2>
-<p>被回收的页下次被访问时触发缺页。缺页处理入口看到 PTE 非有效，走
-<code>do_swap_page()</code>。</p>
-<p>关键问题：<strong>拿 VA 怎么找到 swap 区的内容？</strong>
-答案是两段接力：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">VA ──走页表──► PTE 槽</span><br><span class="line">                 │ val: present=0</span><br><span class="line">                 ▼</span><br><span class="line">       解码: type = val &gt;&gt; 6</span><br><span class="line">             offset = val &gt;&gt; 12</span><br><span class="line">                 │</span><br><span class="line">       type → swap_info[type] (哪个设备)</span><br><span class="line">       offset → 该设备第几个槽位</span><br><span class="line">                 │</span><br><span class="line">                 ▼</span><br><span class="line">       查 swap cache → 命中则复用,未命中则读设备</span><br><span class="line">                 │</span><br><span class="line">                 ▼</span><br><span class="line">       重建 present PTE 写回槽里</span><br></pre></td></tr></table></figure>
-<p><strong>VA 不参与 swap 区的定位</strong>。VA
-的唯一作用是走页表找到那个 PTE 槽；swap
-位置信息是换出时内核预先写进槽里的。路标立在原来放 PA 的格子位置上。</p>
-<h2 id="总结">总结</h2>
+<p>没有反向索引，唯一的办法是遍历所有进程的页表（16GB 内存 ≈ 400 万条
+PTE），代价不可接受。内核的解法是给每个 folio 挂一份能找回所有相关
+VMA（Virtual Memory Area，虚拟内存区域）的索引，这就是反向映射（reverse
+mapping，rmap）。</p>
+<p>反向映射的产出很明确：一组 (进程, 虚拟地址) 对。回收器要操作的是
+PTE，清 AF、拆映射、换 swap entry 都算，而 PTE
+的索引键正是（哪个进程的页表，哪个虚拟地址）。</p>
+<h2 id="两步走先枚举-vma再换算地址">4.2 两步走：先枚举
+VMA，再换算地址</h2>
+<p>物理页自己不记录任何虚拟地址。<code>folio-&gt;index</code>
+只存了页的逻辑位置（fault
+时算好存入的页偏移），但它单独推不出地址，因为同一个物理页在不同进程映射到的地址不同：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">页 X(folio-&gt;index = 100,即文件第 100 页)</span><br><span class="line">进程 A: mmap(文件, offset 0x10000) → vm_pgoff=16, vm_start=0x7f0000000000</span><br><span class="line">        addr_A = vm_start + (100 − 16) × 4K</span><br><span class="line">进程 B: mmap(文件, offset 0x20000) → vm_pgoff=32, vm_start=0x7f2000000000</span><br><span class="line">        addr_B = vm_start + (100 − 32) × 4K</span><br></pre></td></tr></table></figure>
+<p>index 是页自己的属性，addr 是“页 × 某个
+VMA”的组合属性，必须先枚举候选 VMA，才能逐个算
+addr。反向映射的全部工作就是这两步。</p>
+<p>第一步，枚举候选 VMA。两类页的索引结构不同：</p>
 <ul>
-<li><strong>三条水位线分工</strong>：high 是 kswapd 的补货目标，low
-是唤醒线，min 是分配硬底线。多数轻微吃紧在 low 与 min 之间被 kswapd
-异步消化；</li>
-<li><strong>LRU 判冷热用两层证据</strong>：PTE AF
-是当前窗口的传感器，PG_referenced
-是上一窗口的锁存器。连续两个正采样才晋升热链——这是"第二次机会"的全部机制；</li>
-<li><strong>反向映射产出 (进程, addr) 对</strong>：先枚举候选
-vma（文件页靠 i_mmap 静态挂树，匿名页靠 anon_vma＋avc
-边节点动态生长），再用 index 换算出每个进程各自的虚拟地址；</li>
-<li><strong>文件页回收 = 丢弃 page cache
-引用</strong>，脏页等回写；<strong>匿名页回收 = 换出到
-swap</strong>，PTE 留 swap entry 作路标；</li>
-<li><strong>换入是换出的逆</strong>：VA 走页表到 PTE 槽，解出 (type,
-offset)，查 swap cache 命中则复用，未命中从设备读入。</li>
+<li><strong>文件页</strong>：VMA 建立时映射关系就确定了，直接挂
+<code>address_space-&gt;i_mmap</code> 区间树（按文件偏移索引），fork
+出的子 VMA 也插同一棵树，关系静态；</li>
+<li><strong>匿名页</strong>：页创建之后映射集合还会因 fork 扩大，VMA
+又会被 mprotect/split/merge 频繁销毁重建，页不能直接指向
+VMA。所以页指向长寿锚点 <code>anon_vma</code>（fault
+时设置一次，之后不变），(VMA, anon_vma) 的关联用独立的边节点
+<code>anon_vma_chain</code> 表示。fork
+时只复制边节点，不碰任何已存在的页。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">匿名页:  folio -&gt; anon_vma &lt;- anon_vma_chain -&gt; vma(fork 各代)</span><br><span class="line">文件页:  folio -&gt; address_space.i_mmap -&gt; vma(按偏移的区间树)</span><br></pre></td></tr></table></figure>
+<p>第二步，对每个候选 VMA 用 index 换算 addr，再走页表：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 正向(fault 时): addr -&gt; pgoff,存入 folio-&gt;index */</span></span><br><span class="line">pgoff = ((addr - vma-&gt;vm_start) &gt;&gt; PAGE_SHIFT) + vma起始页偏移;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 反向(回收时): pgoff -&gt; addr,mm/internal.h 的 __vma_address() */</span></span><br><span class="line">addr = vma-&gt;vm_start + ((pgoff - vma起始页偏移) &lt;&lt; PAGE_SHIFT);</span><br><span class="line"><span class="comment">/* 结果不在 [vm_start, vm_end) 内则该 vma 没映射它,跳过 */</span></span><br></pre></td></tr></table></figure>
+<p>正反是同一个公式：fault 时把逻辑位置算好存进
+folio，回收时用同一公式换算回每个进程各自的 addr，再按 (mm, addr)
+走该进程的页表取 PTE。收割
+AF（<code>folio_referenced()</code>）和拆映射（<code>try_to_unmap()</code>）都沿这条路径，前者清
+AF 并计数，后者把 PTE 换成 swap entry 或清空。</p>
+<h2 id="三类归宿">4.3 三类归宿</h2>
+<p>冷页选出来、映射拆干净，接下来按页的类型分流：</p>
+<figure>
+<img src="/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/文件页与匿名页换出路径.jpg" alt="文件页与匿名页换出路径">
+<figcaption aria-hidden="true">文件页与匿名页换出路径</figcaption>
+</figure>
+<ul>
+<li><strong>干净文件页</strong>：<code>__remove_mapping()</code> 从 page
+cache 摘除，直接释放回伙伴系统，零 I/O；</li>
+<li><strong>脏文件页</strong>：置 PG_reclaim 转回 active
+链，等回写线程异步落盘，下轮回收再收走；</li>
+<li><strong>匿名页</strong>：先占一个 swap 槽位、进 swap
+cache，把每个映射它的 PTE 换成 swap entry。注意不是清空：swap entry
+记录“这页内容在 swap 设备的哪里”，是 §5 换回的路标。是否真的写盘看
+PG_dirty，换回后没再写过的页，swap 槽位里仍是最新副本，免写直接丢。</li>
+</ul>
+<p>脏文件页的处理有个容易想当然的点：<strong>回收路径不直接写盘</strong>。回收可能发生在很深的分配栈里、持着各种锁，在回收上下文里做文件系统回写容易死锁。回收器对脏页的全部动作就是置
+PG_reclaim、转回 active 链，剩下的交给回写线程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">回收发现脏 -&gt; 置 PG_reclaim,放回 active 链</span><br><span class="line">   (回收侧动作到此为止,对这个页 0 次 I/O)</span><br><span class="line">   ↓ 间隔 0~30 秒,以下之一叫醒回写线程:</span><br><span class="line">   脏内存超 background 水位 / 脏页年龄超 30 秒(每 5 秒巡检一次) /</span><br><span class="line">   本批隔离的页全是&quot;脏而未排队&quot;时,回收侧的兜底叫醒</span><br><span class="line">回写线程从 page cache 扫到它,写盘 -&gt; 写回完成</span><br><span class="line">   ↓ 看到 PG_reclaim:清 active,转到 inactive 链尾</span><br><span class="line">   (这正是&quot;下轮扫描干净了再释放&quot;的实现)</span><br><span class="line">下轮回收从链尾摘走 -&gt; __remove_mapping -&gt; 释放回伙伴系统</span><br></pre></td></tr></table></figure>
+<p>“交给回写线程”也不是递交动作：脏状态本来就在 page cache
+的记录里，回写线程扫的是 page cache 本身，这个页只是安静地挂在 active
+链上等。</p>
+<h1 id="再访问换回内存">5. 再访问：换回内存</h1>
+<p>回收把映射拆了，页框也还给了伙伴系统。进程下一次访问这些虚拟地址，答案是缺页。这一章讲怎么换回来。</p>
+<h2 id="拿-va-怎么找到-swap-里的内容">5.1 拿 VA 怎么找到 swap
+里的内容</h2>
+<p>两段接力：</p>
+<ul>
+<li>VA 只负责走页表，定位到那个 PTE 槽；</li>
+<li>swap 位置信息是换出时内核预先写进 PTE 槽里的 (type, offset)
+编码。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">VA --走页表(PGD-&gt;PUD-&gt;PMD-&gt;PTE)--&gt; 那个 PTE 槽      &lt;- 第一段:VA 只干这个</span><br><span class="line">                                     | 槽里的 64 位值,present=0</span><br><span class="line">                                     v</span><br><span class="line">                         解码(纯位移): type = val &gt;&gt; 6 &amp; 0x1f</span><br><span class="line">                                      offset = val &gt;&gt; 12   &lt;- 第二段:槽里的值才是路标</span><br><span class="line">                                     |</span><br><span class="line">                      +--------------+--------------+</span><br><span class="line">                      v                             v</span><br><span class="line">             type -&gt; swap_info[type]          offset -&gt; 该设备内</span><br><span class="line">             (哪个设备:zram/分区/文件,        第几个槽位(页为单位)</span><br><span class="line">             /proc/swaps 每行一个 type)</span><br><span class="line">                      |                             |</span><br><span class="line">                      +--------------+--------------+</span><br><span class="line">                                     v</span><br><span class="line">                     先查 swap cache(key=offset)</span><br><span class="line">                       命中 -&gt; 直接复用内存里那份 folio</span><br><span class="line">                       未命中 -&gt; 从设备读(zram 解压 / 磁盘 I/O)</span><br><span class="line">                                     v</span><br><span class="line">                     重建 present PTE(新 PA+权限位)写回槽里</span><br></pre></td></tr></table></figure>
+<p>缺页时这个走表过程发生两次：MMU 的 page table walker 硬件走一次，发现
+present=0，触发 translation fault（缺页异常）；异常处理里
+<code>handle_mm_fault()</code>
+软件按同样的位段索引再定位一次，读出槽里的值。注意软件这次只是读取定位，不分配任何页表：页表常驻内存、不会被换出，只要
+swap entry 还在槽里，整条路径必然完整存在。</p>
+<h2 id="do_swap_page">5.2 do_swap_page()</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">缺页异常(PTE 为 swap entry)</span><br><span class="line">  +-&gt; handle_pte_fault()</span><br><span class="line">    +-&gt; do_swap_page()                  <span class="comment">/* mm/memory.c */</span></span><br><span class="line">      +-&gt; softleaf_from_pte()           <span class="comment">/* 从 PTE 取出 swap entry */</span></span><br><span class="line">      +-&gt; get_swap_device()</span><br><span class="line">      +-&gt; swap_cache_get_folio()        <span class="comment">/* 先查 swap cache:命中直接复用现有 folio */</span></span><br><span class="line">      +-&gt; swapin_sync()                 <span class="comment">/* 未命中:zram 类同步设备,同步读入 */</span></span><br><span class="line">      +-&gt; swapin_readahead()            <span class="comment">/* 未命中:磁盘 swap,预读 */</span></span><br><span class="line">        +-&gt; swap_cache_read_folio()</span><br><span class="line">          +-&gt; swap_cache_alloc_folio()  <span class="comment">/* 分配新页框,进 swap cache 并挂 LRU */</span></span><br><span class="line">          +-&gt; swap_read_folio()         <span class="comment">/* 从 swap 设备读入内容 */</span></span><br><span class="line">      +-&gt; folio_add_new_anon_rmap()     <span class="comment">/* 全新换入:独占映射(命中复用时可能非独占) */</span></span><br><span class="line">      +-&gt; set_ptes()                    <span class="comment">/* 重建 PTE(带 AF) */</span></span><br></pre></td></tr></table></figure>
+<h2 id="拿到的是新的物理页吗">5.3 拿到的是新的物理页吗</h2>
+<p>多数情况下是。回收本来就意味着旧页框已归还伙伴系统，可能早被别人用掉，换入的新
+folio 从伙伴系统领取新页框，内容从 swap 读入。例外是缓存恰好还留着原
+folio：</p>
+<ul>
+<li>fork 的多个子进程先后访问同一个已换出的页：第一个 fault
+的进程换入新页并放进 swap cache，folio 留在里面，其余子进程 fault 时
+swap cache 命中，直接映射同一个物理页，谁要写谁走 COW（Copy On
+Write，写时复制）；</li>
+<li>文件页重访时 page cache
+还留着该页，比如别的进程仍映射着，或回收尚未轮到它：直接映射原页，零
+I/O。</li>
+</ul>
+<h1 id="总结">总结</h1>
+<ul>
+<li>页框回收的入口是分配本身：空闲页跌破 low 水位，分配路径唤醒 kswapd
+异步回收；跌破 min 仍不够，分配进程自己同步直接回收，最后 OOM killer
+兜底。</li>
+<li>回收对象分匿名页和文件页两类，各挂一套 active/inactive LRU
+链，扫描压力按 swappiness 权重和两类页的近期回收成本动态分配。</li>
+<li>冷热判决靠 PTE AF 和 PG_referenced 双轨证据：回收扫描清
+AF，观察一个窗口，第二次还被访问才晋升热链。第二次机会防的是误杀热页造成抖动。</li>
+<li>拆映射靠反向映射：文件页走 address_space 区间树、匿名页走 anon_vma
+锚点枚举所有 VMA，用 folio-&gt;index 换算回各进程的地址，逐个操作
+PTE。</li>
+<li>归宿三分：干净文件页直接丢，脏文件页置 PG_reclaim
+等回写线程异步落盘，匿名页换出到 swap。再访问时缺页，按 PTE 里预埋的
+swap entry 换回。</li>
 </ul>
 
     </article>
@@ -685,7 +963,7 @@ offset)，查 swap cache 命中则复用，未命中从设备读入。</li>
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/">https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/">November 5th 2026, 8:00:00 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/">November 5th 2026, 1:00:51 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/">November 5th 2026, 3:06:20 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -846,8 +1124,13 @@ offset)，查 swap cache 命中则复用，未命中从设备读入。</li>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E7%AF%87%E6%80%9D%E8%80%83%E9%A2%98"><span class="toc-text">开篇思考题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A8%E6%96%87%E7%9F%A5%E8%AF%86%E5%9C%B0%E5%9B%BE"><span class="toc-text">全文知识地图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%8F%91%E7%94%9F"><span class="toc-text">二、页框回收什么时候发生</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E6%9D%A1%E6%B0%B4%E4%BD%8D%E7%BA%BF%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-text">三条水位线的分工</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E9%85%8D%E8%B7%AF%E5%BE%84%E7%9A%84%E4%B8%89%E7%BA%A7%E7%AD%96%E7%95%A5"><span class="toc-text">分配路径的三级策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89lru-%E9%93%BE%E9%A1%B5%E7%9A%84%E6%8E%92%E9%98%9F%E4%B8%8E%E5%86%B7%E7%83%AD%E5%88%A4%E5%AE%9A"><span class="toc-text">三、LRU 链：页的排队与冷热判定</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E6%9D%A1%E9%93%BE"><span class="toc-text">五条链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%B7%E7%83%AD%E7%9A%84%E8%AF%81%E6%8D%AEaf-%E4%BD%8D%E4%B8%8E-pg_referenced"><span class="toc-text">冷热的证据：AF 位与
-PG_referenced</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E9%80%89%E4%B8%80%E5%9B%9E%E6%94%B6%E6%97%B6%E7%9A%84%E5%88%A4%E5%AE%9A"><span class="toc-text">三选一：回收时的判定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E5%8F%8D%E5%90%91%E6%98%A0%E5%B0%84%E4%BB%8E%E7%89%A9%E7%90%86%E9%A1%B5%E6%89%BE%E5%9B%9E%E6%89%80%E6%9C%89%E6%98%A0%E5%B0%84"><span class="toc-text">四、反向映射：从物理页找回所有映射</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A6%81%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">要解决的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E6%AD%A5%E6%8E%A5%E5%8A%9B"><span class="toc-text">两步接力</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E6%96%87%E4%BB%B6%E9%A1%B5%E4%B8%8E%E5%8C%BF%E5%90%8D%E9%A1%B5%E7%9A%84%E4%B8%A4%E6%9D%A1%E5%9B%9E%E6%94%B6%E8%B7%AF%E5%BE%84"><span class="toc-text">五、文件页与匿名页的两条回收路径</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E9%A1%B5%E5%9B%9E%E6%94%B6-%E4%B8%A2%E5%BC%83"><span class="toc-text">文件页：回收 &#x3D; 丢弃</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%BF%E5%90%8D%E9%A1%B5%E5%9B%9E%E6%94%B6-%E6%8D%A2%E5%87%BA"><span class="toc-text">匿名页：回收 &#x3D; 换出</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E9%87%8D%E6%96%B0%E8%AE%BF%E9%97%AE%E6%8D%A2%E5%85%A5"><span class="toc-text">六、重新访问：换入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%A8%E6%99%AF%E4%BB%8E-alloc_pages-%E8%AF%B4%E8%B5%B7"><span class="toc-text">1. 全景：从 alloc_pages() 说起</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E6%94%B6%E4%BB%80%E4%B9%88%E4%B8%A4%E7%B1%BB%E9%A1%B5%E4%BA%94%E6%9D%A1%E9%93%BE"><span class="toc-text">1.1 回收什么：两类页，五条链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%AB%E6%8F%8F%E9%85%8D%E9%A2%9Dswappiness-%E4%B8%8E%E8%BF%91%E6%9C%9F%E6%88%90%E6%9C%AC"><span class="toc-text">1.2 扫描配额：swappiness
+与近期成本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E6%94%B6%E7%9A%84%E6%89%A7%E8%A1%8C%E6%80%BB%E8%A7%88"><span class="toc-text">1.3 回收的执行：总览</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E6%94%B6%E4%B8%89%E6%9D%A1%E6%B0%B4%E4%BD%8D%E7%BA%BF%E4%B8%8E%E4%B8%89%E6%9D%A1%E8%B7%AF%E5%BE%84"><span class="toc-text">2.
+什么时候收：三条水位线与三条路径</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E6%9D%A1%E6%B0%B4%E4%BD%8D%E7%BA%BF"><span class="toc-text">2.1 三条水位线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E4%B8%80kswapd-%E5%90%8E%E5%8F%B0%E5%9B%9E%E6%94%B6"><span class="toc-text">2.2 路径一：kswapd 后台回收</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E4%BA%8C%E7%9B%B4%E6%8E%A5%E5%9B%9E%E6%94%B6%E6%85%A2%E9%80%9F%E8%B7%AF%E5%BE%84%E7%9A%84%E5%85%9C%E5%BA%95"><span class="toc-text">2.3
+路径二：直接回收，慢速路径的兜底</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E4%B8%89%E4%B8%BB%E5%8A%A8%E5%9B%9E%E6%94%B6"><span class="toc-text">2.4 路径三：主动回收</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E6%9D%A1%E8%B7%AF%E5%BE%84%E5%AF%B9%E6%AF%94"><span class="toc-text">2.5 三条路径对比</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%94%B6%E8%B0%81lru-%E9%93%BE%E4%B8%8A%E7%9A%84%E5%86%B7%E7%83%AD%E5%88%A4%E5%86%B3"><span class="toc-text">3. 收谁：LRU 链上的冷热判决</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%B7%E7%83%AD%E7%9A%84%E8%AF%81%E6%8D%AEaf-%E4%B8%8E-pg_referenced"><span class="toc-text">3.1 冷热的证据：AF 与
+PG_referenced</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E7%94%BB%E4%B8%80%E4%B8%AA%E9%A1%B5%E7%9A%84%E4%B8%80%E7%94%9F"><span class="toc-text">3.2 动画：一个页的一生</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E6%9C%BA%E5%85%A8%E6%99%AF"><span class="toc-text">3.3 状态机全景</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E6%94%B6%E5%8F%8D%E5%90%91%E6%98%A0%E5%B0%84%E4%B8%8E%E4%B8%89%E7%B1%BB%E5%BD%92%E5%AE%BF"><span class="toc-text">4. 怎么收：反向映射与三类归宿</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%8F%8D%E5%90%91%E6%98%A0%E5%B0%84"><span class="toc-text">4.1 为什么需要反向映射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E6%AD%A5%E8%B5%B0%E5%85%88%E6%9E%9A%E4%B8%BE-vma%E5%86%8D%E6%8D%A2%E7%AE%97%E5%9C%B0%E5%9D%80"><span class="toc-text">4.2 两步走：先枚举
+VMA，再换算地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E7%B1%BB%E5%BD%92%E5%AE%BF"><span class="toc-text">4.3 三类归宿</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%8D%E8%AE%BF%E9%97%AE%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98"><span class="toc-text">5. 再访问：换回内存</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%BF-va-%E6%80%8E%E4%B9%88%E6%89%BE%E5%88%B0-swap-%E9%87%8C%E7%9A%84%E5%86%85%E5%AE%B9"><span class="toc-text">5.1 拿 VA 怎么找到 swap
+里的内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#do_swap_page"><span class="toc-text">5.2 do_swap_page()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%BF%E5%88%B0%E7%9A%84%E6%98%AF%E6%96%B0%E7%9A%84%E7%89%A9%E7%90%86%E9%A1%B5%E5%90%97"><span class="toc-text">5.3 拿到的是新的物理页吗</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1332,6 +1615,8 @@ PG_referenced</span></a></li><li class="toc-item toc-level-3"><a class="toc-link
         
         
     
+        
+        
         
         
         
@@ -3015,19 +3300,24 @@ PG_referenced</span></a></li><li class="toc-item toc-level-3"><a class="toc-link
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="虚拟化">
-            <span class="iconfont-archer">&#xe60a;</span>
-            虚拟化
-        </span>
-    
         <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
             <span class="iconfont-archer">&#xe60a;</span>
             ARM64结构与编程实操
         </span>
     
+        <span class="sidebar-category-name" data-categories="虚拟化">
+            <span class="iconfont-archer">&#xe60a;</span>
+            虚拟化
+        </span>
+    
         <span class="sidebar-category-name" data-categories="内存">
             <span class="iconfont-archer">&#xe60a;</span>
             内存
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核基础">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核基础
         </span>
     
         <span class="sidebar-category-name" data-categories="C++知识点">
@@ -3040,19 +3330,14 @@ PG_referenced</span></a></li><li class="toc-item toc-level-3"><a class="toc-link
             重装-环境配置-计算机
         </span>
     
-        <span class="sidebar-category-name" data-categories="Linux内核基础">
+        <span class="sidebar-category-name" data-categories="数据结构与算法">
             <span class="iconfont-archer">&#xe60a;</span>
-            Linux内核基础
+            数据结构与算法
         </span>
     
         <span class="sidebar-category-name" data-categories="计算机网络">
             <span class="iconfont-archer">&#xe60a;</span>
             计算机网络
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="数据结构与算法">
-            <span class="iconfont-archer">&#xe60a;</span>
-            数据结构与算法
         </span>
     
         <span class="sidebar-category-name" data-categories="数据库">
