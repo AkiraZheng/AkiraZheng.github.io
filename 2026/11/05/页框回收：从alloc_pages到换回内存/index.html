@@ -26,18 +26,17 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="物理内存永远比所有进程想要的少。内核既不能拒绝合理的分配请求，也不能无限透支，只能把“暂时没人用”的页收回来腾给更紧急的进程，腾内存的这套机制就是页框回收（page reclaim）。 页框（page frame）是物理内存按页划分的分配单位，也是回收的目标。参与页框回收流程的组件有四个：  衡量内存紧张程度的水位线：决定了是否触发回收 按冷热给页排队的 LRU 链表：决定了应该回收哪些页 负责找">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/NLJRJXfH57sVhpZngKrhZBSN7ne9GccgXOA65nCpbL69E10OOzgc2KH5KMvQgo1u8rXjHS762qM5fDyovypCNtIVCmYZ3v0pizRUi_PUQsOm9F51QNxEnuLclMA03_9pw1C_EJiTzC-B7hFVvm-YXHcl91XmZp35p_iagr-KNDul0khkvYIlv1CGNZubsolAmR5QZk9y1UVg71U0PloqW3h-dNGpGhRSWVWGCjkwqLSEeKa-w44TlC_ddvm8034qC2xYnXbPBiZL8jaxKc_BkBx4Iap3mtPpgmHWvV9EExf-BTUsW8Y6dMD8-rvdL3ZtjvWaTaPIAMqveHNse7jeWGy4lA8G2Y6vcbGR6oH_G5RJ95zYfH_7xACcxjiJvJr8lWlBVrV9pWqEPydMJNE47iC8SZK6AaZbIdv8ABN6k3Zd5Rjy_eMk6U_q3EExHrhaMIh2Wt0wYLEmf_t7bkzTRfDZg4LJSbSaUQpZw1MosqSOQ-YTqs8UDJpv3g-T6heud7OJu4zdw4K0gvL8KtglGJfi3HUlbCNpr_HKgUFeBMFPsjisMU7vZhSJGM5A20hYfE01cr9nzU5KBKT8ua8toEgqMDlYIoMv5YUb8vAloVUxZE6oc9_9waCadAIhRIsrpw0Cfn8ulK4oXxYo1DOfiLzAEWgUarYTpXiBatmCEKOjhDGvOd8OxO1uu8TDVD60IhbQmFUBNL24ezakaYZWbHehieyzNrG_ed1klocdto27keO4KGf-fXsBvEAQshEMqsTpjtWU_mIbia2_UAbxvcfh8ziLc45jP4YcJ7PEuCme7onkAeN577Lslccc0GqWzJQk75uXI1F2MqKjkcaWwM5eao1sI5tvZMylvUewpjSuzuYXsUDLCqBqFM7NBFMqIIM2YxlqlxBHHcrcW20L416ItDGo1vnDVpXpl8Lf-R3wCw87WjCXIWBJQUTocUo5jSmVibRaw2qAKSlqSbY25ex9rNEEtQCWM0COMO_YYxWU0RmQ9TSHZWAiiPlMnXiudO1ovKSM9eRl1JbSuG1YOyBMuSVETBs3WkY1Zzr_">
-<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RLHDRzDO5DtxLxnb8XLLWbab4h11Q1QeB6OvacMvBwrLnuviXsfO1THycCHfMW8aRJJz8A65fcc7QQ7DfyHFGNxFzh_WFZydJL6pS6I_U-yxzvnpxsFJaWmhcrO5Ix5KZ8A3ItfG8Bl_qletcXluHoL124E4XAIgkYncf1LindHZ6HlnfA2aKCpxt0y-V8L4zDFk85LVH_JymXqvZ-B8MiKQYj76MLn0AB62hJ1TJ1bw6XuOguffnTWPcPm4kJt_-naPRtYx5xJQ8QL2a7TegKRUx2KXmhJqZ81L4wCOgNqAw_cJNPBlqFpXB9LLofV8y3KzxP1wEoXiepLpNSeintuStGUuM5jMKa88n9GbJPJrhCO0q8gDM5n6qR1f8h9TyITRjBK7rzDML-1OI6L2QiuYVLzq1z-2jsDlPuFQ9tHpCoXk9eM4OkggP65HDR9YIbSLtOJ2xg2A54sIBUK5SFjsJCx7rBw61BhLG0_kCxgJWe4pMB9Gmbmr56sD9ukS6XJaQX13IctIso6ZRTARC38OxJnCNiNoccZW53Qm9eCoyIdhxi3n3q_8y9rNFsPqyIp-JeRznFEdDsdBo9yqIEluRusMtfFsZdlr1Jt_wmc2DtVmqTj_HNkN0ECtGTalGPjbuXJ1CEYcosHuU4kiCDORzT3jQsbzp5Ad54M1NhVhzYkqUq1RVNUu0-8zY4SrGm6djUc7VRVVvoqbIE4xWtZJQIWNV7AlwhJr1SmIIena2JXxT5Shd55kSnOQcvvm_NawFHg1jnUuz-OgtiO7rIpZ7z7InQoMdbMYvGAjsjJEqPOD1RpZClDGOv-SRq2FVqGzCl2HoGukxm8QTdVzbHHpTvt2rI9GdDPVO34TMde5V0H-8yK-OkCtZpSC3uflk0xkiEaEBxp_1zvWRthEcVOtDkVgptIKLKb98t_KlT5_5kMTsl2L59fUVmAT-hMHjzjOSA_A_gX72WxibxcUvvcBV3ELRoOFmwvdsL1Gvn2Q8QLpph_V6vDsCGgBlJIazEBBy81iZTohKr9gahpZVNm5zwC_5vTcLu9bcWnYhyBMJAtAUVZDQE5_DA7hguhAR6TVaq8U9WPav18fPYJ1lOS830_RW6qtq1wiFbi6Y4y-J36atgOwmHqM51t_xDq2QV_dNtGOx6hP6tvUN5fw5kslS0a-1aomi7y1">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/RLJBRjj65DtpAsOf0IxS9br9Q9CkqgABmbbqMO0Wv95Dc285aehHh9J0UZ0IPTbH4baMOikHQYUMPJUrKrbFe9zIS8Ragh_GEnnAbXDhOK6UUy-SUywP-z0m9TtCf1J1b4q58xzrHLjvil-MrZxHxD0xBWf2K2B494NH4c9QMiD6HDDNiHwD2t8IHTpt0__DHsX4_reTf6YRY5vSEcFxGHIPwrX54Le_Zme8nTQm6RIBILrBmH-C5Tam8-oCJ4_zx87tzpcPRBdxbxJI8SMydxDfiKfU7CIXmZ2rj80L0wC8gVuHu7dJVPBhqDpHl9KXvOfaz9oUTKYjxUTtqOQnAQLN8_yStmEwM5sLaq90n4X8gfZGCYeZGCiMOdLfMSM6WSXksPlkqEO1N4-RNO5p8UKfgThBz7N16NxoNqxSnXQrJkdsjb_OZWinsT0KoSIYecV4fAR8cW70ph22P5LAcF8JqFRbX5nCg7KD3NIdZkxVOtB71HsdiMIYcB6ko-e6RnQvDCZFLg665Dkarm0TONJk3PE4YS-B4-iuiI7gE8brh2R0d-XCUsTeUqUdPFJAhPtyDsey_lKH-k77xxv1jF7SwTiSYud9qNWT6GrYZt-wWLj5thHEcYU_gRJuchGRJly3Oa3monc-Sm-VqTuLaFpCRlQ9qRqIiGjm3RhH81uSth8og7N7FNJxMbgRiDQPW66Xs-qwWpBjjcXpu8mQOEtzQ8WPs3l3fcyEdS60ZnGB1_yQKUlOQvM_63pm5ePm-ZNQ_0392lA04X98--2koRZm_4smqiZiX8U5jzFZCJo49HxK1SJRT07Dr7yNJKtCgAav4YtbQSMYLfOsBG1mJqeiSFL3Sh458tyRZip8XubiNTr5D9Zk-YCfPEywXQj5K3obFS5YAiZ_6eGEmaaA0yJUwYBVeDmllE2sEACzPtJf_ZLqXmUpSowyjxMzW3-tDQ58SWfvu-vD7EPLxfa5_oNvFNSmXKczwjZThoyv_P8txf6y3LujpBoeN1YZcNrpUnXtBSDU4BMFO1XIlE3wUxq9QHV2iiXJNKejFmqEoCxOwP-HuXx9sUwxPt0_-dbvPNvb3CWnYhqosqdL2jVXizm5t-5ptboN5PP2wvhaS_20m4PkaMo45dprFOBym-fWgn2yX-JFDmVYQuACTw7rjjGndZ2_O7ldhvP8-q_liiDeLqhkwFtooieluR8BDkP3u0JR_Ny0">
 <meta property="og:image" content="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/水位线.png">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/JPBBIiD068NtynG_NQM2g5iNKdSkr8NGZLRAc0msD4r2CoNegWeMKwK5gIXOjQqMBwLKHMkDYkyYoIHz2wU9lMm6PkPy_pbdc9X1SPRcCWgYCbK8f0qJwn9unIxBxx6gBR1EsUazmcfyPH7yuhwt_-7qylmaYb1AbWYGZ4vtG2A6c9LrAciguXCfWGXxV_OkwmdL45D4oYb4Y89RlVytI9fOfk3qYX701gU9FiJSYojMwJgzTaBTmWfMHPBKjoLCXMWWDRLiUYHzAdC7ltFAIesnJvBA6QBbgB2qFZCt6qseGhzkC-l8hTps2oUG5hMCZaKgXVDeLiOAGXjJcp0zlH0c6Ip1Rc06ys3YDCdfoJ2vm2Tw3tR_xALVV_FVZxtQAoYQYGBj1EJ_dBEg1RkQIi3vBZbs2LBoTeh3dtVUPvjPBLXUYqDOTqm7UJZEhFm8_xMQ0Ol2os7EWKdGdLMltS81EwivjXssJAYiVUD-bTs39d-X2MuORe9pouT-enLoA4PKYN-6Fm00">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/LPB1Rjf048RlVefHJb0rgdhfWKEL1w2DL2cdka8MM8s5iP7j2kL6eW26158gcbH0Wg6WA44EfI90tGJU9VAixRVeccrB8krfT-RR-R_TBTqGDEDJHkOCoP15I2G4MLQJYQpmKTGJkgpcieAn6ud6S7mGhehbMVjUyv3KBj6SajjzRbTAYI1ciiOUf4GzgKbPGr8LZd8D4JOUwXRWoJ0eVe6qdXEogGZU7H1x4EMLXteNI6E1D_Te_e2Cf83dB8DIrHzzHRCO5AeR8EYWYOQsjwRrm6jDI6s0hGlIcCRyqZNEngGyXFYxdH3v_TzvxSYxkufXgUulBxpVTj2zNU5ogfPUqmQmlVq6qf8iYnglaECog6eceITLJGHodYVjF5OjB1RG_aOphm2qWEFUF_i0cvklsN0G0rmEWtp7durmSOZziJyPy8ftvGHdF_tPiMTDW7haM77O5hRJfbL8Odx6IiTVDcWYEYJf5dabWcPptGZORsArGYKHk-_E7MBteezWOI9A--lF_TLnvrNiTxZL_fCXLyfUC3EaNNQTIomvlEBE6wHzpJJ1orVWtz_GsKdvQ8sWeIdWIKdGcZ805nu-liSlBEWsi_OylFHym5xrVoNBJyuiF1c5cirJzev-ZseiktERLvWSfWNUxiJZt9QefEW__GC0">
 <meta property="og:image" content="http://www.plantuml.com/plantuml/svg/PLDTJnD157tVNp7XQMlA0oQ-a60WfXWY2OIWBwxPhBi3tNHtjjaT9FY4N_tGLaYiL2XA8H8qG6CC0gaj9FwMdTdsNtXdbXQqRvEPSyuzzvuxum4rVBhaEWgrgOCHArsozN9tzrUqzJeyNuqgEshOgaU_Tz3qtCE4ahOjZB2RfIl8me7fsrbgUqG14OhH4CkTTJzS89iO9hMVOOtmQXtvU07xc9ZO6a96W4pFiVx5QsJslluVQjdmtHugUdKiL6DD-PhsQE-Hb_TOlXcU7sk4bUieM3Qoo3JCD4Rye1sson8lRlirptvsyszvHPITJur90YRKNv78HOzWHNbywmaQ7huhlQ9Hn7ARKQi9Cu5AC90aBxtizuZ06ljwef69oR6HPDHk86X6Y3urp0os52aXj4H7e1KT7Q4Hn8zsEutBRhMXaGNFiJtTDVoCRfWc3W9igGb5eWKDMhrYtHvaIGlG5H04xePbuUh7HMVr1IjjQ2H8-pR9n72iEtP0rOH6r2ktovwViSbYW6bYm2whVU6LKruyv6jhl7hAjukizJ6gVDF8vCpqrCnSQb9_a4hDgc0mR9R08DzkXgsjWGRw2Z6ThHNuv_qR8XFtvgSUJSodhWt8O81OhOVDPinATbUBa7GSUNy6ZkEPSk9g0i4AnB5h8b6TUleISSNBA6IDWCWBw-WwSaKUHJMHErHxBY_O-tTHwpilR8ZWQvzOemGqZUYmfAu70mJ5B0mCwiMRf4ZsTRCiL-xi7VQYiZpfJiyQYn2KCC7UxAj_3kv01Bns0TlTkSopmgRuACQIGr5KEu6nnrklZ6DYmU_y2m00">
 <meta property="og:image" content="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/文件页与匿名页换出路径.jpg">
 <meta property="article:published_time" content="2026-11-05T12:00:00.000Z">
-<meta property="article:modified_time" content="2026-11-05T07:06:20.190Z">
+<meta property="article:modified_time" content="2026-11-05T07:59:55.054Z">
 <meta property="article:author" content="AkiraZheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://www.plantuml.com/plantuml/svg/NLJRJXfH57sVhpZngKrhZBSN7ne9GccgXOA65nCpbL69E10OOzgc2KH5KMvQgo1u8rXjHS762qM5fDyovypCNtIVCmYZ3v0pizRUi_PUQsOm9F51QNxEnuLclMA03_9pw1C_EJiTzC-B7hFVvm-YXHcl91XmZp35p_iagr-KNDul0khkvYIlv1CGNZubsolAmR5QZk9y1UVg71U0PloqW3h-dNGpGhRSWVWGCjkwqLSEeKa-w44TlC_ddvm8034qC2xYnXbPBiZL8jaxKc_BkBx4Iap3mtPpgmHWvV9EExf-BTUsW8Y6dMD8-rvdL3ZtjvWaTaPIAMqveHNse7jeWGy4lA8G2Y6vcbGR6oH_G5RJ95zYfH_7xACcxjiJvJr8lWlBVrV9pWqEPydMJNE47iC8SZK6AaZbIdv8ABN6k3Zd5Rjy_eMk6U_q3EExHrhaMIh2Wt0wYLEmf_t7bkzTRfDZg4LJSbSaUQpZw1MosqSOQ-YTqs8UDJpv3g-T6heud7OJu4zdw4K0gvL8KtglGJfi3HUlbCNpr_HKgUFeBMFPsjisMU7vZhSJGM5A20hYfE01cr9nzU5KBKT8ua8toEgqMDlYIoMv5YUb8vAloVUxZE6oc9_9waCadAIhRIsrpw0Cfn8ulK4oXxYo1DOfiLzAEWgUarYTpXiBatmCEKOjhDGvOd8OxO1uu8TDVD60IhbQmFUBNL24ezakaYZWbHehieyzNrG_ed1klocdto27keO4KGf-fXsBvEAQshEMqsTpjtWU_mIbia2_UAbxvcfh8ziLc45jP4YcJ7PEuCme7onkAeN577Lslccc0GqWzJQk75uXI1F2MqKjkcaWwM5eao1sI5tvZMylvUewpjSuzuYXsUDLCqBqFM7NBFMqIIM2YxlqlxBHHcrcW20L416ItDGo1vnDVpXpl8Lf-R3wCw87WjCXIWBJQUTocUo5jSmVibRaw2qAKSlqSbY25ex9rNEEtQCWM0COMO_YYxWU0RmQ9TSHZWAiiPlMnXiudO1ovKSM9eRl1JbSuG1YOyBMuSVETBs3WkY1Zzr_">
+<meta name="twitter:image" content="http://www.plantuml.com/plantuml/svg/RLJBRjj65DtpAsOf0IxS9br9Q9CkqgABmbbqMO0Wv95Dc285aehHh9J0UZ0IPTbH4baMOikHQYUMPJUrKrbFe9zIS8Ragh_GEnnAbXDhOK6UUy-SUywP-z0m9TtCf1J1b4q58xzrHLjvil-MrZxHxD0xBWf2K2B494NH4c9QMiD6HDDNiHwD2t8IHTpt0__DHsX4_reTf6YRY5vSEcFxGHIPwrX54Le_Zme8nTQm6RIBILrBmH-C5Tam8-oCJ4_zx87tzpcPRBdxbxJI8SMydxDfiKfU7CIXmZ2rj80L0wC8gVuHu7dJVPBhqDpHl9KXvOfaz9oUTKYjxUTtqOQnAQLN8_yStmEwM5sLaq90n4X8gfZGCYeZGCiMOdLfMSM6WSXksPlkqEO1N4-RNO5p8UKfgThBz7N16NxoNqxSnXQrJkdsjb_OZWinsT0KoSIYecV4fAR8cW70ph22P5LAcF8JqFRbX5nCg7KD3NIdZkxVOtB71HsdiMIYcB6ko-e6RnQvDCZFLg665Dkarm0TONJk3PE4YS-B4-iuiI7gE8brh2R0d-XCUsTeUqUdPFJAhPtyDsey_lKH-k77xxv1jF7SwTiSYud9qNWT6GrYZt-wWLj5thHEcYU_gRJuchGRJly3Oa3monc-Sm-VqTuLaFpCRlQ9qRqIiGjm3RhH81uSth8og7N7FNJxMbgRiDQPW66Xs-qwWpBjjcXpu8mQOEtzQ8WPs3l3fcyEdS60ZnGB1_yQKUlOQvM_63pm5ePm-ZNQ_0392lA04X98--2koRZm_4smqiZiX8U5jzFZCJo49HxK1SJRT07Dr7yNJKtCgAav4YtbQSMYLfOsBG1mJqeiSFL3Sh458tyRZip8XubiNTr5D9Zk-YCfPEywXQj5K3obFS5YAiZ_6eGEmaaA0yJUwYBVeDmllE2sEACzPtJf_ZLqXmUpSowyjxMzW3-tDQ58SWfvu-vD7EPLxfa5_oNvFNSmXKczwjZThoyv_P8txf6y3LujpBoeN1YZcNrpUnXtBSDU4BMFO1XIlE3wUxq9QHV2iiXJNKejFmqEoCxOwP-HuXx9sUwxPt0_-dbvPNvb3CWnYhqosqdL2jVXizm5t-5ptboN5PP2wvhaS_20m4PkaMo45dprFOBym-fWgn2yX-JFDmVYQuACTw7rjjGndZ2_O7ldhvP8-q_liiDeLqhkwFtooieluR8BDkP3u0JR_Ny0">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/yueyue.jpg">
@@ -345,7 +344,7 @@
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">5.6k</span>Reading time: <span class="post-count reading-time">21 min</span></span>
+                        <span>Word count: <span class="post-count word-count">6.1k</span>Reading time: <span class="post-count reading-time">22 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -539,7 +538,7 @@ frame）是物理内存按页划分的分配单位，也是回收的目标。参
 <td>匿名页（anonymous page）</td>
 <td>堆、栈</td>
 <td>没有，内存是唯一副本</td>
-<td>先写 swap 才能释放</td>
+<td>首次 swap 先写到 swap 分区才能回收</td>
 </tr>
 <tr>
 <td>文件页（file-backed page）</td>
@@ -549,37 +548,58 @@ frame）是物理内存按页划分的分配单位，也是回收的目标。参
 </tr>
 </tbody>
 </table>
-<p><img src="http://www.plantuml.com/plantuml/svg/NLJRJXfH57sVhpZngKrhZBSN7ne9GccgXOA65nCpbL69E10OOzgc2KH5KMvQgo1u8rXjHS762qM5fDyovypCNtIVCmYZ3v0pizRUi_PUQsOm9F51QNxEnuLclMA03_9pw1C_EJiTzC-B7hFVvm-YXHcl91XmZp35p_iagr-KNDul0khkvYIlv1CGNZubsolAmR5QZk9y1UVg71U0PloqW3h-dNGpGhRSWVWGCjkwqLSEeKa-w44TlC_ddvm8034qC2xYnXbPBiZL8jaxKc_BkBx4Iap3mtPpgmHWvV9EExf-BTUsW8Y6dMD8-rvdL3ZtjvWaTaPIAMqveHNse7jeWGy4lA8G2Y6vcbGR6oH_G5RJ95zYfH_7xACcxjiJvJr8lWlBVrV9pWqEPydMJNE47iC8SZK6AaZbIdv8ABN6k3Zd5Rjy_eMk6U_q3EExHrhaMIh2Wt0wYLEmf_t7bkzTRfDZg4LJSbSaUQpZw1MosqSOQ-YTqs8UDJpv3g-T6heud7OJu4zdw4K0gvL8KtglGJfi3HUlbCNpr_HKgUFeBMFPsjisMU7vZhSJGM5A20hYfE01cr9nzU5KBKT8ua8toEgqMDlYIoMv5YUb8vAloVUxZE6oc9_9waCadAIhRIsrpw0Cfn8ulK4oXxYo1DOfiLzAEWgUarYTpXiBatmCEKOjhDGvOd8OxO1uu8TDVD60IhbQmFUBNL24ezakaYZWbHehieyzNrG_ed1klocdto27keO4KGf-fXsBvEAQshEMqsTpjtWU_mIbia2_UAbxvcfh8ziLc45jP4YcJ7PEuCme7onkAeN577Lslccc0GqWzJQk75uXI1F2MqKjkcaWwM5eao1sI5tvZMylvUewpjSuzuYXsUDLCqBqFM7NBFMqIIM2YxlqlxBHHcrcW20L416ItDGo1vnDVpXpl8Lf-R3wCw87WjCXIWBJQUTocUo5jSmVibRaw2qAKSlqSbY25ex9rNEEtQCWM0COMO_YYxWU0RmQ9TSHZWAiiPlMnXiudO1ovKSM9eRl1JbSuG1YOyBMuSVETBs3WkY1Zzr_" alt="plantuml diagram"></p>
+<p>最常见的完整的回收路径为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">进程访问内存 → 缺页 → alloc_pages</span><br><span class="line">   → 水位检查:空闲充足 → 快速路径分配,缺页建映射、挂 LRU</span><br><span class="line">   → 内存紧张 → kswapd / 直接回收 → LRU 找到要换出的冷页</span><br><span class="line">   → 冷页 → 反向映射拆干净所有 PTE</span><br><span class="line">   → 文件页:干净直接丢 / 脏页等回写;匿名页:换出到 swap</span><br><span class="line">   → 页框归还伙伴系统</span><br><span class="line">   → 进程再次访问 → 缺页 → 从文件 / swap 重新加载→ 新的(或缓存命中的)物理页</span><br></pre></td></tr></table></figure>
 <p>带着三个问题往下读，全文按这三个问题展开：</p>
 <ul>
 <li>分配内存的进程怎么发现“内存不够”？发现之后由谁收、什么时候收？</li>
 <li>内核怎么判断一页是热还是冷？</li>
 <li>被选中的页可能同时映射在多个进程的页表里，怎么拆干净？拆完之后进程再访问这个地址，会发生什么？</li>
 </ul>
-<h1 id="全景从-alloc_pages-说起">1. 全景：从 alloc_pages() 说起</h1>
-<p>进程要内存（fork
+<p>Linux 内核中有很多种会触发<strong>页框回收机制</strong>的情况：</p>
+<ul>
+<li>用户态主动回收：
+<ul>
+<li><code>madvise(MADV_PAGEOUT)</code>系统调用。进程告知内核某段内存长期不用，内核立即回收（保留数据，非破坏性）。</li>
+<li>内存 cgroup 的限额回收：进程在组内分配撞到 <code>memory.max</code>
+上限时，<code>try_to_free_mem_cgroup_pages()</code>
+负责回收到限额以下，分配才放行（写小限额、超 <code>memory.high</code>
+时也走这条路径）</li>
+<li>DAMON 的主动回收：DAMON（Data Access
+Monitor）框架提供一个可选的主动回收模块
+<code>damon_reclaim</code>。它可以根据访问模式<strong>主动识别冷内存区域并立即回收</strong>，作为一种轻量级、前置的回收手段，减轻传统基于水位线的回收压力。它通过内核启动参数或
+sysfs 接口启用，属于可选的、用户主动配置的回收路径。</li>
+</ul></li>
+<li><strong>alloc_pages()：分配路径本身——水位跌破 low 先唤醒 kswapd
+后台回收（异步），走到慢速路径还不够时自己下场直接回收（同步），这也是本文的主线</strong></li>
+<li>...</li>
+</ul>
+<h1 id="从-alloc_pages-说起">1. 从 alloc_pages() 说起</h1>
+<p>进程申请内存（fork
 复制页表、缺页分配物理页），以及内核自身的分配（页表、网络缓冲），最终都汇聚为
 <code>alloc_pages()</code> 从伙伴系统（buddy
 allocator）领取页框，一次拿走 <code>2^order</code>
 个连续页。这条路径有两种命运：</p>
 <ul>
-<li>内存充足：空闲页数不低于 low 水位线，快速路径直接分配；</li>
-<li>内存不足：进入慢速路径，先异步唤醒 kswapd
+<li>内存充足：空闲页数不低于 low
+水位线，<strong>快速路径直接分配</strong>；</li>
+<li>内存不足：进入<strong>慢速路径</strong>，先异步唤醒 kswapd
 后台回收，仍不够时当前进程同步做直接回收（direct
-reclaim），最后还有内存压缩与 OOM 兜底（§2）。</li>
+reclaim），最后还有内存压缩与 OOM 兜底。</li>
 </ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">alloc_pages()                            <span class="comment">/* include/linux/gfp.h,宏 */</span></span><br><span class="line">  +-&gt; alloc_pages_noprof()</span><br><span class="line">    +-&gt; __alloc_pages_noprof()           <span class="comment">/* mm/page_alloc.c */</span></span><br><span class="line">      +-&gt; __alloc_frozen_pages_noprof()</span><br><span class="line">        +-&gt; get_page_from_freelist()     <span class="comment">/* 快速路径:逐 zone 检查水位并分配 */</span></span><br><span class="line">        +-&gt; __alloc_pages_slowpath()     <span class="comment">/* 慢速路径:水位不达标才进入(§2) */</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">alloc_pages()                            <span class="comment">/* include/linux/gfp.h,宏 */</span></span><br><span class="line">  +-&gt; alloc_pages_noprof()</span><br><span class="line">    +-&gt; __alloc_pages_noprof()           <span class="comment">/* mm/page_alloc.c */</span></span><br><span class="line">      +-&gt; __alloc_frozen_pages_noprof()</span><br><span class="line">        +-&gt; get_page_from_freelist()     <span class="comment">/* 快速路径:逐 zone 检查水位并分配 */</span></span><br><span class="line">        +-&gt; __alloc_pages_slowpath()     <span class="comment">/* 慢速路径:水位不达标才进入*/</span></span><br></pre></td></tr></table></figure>
 <h2 id="回收什么两类页五条链">1.1 回收什么：两类页，五条链</h2>
-<p>所有可回收页分为匿名页和文件页两类，分别挂在五条 LRU 链上：两类 ×
-冷热，外加一条不可回收链。五条链挂在 <code>struct lruvec</code> 里，每个
-NUMA 节点一份；启用内存 cgroup 后每个 cgroup
+<p>所有可回收页分为匿名页和文件页两类，分别挂在五条 LRU 链上：两类页 ×
+冷/热两条链，外加一条不可回收链。五条链挂在 <code>struct lruvec</code>
+里，每个 NUMA 节点一份；启用内存 cgroup 后每个 cgroup
 再各有一套，限额内的页在组内自己的链上排队。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* include/linux/mmzone.h */</span></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">lru_list</span> &#123;</span></span><br><span class="line">	LRU_INACTIVE_ANON,			<span class="comment">/* 匿名页,冷链 */</span></span><br><span class="line">	LRU_ACTIVE_ANON,			<span class="comment">/* 匿名页,热链 */</span></span><br><span class="line">	LRU_INACTIVE_FILE,			<span class="comment">/* 文件页,冷链 */</span></span><br><span class="line">	LRU_ACTIVE_FILE,			<span class="comment">/* 文件页,热链 */</span></span><br><span class="line">	LRU_UNEVICTABLE,			<span class="comment">/* mlock 等不可回收页 */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>一个页挂哪组链，判据是 folio 上的 <code>PG_swapbacked</code> 标志，为
-1 表示这页的后备存储是 swap 空间而不是磁盘文件：</p>
+1 表示这页的后备存储是 swap 空间而不是磁盘文件（如匿名页、shmem
+页...）：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">folio_is_file_lru</span><span class="params">(<span class="keyword">const</span> struct folio *folio)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> !folio_test_swapbacked(folio);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>两类页各自住在哪里：内存里有 page cache 和 swap cache
-两级索引，磁盘上有文件数据与 swap 槽位。</p>
+<p>两类页分别在哪里：内存里有 page cache 和 swap cache
+两类索引，磁盘上有文件数据与 swap 槽位。</p>
 <pre class="mermaid">flowchart TB
     subgraph DRAM["DRAM（内存）"]
         subgraph PC["Page Cache（文件页缓存）"]
@@ -615,7 +635,10 @@ I/O；脏文件页需先写回文件。回收开销小。</li>
 <li><strong>匿名页</strong>：磁盘上原本没有副本，首次回收前必须先写入
 swap 设备。回收开销大。</li>
 </ul>
-<p>所以默认配额下文件链分到的扫描压力更大，但两条链都在扫，不是只扫文件。</p>
+<p>所以默认配额下<strong>文件链分到的扫描压力（回收数量占比）更高</strong>，但两条链都在扫，不是只扫文件。而且该比例也不是一成不变的，而是在回收过程中会持续统计两类页的<strong>近期回收成本</strong>，然后下一轮
+<code>get_scan_count()</code> 计算配额时，按 <strong>扫描压力 ∝ 基准权重
+÷ 自身近期回收成本</strong>
+动态调整，近期回收成本越高，分到的扫描配额就越少。</p>
 <h2 id="扫描配额swappiness-与近期成本">1.2 扫描配额：swappiness
 与近期成本</h2>
 <p>“文件页便宜”也不是绝对的：如果每次收走的文件页很快又被访问，引发重新读盘，开销同样会变大。因此内核的
@@ -641,9 +664,14 @@ swappiness）是文件链的权重，实际扫描压力 = 权重 ÷ 自身近期
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">__alloc_pages_direct_reclaim()            <span class="comment">/* mm/page_alloc.c,直接回收入口 */</span></span><br><span class="line">  +-&gt; __perform_reclaim()</span><br><span class="line">    +-&gt; try_to_free_pages()               <span class="comment">/* mm/vmscan.c */</span></span><br><span class="line">      +-&gt; do_try_to_free_pages()</span><br><span class="line">        +-&gt; shrink_zones()</span><br><span class="line">          +-&gt; shrink_node()               <span class="comment">/* kswapd 从 balance_pgdat() 汇入同一套 */</span></span><br><span class="line">            +-&gt; shrink_node_memcgs()</span><br><span class="line">              +-&gt; shrink_lruvec()</span><br><span class="line">                +-&gt; get_scan_count()          <span class="comment">/* 算配额 */</span></span><br><span class="line">                +-&gt; shrink_list()</span><br><span class="line">                  +-&gt; shrink_inactive_list()</span><br><span class="line">                    +-&gt; isolate_lru_folios()  <span class="comment">/* 链尾摘冷页 */</span></span><br><span class="line">                    +-&gt; shrink_folio_list()   <span class="comment">/* 逐页判定归宿 */</span></span><br><span class="line">                      +-&gt; folio_check_references()  <span class="comment">/* 热还是冷(§3) */</span></span><br><span class="line">                      +-&gt; try_to_unmap()            <span class="comment">/* 拆映射(§4) */</span></span><br><span class="line">                      +-&gt; pageout()                 <span class="comment">/* 脏匿名页换出 */</span></span><br><span class="line">                      +-&gt; __remove_mapping()        <span class="comment">/* 摘除并释放(§4) */</span></span><br></pre></td></tr></table></figure>
 <p>整个判定流程一张图看清，细节在后文各节展开：</p>
-<p><img src="http://www.plantuml.com/plantuml/svg/RLHDRzDO5DtxLxnb8XLLWbab4h11Q1QeB6OvacMvBwrLnuviXsfO1THycCHfMW8aRJJz8A65fcc7QQ7DfyHFGNxFzh_WFZydJL6pS6I_U-yxzvnpxsFJaWmhcrO5Ix5KZ8A3ItfG8Bl_qletcXluHoL124E4XAIgkYncf1LindHZ6HlnfA2aKCpxt0y-V8L4zDFk85LVH_JymXqvZ-B8MiKQYj76MLn0AB62hJ1TJ1bw6XuOguffnTWPcPm4kJt_-naPRtYx5xJQ8QL2a7TegKRUx2KXmhJqZ81L4wCOgNqAw_cJNPBlqFpXB9LLofV8y3KzxP1wEoXiepLpNSeintuStGUuM5jMKa88n9GbJPJrhCO0q8gDM5n6qR1f8h9TyITRjBK7rzDML-1OI6L2QiuYVLzq1z-2jsDlPuFQ9tHpCoXk9eM4OkggP65HDR9YIbSLtOJ2xg2A54sIBUK5SFjsJCx7rBw61BhLG0_kCxgJWe4pMB9Gmbmr56sD9ukS6XJaQX13IctIso6ZRTARC38OxJnCNiNoccZW53Qm9eCoyIdhxi3n3q_8y9rNFsPqyIp-JeRznFEdDsdBo9yqIEluRusMtfFsZdlr1Jt_wmc2DtVmqTj_HNkN0ECtGTalGPjbuXJ1CEYcosHuU4kiCDORzT3jQsbzp5Ad54M1NhVhzYkqUq1RVNUu0-8zY4SrGm6djUc7VRVVvoqbIE4xWtZJQIWNV7AlwhJr1SmIIena2JXxT5Shd55kSnOQcvvm_NawFHg1jnUuz-OgtiO7rIpZ7z7InQoMdbMYvGAjsjJEqPOD1RpZClDGOv-SRq2FVqGzCl2HoGukxm8QTdVzbHHpTvt2rI9GdDPVO34TMde5V0H-8yK-OkCtZpSC3uflk0xkiEaEBxp_1zvWRthEcVOtDkVgptIKLKb98t_KlT5_5kMTsl2L59fUVmAT-hMHjzjOSA_A_gX72WxibxcUvvcBV3ELRoOFmwvdsL1Gvn2Q8QLpph_V6vDsCGgBlJIazEBBy81iZTohKr9gahpZVNm5zwC_5vTcLu9bcWnYhyBMJAtAUVZDQE5_DA7hguhAR6TVaq8U9WPav18fPYJ1lOS830_RW6qtq1wiFbi6Y4y-J36atgOwmHqM51t_xDq2QV_dNtGOx6hP6tvUN5fw5kslS0a-1aomi7y1" alt="plantuml diagram"></p>
-<p>§2 回答“什么时候收”，§3 回答“收谁”，§4 回答“怎么收”，§5
-回答“收完再访问”。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/RLJBRjj65DtpAsOf0IxS9br9Q9CkqgABmbbqMO0Wv95Dc285aehHh9J0UZ0IPTbH4baMOikHQYUMPJUrKrbFe9zIS8Ragh_GEnnAbXDhOK6UUy-SUywP-z0m9TtCf1J1b4q58xzrHLjvil-MrZxHxD0xBWf2K2B494NH4c9QMiD6HDDNiHwD2t8IHTpt0__DHsX4_reTf6YRY5vSEcFxGHIPwrX54Le_Zme8nTQm6RIBILrBmH-C5Tam8-oCJ4_zx87tzpcPRBdxbxJI8SMydxDfiKfU7CIXmZ2rj80L0wC8gVuHu7dJVPBhqDpHl9KXvOfaz9oUTKYjxUTtqOQnAQLN8_yStmEwM5sLaq90n4X8gfZGCYeZGCiMOdLfMSM6WSXksPlkqEO1N4-RNO5p8UKfgThBz7N16NxoNqxSnXQrJkdsjb_OZWinsT0KoSIYecV4fAR8cW70ph22P5LAcF8JqFRbX5nCg7KD3NIdZkxVOtB71HsdiMIYcB6ko-e6RnQvDCZFLg665Dkarm0TONJk3PE4YS-B4-iuiI7gE8brh2R0d-XCUsTeUqUdPFJAhPtyDsey_lKH-k77xxv1jF7SwTiSYud9qNWT6GrYZt-wWLj5thHEcYU_gRJuchGRJly3Oa3monc-Sm-VqTuLaFpCRlQ9qRqIiGjm3RhH81uSth8og7N7FNJxMbgRiDQPW66Xs-qwWpBjjcXpu8mQOEtzQ8WPs3l3fcyEdS60ZnGB1_yQKUlOQvM_63pm5ePm-ZNQ_0392lA04X98--2koRZm_4smqiZiX8U5jzFZCJo49HxK1SJRT07Dr7yNJKtCgAav4YtbQSMYLfOsBG1mJqeiSFL3Sh458tyRZip8XubiNTr5D9Zk-YCfPEywXQj5K3obFS5YAiZ_6eGEmaaA0yJUwYBVeDmllE2sEACzPtJf_ZLqXmUpSowyjxMzW3-tDQ58SWfvu-vD7EPLxfa5_oNvFNSmXKczwjZThoyv_P8txf6y3LujpBoeN1YZcNrpUnXtBSDU4BMFO1XIlE3wUxq9QHV2iiXJNKejFmqEoCxOwP-HuXx9sUwxPt0_-dbvPNvb3CWnYhqosqdL2jVXizm5t-5ptboN5PP2wvhaS_20m4PkaMo45dprFOBym-fWgn2yX-JFDmVYQuACTw7rjjGndZ2_O7ldhvP8-q_liiDeLqhkwFtooieluR8BDkP3u0JR_Ny0" alt="plantuml diagram"></p>
+<p>下面几章的安排：</p>
+<ul>
+<li>§2 回答“什么时候收”</li>
+<li>§3 回答“收谁”</li>
+<li>§4 回答“怎么收”</li>
+<li>§5 回答“收完再访问”</li>
+</ul>
 <h1 id="什么时候收三条水位线与三条路径">2.
 什么时候收：三条水位线与三条路径</h1>
 <h2 id="三条水位线">2.1 三条水位线</h2>
@@ -651,10 +679,7 @@ swappiness）是文件链的权重，实际扫描压力 = 权重 ÷ 自身近期
 <code>zone-&gt;_watermark[]</code> 里，枚举为
 <code>WMARK_MIN / WMARK_LOW / WMARK_HIGH</code>：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">zone 空闲页数随消耗不断下降 ──────────────────────────►</span><br><span class="line"></span><br><span class="line"> high ─────────────────────────────  kswapd 的任务完成线:</span><br><span class="line">      │                               回收到此才肯睡</span><br><span class="line">      │  ← 间距 tmp(缓冲带,防频繁醒睡抖动)</span><br><span class="line">      │</span><br><span class="line"> low  ─────────────────────────────  警戒线:低于此线,</span><br><span class="line">      │                               分配路径唤醒 kswapd</span><br><span class="line">      │  ← 间距 tmp</span><br><span class="line">      │</span><br><span class="line"> min  ─────────────────────────────  紧急/原子分配的最后储备,</span><br><span class="line">      │                               慢速路径放宽到这条线仍可分配</span><br><span class="line">   0  ┴</span><br></pre></td></tr></table></figure>
-<figure>
-<img src="/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/水位线.png" alt="水位线">
-<figcaption aria-hidden="true">水位线</figcaption>
-</figure>
+<p><img src="/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/水位线.png"></p>
 <p>min 是留给紧急、原子分配的最后储备；low 是唤醒 kswapd 的警戒线；high
 是 kswapd 的任务完成线。睡回的判据是 high 而不是
 low：醒一次就干到充裕，把 low 到 high 之间的缓冲带攒出来，这是防止
@@ -963,7 +988,7 @@ swap entry 换回。</li>
             <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
             <p>Link：<a href="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/">https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/</a>
             <p>Publish date：<a href="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/">November 5th 2026, 8:00:00 pm</a>
-            <p>Update date：<a href="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/">November 5th 2026, 3:06:20 pm</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/">November 5th 2026, 3:59:55 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -1124,7 +1149,7 @@ swap entry 换回。</li>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%A8%E6%99%AF%E4%BB%8E-alloc_pages-%E8%AF%B4%E8%B5%B7"><span class="toc-text">1. 全景：从 alloc_pages() 说起</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E6%94%B6%E4%BB%80%E4%B9%88%E4%B8%A4%E7%B1%BB%E9%A1%B5%E4%BA%94%E6%9D%A1%E9%93%BE"><span class="toc-text">1.1 回收什么：两类页，五条链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%AB%E6%8F%8F%E9%85%8D%E9%A2%9Dswappiness-%E4%B8%8E%E8%BF%91%E6%9C%9F%E6%88%90%E6%9C%AC"><span class="toc-text">1.2 扫描配额：swappiness
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8E-alloc_pages-%E8%AF%B4%E8%B5%B7"><span class="toc-text">1. 从 alloc_pages() 说起</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E6%94%B6%E4%BB%80%E4%B9%88%E4%B8%A4%E7%B1%BB%E9%A1%B5%E4%BA%94%E6%9D%A1%E9%93%BE"><span class="toc-text">1.1 回收什么：两类页，五条链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%AB%E6%8F%8F%E9%85%8D%E9%A2%9Dswappiness-%E4%B8%8E%E8%BF%91%E6%9C%9F%E6%88%90%E6%9C%AC"><span class="toc-text">1.2 扫描配额：swappiness
 与近期成本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E6%94%B6%E7%9A%84%E6%89%A7%E8%A1%8C%E6%80%BB%E8%A7%88"><span class="toc-text">1.3 回收的执行：总览</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E6%94%B6%E4%B8%89%E6%9D%A1%E6%B0%B4%E4%BD%8D%E7%BA%BF%E4%B8%8E%E4%B8%89%E6%9D%A1%E8%B7%AF%E5%BE%84"><span class="toc-text">2.
 什么时候收：三条水位线与三条路径</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E6%9D%A1%E6%B0%B4%E4%BD%8D%E7%BA%BF"><span class="toc-text">2.1 三条水位线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E4%B8%80kswapd-%E5%90%8E%E5%8F%B0%E5%9B%9E%E6%94%B6"><span class="toc-text">2.2 路径一：kswapd 后台回收</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E4%BA%8C%E7%9B%B4%E6%8E%A5%E5%9B%9E%E6%94%B6%E6%85%A2%E9%80%9F%E8%B7%AF%E5%BE%84%E7%9A%84%E5%85%9C%E5%BA%95"><span class="toc-text">2.3
 路径二：直接回收，慢速路径的兜底</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E4%B8%89%E4%B8%BB%E5%8A%A8%E5%9B%9E%E6%94%B6"><span class="toc-text">2.4 路径三：主动回收</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E6%9D%A1%E8%B7%AF%E5%BE%84%E5%AF%B9%E6%AF%94"><span class="toc-text">2.5 三条路径对比</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%94%B6%E8%B0%81lru-%E9%93%BE%E4%B8%8A%E7%9A%84%E5%86%B7%E7%83%AD%E5%88%A4%E5%86%B3"><span class="toc-text">3. 收谁：LRU 链上的冷热判决</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%B7%E7%83%AD%E7%9A%84%E8%AF%81%E6%8D%AEaf-%E4%B8%8E-pg_referenced"><span class="toc-text">3.1 冷热的证据：AF 与
@@ -1615,10 +1640,6 @@ VMA，再换算地址</span></a></li><li class="toc-item toc-level-2"><a class="
         
         
     
-        
-        
-        
-        
         
         
         
@@ -3300,11 +3321,6 @@ VMA，再换算地址</span></a></li><li class="toc-item toc-level-2"><a class="
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
-            <span class="iconfont-archer">&#xe60a;</span>
-            ARM64结构与编程实操
-        </span>
-    
         <span class="sidebar-category-name" data-categories="虚拟化">
             <span class="iconfont-archer">&#xe60a;</span>
             虚拟化
@@ -3313,6 +3329,11 @@ VMA，再换算地址</span></a></li><li class="toc-item toc-level-2"><a class="
         <span class="sidebar-category-name" data-categories="内存">
             <span class="iconfont-archer">&#xe60a;</span>
             内存
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
+            <span class="iconfont-archer">&#xe60a;</span>
+            ARM64结构与编程实操
         </span>
     
         <span class="sidebar-category-name" data-categories="Linux内核基础">
