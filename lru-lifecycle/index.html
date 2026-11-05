@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>一个页的一生：AF 与 PG_referenced 双轨动画</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;background:#f6f7fa;color:#2c3e50;padding:30px 18px}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:21px;margin-bottom:6px}
+.sub{font-size:13px;color:#7f8c9a;margin-bottom:16px}
+.legend{background:#fff;border:1px solid #e3e7ee;border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:14px;line-height:1.7}
+.stage{position:relative;background:#fff;border:1px solid #e3e7ee;border-radius:14px;padding:16px 16px 10px}
+.chain{margin-bottom:18px}
+.chain .title{font-size:13px;font-weight:700;color:#34495e;margin-bottom:5px}
+.chain.dim{opacity:.28}
+.bar{display:flex;align-items:center;gap:8px}
+.bar .end{font-size:12px;color:#8a97a6;white-space:nowrap}
+.track{position:relative;flex:1;height:44px;border-radius:22px;background:linear-gradient(90deg,#fbe8cf,#f4f5f7 45%,#e3edf5)}
+.slots{position:absolute;top:0;bottom:0;left:36px;right:36px;display:flex;align-items:center;justify-content:space-around}
+.slot{width:26px;height:26px;border-radius:6px;background:#c9d3df;opacity:.5}
+.slot:nth-child(-n+3){background:#e7c58c;opacity:.8}
+.slot:nth-last-child(-n+2){background:#b7c9dc}
+.scan{position:absolute;top:-3px;bottom:-3px;width:66px;left:78%;background:rgba(231,76,60,.12);border-left:2px solid rgba(231,76,60,.5);border-radius:8px;opacity:0;z-index:3}
+.scan.go{animation:sweep 1.5s ease}
+@keyframes sweep{0%{opacity:0;transform:translateX(0)}20%{opacity:1}100%{opacity:0;transform:translateX(-180px)}}
+.win{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:11px;color:#8e44ad;font-weight:700;letter-spacing:2px;opacity:0;transition:opacity .6s}
+.win.on{opacity:1}
+#page{position:absolute;width:46px;height:46px;margin-top:-1px;border-radius:10px;background:linear-gradient(135deg,#4a90d9,#2f6cb0);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;box-shadow:0 3px 12px rgba(47,108,176,.35);transition:left 1.1s ease,top 1s ease,opacity .9s,transform .9s;z-index:5}
+#page.dead{opacity:.1;transform:scale(.55)}
+#page .b{position:absolute;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;white-space:nowrap}
+#page .af{top:-10px;left:-18px;background:#95a5a6}
+#page .af.on{background:#1e8e4e}
+#page .ref{bottom:-10px;right:-18px;background:#95a5a6}
+#page .ref.on{background:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.25)}
+#page.hit::after{content:"";position:absolute;inset:-14px;border:3px solid #27ae60;border-radius:16px;animation:ring .8s ease-out}
+@keyframes ring{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.5);opacity:0}}
+.caption{min-height:56px;background:#fff;border:1px solid #e3e7ee;border-radius:10px;margin-top:14px;padding:12px 16px;font-size:14px;line-height:1.7}
+.caption .tk{display:inline-block;background:#34495e;color:#fff;font-size:11px;border-radius:6px;padding:1px 8px;margin-right:8px;vertical-align:1px}
+.ctrl{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.ctrl button{font-size:13px;border:1px solid #d5dbe4;background:#fff;color:#34495e;border-radius:8px;padding:6px 16px;cursor:pointer}
+.ctrl button:hover{border-color:#4a90d9;color:#2f6cb0}
+.dots{display:flex;gap:6px;margin-left:auto;align-items:center}
+.dot{width:9px;height:9px;border-radius:50%;background:#cfd8e3;cursor:pointer}
+.dot.on{background:#2f6cb0}
+.stepnum{font-size:12px;color:#8a97a6}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>一个页的一生：AF 与 PG_referenced 双轨</h1>
+<div class="sub">对应《页框回收》正文 4.2 时间线 · 传统 LRU 模型 · 演示匿名页</div>
+<div class="legend">从 inactive 链晋升到 active 链的依据是 <b>AF == 1 && ref == 1</b>。</div>
+<div class="stage" id="stage">
+  <div class="chain dim"><div class="title">文件热链（active）</div><div class="bar"><span class="end">链头(热)</span><div class="track"><div class="slots"><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div></div></div><span class="end">链尾(冷)</span></div></div>
+  <div class="chain dim"><div class="title">文件冷链（inactive）</div><div class="bar"><span class="end">链头(热)</span><div class="track"><div class="slots"><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div></div></div><span class="end">链尾(冷)</span></div></div>
+  <div class="chain"><div class="title">匿名热链（active）</div><div class="bar"><span class="end">链头(热)</span><div class="track"><div class="slots"><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div></div></div><span class="end">链尾(冷)</span></div></div>
+  <div class="chain"><div class="title">匿名冷链（inactive）—— 本场主角</div><div class="bar"><span class="end">链头(热)</span><div class="track"><div class="win" id="win">观 察 窗</div><div class="scan"></div><div class="slots"><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div></div></div><span class="end">链尾(冷)</span></div></div>
+  <div id="page"><span class="b af" id="af">AF:0</span>页<span class="b ref" id="ref">ref:0</span></div>
+</div>
+<div class="caption" id="cap"></div>
+<div class="ctrl">
+  <button onclick="step(-1)">上一步</button>
+  <button id="pp" onclick="toggle()">播放</button>
+  <button onclick="step(1)">下一步</button>
+  <button onclick="reset()">重置</button>
+  <div class="stepnum" id="num"></div>
+  <div class="dots" id="dots"></div>
+</div>
+</div>
+<script>
+var chains=[].slice.call(document.querySelectorAll('.chain'));
+var page=document.getElementById('page'),afB=document.getElementById('af'),refB=document.getElementById('ref');
+var cap=document.getElementById('cap'),num=document.getElementById('num'),dots=document.getElementById('dots'),win=document.getElementById('win');
+var steps=[
+ {tk:'t0',row:3,x:9,af:1,ref:0,txt:'t0 出生：缺页装配 PTE——AF=1 是软件白送的，ref=0。页从匿名冷链链头入链'},
+ {tk:'t1',row:3,x:84,af:1,ref:0,txt:'t1 老化下沉：无人访问——新页不断插到链头，把它越挤越靠链尾。AF 还是白送的那个 1，不证明热'},
+ {tk:'t2',row:3,x:9,af:0,ref:1,scan:1,txt:'t2 老化到链尾，被回收扫描扫到：沿 rmap 清 AF（1→0）——清前 AF=1、ref=0，属首次被扫到，再给一次机会：只置 ref=1（不晋升），放回链头重新排队'},
+ {tk:'t3',row:3,x:80,af:0,ref:1,win:1,txt:'t3 观察窗：随新页插入，从链头老化回链尾'},
+ {tk:'t3热',row:3,x:80,af:1,ref:1,pulse:1,win:1,txt:'t3 热页路径：观察窗内又被访问，硬件静默置回 AF（0→1），此时 AF=1 && ref=1，属于热页，下一轮回收扫描时会把它晋升到热链'},
+ {tk:'t4热',row:2,x:9,af:0,ref:0,scan:1,txt:'t4 晋升为热链：AF=1 && ref=1 → ACTIVATE：晋升匿名热链链头，AF 和 ref 兑现清 0'},
+ {tk:'t3冷',row:3,x:80,af:0,ref:1,win:1,txt:'换个结局——t3 冷页路径：整个观察窗无人碰，AF 保持 0'},
+ {tk:'t4冷',row:3,x:80,af:0,ref:1,scan:1,dead:1,txt:'t4 回收：观察窗内不再访问，走到链尾，所以下一轮被回收器回收 → unmap'},
+ {tk:'结语',row:3,x:9,af:1,ref:0,txt:'回收后再次缺页，又从 t0 开始'}
+];
+var cur=-1,playing=false,timer=null;
+function place(s){
+  var track=chains[s.row].querySelector('.track');
+  page.style.top=(track.offsetTop+(track.offsetHeight-46)/2)+'px';
+  page.style.left=(track.offsetLeft+track.offsetWidth*s.x/100-23)+'px';
+}
+function apply(i){
+  var s=steps[i];cur=i;
+  page.classList.remove('dead');
+  place(s);
+  afB.textContent='AF:'+(s.af?1:0);afB.className='b af'+(s.af?' on':'');
+  refB.textContent='ref:'+(s.ref?1:0);refB.className='b ref'+(s.ref?' on':'');
+  win.className=s.win?'win on':'win';
+  cap.innerHTML='<span class="tk">'+s.tk+'</span>'+s.txt;
+  num.textContent=(i+1)+' / '+steps.length;
+  if(s.scan){var sc=chains[s.row].querySelector('.scan');sc.classList.remove('go');void sc.offsetWidth;sc.classList.add('go');}
+  if(s.pulse){page.classList.remove('hit');void page.offsetWidth;page.classList.add('hit');setTimeout(function(){page.classList.remove('hit')},850);}
+  if(s.dead)setTimeout(function(){page.classList.add('dead')},1600);
+  for(var k=0;k<dots.children.length;k++)dots.children[k].className='dot'+(k===i?' on':'');
+}
+function arm(){clearInterval(timer);if(playing)timer=setInterval(next,3600);}
+function next(){apply((cur+1)%steps.length);arm();}
+function step(d){apply((cur+d+steps.length)%steps.length);arm();}
+function toggle(){playing=!playing;document.getElementById('pp').textContent=playing?'暂停':'播放';arm();}
+function reset(){apply(0);arm();}
+steps.forEach(function(s,i){var d=document.createElement('div');d.className='dot';d.title=s.tk;d.onclick=function(){apply(i);arm()};dots.appendChild(d);});
+window.addEventListener('resize',function(){if(cur>=0)apply(cur)});
+apply(0);arm();
+</script>
+</body>
+</html>

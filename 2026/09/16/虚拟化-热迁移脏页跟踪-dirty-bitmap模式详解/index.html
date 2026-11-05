@@ -1,0 +1,3709 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="AkiraZheng">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="AkiraZheng">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta name="description" content="热迁移（Live Migration，在线迁移）要把一台运行中的虚机从源服务器搬到目的服务器：内存、vCPU 状态、设备状态一样不落，业务还几乎不中断。同时满足这两条的可行策略只有&quot;先全量、后增量&quot;：虚机继续跑，QEMU 先把整个内存搬一遍，之后只补变化过的页；等变化量小到一次短暂停机能发完，才让虚机停机，补上最后一轮脏页和设备状态，再在对端拉起。 整个策略成立的前提，是源端能准确回答一个问题：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="虚拟化:热迁移脏页跟踪：dirty bitmap模式详解">
+<meta property="og:url" content="https://akirazheng.github.io/2026/09/16/%E8%99%9A%E6%8B%9F%E5%8C%96-%E7%83%AD%E8%BF%81%E7%A7%BB%E8%84%8F%E9%A1%B5%E8%B7%9F%E8%B8%AA-dirty-bitmap%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="热迁移（Live Migration，在线迁移）要把一台运行中的虚机从源服务器搬到目的服务器：内存、vCPU 状态、设备状态一样不落，业务还几乎不中断。同时满足这两条的可行策略只有&quot;先全量、后增量&quot;：虚机继续跑，QEMU 先把整个内存搬一遍，之后只补变化过的页；等变化量小到一次短暂停机能发完，才让虚机停机，补上最后一轮脏页和设备状态，再在对端拉起。 整个策略成立的前提，是源端能准确回答一个问题：">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/PPLjJnj7482_-rUiw8UqGXOb2GcnL1I33RYrGugTLaYMh0DVw2ddEtHtG6XKoKu06mgODYs419gObnX1i4qhY8F1_9dRk_E_wEnBpE7SXxLsTrwUcPqPtzSDGJCcKx97Vo8f4u8cfD2eCFPaN5CdbMIVAgiQclv5CaJNVL9yB4pAHh-g657fLn5rTheknmGjsQjgIL5ZobzrqSybCG7cXN7ncb0t_Ln2WgQfqzSjU0p9a4M4tzI_zQ6af1apQ5GoKi84ilOB-3oFv_QjjQpzTiyfp-FD2iXvFDmNQhC_VEXq5f_xx1T7pcN6BjQ8z4Qv3GawwXliHCyyYAAZDdvT_kGS5tnnPTWVGUt8ATNnRjPUFBNIcQ-dKf0qG_o6AW_rVjzKDQiBZLUdLka4zC1-8vj7tXxaN1wPjHsy_G_VuyocjNbc_NMAAtMGexl6gnnEdwFl4Aw-nwKBz1GbrMd5a58YTV9mq1yDUdwx7izD4WyBtKhNd6AE1tFJ5OnPJUCy96GBbrwRdnRYYbdTDQi7DneR7_7StWtxzInUEiEvGweQ2FQxGy77pysBPKWZHFF3Jn6K4bEwh1g87SQL7uEHHmZ2nCVfpqVQgBTd55w4cWlxHuB3qLRgMuGQvxPmyNUyjCQHRxcGPNKyGOiIoP9kY8geeSPBxixRGq3CytUDz9zKDHhp3yUQgbPrrRbyWwPq175RHtiuLm4om9SKoP04MPxnmkBLHOCgHuO2mI_uRbE--Gr4QnnPxxBER9vZtdPXFXIrbAJhaggWVYhfV2pZ-cnS6LDJ4vE6c9ZG85VsvbjuLwUmJotq-n-5hsXn_i0frng54m8C7itBBMjn5_O-yama_JYt2-z6LGVyiIzPkmWhoprUNOA0EMUNYrEVKSQGjNuAHKRidbU0fyF-jsuNIb0BzbcHwiH2aT23WQOIP3an48mb0g7Xs4WYF3GGLrA2CYd815KMnuMn6KOLZBKotQ7vo__HI6VCwaeZkyp2ucHtN6HuBcTLv_3g2aZ7bSUIaameubCZ0KsDh8L3r2oaQF11u1fQNpZe7xw2WxZ04EIX7Tmr4yay4ibMnBi4aLQlMIzQwnbuEOvtruKNYFZ9gx02e3Kq9SXI4Xe_8G0g55623Y7MEX5_gvTksfwqoxdrRdVmjErnBcijRxVpWSA2_JaKwnjioYLrI4Pc6-ykemvadQtQXsNhHSLA5vtYJcE31KdIq-BytjLiS2h7zdyrZd3FXS27PmUVfPgaZCDcCD0RZV9gZOJ28yGop3ZaXSb5nn3oyGbc7wpZ_8vPtt9ErZpiYWZ1524YTDoPjHNyyi3QslEGKtBBXmBxeIUiXUbAzwmhwKhtj6d0ebF9W27xeWGFxM67v9erXciV9CAyATx31FkRjOQ7N51_95raeJjM87HbzF3gFaIcZ5qgcDLb625aICvlk6Ju4x4VUa9CkaBYcRilAaduP_qV">
+<meta property="og:image" content="http://www.plantuml.com/plantuml/svg/VPHBJzj04CVl_XGZJeue1tf4fI8bZXkHaE04AYGaon13B1pRiZVfuvIe1CGZG0yjxmDjAjhI15ILLsZ8bydQphVevC4Zb7ApTsR--vlvx-w0HIIJf98gOyqgcY6PKX8cfQdP6LDFQV51NTLDU9rGY7md7fUdfPHA_Bf6eiex6Nfx6Q8GLGQwSzNR1uOfJ-d6Mt3U5zrgrZcuh9qlrZTFxTA9lN5AosiCWp94cL8CIIFGnQTaYx3fmSYefmia2_ZEy0WN6ct9EEMgysrvGcFjyhfpUDJA7kdC7XeBTOI7_XLZdPsIiprta-9ZcFv-i6IICg25oRfRs_PksQskk_ihjVEY1_hxcH7eUGv3q0UuXHZbOk9eb1F441SA2-EYmF61y32YDOAu9WR3lEWB2B5nCUBbkQY7aQQ8afQ8Z4H3q8DI8oXLg-HnPFJi5xqiFm7w9qCFbjtICQryPEBodOe6e5ijrYw_F0o8jLS_dDKZMjXsAwKchghh1jX7Q_WFw9uf4KNN682EDdXieqM9lC2sSTPNxE9N3-RU8G2ufNRdrkhx9-tawg6JEy1m1szx6nycqxKFzKosLGAiuCNPUSSuqH_qyitHUEup3GOvht2NggrGNK3JwDx6Vy0QvVPv3gcW6-eBUVlJCPtVgbNtxAK2hiI2Bs1QJLc9-wYo5c-UHvXf74EW5wVDaMxJfNrCvQ_9K8lEvsXnix4GaSsaObauKF0tBW9RtphZWayV8JDbLNeZ6bXdWPtzJ0jvuHLIjMReL4huyI0O-awpksXro_URSzYmmS0CHPk1Pq0IfcmbT3KkMdWT9xHqKhI8Rh3-m70W-b8C1NZ16yD9F-QzlPkXwwkryupzS__w1DoQkFYzLjbgczWDRkcA5XQSfLCxasNJINn1YEoPqBgXSRr4rER2ViPtNJmPDzFYTMEYfAeJ6itbtTyNNY62OarOlAEiXnd0Zl0b-Wi0">
+<meta property="article:published_time" content="2026-09-15T23:10:08.000Z">
+<meta property="article:modified_time" content="2026-09-16T17:18:21.866Z">
+<meta property="article:author" content="AkiraZheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.plantuml.com/plantuml/svg/PPLjJnj7482_-rUiw8UqGXOb2GcnL1I33RYrGugTLaYMh0DVw2ddEtHtG6XKoKu06mgODYs419gObnX1i4qhY8F1_9dRk_E_wEnBpE7SXxLsTrwUcPqPtzSDGJCcKx97Vo8f4u8cfD2eCFPaN5CdbMIVAgiQclv5CaJNVL9yB4pAHh-g657fLn5rTheknmGjsQjgIL5ZobzrqSybCG7cXN7ncb0t_Ln2WgQfqzSjU0p9a4M4tzI_zQ6af1apQ5GoKi84ilOB-3oFv_QjjQpzTiyfp-FD2iXvFDmNQhC_VEXq5f_xx1T7pcN6BjQ8z4Qv3GawwXliHCyyYAAZDdvT_kGS5tnnPTWVGUt8ATNnRjPUFBNIcQ-dKf0qG_o6AW_rVjzKDQiBZLUdLka4zC1-8vj7tXxaN1wPjHsy_G_VuyocjNbc_NMAAtMGexl6gnnEdwFl4Aw-nwKBz1GbrMd5a58YTV9mq1yDUdwx7izD4WyBtKhNd6AE1tFJ5OnPJUCy96GBbrwRdnRYYbdTDQi7DneR7_7StWtxzInUEiEvGweQ2FQxGy77pysBPKWZHFF3Jn6K4bEwh1g87SQL7uEHHmZ2nCVfpqVQgBTd55w4cWlxHuB3qLRgMuGQvxPmyNUyjCQHRxcGPNKyGOiIoP9kY8geeSPBxixRGq3CytUDz9zKDHhp3yUQgbPrrRbyWwPq175RHtiuLm4om9SKoP04MPxnmkBLHOCgHuO2mI_uRbE--Gr4QnnPxxBER9vZtdPXFXIrbAJhaggWVYhfV2pZ-cnS6LDJ4vE6c9ZG85VsvbjuLwUmJotq-n-5hsXn_i0frng54m8C7itBBMjn5_O-yama_JYt2-z6LGVyiIzPkmWhoprUNOA0EMUNYrEVKSQGjNuAHKRidbU0fyF-jsuNIb0BzbcHwiH2aT23WQOIP3an48mb0g7Xs4WYF3GGLrA2CYd815KMnuMn6KOLZBKotQ7vo__HI6VCwaeZkyp2ucHtN6HuBcTLv_3g2aZ7bSUIaameubCZ0KsDh8L3r2oaQF11u1fQNpZe7xw2WxZ04EIX7Tmr4yay4ibMnBi4aLQlMIzQwnbuEOvtruKNYFZ9gx02e3Kq9SXI4Xe_8G0g55623Y7MEX5_gvTksfwqoxdrRdVmjErnBcijRxVpWSA2_JaKwnjioYLrI4Pc6-ykemvadQtQXsNhHSLA5vtYJcE31KdIq-BytjLiS2h7zdyrZd3FXS27PmUVfPgaZCDcCD0RZV9gZOJ28yGop3ZaXSb5nn3oyGbc7wpZ_8vPtt9ErZpiYWZ1524YTDoPjHNyyi3QslEGKtBBXmBxeIUiXUbAzwmhwKhtj6d0ebF9W27xeWGFxM67v9erXciV9CAyATx31FkRjOQ7N51_95raeJjM87HbzF3gFaIcZ5qgcDLb625aICvlk6Ju4x4VUa9CkaBYcRilAaduP_qV">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/yueyue.jpg">
+    
+    <title>虚拟化:热迁移脏页跟踪：dirty bitmap模式详解 · AkiraZheng&#39;s Time</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+        <script>
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"We did not find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'OG7KZ1ED66',
+                apiKey: '8daa81c36784d89945ec12e46f72de54',
+                indexName: 'hexo_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>AkiraZheng's Time.</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">AkiraZheng&#39;s Time.</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">虚拟化:热迁移脏页跟踪：dirty bitmap模式详解</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                虚拟化:热迁移脏页跟踪：dirty bitmap模式详解
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">9.6k</span>Reading time: <span class="post-count reading-time">40 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/09/16</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <!-- 原始写作Prompt（备份保留，勿删）
+
+文章Prompt：
+
+你是linux内核中，arm64内存管理的专家，精通虚拟化、热迁移技术。
+
+现在需要向我们讲解虚拟化中热迁移的dirty bitmap标脏模式。
+
+文章需要至少包含以下内容（这里只是我的陈述，不一定正确，所以必须看代码来写下面的内容，不要以我的陈述为准,补充细节，补充关键调用栈）：
+
+需要先介绍一下虚机中，脏页跟踪的场景，一句话讲清楚我们为什么需要标脏。
+
+脏页跟踪的场景，我们关注的是热迁移场景。所以需要先简述一下热迁移场景和基本流程：
+热迁移主要迁移的东西：内存、虚拟硬件设备寄存器
+热迁移的关键流程：src->dst端，虚机不关机【此时先拷贝全内存-》迭代拷贝期间，虚机业务产生脏页，所以要迭代拷贝】-》虚机停机，此时业务全部中断，停机拷贝阶段，触发条件是脏页<阈值【拷贝剩余脏页，VM State（gic，vf）】-》拷贝结束，对端DST服务器上恢复VM Stage，重新开机恢复虚机业务。
+
+迭代热迁移中标脏的流程：开始热迁移->初始化开始脏页跟踪（trap到KVM建脏页位图？）-》trap到EL2获取脏页位图-》脏页位图页表权限改为RO写保护-》发送脏页位图给QEMU-》循环直到迭代热迁移结束。
+
+上述的两个流程要分析从QEMU-》KVM的流程
+
+然后迭代热迁移中，就是要介绍dirty bitmap模式的脏页跟踪的流程：
+
+一句话介绍这个模式，然后写清楚QEMU-》KVM中dirty bitmap的传递流程、dirty bitmap的数据结构、脏页位图结构、通过什么方式区分原本就是只读的页跟写保护的页、怎么利用dirty bitmap拷贝脏页到对端，以及拷贝后写保护？
+迭代热迁移流程、qemu/kvm脏页跟踪初始化、迭代热迁移过程中，写保护期间用户触发标脏、迭代热迁移过程中的QEMU和KVM脏页同步、拷贝到对端恢复bitmap和页权限等
+
+注意事项：
+- 必须深度搜索~/code下的linux主线内核代码、qemu代码，当下结论的时候必须深度搜索代码，整理好相关逻辑后再下结论。
+- 虽然需要包含上面的内容，但是文章顺序、逻辑、组织结构需要你自己思考决定。
+-->
+<p>热迁移（Live
+Migration，在线迁移）要把一台运行中的虚机从源服务器搬到目的服务器：内存、vCPU
+状态、设备状态一样不落，业务还几乎不中断。同时满足这两条的可行策略只有"先全量、后增量"：虚机继续跑，QEMU
+先把整个内存搬一遍，之后只补变化过的页；等变化量小到一次短暂停机能发完，才让虚机停机，补上最后一轮脏页和设备状态，再在对端拉起。</p>
+<p>整个策略成立的前提，是源端能准确回答一个问题：<strong>上一轮拷贝之后，虚机又改了哪些页？</strong>把"页被写过"这个事件记录下来的机制叫脏页跟踪（dirty
+logging），arm64 KVM 上的经典实现就是本文的主角 dirty
+bitmap（脏页位图）模式：KVM 给每个 memslot（内存插槽）维护一张"每 4KB
+页一个 bit"的位图，靠 stage-2（第二阶段翻译表）写保护把 guest 的写变成
+Permission Fault（权限错误），在 fault 处理里往位图置位，QEMU
+周期性把位图同步回用户态、发送对应脏页、再让 KVM
+清位并重新写保护，循环直到收敛。</p>
+<p>一句话讲清楚为什么需要标脏：<strong>热迁移的停机窗口由"停机那一刻还剩多少脏页"决定，而"还剩多少脏页"只能靠持续标脏来知道</strong>。</p>
+<p>各章知识点的依赖关系如下，全文沿这张地图展开：</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/PPLjJnj7482_-rUiw8UqGXOb2GcnL1I33RYrGugTLaYMh0DVw2ddEtHtG6XKoKu06mgODYs419gObnX1i4qhY8F1_9dRk_E_wEnBpE7SXxLsTrwUcPqPtzSDGJCcKx97Vo8f4u8cfD2eCFPaN5CdbMIVAgiQclv5CaJNVL9yB4pAHh-g657fLn5rTheknmGjsQjgIL5ZobzrqSybCG7cXN7ncb0t_Ln2WgQfqzSjU0p9a4M4tzI_zQ6af1apQ5GoKi84ilOB-3oFv_QjjQpzTiyfp-FD2iXvFDmNQhC_VEXq5f_xx1T7pcN6BjQ8z4Qv3GawwXliHCyyYAAZDdvT_kGS5tnnPTWVGUt8ATNnRjPUFBNIcQ-dKf0qG_o6AW_rVjzKDQiBZLUdLka4zC1-8vj7tXxaN1wPjHsy_G_VuyocjNbc_NMAAtMGexl6gnnEdwFl4Aw-nwKBz1GbrMd5a58YTV9mq1yDUdwx7izD4WyBtKhNd6AE1tFJ5OnPJUCy96GBbrwRdnRYYbdTDQi7DneR7_7StWtxzInUEiEvGweQ2FQxGy77pysBPKWZHFF3Jn6K4bEwh1g87SQL7uEHHmZ2nCVfpqVQgBTd55w4cWlxHuB3qLRgMuGQvxPmyNUyjCQHRxcGPNKyGOiIoP9kY8geeSPBxixRGq3CytUDz9zKDHhp3yUQgbPrrRbyWwPq175RHtiuLm4om9SKoP04MPxnmkBLHOCgHuO2mI_uRbE--Gr4QnnPxxBER9vZtdPXFXIrbAJhaggWVYhfV2pZ-cnS6LDJ4vE6c9ZG85VsvbjuLwUmJotq-n-5hsXn_i0frng54m8C7itBBMjn5_O-yama_JYt2-z6LGVyiIzPkmWhoprUNOA0EMUNYrEVKSQGjNuAHKRidbU0fyF-jsuNIb0BzbcHwiH2aT23WQOIP3an48mb0g7Xs4WYF3GGLrA2CYd815KMnuMn6KOLZBKotQ7vo__HI6VCwaeZkyp2ucHtN6HuBcTLv_3g2aZ7bSUIaameubCZ0KsDh8L3r2oaQF11u1fQNpZe7xw2WxZ04EIX7Tmr4yay4ibMnBi4aLQlMIzQwnbuEOvtruKNYFZ9gx02e3Kq9SXI4Xe_8G0g55623Y7MEX5_gvTksfwqoxdrRdVmjErnBcijRxVpWSA2_JaKwnjioYLrI4Pc6-ykemvadQtQXsNhHSLA5vtYJcE31KdIq-BytjLiS2h7zdyrZd3FXS27PmUVfPgaZCDcCD0RZV9gZOJ28yGop3ZaXSb5nn3oyGbc7wpZ_8vPtt9ErZpiYWZ1524YTDoPjHNyyi3QslEGKtBBXmBxeIUiXUbAzwmhwKhtj6d0ebF9W27xeWGFxM67v9erXciV9CAyATx31FkRjOQ7N51_95raeJjM87HbzF3gFaIcZ5qgcDLb625aICvlk6Ju4x4VUa9CkaBYcRilAaduP_qV" alt="plantuml diagram"></p>
+<p>开篇思考题，全文读完应能回答：</p>
+<ol type="1">
+<li>虚机全程不关机，QEMU 凭什么知道某个页在上一轮发送之后又被 guest
+改写了？</li>
+<li>开启脏页跟踪的那一次 <code>KVM_SET_USER_MEMORY_REGION</code>，KVM
+为什么可以<strong>不</strong>把整个内存一次性写保护？不写保护怎么保证不漏记？</li>
+<li>同样是 stage-2 只读的页，KVM
+怎么区分"我为标脏写保护的页"和"本来就只读的页"？guest
+写这两种页，后续路径有什么不同？</li>
+<li>stage-2 写保护只能拦住 guest 发起的写，QEMU 自己（设备模拟
+DMA）往虚机内存写数据时，谁来标脏？</li>
+</ol>
+<p>代码取自主线 Linux（约 7.3）与 openEuler QEMU 8.2。写 fault 到
+stage-2 权限的微观机制（relax_perms、BBM）在<a href="https://akirazheng.github.io/2026/09/05/%E8%99%9A%E6%8B%9F%E5%8C%96-%E8%AF%BB%E5%86%99%E6%9D%83%E9%99%90%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/">读写权限篇</a>里已拆过，本文直接引用结论；写权限的事实源（VMA（虚拟内存区域）与
+memslot）在<a href="https://akirazheng.github.io/2026/09/06/%E8%99%9A%E6%8B%9F%E5%8C%96-%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E4%B8%8B%E4%BC%A0%E9%93%BE%E8%B7%AF%E8%AF%A6%E8%A7%A3/">写权限下传篇</a>；VFIO
+设备自身的迁移在<a href="https://akirazheng.github.io/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">VFIO
+热迁移篇</a>。</p>
+<h1 id="热迁移三阶段全量增量停机收尾">1.
+热迁移三阶段：全量、增量、停机收尾</h1>
+<p>先看迁移对象。QEMU 把要搬的东西注册成一串
+SaveStateEntry（保存状态项），分两类：</p>
+<ul>
+<li><strong>RAM</strong>：注册名 <code>"ram"</code> 的迭代式
+handler，占迁移量的大头，有
+<code>save_setup / save_live_iterate / save_live_complete_precopy</code>
+三个阶段回调</li>
+<li><strong>设备状态（VM State）</strong>：每个设备一份
+VMStateDescription（设备状态描述符），只在停机后一次性序列化。几个真实的例子：
+<ul>
+<li>GIC（Generic Interrupt Controller，通用中断控制器）的
+<code>vmstate_gic</code>，含 <code>ctlr</code>、每中断的
+<code>enabled/pending/active/level</code>、<code>irq_target</code>、<code>priority</code>
+等</li>
+<li>vCPU 的 <code>vmstate_arm_cpu</code>，含
+<code>xregs[32]</code>、<code>pc</code>、<code>cpsr</code>、<code>elr_el[4]</code>、系统寄存器对、generic
+timer</li>
+<li>passthrough 设备的内部状态走 VFIO 迁移协议，MMIO（Memory-Mapped
+I/O，内存映射 IO）BAR 空间本身不参与脏页跟踪（详见 VFIO 篇）</li>
+</ul></li>
+</ul>
+<p>vCPU 寄存器平时在 KVM 里，停机后由
+<code>cpu_synchronize_all_states()</code> 从 KVM 拉回 QEMU，再随 vmstate
+一起发。</p>
+<p>再看流程。<code>qmp_migrate</code> 解析 URI 后
+<code>migrate_init</code> 复位状态，异步连上目的端，连接成功回调
+<code>migrate_fd_connect</code> 里创建名为 <code>"live_migration"</code>
+的迁移线程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/migration/migration.c */</span></span><br><span class="line">migrate_fd_connect()</span><br><span class="line">  +-&gt; qemu_thread_create(&amp;s-&gt;thread, <span class="string">&quot;live_migration&quot;</span>, migration_thread, ...)</span><br></pre></td></tr></table></figure>
+<p>整个热迁移由 <code>migration_thread</code> 驱动，分三段（图1）：</p>
+<ul>
+<li><strong>setup 段</strong>：发流头（MAGIC/VERSION），调
+<code>qemu_savevm_state_setup()</code>，然后状态从 SETUP 切到 ACTIVE。对
+RAM 来说这一步做三件事：
+<ul>
+<li>初始化 QEMU 侧位图</li>
+<li>通知 KVM 开启脏页跟踪（第 3 节）</li>
+<li>做首次位图同步（第 5 节）</li>
+</ul></li>
+<li><strong>迭代段</strong>：主循环每轮执行
+<code>migration_iteration_run()</code>，先估剩余量，够小就转停机，否则
+<code>qemu_savevm_state_iterate()</code> 发一轮脏页</li>
+<li><strong>收尾段</strong>：<code>migration_completion()</code>
+停机并发出剩余数据，<code>migration_iteration_finish()</code>
+处理源端虚机的最终状态</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/migration/migration.c */</span></span><br><span class="line">migration_thread()</span><br><span class="line">  +-&gt; qemu_savevm_state_header()                    <span class="comment">/* MAGIC/VERSION */</span></span><br><span class="line">  +-&gt; qemu_savevm_state_setup()                     <span class="comment">/* ram_save_setup: 开脏页跟踪, 第 3 节 */</span></span><br><span class="line">  +-&gt; qemu_savevm_wait_unplug()                   <span class="comment">/* SETUP -&gt; ACTIVE */</span></span><br><span class="line">  +-&gt; <span class="keyword">while</span> (migration_is_active(s))                <span class="comment">/* 迭代主循环, 每轮 */</span></span><br><span class="line">  | +-&gt; migration_iteration_run()</span><br><span class="line">  | | +-&gt; qemu_savevm_state_pending_estimate()      <span class="comment">/* 估值: 不碰 KVM */</span></span><br><span class="line">  | | +-&gt; qemu_savevm_state_pending_exact()         <span class="comment">/* 逼近阈值才调: 触发位图同步 */</span></span><br><span class="line">  | | +-&gt; migration_completion()                    <span class="comment">/* pending &lt; 阈值: 转停机, 出循环 */</span></span><br><span class="line">  | | +-&gt; qemu_savevm_state_iterate()               <span class="comment">/* 否则: 发一轮脏页 */</span></span><br><span class="line">  | +-&gt; migration_detect_error()                    <span class="comment">/* cancel/IO错误: 退出循环 */</span></span><br><span class="line">  | +-&gt; migration_rate_limit()                      <span class="comment">/* 100ms 限速周期 */</span></span><br><span class="line">  +-&gt; migration_iteration_finish()                  <span class="comment">/* 成功-&gt;POSTMIGRATE; 失败-&gt;vm_start */</span></span><br></pre></td></tr></table></figure>
+<p>停机切换的判定条件是"剩余量小于阈值"。阈值不是写死的字节数，而是<strong>带宽乘停机预算</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/migration/migration.c, migration_update_counters(): 每 100ms 周期执行 */</span></span><br><span class="line">    s-&gt;threshold_size = expected_bw_per_ms * migrate_downtime_limit();</span><br><span class="line"></span><br><span class="line"><span class="comment">/* expected_downtime 的估计: 上次同步时刻的剩余脏字节 / 带宽 */</span></span><br><span class="line">    s-&gt;expected_downtime =</span><br><span class="line">        stat64_get(&amp;mig_stats.dirty_bytes_last_sync) / expected_bw_per_ms;</span><br></pre></td></tr></table></figure>
+<p><code>downtime_limit</code>（停机时间上限）默认
+300ms。也就是说：当"剩余脏页量"小到按当前带宽 300ms
+内能发完时，虚机才停机，进入最后的停机拷贝。<code>migration_completion_precopy()</code>
+里 <code>migration_stop_vm(RUN_STATE_FINISH_MIGRATE)</code> 让所有 vCPU
+停下，业务中断从这里开始，到目的端 <code>vm_start()</code>
+结束，这段时长就是迁移的 downtime（停机时间）。</p>
+<p>如果脏页产生速度持续高于发送带宽，迭代永远收敛不了。precopy（预拷贝，即先全量后增量的模式）的对策不是强制停机，而是压脏页速率：<code>migration_bitmap_sync</code>
+里每隔 1 秒评估一次，连续两个周期脏量超发送量就触发
+auto-converge（自动收敛，动态限制 vCPU
+运行时间比例，<code>mig_throttle_guest_down()</code> 周期性让 vCPU
+睡觉截流）或 dirty-limit；仍然不收敛就等用户 cancel 或切
+postcopy（后拷贝，先停机切换、缺页再按需拉取的模式）。</p>
+<p><img src="http://www.plantuml.com/plantuml/svg/VPHBJzj04CVl_XGZJeue1tf4fI8bZXkHaE04AYGaon13B1pRiZVfuvIe1CGZG0yjxmDjAjhI15ILLsZ8bydQphVevC4Zb7ApTsR--vlvx-w0HIIJf98gOyqgcY6PKX8cfQdP6LDFQV51NTLDU9rGY7md7fUdfPHA_Bf6eiex6Nfx6Q8GLGQwSzNR1uOfJ-d6Mt3U5zrgrZcuh9qlrZTFxTA9lN5AosiCWp94cL8CIIFGnQTaYx3fmSYefmia2_ZEy0WN6ct9EEMgysrvGcFjyhfpUDJA7kdC7XeBTOI7_XLZdPsIiprta-9ZcFv-i6IICg25oRfRs_PksQskk_ihjVEY1_hxcH7eUGv3q0UuXHZbOk9eb1F441SA2-EYmF61y32YDOAu9WR3lEWB2B5nCUBbkQY7aQQ8afQ8Z4H3q8DI8oXLg-HnPFJi5xqiFm7w9qCFbjtICQryPEBodOe6e5ijrYw_F0o8jLS_dDKZMjXsAwKchghh1jX7Q_WFw9uf4KNN682EDdXieqM9lC2sSTPNxE9N3-RU8G2ufNRdrkhx9-tawg6JEy1m1szx6nycqxKFzKosLGAiuCNPUSSuqH_qyitHUEup3GOvht2NggrGNK3JwDx6Vy0QvVPv3gcW6-eBUVlJCPtVgbNtxAK2hiI2Bs1QJLc9-wYo5c-UHvXf74EW5wVDaMxJfNrCvQ_9K8lEvsXnix4GaSsaObauKF0tBW9RtphZWayV8JDbLNeZ6bXdWPtzJ0jvuHLIjMReL4huyI0O-awpksXro_URSzYmmS0CHPk1Pq0IfcmbT3KkMdWT9xHqKhI8Rh3-m70W-b8C1NZ16yD9F-QzlPkXwwkryupzS__w1DoQkFYzLjbgczWDRkcA5XQSfLCxasNJINn1YEoPqBgXSRr4rER2ViPtNJmPDzFYTMEYfAeJ6itbtTyNNY62OarOlAEiXnd0Zl0b-Wi0" alt="plantuml diagram"></p>
+<p>迭代阶段的四个动作（同步位图、发送脏页、清除已发送块、写 fault
+标脏）覆盖了 dirty bitmap
+模式迭代期的全部环节。下面按生命周期逐个拆开。</p>
+<h1 id="dirty-bitmap-模式一句话与三层位图">2. dirty bitmap
+模式：一句话与三层位图</h1>
+<p>一句话定义：<strong>QEMU 给 memslot 打上
+<code>KVM_MEM_LOG_DIRTY_PAGES</code> 标记，KVM 为它维护一张每 4KB 页一个
+bit 的位图；页面被写保护后，guest 一写就 Permission Fault 陷到 EL2，KVM
+在 fault 处理里给位图置位；QEMU 周期性用 ioctl
+把位图同步回用户态，发送对应脏页，再让 KVM
+清掉这些位并重新写保护，如此循环直到收敛</strong>。</p>
+<p>这里要分清两种陷入，触发机制完全不同：</p>
+<ul>
+<li>guest 的写触发 Permission Fault，是<strong>硬件异常</strong>：CPU
+退出 guest 进入 KVM 的异常处理路径（VHE 布局下宿主内核本身就运行在
+EL2），一次标脏就是一次这样的异常陷入加处理</li>
+<li>QEMU 同步位图走 <code>KVM_GET_DIRTY_LOG</code> /
+<code>KVM_CLEAR_DIRTY_LOG</code>，是<strong>宿主机系统调用</strong>：陷入宿主内核里的
+KVM 模块，与 guest 异常无关</li>
+</ul>
+<p>所以"trap 到 EL2 获取脏页位图"的说法不准确：位图的读写都走宿主内核的
+ioctl 路径，只有置位动作走 guest 异常退出的 fault 路径。</p>
+<p>位图在系统中实际存在三层（图2），职责各不相同：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">图2: 三层位图与单向数据流</span><br><span class="line"></span><br><span class="line">        guest writes (stage-2 protected page)</span><br><span class="line">        |  Permission Fault -&gt; mark_page_dirty_in_slot -&gt; set bit</span><br><span class="line">        v</span><br><span class="line">+----------------------------------+</span><br><span class="line">| kvm_memory_slot.dirty_bitmap     |   &lt;- 内核侧, 脏页记录的唯一来源</span><br><span class="line">| (kernel, 1 bit per 4K page)      |</span><br><span class="line">+----------------------------------+</span><br><span class="line">        |</span><br><span class="line">        | KVM_GET_DIRTY_LOG (ioctl: whole-slot copy-out)</span><br><span class="line">        v</span><br><span class="line">+----------------------------------+</span><br><span class="line">| KVMSlot.dirty_bmap               |   &lt;- QEMU 用户态缓存, 每次 GET 整块覆盖</span><br><span class="line">+----------------------------------+</span><br><span class="line">        |</span><br><span class="line">        | cpu_physical_memory_set_dirty_lebitmap (OR into global)</span><br><span class="line">        v</span><br><span class="line">+----------------------------------+</span><br><span class="line">| ram_list.dirty_memory            |   &lt;- QEMU 全局位图, 汇合 KVM 同步来的位</span><br><span class="line">| [DIRTY_MEMORY_MIGRATION]         |      与 QEMU 自身 DMA 写置的位 (第 7 节)</span><br><span class="line">+----------------------------------+</span><br><span class="line">        |</span><br><span class="line">        | qatomic_xchg at sync (move &amp; clear)</span><br><span class="line">        v</span><br><span class="line">+----------------------------------+</span><br><span class="line">| RAMBlock.bmap                    |   &lt;- 迁移消费视图: find_next_bit 扫描,</span><br><span class="line">| (per RAMBlock)                   |      发一页清一位</span><br><span class="line">+----------------------------------+</span><br><span class="line">        |</span><br><span class="line">        | KVM_CLEAR_DIRTY_LOG (after send: clear bits</span><br><span class="line">        |                       + re-write-protect, see ch.6)</span><br><span class="line">        +---------------------------&gt; back to the top bitmap</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>KVM memslot 位图</strong>是脏页记录的唯一来源，只有写 fault
+和 KVM 内部写 guest 内存的路径会置位</li>
+<li><strong>QEMU 全局位图</strong> <code>ram_list.dirty_memory[]</code>
+按 ram_addr 编址，有 VGA/CODE/MIGRATION 三种 client，KVM 同步来的位和
+QEMU 设备模拟 DMA 写置的位（第 7 节）都汇到这里</li>
+<li><strong><code>RAMBlock.bmap</code></strong>
+是迁移专用消费视图，同步时从全局位图搬运而来，发送线程用它找脏页，发一页清一位</li>
+</ul>
+<p>数据单向流动，不回流。看内核侧的数据结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/include/linux/kvm_host.h */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">kvm_memory_slot</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">hlist_node</span> <span class="title">id_node</span>[2];</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">interval_tree_node</span> <span class="title">hva_node</span>[2];</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">rb_node</span> <span class="title">gfn_node</span>[2];</span></span><br><span class="line">	<span class="keyword">gfn_t</span> base_gfn;                    <span class="comment">/* slot 起始 guest frame number */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> npages;              <span class="comment">/* 页数 = 位图 bit 数 */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> *dirty_bitmap;       <span class="comment">/* 脏位图: 每页 1 bit */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kvm_arch_memory_slot</span> <span class="title">arch</span>;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> userspace_addr;      <span class="comment">/* host 虚拟地址起始 */</span></span><br><span class="line">	u32 flags;                         <span class="comment">/* KVM_MEM_LOG_DIRTY_PAGES / READONLY */</span></span><br><span class="line">	<span class="keyword">short</span> id;</span><br><span class="line">	u16 as_id;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="title">kvm_dirty_bitmap_bytes</span><span class="params">(struct kvm_memory_slot *memslot)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> ALIGN(memslot-&gt;npages, BITS_PER_LONG) / <span class="number">8</span>;   <span class="comment">/* long 对齐 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>位图的定位规则极简：<strong>bit 下标 =
+<code>gfn - memslot-&gt;base_gfn</code></strong>。64GB 内存的虚机是 16M
+个页，位图 2MB。分配有个历史包袱，<code>kvm_alloc_dirty_bitmap()</code>
+一次 <code>__vcalloc(2, dirty_bytes, ...)</code>
+分配<strong>两倍</strong>长度：第二份是 legacy 模式
+<code>KVM_GET_DIRTY_LOG</code> 做"快照+清零"时的暂存缓冲，避免在 ioctl
+里 vmalloc。manual-protect 模式（下文）用不到第二份，但分配照旧。</p>
+<p>置位函数只有一处：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/virt/kvm/kvm_main.c */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">mark_page_dirty_in_slot</span><span class="params">(struct kvm *kvm,</span></span></span><br><span class="line"><span class="params"><span class="function">			     <span class="keyword">const</span> struct kvm_memory_slot *memslot, <span class="keyword">gfn_t</span> gfn)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kvm_vcpu</span> *<span class="title">vcpu</span> =</span> kvm_get_running_vcpu();</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	<span class="keyword">if</span> (memslot &amp;&amp; kvm_slot_dirty_track_enabled(memslot)) &#123;</span><br><span class="line">		<span class="keyword">unsigned</span> <span class="keyword">long</span> rel_gfn = gfn - memslot-&gt;base_gfn;   <span class="comment">/* bit 下标 */</span></span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (kvm-&gt;dirty_ring_size &amp;&amp; vcpu)</span><br><span class="line">			kvm_dirty_ring_push(vcpu, slot, rel_gfn);      <span class="comment">/* dirty ring 模式 */</span></span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (memslot-&gt;dirty_bitmap)</span><br><span class="line">			set_bit_le(rel_gfn, memslot-&gt;dirty_bitmap);    <span class="comment">/* bitmap 模式: 原子置位 */</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>set_bit_le</code> 在小端 arm64 上就是原子
+<code>set_bit</code>，<strong>无锁</strong>，位级原子操作天然并发安全，不需要
+mmu_lock。三个入口汇聚到这个函数：</p>
+<ul>
+<li>写 fault 路径（<code>kvm_s2_fault_map</code> 尾部，第 4 节）</li>
+<li>KVM 内核自己写 guest 内存，例如 vgic/its
+保存中断表（<code>kvm_write_guest</code> →
+<code>__kvm_write_guest_page</code>）</li>
+<li>v7.3 新增的 HDBSS 硬件脏位缓冲排空路径（第 9 节）</li>
+</ul>
+<p>用户态拿位图的 uapi（内核暴露给用户态的接口）长这样：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/include/uapi/linux/kvm.h */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">kvm_dirty_log</span> &#123;</span></span><br><span class="line">	__u32 slot;                       <span class="comment">/* slot id | as_id&lt;&lt;16 */</span></span><br><span class="line">	__u32 padding1;</span><br><span class="line">	<span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">		<span class="keyword">void</span> *dirty_bitmap;       <span class="comment">/* 出参: 内核整块拷出, 每页 1 bit */</span></span><br><span class="line">		__u64 padding2;</span><br><span class="line">	&#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* for KVM_CLEAR_DIRTY_LOG */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">kvm_clear_dirty_log</span> &#123;</span></span><br><span class="line">	__u32 slot;</span><br><span class="line">	__u32 num_pages;                  <span class="comment">/* 要清的页数 */</span></span><br><span class="line">	__u64 first_page;                 <span class="comment">/* 起始页号, 必须 64 页对齐 */</span></span><br><span class="line">	<span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">		<span class="keyword">void</span> *dirty_bitmap;       <span class="comment">/* 入参: 为 1 的位才被清 */</span></span><br><span class="line">		__u64 padding2;</span><br><span class="line">	&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>注意方向差异：GET
+是<strong>出参</strong>（内核把整张位图拷给用户）；CLEAR
+是<strong>入参</strong>（用户告诉内核要清哪些位，传进来的位图里为 1
+的位才被清）。这个差异是第 6 节"不丢页"论证的核心。</p>
+<h1 id="初始化打标记与渐进写保护">3. 初始化：打标记与渐进写保护</h1>
+<p>迁移线程 setup 阶段调 <code>qemu_savevm_state_setup()</code>，对 RAM
+落到 <code>ram_save_setup → ram_init_all → ram_init_bitmaps</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/migration/ram.c */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">ram_init_bitmaps</span><span class="params">(RAMState *rs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	qemu_mutex_lock_ramlist();</span><br><span class="line">	WITH_RCU_READ_LOCK_GUARD() &#123;</span><br><span class="line">		ram_list_init_bitmaps();</span><br><span class="line">		<span class="comment">/* We don&#x27;t use dirty log with background snapshots */</span></span><br><span class="line">		<span class="keyword">if</span> (!migrate_background_snapshot()) &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> TARGET_AARCH64</span></span><br><span class="line">			<span class="keyword">if</span> (kvm_enabled()) &#123;</span><br><span class="line">				kvm_update_hdbss_cap(<span class="literal">true</span>, migrate_hdbss_buffer_size());  <span class="comment">/* fork 特有: HDBSS 硬件脏位, 第 9 节 */</span></span><br><span class="line">			&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">			memory_global_dirty_log_start(GLOBAL_DIRTY_MIGRATION);  <span class="comment">/* 开启脏页跟踪 */</span></span><br><span class="line">			migration_bitmap_sync_precopy(rs, <span class="literal">false</span>);                <span class="comment">/* 首次同步 */</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	qemu_mutex_unlock_ramlist();</span><br><span class="line">	migration_bitmap_clear_discarded_pages(rs);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>ram_list_init_bitmaps()</code> 把每个 RAMBlock 的
+<code>bmap</code> <strong>全置
+1</strong>，首轮全量发送的依据就来自这里，不是靠 KVM
+报脏。<code>memory_global_dirty_log_start(GLOBAL_DIRTY_MIGRATION)</code>
+是通知 KVM 的核心动作，它不直接发 ioctl，而是走 QEMU
+内存模型的事务机制：</p>
+<ul>
+<li>置全局跟踪标志 <code>global_dirty_tracking</code></li>
+<li>提交一次内存事务，FlatView（平面视图，AddressSpace
+的展开结果）重建，每个 RAM 区域的 <code>dirty_log_mask</code> 多出
+MIGRATION 位</li>
+<li>对每个 mask 增长的 FlatRange 回调 listener 的
+<code>log_start</code>，KVM 的 listener 收到后更新 memslot flags</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/accel/kvm/kvm-all.c */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">kvm_mem_flags</span><span class="params">(MemoryRegion *mr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">bool</span> readonly = mr-&gt;readonly || memory_region_is_romd(mr);</span><br><span class="line">	<span class="keyword">int</span> flags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (memory_region_get_dirty_log_mask(mr) != <span class="number">0</span>) &#123;</span><br><span class="line">		flags |= KVM_MEM_LOG_DIRTY_PAGES;        <span class="comment">/* 打上脏页跟踪标记 */</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (readonly &amp;&amp; kvm_readonly_mem_allowed) &#123;</span><br><span class="line">		flags |= KVM_MEM_READONLY;               <span class="comment">/* 只读 MR: 另一个 flag */</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">kvm_slot_update_flags</span><span class="params">(KVMMemoryListener *kml, KVMSlot *mem,</span></span></span><br><span class="line"><span class="params"><span class="function">				 MemoryRegion *mr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	mem-&gt;flags = kvm_mem_flags(mr);</span><br><span class="line">	<span class="keyword">if</span> (mem-&gt;flags == mem-&gt;old_flags) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;                                <span class="comment">/* flags 没变, 不发 ioctl */</span></span><br><span class="line">	&#125;</span><br><span class="line">	kvm_slot_init_dirty_bitmap(mem);             <span class="comment">/* 用户态缓存位图分配 */</span></span><br><span class="line">	<span class="keyword">return</span> kvm_set_user_memory_region(kml, mem, <span class="literal">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>完整开启链，从迁移线程到内核：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[QEMU] migration_thread                                        <span class="comment">/* qemu/migration/migration.c */</span></span><br><span class="line">  +-&gt; qemu_savevm_state_setup                                  <span class="comment">/* qemu/migration/savevm.c */</span></span><br><span class="line">    +-&gt; ram_save_setup                                         <span class="comment">/* qemu/migration/ram.c */</span></span><br><span class="line">      +-&gt; ram_init_all</span><br><span class="line">        +-&gt; ram_state_init                                     <span class="comment">/* migration_dirty_pages = 全部页数 */</span></span><br><span class="line">        +-&gt; ram_init_bitmaps</span><br><span class="line">          +-&gt; ram_list_init_bitmaps                            <span class="comment">/* rb-&gt;bmap 全 1, clear_bmap 分配 */</span></span><br><span class="line">          +-&gt; memory_global_dirty_log_start(GLOBAL_DIRTY_MIGRATION)</span><br><span class="line">            |                                                  <span class="comment">/* qemu/system/memory.c */</span></span><br><span class="line">            +-&gt; global_dirty_tracking |= GLOBAL_DIRTY_MIGRATION</span><br><span class="line">            +-&gt; memory_region_transaction_commit               <span class="comment">/* 内存事务提交 */</span></span><br><span class="line">              +-&gt; memory_region_commit</span><br><span class="line">                +-&gt; flatviews_reset                            <span class="comment">/* FlatView 重建, mask 多出 MIGRATION 位 */</span></span><br><span class="line">                +-&gt; address_space_update_topology_pass(adding=<span class="literal">true</span>)</span><br><span class="line">                  +-&gt; MEMORY_LISTENER_UPDATE_REGION(log_start) <span class="comment">/* mask 增长时 */</span></span><br><span class="line">                    +-&gt; kvm_log_start                          <span class="comment">/* qemu/accel/kvm/kvm-all.c */</span></span><br><span class="line">                      +-&gt; kvm_section_update_flags</span><br><span class="line">                        +-&gt; kvm_slot_update_flags</span><br><span class="line">                          +-&gt; kvm_mem_flags                    <span class="comment">/* 置 LOG_DIRTY_PAGES */</span></span><br><span class="line">                          +-&gt; kvm_slot_init_dirty_bitmap</span><br><span class="line">                          +-&gt; kvm_set_user_memory_region</span><br><span class="line">                            +-&gt; ioctl(KVM_SET_USER_MEMORY_REGION)</span><br><span class="line">          +-&gt; migration_bitmap_sync_precopy                    <span class="comment">/* 首次位图同步, 第 5 节 */</span></span><br></pre></td></tr></table></figure>
+<p>ioctl 进入内核后，V1 版只允许两个
+flag（<code>KVM_SET_USER_MEMORY_REGION_V1_FLAGS = LOG_DIRTY_PAGES | READONLY</code>），既有
+memslot 只改 flags 的场景分类为
+<code>KVM_MR_FLAGS_ONLY</code>，位图分配与页表动作分别在 prepare 和
+commit 两个钩子里：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[KVM] kvm_vm_ioctl(KVM_SET_USER_MEMORY_REGION)                 <span class="comment">/* linux/virt/kvm/kvm_main.c */</span></span><br><span class="line">  +-&gt; kvm_vm_ioctl_set_memory_region</span><br><span class="line">    +-&gt; kvm_set_memory_region                                  <span class="comment">/* flags 校验, change 分类 */</span></span><br><span class="line">      +-&gt; kvm_set_memslot</span><br><span class="line">        +-&gt; kvm_prepare_memory_region                          <span class="comment">/* 先于激活 */</span></span><br><span class="line">          +-&gt; kvm_alloc_dirty_bitmap                           <span class="comment">/* __vcalloc(2, bytes) */</span></span><br><span class="line">          +-&gt; bitmap_set(<span class="keyword">new</span>-&gt;dirty_bitmap, <span class="number">0</span>, <span class="keyword">new</span>-&gt;npages)    <span class="comment">/* initially-set 模式: 初始全 1 */</span></span><br><span class="line">        +-&gt; kvm_update_flags_memslot                           <span class="comment">/* RCU 换入新 memslot, 对 vCPU 生效 */</span></span><br><span class="line">        +-&gt; kvm_commit_memory_region</span><br><span class="line">          +-&gt; kvm_arch_commit_memory_region                    <span class="comment">/* linux/arch/arm64/kvm/mmu.c */</span></span><br></pre></td></tr></table></figure>
+<p><code>kvm_arch_commit_memory_region()</code> 是 arm64
+侧的关键分叉：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/mmu.c */</span></span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	<span class="keyword">if</span> (log_dirty_pages) &#123;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (change == KVM_MR_DELETE)</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * Huge and normal pages are write-protected and split</span></span><br><span class="line"><span class="comment">		 * on either of these two cases:</span></span><br><span class="line"><span class="comment">		 *</span></span><br><span class="line"><span class="comment">		 * 1. with initial-all-set: gradually with CLEAR ioctls,</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">		<span class="keyword">if</span> (kvm_dirty_log_manual_protect_and_init_set(kvm))</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * or</span></span><br><span class="line"><span class="comment">		 * 2. without initial-all-set: all in one shot when</span></span><br><span class="line"><span class="comment">		 *    enabling dirty logging.</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">		kvm_mmu_wp_memory_region(kvm, <span class="keyword">new</span>-&gt;id);</span><br><span class="line">		kvm_mmu_split_memory_region(kvm, <span class="keyword">new</span>-&gt;id);</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		kvm_mmu_free_memory_cache(&amp;kvm-&gt;arch.mmu.split_page_cache);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>两种模式，取决于 <code>kvm-&gt;manual_dirty_log_protect</code>
+里有没有 <code>KVM_DIRTY_LOG_INITIALLY_SET</code> 位。这个位由 QEMU 在
+<code>kvm_init()</code> 时（VM 创建早期，早于任何
+memslot）探测并使能：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/accel/kvm/kvm-all.c, kvm_init() */</span></span><br><span class="line">    <span class="keyword">if</span> (!s-&gt;kvm_dirty_ring_size) &#123;</span><br><span class="line">        dirty_log_manual_caps =</span><br><span class="line">            kvm_check_extension(s, KVM_CAP_MANUAL_DIRTY_LOG_PROTECT2);</span><br><span class="line">        dirty_log_manual_caps &amp;= (KVM_DIRTY_LOG_MANUAL_PROTECT_ENABLE |</span><br><span class="line">                                  KVM_DIRTY_LOG_INITIALLY_SET);</span><br><span class="line">        s-&gt;manual_dirty_log_protect = dirty_log_manual_caps;</span><br><span class="line">        <span class="keyword">if</span> (dirty_log_manual_caps) &#123;</span><br><span class="line">            ret = kvm_vm_enable_cap(s, KVM_CAP_MANUAL_DIRTY_LOG_PROTECT2, <span class="number">0</span>,</span><br><span class="line">                                    dirty_log_manual_caps);</span><br><span class="line">            <span class="comment">/* 失败则回退 legacy 模式 */</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>arm64 的 <code>KVM_DIRTY_LOG_MANUAL_CAPS</code>
+两个位都声明（<code>arch/arm64/include/asm/kvm_host.h</code>），所以
+<strong>QEMU 8.2 + arm64 实际走的是 manual-protect + initially-all-set
+模式</strong>。两种模式的对比：</p>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>legacy 一步到位模式</th>
+<th>initially-all-set 渐进模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开启时动作</td>
+<td><code>kvm_mmu_wp_memory_region</code> 整槽清
+S2AP_W，<code>kvm_mmu_split_memory_region</code> 拆全部 block，再
+<code>kvm_flush_remote_tlbs_memslot</code></td>
+<td>什么都不做，只把位图初始全 1（"所有页都算脏"）</td>
+</tr>
+<tr>
+<td>代价</td>
+<td>大内存 VM 一次 ioctl 里写保护加拆分全部页表，vCPU 停顿显著</td>
+<td>零停顿；代价转嫁给首轮全量发送，发送时逐块 CLEAR 才写保护（第 6
+节）</td>
+</tr>
+<tr>
+<td>正确性</td>
+<td>开启即全 RO，写 fault 置位</td>
+<td>未写保护的页被写不置位，但位本来就是 1，不漏记；CLEAR 之后才靠写
+fault 置位</td>
+</tr>
+</tbody>
+</table>
+<p>渐进模式的正确性依赖一个不变量：<strong>位图里的 1
+是"至少这么脏"的下界</strong>。开启时全 1
+是最保守的估计（全部重发，冗余但不丢）；之后每次 CLEAR
+把"已确认发送"的位清零并写保护，未发送的位保持 1。这个设计来自 2020 年的
+arm64 补丁 "KVM: arm64: Support enabling dirty log gradually in small
+chunks"。</p>
+<p>两个边角问题。<code>KVM_MR_CREATE</code>（新建 slot 时就带
+LOG_DIRTY）为什么不写保护：新 slot 的 stage-2 映射必然为空（映射只由
+slot 内的 fault 按需建立），wp 对空区间是 no-op，真正的保证来自 fault
+路径，即 logging 下强制 4K 粒度、读 fault 不给写权限（第 4
+节）。迁移结束关闭 LOG_DIRTY 时走 else 分支，只释放 eager split
+缓存，没有任何 unprotect 动作，原因见第 8 节。</p>
+<h1 id="写-fault-标脏权限真值表与三层判定">4. 写 fault
+标脏：权限真值表与三层判定</h1>
+<p>迭代期里 guest 的写随时可能撞上写保护。以渐进模式为例，某个页被 CLEAR
+写保护后，guest 再写它：stage-2 PTE（Page Table Entry，页表项）的 S2AP_W
+为 0，MMU 报 Permission Fault，FSC（Fault Status Code，错误状态码）为
+0x0C|level，硬件把异常路由到 EL2，KVM 接手：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[KVM] guest 写 RO 页, Permission Fault 退出 guest              <span class="comment">/* linux/arch/arm64/kvm */</span></span><br><span class="line">  +-&gt; kvm_arch_vcpu_ioctl_run                                  <span class="comment">/* arm.c, run 循环 */</span></span><br><span class="line">    +-&gt; handle_exit</span><br><span class="line">      +-&gt; kvm_get_exit_handler                                 <span class="comment">/* handle_exit.c */</span></span><br><span class="line">        +-&gt; kvm_handle_guest_abort                             <span class="comment">/* arch/arm64/kvm/mmu.c */</span></span><br><span class="line">          +-&gt; gfn_to_hva_memslot_prot(memslot, gfn, &amp;writable)</span><br><span class="line">          |   <span class="comment">/* writable = !(slot flags &amp; KVM_MEM_READONLY) */</span></span><br><span class="line">          +-&gt; io_mem_abort                                     <span class="comment">/* hva 无效或真只读: MMIO exit, 不进标脏 */</span></span><br><span class="line">          +-&gt; user_mem_abort</span><br><span class="line">            +-&gt; kvm_s2_fault_pin_pfn                           <span class="comment">/* get_user_pages(GUP) pin 页, 取 VMA 信息 */</span></span><br><span class="line">              +-&gt; kvm_s2_resolve_vma_size</span><br><span class="line">              |   <span class="comment">/* logging 时: max_map_size = PAGE_SIZE, 强制 4K 粒度 */</span></span><br><span class="line">            +-&gt; kvm_s2_fault_compute_prot                      <span class="comment">/* 现算权限, 见真值表 */</span></span><br><span class="line">            +-&gt; kvm_s2_fault_map</span><br><span class="line">              +-&gt; kvm_pgtable_stage2_relax_perms               <span class="comment">/* 粒度相等: 原子加回 S2AP_W */</span></span><br><span class="line">              +-&gt; kvm_pgtable_stage2_map                       <span class="comment">/* 粒度不等: 换粒度重建, 含 lazy split */</span></span><br><span class="line">              +-&gt; mark_page_dirty_in_slot                      <span class="comment">/* writable &amp;&amp; !ret 才调用 */</span></span><br><span class="line">                +-&gt; set_bit_le(rel_gfn, memslot-&gt;dirty_bitmap)</span><br></pre></td></tr></table></figure>
+<p>权限怎么算？写权限篇讲过事实源有两层（VMA 与 memslot），fault
+时刻现算成枚举。v7.3 的实现在
+<code>kvm_s2_fault_compute_prot()</code>，核心就一行条件：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/mmu.c */</span></span><br><span class="line">	*prot = KVM_PGTABLE_PROT_R;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (s2vi-&gt;map_writable &amp;&amp; (s2vi-&gt;device ||</span><br><span class="line">				   !memslot_is_logging(s2fd-&gt;memslot) ||</span><br><span class="line">				   kvm_is_write_fault(s2fd-&gt;vcpu)))</span><br><span class="line">		*prot |= KVM_PGTABLE_PROT_W;</span><br></pre></td></tr></table></figure>
+<p><code>memslot_is_logging()</code> 的定义是
+<code>memslot-&gt;dirty_bitmap &amp;&amp; !(flags &amp; KVM_MEM_READONLY)</code>。展开成真值表：</p>
+<ul>
+<li>不在 logging（没开迁移）：写权限恒给，正常 RW 映射</li>
+<li><strong>logging + 读 fault：给
+RO</strong>。这一行决定了标脏如何触发：读 fault
+建的映射不带写权限，guest 随后的写必然再 fault 一次，那次 fault 才拿到 W
+并标脏</li>
+<li><strong>logging + 写 fault：给 RW
+并标脏</strong>。<code>kvm_s2_fault_map()</code> 尾部
+<code>if (writable &amp;&amp; !ret) mark_page_dirty_in_slot(...)</code>
+完成这一次标脏</li>
+<li><code>device</code>（<code>VM_PFNMAP</code> 且非内存 PFN）旁路
+logging 检查直接给 W，避免设备映射反复 fault；不过这类 VMA 在
+<code>kvm_arch_prepare_memory_region()</code> 里直接拒绝开
+LOG_DIRTY（<code>-EINVAL</code>），所以正常配置下走不到</li>
+</ul>
+<p><strong>怎么区分"本来就只读的页"和"为标脏写保护的页"？</strong>
+这是同一张 PTE 上的两种
+RO，硬件位（S2AP_W=0）完全同形，区分全部在软件层，共三层判定：</p>
+<ul>
+<li><strong>QEMU 侧</strong>：只读 MemoryRegion（如 ROM）注册 memslot
+时同时带 <code>KVM_MEM_READONLY</code> 与
+<code>KVM_MEM_LOG_DIRTY_PAGES</code> 两个
+flag（<code>kvm_mem_flags()</code> 两个判断互不干扰），位图照常分配</li>
+<li><strong>内核 logging
+判定</strong>：<code>memslot_is_logging()</code> 把 READONLY slot
+排除在脏页跟踪外，位图虽在，fault 路径不再据它收权，也就不标脏</li>
+<li><strong>fault
+入口分流</strong>：<code>kvm_handle_guest_abort()</code> 里
+<code>gfn_to_hva_memslot_prot()</code> 返回的 <code>writable</code> 只看
+READONLY flag。写 fault 落在真只读 slot 上时
+<code>write_fault &amp;&amp; !writable</code> 成立，走
+<code>io_mem_abort()</code> 以 KVM_EXIT_MMIO 退出给 QEMU
+模拟，根本进不了标脏路径；写 fault 落在写保护页上时 writable 为真，进
+<code>user_mem_abort()</code> 放权加标脏</li>
+</ul>
+<p>所以两类只读页的命运分岔在 fault 入口之前：真只读页的写 fault
+永远出不来（每次都当 MMIO 丢给用户态），写保护页的写 fault 在 KVM
+内闭环。这个区分是软件意图，不是硬件属性，PTE 不需要也不能承载它。</p>
+<p>写 fault 闭环的另一半是粒度。stage-2 平时为了性能用 2M/1G block
+映射，而位图是 4K 粒度：一个 2M block 只有一位可记，block
+里任意一页写过整块都得算脏，跟踪粒度被放大 512 倍。所以 logging 下
+<code>kvm_s2_resolve_vma_size()</code> 强制
+<code>max_map_size = PAGE_SIZE</code>，block 必须拆：</p>
+<ul>
+<li><strong>eager
+split（预拆分）</strong>：<code>KVM_CAP_ARM_EAGER_SPLIT_CHUNK_SIZE</code>
+显式开启（默认 0 关闭），开启时在 CLEAR 的批处理路径
+<code>kvm_mmu_split_huge_pages()</code> 里提前把 block 拆完</li>
+<li><strong>lazy split（惰性拆分）</strong>：不开启时，写 fault 落在 2M
+RO block 上，<code>mapping_size</code>(4K) 不等于硬件报的
+<code>perm_fault_granule</code>(2M)，走
+<code>kvm_pgtable_stage2_map()</code> 换粒度重建，fault 的那个 4K 以 RW
+落位并标脏，其余 511 个子页留 invalid 等各自的 fault</li>
+</ul>
+<p>最后补一个 v7.3 的新变化：<code>stage2_set_prot_attr()</code>
+现在对可写 PTE 无条件置上 DBM（Dirty Bit Modification，bit
+51）。这个位与 S2AP_W 并存，但只有在
+<code>VTCR_EL2.HD=1</code>（FEAT_HDBSS 硬件脏位，第 9
+节）时才参与硬件行为；经典 bitmap 模式下 HD=0，DBM
+是惰性位，权限判定只看 S2AP。也就是说，没有 HDBSS 硬件时，arm64
+的标脏就是纯软件的"写保护 + Permission Fault + fault 路径置位"，stage-2
+没有软件可直接读取的硬件脏位。relax_perms 恢复写权限的原子修改与 BBM
+细节，见<a href="https://akirazheng.github.io/2026/09/05/%E8%99%9A%E6%8B%9F%E5%8C%96-%E8%AF%BB%E5%86%99%E6%9D%83%E9%99%90%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/">读写权限篇</a>第
+7、8 节。</p>
+<h1 id="位图同步qemu-拉取-kvm-位图">5. 位图同步：QEMU 拉取 KVM 位图</h1>
+<p>标脏发生在 KVM，消费发生在 QEMU，中间需要周期性搬运。QEMU 8.2 的
+precopy 路径里，同步（sync）只发生在三个时机（postcopy 切换前的
+<code>ram_postcopy_send_discard_bitmap</code>
+另有一次，不在本文范围）：</p>
+<ul>
+<li><strong>首次</strong>：<code>ram_init_bitmaps()</code>
+开启跟踪后立即一次</li>
+<li><strong>迭代中</strong>：每轮 <code>migration_iteration_run()</code>
+先调 <code>qemu_savevm_state_pending_estimate()</code>
+做估值，只用上次同步留下的计数，零开销；估值降到
+<code>threshold_size</code> 以下才调
+<code>qemu_savevm_state_pending_exact()</code>，RAM 的
+<code>ram_state_pending_exact()</code> 在此刻真正做一次同步：</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/migration/ram.c */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">ram_state_pending_exact</span><span class="params">(<span class="keyword">void</span> *opaque, <span class="keyword">uint64_t</span> *must_precopy,</span></span></span><br><span class="line"><span class="params"><span class="function">                                    <span class="keyword">uint64_t</span> *can_postcopy)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">uint64_t</span> remaining_size = rs-&gt;migration_dirty_pages * TARGET_PAGE_SIZE;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!migration_in_postcopy() &amp;&amp; remaining_size &lt; s-&gt;threshold_size) &#123;</span><br><span class="line">        qemu_mutex_lock_iothread();</span><br><span class="line">        WITH_RCU_READ_LOCK_GUARD() &#123;</span><br><span class="line">            migration_bitmap_sync_precopy(rs, <span class="literal">false</span>);   <span class="comment">/* 只有逼近阈值才同步 */</span></span><br><span class="line">        &#125;</span><br><span class="line">        qemu_mutex_unlock_iothread();</span><br><span class="line">        remaining_size = rs-&gt;migration_dirty_pages * TARGET_PAGE_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>停机后</strong>：<code>ram_save_complete()</code> 里
+<code>migration_bitmap_sync_precopy(rs, true)</code>（last_stage
+模式），随后把剩余脏页一次发完</li>
+</ul>
+<p>这个两级设计（estimate/exact）是 8.2 相对老版本的变化：</p>
+<ul>
+<li>老版本每轮 <code>ram_save_iterate()</code> 开头都同步一次</li>
+<li>新版本把同步挪到收敛判定处，全量发送（bulk）阶段（剩余量远大于阈值）根本不同步</li>
+<li>原因是同步不便宜：每次都要对每个 memslot 做一次 GET ioctl，legacy
+模式下还伴随整槽清零、重新写保护与 TLB
+flush，而积压很大时同步结果不改变任何决策</li>
+</ul>
+<p><code>ram_save_iterate()</code> 里那句 "in case it was the 1st time
+and we had to sync the dirty bitmap" 的旧注释是老设计的残迹。</p>
+<p>同步的完整链路：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[QEMU] migration_iteration_run                                 <span class="comment">/* qemu/migration/migration.c */</span></span><br><span class="line">  +-&gt; qemu_savevm_state_pending_exact                          <span class="comment">/* qemu/migration/savevm.c */</span></span><br><span class="line">    +-&gt; ram_state_pending_exact                                <span class="comment">/* qemu/migration/ram.c */</span></span><br><span class="line">      +-&gt; migration_bitmap_sync_precopy</span><br><span class="line">        +-&gt; migration_bitmap_sync                              <span class="comment">/* 剩余量逼近阈值才走到这里 */</span></span><br><span class="line">          +-&gt; memory_global_dirty_log_sync                     <span class="comment">/* qemu/system/memory.c */</span></span><br><span class="line">            +-&gt; memory_region_sync_dirty_bitmap(<span class="literal">NULL</span>)          <span class="comment">/* mr=NULL: 遍历 listener 与 FlatRange */</span></span><br><span class="line">              +-&gt; kvm_log_sync                                 <span class="comment">/* qemu/accel/kvm/kvm-all.c */</span></span><br><span class="line">                +-&gt; kvm_physical_sync_dirty_bitmap             <span class="comment">/* 按 memslot 切分 */</span></span><br><span class="line">                  +-&gt; kvm_slot_get_dirty_log</span><br><span class="line">                    +-&gt; ioctl(KVM_GET_DIRTY_LOG)</span><br><span class="line">                    |   <span class="comment">/* 出参整块覆盖 KVMSlot.dirty_bmap 缓存 */</span></span><br><span class="line">                  +-&gt; kvm_slot_sync_dirty_pages</span><br><span class="line">                    +-&gt; cpu_physical_memory_set_dirty_lebitmap</span><br><span class="line">                    |   <span class="comment">/* OR 进 ram_list.dirty_memory[MIGRATION/VGA/CODE] */</span></span><br><span class="line">          +-&gt; ramblock_sync_dirty_bitmap                       <span class="comment">/* 每个 RAMBlock */</span></span><br><span class="line">            +-&gt; cpu_physical_memory_sync_dirty_bitmap          <span class="comment">/* qemu/include/exec/ram_addr.h */</span></span><br><span class="line">              +-&gt; qatomic_xchg(全局 MIGRATION 位, <span class="number">0</span>)            <span class="comment">/* 取走并清零全局位 */</span></span><br><span class="line">              +-&gt; rb-&gt;bmap |= bits                             <span class="comment">/* OR 进消费位图 */</span></span><br><span class="line">              +-&gt; clear_bmap_set(...)                          <span class="comment">/* 标记待 CLEAR 的块, 第 6 节 */</span></span><br><span class="line">          +-&gt; stat64_set(&amp;mig_stats.dirty_bytes_last_sync, ram_bytes_remaining())</span><br><span class="line">          +-&gt; migration_trigger_throttle()                     <span class="comment">/* &gt;1s 周期: auto-converge 判定 */</span></span><br></pre></td></tr></table></figure>
+<p>内核侧 GET ioctl 的行为按模式分岔：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[KVM] kvm_vm_ioctl(KVM_GET_DIRTY_LOG)                          <span class="comment">/* linux/virt/kvm/kvm_main.c */</span></span><br><span class="line">  +-&gt; kvm_vm_ioctl_get_dirty_log</span><br><span class="line">    +-&gt; kvm_get_dirty_log_protect</span><br><span class="line">      +-&gt; kvm_arch_sync_dirty_log                              <span class="comment">/* arm64: 平时 no-op */</span></span><br><span class="line">      +-&gt; (manual 模式) copy_to_user 原样整块拷出</span><br><span class="line">      |   <span class="comment">/* 不清零, 不重保护, 不 flush */</span></span><br><span class="line">      +-&gt; (legacy 模式) 逐个非零 word 走四步</span><br><span class="line">      | +-&gt; mask = xchg(&amp;dirty_bitmap[i], <span class="number">0</span>)                    <span class="comment">/* 步骤1: 快照并清零 */</span></span><br><span class="line">      | +-&gt; kvm_arch_mmu_enable_log_dirty_pt_masked             <span class="comment">/* 步骤2: 重新写保护 */</span></span><br><span class="line">      | +-&gt; copy_to_user(<span class="built_in">log</span>-&gt;dirty_bitmap, buffer)             <span class="comment">/* 步骤3: 拷给用户 */</span></span><br><span class="line">      | +-&gt; kvm_flush_remote_tlbs_memslot                       <span class="comment">/* 步骤4: flush TLB */</span></span><br></pre></td></tr></table></figure>
+<p><code>kvm_arch_sync_dirty_log()</code> 在 arm64 平时是空函数（HDBSS
+开启时 kick 所有 vCPU 逼它们退出 guest 排空硬件脏位缓冲，第 9 节）。</p>
+<p>legacy 模式那四步的顺序不是随手排的，内核注释写明了正确性论证：</p>
+<blockquote>
+<ol type="1">
+<li>Take a snapshot of the bit and clear it if needed.</li>
+<li>Write protect the corresponding page.</li>
+<li>Copy the snapshot to the userspace.</li>
+<li>Upon return caller flushes TLB's if needed.</li>
+</ol>
+<p>Between 2 and 4, the guest may write to the page using the remaining
+TLB entry. This is not a problem because the page is reported dirty
+using the snapshot taken before and step 4 ensures that writes done
+after exiting to userspace will be logged for the next call.</p>
+</blockquote>
+<p>翻译过来：步骤 2 清了 PTE 的写权限，但各 pCPU 的 TLB（Translation
+Lookaside Buffer，地址翻译缓存）里还缓存着"可写"的旧表项，flush 生效之前
+guest 的写不会 fault，这些写不进位图。<strong>这段窗口的写由步骤 1
+的快照兜底</strong>（先快照后写保护，窗口内的写在快照里已经是 1）；flush
+之后的写必然 fault，记入下一轮。flush 是"脏页不丢失"的时间边界。</p>
+<p>arm64 的这个 flush 不需要向各 vCPU 发
+IPI（核间中断）请求，<code>kvm_arch_flush_remote_tlbs_range()</code>
+由调用 CPU 同步执行范围 TLBI（TLB Invalidation，TLB 失效指令）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/mmu.c */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">kvm_arch_flush_remote_tlbs_range</span><span class="params">(struct kvm *kvm, <span class="keyword">gfn_t</span> gfn, u64 nr_pages)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	u64 size = nr_pages &lt;&lt; PAGE_SHIFT;</span><br><span class="line">	u64 addr = gfn &lt;&lt; PAGE_SHIFT;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (is_protected_kvm_enabled())</span><br><span class="line">		kvm_call_hyp_nvhe(__pkvm_tlb_flush_vmid, kvm-&gt;arch.pkvm.handle);</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		kvm_tlb_flush_vmid_range(&amp;kvm-&gt;arch.mmu, addr, size);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>底层是 <code>tlbi ipas2e1is</code>，按 IPA（中间物理地址，即 guest
+物理地址）范围失效 stage-2 表项，超出 <code>MAX_TLBI_RANGE_PAGES</code>
+的分块执行，每次配 <code>dsb(ish)</code>。<code>is</code>
+后缀（Inner-Shareable）意味着指令本身硬件广播到所有核，返回 0 让通用层的
+<code>KVM_REQ_TLB_FLUSH</code> 请求路径短路，所以 arm64 全树 grep
+不到这个 request 的使用者。</p>
+<p>manual 模式把 GET 简化成"纯读"，清零、重保护、flush
+三个动作全部转嫁给 CLEAR ioctl，也就是发送路径。这正是第 6
+节的内容。</p>
+<h1 id="先清后发发送脏页与-clear-重保护">6. 先清后发：发送脏页与 CLEAR
+重保护</h1>
+<p>发送侧的循环在 <code>ram_save_iterate()</code>
+里，每轮在限速预算内反复调 <code>ram_find_and_save_block()</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[QEMU] qemu_savevm_state_iterate                               <span class="comment">/* qemu/migration/savevm.c */</span></span><br><span class="line">  +-&gt; ram_save_iterate                                         <span class="comment">/* qemu/migration/ram.c */</span></span><br><span class="line">    +-&gt; ram_find_and_save_block</span><br><span class="line">      +-&gt; find_dirty_block                                     <span class="comment">/* find_next_bit 扫 bmap; 绕一圈无脏页则本轮结束 */</span></span><br><span class="line">        +-&gt; pss_find_next_dirty</span><br><span class="line">          +-&gt; find_next_bit(rb-&gt;bmap, size, pss-&gt;page)          <span class="comment">/* 顺序扫消费位图 */</span></span><br><span class="line">      +-&gt; ram_save_host_page                                   <span class="comment">/* host page 为单位 */</span></span><br><span class="line">        +-&gt; migration_bitmap_clear_dirty                       <span class="comment">/* 先清 */</span></span><br><span class="line">          +-&gt; migration_clear_memory_region_dirty_bitmap       <span class="comment">/* 触发远端 CLEAR */</span></span><br><span class="line">          +-&gt; test_and_clear_bit(page, rb-&gt;bmap)               <span class="comment">/* 清本地消费位图 */</span></span><br><span class="line">        +-&gt; ram_save_target_page                               <span class="comment">/* 后发 */</span></span><br><span class="line">          +-&gt; save_normal_page</span><br><span class="line">            +-&gt; qemu_put_buffer                                <span class="comment">/* 页内容进迁移流 */</span></span><br></pre></td></tr></table></figure>
+<p>发送以 <strong>host page</strong>（宿主机页，THP（Transparent Huge
+Page，透明大页）大页时一页 = 512 个 target
+page（目标架构页，虚机视角的页））为单位：<code>pss_host_page_prepare()</code>
+圈定大页边界，循环把页内所有脏 target page 逐个清位发送。原因在 CLEAR
+的代价：一次 CLEAR 会把范围内的大页全部拆成 4K
+重新写保护（见下），整页发送让一次拆分服务整页的所有子页，避免对同一大页反复拆分。</p>
+<p>核心是"先清后发"的顺序，<code>migration_bitmap_clear_dirty()</code>
+的注释直说了理由：</p>
+<blockquote>
+<p>This <em>must</em> be called before we send any of the page in the
+chunk because we need to make sure we can capture further page content
+changes when we sync dirty log the next time.</p>
+</blockquote>
+<p>展开讲，"清"有两层，顺序都是先于发送：</p>
+<p><strong>第一层：清 QEMU
+消费位图</strong>（<code>test_and_clear_bit(page, rb-&gt;bmap)</code>）。先清再发，发送之后发生的重新标脏才能在下一轮
+sync
+把这一位重新点亮，页被重发；如果发完才清，就会把"发送窗口内新产生的脏"连同旧位一起抹掉。</p>
+<p><strong>第二层：清 KVM
+位图并重新写保护</strong>（这就是"拷贝到对端之后如何写保护"的答案）。不直接逐页发
+ioctl，而是用 clear_bmap 做"推迟+分块"：sync 搬运全局位图进
+<code>rb-&gt;bmap</code> 时，<code>clear_bmap_set()</code> 对整个
+RAMBlock 的所有块置标记（默认 <code>2^18</code> 个 target page 一块，即
+1GB，一块一位）；标记不区分块里有没有脏页，真正的触发条件是发送，发送块内第一个脏页时
+<code>migration_clear_memory_region_dirty_bitmap()</code>
+测试并清除该标记，命中才对整块发起远端清除：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/migration/ram.c */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">migration_clear_memory_region_dirty_bitmap</span><span class="params">(RAMBlock *rb,</span></span></span><br><span class="line"><span class="params"><span class="function">                                                       <span class="keyword">unsigned</span> <span class="keyword">long</span> page)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	<span class="keyword">if</span> (!rb-&gt;clear_bmap || !clear_bmap_test_and_clear(rb, page)) &#123;</span><br><span class="line">		<span class="keyword">return</span>;                       <span class="comment">/* 本块已清过/无标记: 不重复清 */</span></span><br><span class="line">	&#125;</span><br><span class="line">	shift = rb-&gt;clear_bmap_shift;</span><br><span class="line">	size = <span class="number">1ULL</span> &lt;&lt; (TARGET_PAGE_BITS + shift);        <span class="comment">/* 块大小, 默认 1GB */</span></span><br><span class="line">	start = QEMU_ALIGN_DOWN((<span class="keyword">ram_addr_t</span>)page &lt;&lt; TARGET_PAGE_BITS, size);</span><br><span class="line">	memory_region_clear_dirty_bitmap(rb-&gt;mr, start, size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>推迟到发送时刻、切成 GB 级块，是把 CLEAR（伴随写保护、拆大页、TLB
+flush 的昂贵操作）从 sync 时点分摊到发送过程中。继续往下到 KVM：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[QEMU] memory_region_clear_dirty_bitmap                        <span class="comment">/* qemu/system/memory.c */</span></span><br><span class="line">  +-&gt; kvm_log_clear                                            <span class="comment">/* qemu/accel/kvm/kvm-all.c */</span></span><br><span class="line">    +-&gt; kvm_physical_log_clear                                 <span class="comment">/* manual 未启用时直接 return */</span></span><br><span class="line">      +-&gt; kvm_log_clear_one_slot                               <span class="comment">/* 64 host page 对齐; 临时位图防误清 */</span></span><br><span class="line">        +-&gt; ioctl(KVM_CLEAR_DIRTY_LOG)</span><br></pre></td></tr></table></figure>
+<p><code>kvm_physical_log_clear()</code> 开头有个重要分支：manual
+protect 未启用时直接 no-op 返回，legacy 模式下 GET
+已经"快照+清零"过整张位图，用户态不需要再显式清。<code>kvm_log_clear_one_slot()</code>
+传给内核的位图有讲究：对齐扩展出的首尾空洞必须清零，慢路径干脆构造一张临时位图，<strong>只回放已从内核同步到
+QEMU
+的脏位</strong>。内核注释警告了不这么做的后果：把尚未同步的位也清掉，guest
+的修改就会从位图里丢失，迁移后目的端直接数据损坏或 panic。</p>
+<p>内核侧 CLEAR 的处理：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[KVM] kvm_vm_ioctl(KVM_CLEAR_DIRTY_LOG)                        <span class="comment">/* linux/virt/kvm/kvm_main.c */</span></span><br><span class="line">  +-&gt; kvm_vm_ioctl_clear_dirty_log</span><br><span class="line">    +-&gt; kvm_clear_dirty_log_protect</span><br><span class="line">      +-&gt; copy_from_user(第二份位图)                            <span class="comment">/* 用户要清的位图 */</span></span><br><span class="line">      +-&gt; mask &amp;= atomic_long_fetch_andnot(mask, p)             <span class="comment">/* 原子清位, 只留真正清掉的 */</span></span><br><span class="line">      +-&gt; kvm_arch_mmu_enable_log_dirty_pt_masked              <span class="comment">/* linux/arch/arm64/kvm/mmu.c */</span></span><br><span class="line">        +-&gt; kvm_stage2_wp_range                                <span class="comment">/* 重新写保护该范围 */</span></span><br><span class="line">        +-&gt; kvm_mmu_split_huge_pages                           <span class="comment">/* initially-set 模式: 拆大页 */</span></span><br><span class="line">        +-&gt; kvm_nested_s2_wp</span><br><span class="line">      +-&gt; kvm_flush_remote_tlbs_memslot                        <span class="comment">/* TLBI ipas2e1is */</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* linux/arch/arm64/kvm/mmu.c */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">kvm_arch_mmu_enable_log_dirty_pt_masked</span><span class="params">(struct kvm *kvm,</span></span></span><br><span class="line"><span class="params"><span class="function">		struct kvm_memory_slot *slot,</span></span></span><br><span class="line"><span class="params"><span class="function">		<span class="keyword">gfn_t</span> gfn_offset, <span class="keyword">unsigned</span> <span class="keyword">long</span> mask)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">phys_addr_t</span> base_gfn = slot-&gt;base_gfn + gfn_offset;</span><br><span class="line">	<span class="keyword">phys_addr_t</span> start = (base_gfn +  __ffs(mask)) &lt;&lt; PAGE_SHIFT;</span><br><span class="line">	<span class="keyword">phys_addr_t</span> end = (base_gfn + __fls(mask) + <span class="number">1</span>) &lt;&lt; PAGE_SHIFT;</span><br><span class="line"></span><br><span class="line">	lockdep_assert_held_write(&amp;kvm-&gt;mmu_lock);</span><br><span class="line"></span><br><span class="line">	kvm_stage2_wp_range(&amp;kvm-&gt;arch.mmu, start, end);     <span class="comment">/* 写保护 */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (kvm_dirty_log_manual_protect_and_init_set(kvm))</span><br><span class="line">		kvm_mmu_split_huge_pages(kvm, start, end);   <span class="comment">/* 渐进模式下大页还没拆过 */</span></span><br><span class="line"></span><br><span class="line">	kvm_nested_s2_wp(kvm);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>atomic_long_fetch_andnot</code>
+的语义保证正确性：只清用户点名、且确实为 1 的位。GET 之后 fault
+新置的位若不在用户同步过的快照里，CLEAR 的 mask 不含它，<strong>位保持
+1，留给下一轮 GET</strong>。</p>
+<p>把一页的完整生命周期串起来（渐进模式），状态随时间的演变如下表：</p>
+<table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr>
+<th>时刻</th>
+<th>发生了什么</th>
+<th>KVM 位图的位</th>
+<th>stage-2 权限</th>
+<th>QEMU bmap 的位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>t0</td>
+<td>开启跟踪</td>
+<td>1（初始全 1）</td>
+<td>RW（渐进模式不整体写保护）</td>
+<td>1（初始全 1）</td>
+</tr>
+<tr>
+<td>t1</td>
+<td>bulk 发送推进到 P 所在块</td>
+<td>1</td>
+<td>RW</td>
+<td>1</td>
+</tr>
+<tr>
+<td>t2</td>
+<td>发送 P：先 CLEAR 再读页内容</td>
+<td>0（CLEAR 清位）</td>
+<td>RO（CLEAR 写保护）</td>
+<td>0（发送前清位）</td>
+</tr>
+<tr>
+<td>t3</td>
+<td>guest 写 P</td>
+<td>1（fault 置位）</td>
+<td>RO，触发 fault</td>
+<td>0</td>
+</tr>
+<tr>
+<td>t4</td>
+<td>fault 处理完成</td>
+<td>1</td>
+<td>RW（relax_perms 放权）</td>
+<td>0</td>
+</tr>
+<tr>
+<td>t5</td>
+<td>下一轮 sync</td>
+<td>1（GET 拷出）</td>
+<td>RW</td>
+<td>1（重新点亮，等待重发）</td>
+</tr>
+</tbody>
+</table>
+<p>t2 到 t3 之间就是"先清后发"要保护的窗口：CLEAR 先把 P 写保护，QEMU
+随后读页内容发送。这期间 guest
+的写要么发生在读之前（内容已带上），要么触发 fault 重新置位，下一轮 sync
+后重发。两个顺序（KVM 侧"先清位再写保护最后 flush TLB"，QEMU 侧"先 CLEAR
+再发送"）共同保证了任何时刻的写都不会丢失记录。</p>
+<h1 id="旁路qemu-自身写虚机内存的标脏路径">7. 旁路：QEMU
+自身写虚机内存的标脏路径</h1>
+<p>第 4 节的写 fault 路径有个盲区：stage-2 只约束 guest 经 IPA
+发起的访问。QEMU 用户态（设备模拟）直接经 HVA（Host Virtual
+Address，宿主机虚拟地址）写 guest RAM 时根本不经过 stage-2 翻译，KVM
+的写保护形同虚设，位图也看不到这些写。迁移期间这类写真实存在：e1000/virtio
+设备模型把网络包 DMA 进 guest 内存、VGA 刷新显存，都是 QEMU
+进程在写自己的 mmap。</p>
+<p>谁来标脏？QEMU 自己的地址空间层。所有设备模型写 guest 内存都走
+<code>address_space_write()</code>，写完顺手置位：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[QEMU] 设备模拟写 <span class="function">guest <span class="title">RAM</span> <span class="params">(网卡 DMA / VGA 等)</span></span></span><br><span class="line"><span class="function">  +-&gt; address_space_write                                       <span class="comment">/* qemu/system/physmem.c */</span></span></span><br><span class="line"><span class="function">    +-&gt; flatview_write_continue</span></span><br><span class="line"><span class="function">      +-&gt; qemu_ram_ptr_length                                   <span class="comment">/* 拿到目的 RAM 的 host 指针 */</span></span></span><br><span class="line"><span class="function">      +-&gt; memmove                                               <span class="comment">/* 直接写 */</span></span></span><br><span class="line"><span class="function">      +-&gt; invalidate_and_set_dirty</span></span><br><span class="line"><span class="function">        +-&gt; cpu_physical_memory_range_includes_clean</span></span><br><span class="line"><span class="function">        +-&gt; cpu_physical_memory_set_dirty_range                 <span class="comment">/* qemu/include/exec/ram_addr.h */</span></span></span><br><span class="line"><span class="function">          +-&gt; <span class="title">bitmap_set_atomic</span><span class="params">(ram_list.dirty_memory[MIGRATION/VGA], ...)</span></span></span><br></pre></td></tr></table></figure>
+<p><code>invalidate_and_set_dirty()</code> 先用
+<code>memory_region_get_dirty_log_mask()</code> 确认当前有哪些 client
+在跟踪（迁移期间含 MIGRATION 位），再按 mask 置全局位图。这些位与 KVM
+同步来的位在第 5 节的 sync
+处汇合：<code>ramblock_sync_dirty_bitmap()</code> 的
+<code>qatomic_xchg</code> 把全局位图整体搬进
+<code>rb-&gt;bmap</code>，不区分来源。</p>
+<p>另外两条 QEMU 视角的写路径：</p>
+<ul>
+<li><strong>vhost（内核态数据面）</strong>：vhost 的写发生在内核，不经
+QEMU 地址空间，靠 vhost 自己的 log 记录；vhost 的 MemoryListener 注册了
+<code>.log_sync = vhost_log_sync</code>，在同一轮 sync 里把 log 搬回
+QEMU 全局位图</li>
+<li><strong>TCG 加速（无 KVM 时）</strong>：QEMU 的 SoftTLB 对 clean
+页的写走 <code>notdirty_write()</code> 标脏，与 KVM 无关，一笔带过</li>
+</ul>
+<p>这一节回答了思考题
+4，也解释了三层位图里中间那层存在的意义：<strong>KVM 位图只覆盖 guest
+的写，QEMU 全局位图是 guest 写与 VMM 写的汇合点</strong>。</p>
+<h1 id="停机切换与两端收尾">8. 停机切换与两端收尾</h1>
+<p>迭代收敛后（<code>pending_size &lt; threshold_size</code>），<code>migration_iteration_run()</code>
+返回 BREAK，<code>migration_thread</code> 跳出循环进入
+<code>migration_completion()</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[QEMU] migration_completion                                    <span class="comment">/* qemu/migration/migration.c */</span></span><br><span class="line">  +-&gt; migration_completion_precopy</span><br><span class="line">    +-&gt; migration_downtime_start                               <span class="comment">/* 记录停机起点 */</span></span><br><span class="line">    +-&gt; migration_stop_vm(RUN_STATE_FINISH_MIGRATE)            <span class="comment">/* vCPU 全停, 业务中断开始 */</span></span><br><span class="line">      +-&gt; vm_stop_force_state</span><br><span class="line">    +-&gt; qemu_savevm_state_complete_precopy                     <span class="comment">/* qemu/migration/savevm.c */</span></span><br><span class="line">      +-&gt; cpu_synchronize_all_states                           <span class="comment">/* vCPU 寄存器从 KVM 拉回 QEMU */</span></span><br><span class="line">      +-&gt; qemu_savevm_state_complete_precopy_iterable</span><br><span class="line">        +-&gt; ram_save_complete                                  <span class="comment">/* qemu/migration/ram.c */</span></span><br><span class="line">          +-&gt; migration_bitmap_sync_precopy(rs, <span class="literal">true</span>)          <span class="comment">/* 最后一次同步 */</span></span><br><span class="line">          +-&gt; ram_find_and_save_block                          <span class="comment">/* 循环到发完: 无限速发剩余脏页 */</span></span><br><span class="line">          +-&gt; qemu_put_be64(f, RAM_SAVE_FLAG_EOS)</span><br><span class="line">      +-&gt; qemu_savevm_state_complete_precopy_non_iterable</span><br><span class="line">        +-&gt; vmstate_save                                       <span class="comment">/* 逐设备: vmstate_gic, vmstate_arm_cpu... */</span></span><br><span class="line">        +-&gt; qemu_put_byte(f, QEMU_VM_EOF)                      <span class="comment">/* 流结束标记 */</span></span><br></pre></td></tr></table></figure>
+<p>停机阶段发的东西：剩余脏页（RAM）加上全部设备状态（vmstate）。<code>QEMU_VM_EOF</code>
+是给目的端的结束信号，源端随后置
+COMPLETED，<code>migration_iteration_finish()</code> 把源端虚机置为
+<code>RUN_STATE_POSTMIGRATE</code>（不再运行，进程通常随后退出）。</p>
+<p>目的端在迁移开始前就以 <code>-incoming tcp:0:4444</code>
+之类的方式起好了进程，等连接进来：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[QEMU-dst] socket_accept_incoming_migration                    <span class="comment">/* qemu/migration/socket.c */</span></span><br><span class="line">  +-&gt; migration_channel_process_incoming</span><br><span class="line">    +-&gt; migration_ioc_process_incoming                         <span class="comment">/* qemu/migration/migration.c */</span></span><br><span class="line">      +-&gt; migration_incoming_process</span><br><span class="line">        +-&gt; process_incoming_migration_co                      <span class="comment">/* 协程 */</span></span><br><span class="line">          +-&gt; qemu_loadvm_state                                <span class="comment">/* qemu/migration/savevm.c */</span></span><br><span class="line">            +-&gt; qemu_loadvm_state_main                         <span class="comment">/* section 主循环, 读到 QEMU_VM_EOF 结束 */</span></span><br><span class="line">              +-&gt; (QEMU_VM_SECTION_PART) qemu_loadvm_section_part_end</span><br><span class="line">                +-&gt; vmstate_load</span><br><span class="line">                  +-&gt; ram_load                                 <span class="comment">/* qemu/migration/ram.c */</span></span><br><span class="line">                    +-&gt; ram_load_precopy</span><br><span class="line">                      +-&gt; qemu_get_buffer(f, host, TARGET_PAGE_SIZE)</span><br><span class="line">                      |   <span class="comment">/* RAM_SAVE_FLAG_PAGE: 直写 block-&gt;host + offset */</span></span><br><span class="line">                      +-&gt; ramblock_recv_bitmap_set             <span class="comment">/* 记录接收位图 */</span></span><br><span class="line">              +-&gt; (QEMU_VM_SECTION_START/FULL) qemu_loadvm_section_start_full</span><br><span class="line">                +-&gt; vmstate_load</span><br><span class="line">                  +-&gt; vmstate_load_state                       <span class="comment">/* 设备状态 */</span></span><br><span class="line">          +-&gt; process_incoming_migration_bh                    <span class="comment">/* 主循环 BH 收尾 */</span></span><br><span class="line">            +-&gt; bdrv_activate_all                              <span class="comment">/* 接管磁盘 */</span></span><br><span class="line">            +-&gt; qemu_announce_self                             <span class="comment">/* 免费ARP, 通告新位置 */</span></span><br><span class="line">            +-&gt; vm_start                                      <span class="comment">/* vCPU 恢复, 业务恢复 */</span></span><br></pre></td></tr></table></figure>
+<p>两个要点：</p>
+<ul>
+<li>目的端写页<strong>不走 address_space
+层</strong>，<code>qemu_get_buffer</code> 直接 memcpy 进
+<code>block-&gt;host + offset</code>，所以不产生 QEMU
+侧标脏（也不需要）</li>
+<li><strong>位图和页权限都不迁移</strong>。目的端从头开跑，没有脏页跟踪；<code>rb-&gt;receivedmap</code>
+只是收页记录，供 postcopy/resume 场景回传源端重建状态用。源端页表里那些
+RO 映射随源 VM 一起销毁，谈不上恢复</li>
+</ul>
+<p>真正需要"恢复"的是<strong>迁移失败或被取消</strong>的场景：源端虚机要继续跑，得停跟踪、还性能。cancel
+路径 <code>migrate_fd_cancel()</code> 置 CANCELLING 并 shutdown
+迁移流，<code>migration_thread</code> 的
+<code>migration_detect_error()</code>
+返回致命错误跳出循环，<code>migration_iteration_finish()</code> 对
+FAILED/CANCELLED 分支调 <code>vm_start()</code> 恢复源端业务，随后
+cleanup 链关跟踪：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[QEMU] migration_iteration_finish                              <span class="comment">/* qemu/migration/migration.c */</span></span><br><span class="line">  +-&gt; vm_start()                                               <span class="comment">/* FAILED/CANCELLED 时: 源端虚机恢复运行 */</span></span><br><span class="line">  +-&gt; migrate_fd_cleanup_schedule</span><br><span class="line">    +-&gt; migrate_fd_cleanup_bh</span><br><span class="line">      +-&gt; migrate_fd_cleanup</span><br><span class="line">        +-&gt; qemu_savevm_state_cleanup                          <span class="comment">/* qemu/migration/savevm.c */</span></span><br><span class="line">          +-&gt; ram_save_cleanup                                 <span class="comment">/* qemu/migration/ram.c */</span></span><br><span class="line">            +-&gt; memory_global_dirty_log_stop(GLOBAL_DIRTY_MIGRATION)</span><br><span class="line">              +-&gt; global_dirty_tracking &amp;= ~GLOBAL_DIRTY_MIGRATION</span><br><span class="line">              +-&gt; memory_region_transaction_commit             <span class="comment">/* FlatView 重建, mask 去掉 MIGRATION 位 */</span></span><br><span class="line">                +-&gt; address_space_update_topology_pass         <span class="comment">/* log_stop (Reverse) */</span></span><br><span class="line">                  +-&gt; kvm_log_stop                             <span class="comment">/* qemu/accel/kvm/kvm-all.c */</span></span><br><span class="line">                    +-&gt; kvm_section_update_flags</span><br><span class="line">                      +-&gt; kvm_slot_update_flags</span><br><span class="line">                        +-&gt; kvm_mem_flags                      <span class="comment">/* 无 KVM_MEM_LOG_DIRTY_PAGES */</span></span><br><span class="line">                        +-&gt; kvm_set_user_memory_region</span><br><span class="line">                          +-&gt; ioctl(KVM_SET_USER_MEMORY_REGION)</span><br><span class="line">            +-&gt; g_free(block-&gt;bmap / clear_bmap)               <span class="comment">/* 释放迁移位图 */</span></span><br></pre></td></tr></table></figure>
+<p>内核侧收到 flags 变更（<code>KVM_MR_FLAGS_ONLY</code>，LOG_DIRTY
+从有到无）后做两件事：<code>kvm_arch_commit_memory_region()</code> 走
+else 分支，只释放 eager split 缓存；位图由
+<code>kvm_commit_memory_region()</code> 的 FLAGS_ONLY 分支
+<code>kvm_destroy_dirty_bitmap()</code>
+释放。除此之外<strong>全目录搜不到任何 unprotect
+动作</strong>，页表里残留的 RO 映射靠惰性恢复：下次 guest 写它触发
+Permission Fault，<code>user_mem_abort</code> 里
+<code>memslot_is_logging()</code> 已经为假，<code>compute_prot</code> 因
+<code>!memslot_is_logging(...)</code> 给回 W，relax 放权；此后新 fault
+还能按 VMA 重建 2M 大页。这与姊妹篇的结论一致：<strong>写保护只改 PTE
+硬件位，从不改软件事实源，所以权限随时可以从事实源重算回来</strong>。</p>
+<p>全周期时间线：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">迁移开始 (setup):</span><br><span class="line">  QEMU: ram_init_bitmaps -&gt; bmap 全 1, 开启全局脏跟踪</span><br><span class="line">  KVM:  SET_USER_MEMORY_REGION(LOG_DIRTY) -&gt; 位图初始全 1, 不整体写保护</span><br><span class="line">  VM:   运行中</span><br><span class="line"></span><br><span class="line">迭代期 (每轮):</span><br><span class="line">  QEMU: 逼近阈值时 sync: GET -&gt; OR 进全局位图 -&gt; 搬进 rb-&gt;bmap</span><br><span class="line">        发送: find_next_bit 扫 bmap, 先清后发, 按块 CLEAR</span><br><span class="line">  KVM:  CLEAR: 清位 + 重新写保护 + 拆大页 + TLB flush</span><br><span class="line">        写 fault: relax_perms 恢复 RW + 位图置位</span><br><span class="line">  VM:   运行中</span><br><span class="line"></span><br><span class="line">停机切换 (收敛后):</span><br><span class="line">  QEMU: vm_stop(FINISH_MIGRATE) -&gt; 最后一次 sync -&gt; 发完剩余脏页</span><br><span class="line">        -&gt; 设备状态(vmstate) -&gt; QEMU_VM_EOF</span><br><span class="line">  VM:   业务中断开始</span><br><span class="line"></span><br><span class="line">对端恢复:</span><br><span class="line">  dst:  ram_load 直写内存 -&gt; vmstate_load 恢复设备 -&gt; 免费ARP -&gt; vm_start</span><br><span class="line">  VM:   业务在目的端恢复</span><br><span class="line"></span><br><span class="line">源端收尾:</span><br><span class="line">  成功: RUN_STATE_POSTMIGRATE, 虚机不再运行</span><br><span class="line">  失败/取消: vm_start 恢复业务 + log_stop 去掉 LOG_DIRTY</span><br><span class="line">        -&gt; 残留 RO 映射由后续写 fault 惰性恢复</span><br></pre></td></tr></table></figure>
+<h1 id="模式谱系bitmapdirty-ring-与-hdbss">9. 模式谱系：bitmap、dirty
+ring 与 HDBSS</h1>
+<p>把本文的 dirty bitmap 模式放回谱系里看：</p>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr>
+<th>模式</th>
+<th>标脏动作</th>
+<th>同步方式</th>
+<th>arm64 状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>legacy bitmap</td>
+<td>写 fault 置位</td>
+<td>GET 顺带清零+重保护</td>
+<td>可用，老 VMM 路径</td>
+</tr>
+<tr>
+<td>manual+initially-set bitmap</td>
+<td>写 fault 置位</td>
+<td>GET 纯读，CLEAR 清零+重保护</td>
+<td>本文主述，QEMU 8.2 默认</td>
+</tr>
+<tr>
+<td>dirty ring（脏页环）</td>
+<td>写 fault 推环形队列</td>
+<td>用户态按 vCPU 读取环，RESET 重保护</td>
+<td>7.3 支持</td>
+</tr>
+<tr>
+<td>HDBSS</td>
+<td>硬件置 DBM+缓冲 IPA</td>
+<td>VM exit 排空缓冲，sync 前 kick vCPU</td>
+<td>7.3 新增，依赖硬件</td>
+</tr>
+</tbody>
+</table>
+<p>bitmap 模式的开销瓶颈在同步成本：GET/CLEAR 都按 memslot
+整体或大块工作，QEMU 找脏页要 <code>find_next_bit</code>
+扫描全内存的位图，开销与脏页数量无关、与内存总量正相关。dirty ring
+反过来：每次写 fault 顺带把 <code>&#123;slot, offset&#125;</code> 推进 per-vCPU
+的环形队列（<code>kvm_dirty_ring_push()</code>），用户态按队列读取，成本与脏页数成正比。arm64
+在 7.3 的支持由两个 Kconfig 组成：</p>
+<ul>
+<li><code>HAVE_KVM_DIRTY_RING_ACQ_REL</code>：非 TSO（Total Store
+Order，全序内存模型）架构用 acquire/release 语义的版本</li>
+<li><code>NEED_KVM_DIRTY_RING_WITH_BITMAP</code>：ring
+与备份位图混合，因为 vgic/its 这类没有 vCPU 上下文的内核写路径没法推
+ring，必须落回位图</li>
+</ul>
+<p>QEMU 侧 listener 也二选一：ring 模式注册
+<code>log_sync_global</code>（先 <code>kvm_dirty_ring_flush()</code>
+再处理），bitmap 模式注册 <code>log_sync</code>。</p>
+<p>HDBSS（Hardware Dirty Bit State Save，硬件脏位状态保存）是 v7.3
+加入的硬件加速：</p>
+<ul>
+<li>开启脏页跟踪时 KVM 自动置 <code>VTCR_EL2.HD</code>，可写映射处于
+writable-clean 状态</li>
+<li>硬件在写时直接把它提升为 writable-dirty 并把 IPA 记进 per-vCPU 的
+HDBSS 缓冲，<strong>写不再 fault</strong></li>
+<li>VM exit 时 <code>kvm_flush_hdbss_buffer()</code> 逐条
+<code>kvm_vcpu_mark_page_dirty()</code> 汇入同一套位图</li>
+</ul>
+<p>这也是第 4 节 DBM 位被无条件置上的原因：没有 HD=1
+时它是惰性位，硬件就绪后同一批 PTE
+直接获得硬件标脏能力。对本文流程的影响仅一处：<code>kvm_arch_sync_dirty_log()</code>
+在 HDBSS 开启时 kick 所有 vCPU 逼缓冲排空，保证 GET
+快照之前硬件脏位都已写入位图。</p>
+<h1 id="总结">总结</h1>
+<ol type="1">
+<li><strong>dirty bitmap 模式的本质是用写权限换脏页记录</strong>：KVM
+写保护 stage-2 PTE，把 guest 的写变成 Permission Fault，在 fault
+处理里给 memslot 位图（每 4KB 页一个 bit，下标 =
+<code>gfn - base_gfn</code>）原子置位一次。位图是脏页记录的唯一载体，停机窗口由它算出的剩余脏页量决定。</li>
+<li><strong>位图分三层、单向流动</strong>：KVM memslot
+位图是记录来源（只有 fault 置位），QEMU 全局位图汇合 guest 写与 QEMU
+自身 DMA 写（stage-2 管不到后者，<code>invalidate_and_set_dirty</code>
+补位），<code>rb-&gt;bmap</code>
+是发送消费视图（<code>find_next_bit</code> 扫描、发一页清一位）。</li>
+<li><strong>arm64 + QEMU 8.2 实际走 manual-protect + initially-all-set
+渐进模式</strong>：开启跟踪的那次 ioctl 不做整体写保护（位图初始全
+1，未保护页的写不置位但位本来就是 1），写保护推迟到发送时逐块
+<code>KVM_CLEAR_DIRTY_LOG</code>
+完成，配合拆大页把开启停顿摊进首轮全量发送。</li>
+<li><strong>两个顺序保证不丢脏页</strong>：内核侧"先快照/清位，再写保护，最后
+flush TLB"，写保护与 flush 之间的窗口由快照兜底，flush 之后的写必然
+fault 入下一轮；QEMU 侧"先
+CLEAR（重保护）后发送"，发送期间的并发写要么进内容要么重新标脏。</li>
+<li><strong>只读页与写保护页在 PTE
+上同形，区分全在软件</strong>：READONLY memslot 被
+<code>memslot_is_logging()</code> 排除在跟踪外，其写 fault
+在入口就被分流到 MMIO exit；权限收放都由 fault 时刻从 memslot/VMA
+事实源现算，因此关闭跟踪后无需主动恢复写权限，惰性放权即可。</li>
+</ol>
+
+    </article>
+    <!-- license -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://AkiraZheng.github.io">AkiraZheng</a>
+            <p>Link：<a href="https://akirazheng.github.io/2026/09/16/%E8%99%9A%E6%8B%9F%E5%8C%96-%E7%83%AD%E8%BF%81%E7%A7%BB%E8%84%8F%E9%A1%B5%E8%B7%9F%E8%B8%AA-dirty-bitmap%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/">https://akirazheng.github.io/2026/09/16/%E8%99%9A%E6%8B%9F%E5%8C%96-%E7%83%AD%E8%BF%81%E7%A7%BB%E8%84%8F%E9%A1%B5%E8%B7%9F%E8%B8%AA-dirty-bitmap%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/</a>
+            <p>Publish date：<a href="https://akirazheng.github.io/2026/09/16/%E8%99%9A%E6%8B%9F%E5%8C%96-%E7%83%AD%E8%BF%81%E7%A7%BB%E8%84%8F%E9%A1%B5%E8%B7%9F%E8%B8%AA-dirty-bitmap%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/">September 16th 2026, 7:10:08 am</a>
+            <p>Update date：<a href="https://akirazheng.github.io/2026/09/16/%E8%99%9A%E6%8B%9F%E5%8C%96-%E7%83%AD%E8%BF%81%E7%A7%BB%E8%84%8F%E9%A1%B5%E8%B7%9F%E8%B8%AA-dirty-bitmap%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/">September 17th 2026, 1:18:21 am</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/" title="页框回收：从 alloc_pages 到换回内存">
+                    <div class="nextTitle">页框回收：从 alloc_pages 到换回内存</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/09/06/%E8%99%9A%E6%8B%9F%E5%8C%96-%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E4%B8%8B%E4%BC%A0%E9%93%BE%E8%B7%AF%E8%AF%A6%E8%A7%A3/" title="虚拟化:写权限的下传链路详解">
+                    <div class="prevTitle">虚拟化:写权限的下传链路详解</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC81NjEyMS8zMjU4NA==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活 JavaScript</noscript>
+    </div>
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:tianzheng_edu@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="https://github.com/akirazheng" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%83%AD%E8%BF%81%E7%A7%BB%E4%B8%89%E9%98%B6%E6%AE%B5%E5%85%A8%E9%87%8F%E5%A2%9E%E9%87%8F%E5%81%9C%E6%9C%BA%E6%94%B6%E5%B0%BE"><span class="toc-text">1.
+热迁移三阶段：全量、增量、停机收尾</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#dirty-bitmap-%E6%A8%A1%E5%BC%8F%E4%B8%80%E5%8F%A5%E8%AF%9D%E4%B8%8E%E4%B8%89%E5%B1%82%E4%BD%8D%E5%9B%BE"><span class="toc-text">2. dirty bitmap
+模式：一句话与三层位图</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E6%89%93%E6%A0%87%E8%AE%B0%E4%B8%8E%E6%B8%90%E8%BF%9B%E5%86%99%E4%BF%9D%E6%8A%A4"><span class="toc-text">3. 初始化：打标记与渐进写保护</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%99-fault-%E6%A0%87%E8%84%8F%E6%9D%83%E9%99%90%E7%9C%9F%E5%80%BC%E8%A1%A8%E4%B8%8E%E4%B8%89%E5%B1%82%E5%88%A4%E5%AE%9A"><span class="toc-text">4. 写 fault
+标脏：权限真值表与三层判定</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%8D%E5%9B%BE%E5%90%8C%E6%AD%A5qemu-%E6%8B%89%E5%8F%96-kvm-%E4%BD%8D%E5%9B%BE"><span class="toc-text">5. 位图同步：QEMU 拉取 KVM 位图</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%88%E6%B8%85%E5%90%8E%E5%8F%91%E5%8F%91%E9%80%81%E8%84%8F%E9%A1%B5%E4%B8%8E-clear-%E9%87%8D%E4%BF%9D%E6%8A%A4"><span class="toc-text">6. 先清后发：发送脏页与 CLEAR
+重保护</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%97%81%E8%B7%AFqemu-%E8%87%AA%E8%BA%AB%E5%86%99%E8%99%9A%E6%9C%BA%E5%86%85%E5%AD%98%E7%9A%84%E6%A0%87%E8%84%8F%E8%B7%AF%E5%BE%84"><span class="toc-text">7. 旁路：QEMU
+自身写虚机内存的标脏路径</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%81%9C%E6%9C%BA%E5%88%87%E6%8D%A2%E4%B8%8E%E4%B8%A4%E7%AB%AF%E6%94%B6%E5%B0%BE"><span class="toc-text">8. 停机切换与两端收尾</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E8%B0%B1%E7%B3%BBbitmapdirty-ring-%E4%B8%8E-hdbss"><span class="toc-text">9. 模式谱系：bitmap、dirty
+ring 与 HDBSS</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 94
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search site-search-loading popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span>
+            <a class="archive-post-title" href="/2026/11/05/%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6%EF%BC%9A%E4%BB%8Ealloc_pages%E5%88%B0%E6%8D%A2%E5%9B%9E%E5%86%85%E5%AD%98/">页框回收：从 alloc_pages 到换回内存</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2026/09/16/%E8%99%9A%E6%8B%9F%E5%8C%96-%E7%83%AD%E8%BF%81%E7%A7%BB%E8%84%8F%E9%A1%B5%E8%B7%9F%E8%B8%AA-dirty-bitmap%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/">虚拟化:热迁移脏页跟踪：dirty bitmap模式详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span>
+            <a class="archive-post-title" href="/2026/09/06/%E8%99%9A%E6%8B%9F%E5%8C%96-%E5%86%99%E6%9D%83%E9%99%90%E7%9A%84%E4%B8%8B%E4%BC%A0%E9%93%BE%E8%B7%AF%E8%AF%A6%E8%A7%A3/">虚拟化:写权限的下传链路详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span>
+            <a class="archive-post-title" href="/2026/09/05/%E8%99%9A%E6%8B%9F%E5%8C%96-%E8%AF%BB%E5%86%99%E6%9D%83%E9%99%90%E7%9B%B8%E5%85%B3%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/">虚拟化:读写权限相关源码详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/01</span>
+            <a class="archive-post-title" href="/2026/09/01/ARM64-BBML%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-BBML0-BBML3/">ARM64 BBML 源码分析:BBML0~BBML3</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span>
+            <a class="archive-post-title" href="/2026/08/06/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%BA%8C)/">虚机下VFIO设备BAR空间分配与BAR重叠报错分析(二)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span>
+            <a class="archive-post-title" href="/2026/07/29/%E8%99%9A%E6%9C%BA%E4%B8%8BVFIO%E8%AE%BE%E5%A4%87BAR%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E4%B8%8EBAR%E9%87%8D%E5%8F%A0%E6%8A%A5%E9%94%99%E5%88%86%E6%9E%90(%E4%B8%80)/">VFIO 设备直通基础：地址空间、页表与 QEMU/KVM 数据结构详解(一)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/02</span>
+            <a class="archive-post-title" href="/2026/07/02/HACDBS-v2-%E7%A1%AC%E4%BB%B6%E8%84%8F%E4%BD%8D%E6%B8%85%E7%90%86%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-%E2%80%94-%E5%9F%BA%E4%BA%8E-Leo-Bras-patch-v2/">HACDBS v2 硬件脏位清理深度解析 — 基于 Leo Bras patch v2</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span>
+            <a class="archive-post-title" href="/2026/06/11/QEMU-Hotplug-ARMv8-%E5%AE%8C%E6%95%B4%E5%88%86%E6%9E%90/">QEMU Hotplug ARMv8 - 完整分析</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/Linux-early-param%E5%8F%82%E6%95%B0/">Linux内核学习：early_param机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">ARM64结构与编程:内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/06</span>
+            <a class="archive-post-title" href="/2026/03/06/Mac%E4%B8%AD%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8claude/">Mac中配置使用claude</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/12</span>
+            <a class="archive-post-title" href="/2026/02/12/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">linux文件系统</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/12</span>
+            <a class="archive-post-title" href="/2026/02/12/%E8%99%9A%E6%8B%9F%E5%8C%96-VFIO%E4%BC%A0%E7%BB%9F%E7%83%AD%E8%BF%81%E7%A7%BB/">虚拟化:VFIO传统热迁移</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/08</span>
+            <a class="archive-post-title" href="/2026/02/08/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86/">ARM64结构与编程:中断处理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span>
+            <a class="archive-post-title" href="/2026/01/26/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/">问题解决</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/11</span>
+            <a class="archive-post-title" href="/2026/01/11/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">ARM64结构与编程:异常处理</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span>
+            <a class="archive-post-title" href="/2025/12/24/linux%E5%86%85%E6%A0%B8%E9%A9%B1%E5%8A%A8debug%E6%96%B9%E6%B3%95/">linux内核驱动debug方法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span>
+            <a class="archive-post-title" href="/2025/11/22/cacheLine%E7%AB%9E%E4%BA%89%E5%AF%B9%E6%80%A7%E8%83%BD%E7%9A%84%E5%BD%B1%E5%93%8D/">cacheLine竞争对性能的影响</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span>
+            <a class="archive-post-title" href="/2025/11/20/FIELD-PREP%E5%92%8CFIELD-GET%E6%9B%BF%E4%BB%A3%E6%89%8B%E5%8A%A8%E4%BD%8D%E7%A7%BB/">FIELD_PREP和FIELD_GET替代手动位移</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span>
+            <a class="archive-post-title" href="/2025/11/04/ARM64%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">ARM64内存基础知识</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A02%EF%BC%9A%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8-fd-ioctl/">驱动学习2：字符设备驱动(fd,ioctl)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/Linux-%E5%86%85%E6%A0%B8%E9%80%9A%E7%9F%A5%E6%9C%BA%E5%88%B6/">Linux:内核通知机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4/">ARM64结构与编程:加载和存储指令</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/ARM64%E7%BB%93%E6%9E%84%E4%B8%8E%E7%BC%96%E7%A8%8B-QEMU-BenOS%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">ARM64结构与编程:QEMU_BenOS环境搭建</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9AIO%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：IO虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9A%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：内存虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2025/09/14/%E8%99%9A%E6%8B%9F%E5%8C%96%EF%BC%9ACPU%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化：CPU虚拟化</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/git%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">git常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2025/09/03/linux%E5%B8%B8%E7%94%A8%E6%8A%80%E5%B7%A7/">linux常用技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span>
+            <a class="archive-post-title" href="/2025/09/02/TLB%E7%89%B9%E6%80%A7%E5%AD%A6%E4%B9%A0/">TLB特性学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/23</span>
+            <a class="archive-post-title" href="/2025/08/23/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F2%EF%BC%9A%E7%BC%96%E5%86%99MBR%E4%B8%BB%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA/">手写操作系统2：编写MBR主引导扇区</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span>
+            <a class="archive-post-title" href="/2025/08/22/%E8%BF%9B%E5%88%B6%E8%BD%AC%E6%8D%A2CPP%E7%89%88/">进制转换CPP版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/21</span>
+            <a class="archive-post-title" href="/2025/08/21/%E9%A9%B1%E5%8A%A8%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%A9%B1%E5%8A%A8demo%E7%BB%83%E4%B9%A0/">驱动学习1：驱动demo练习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span>
+            <a class="archive-post-title" href="/2025/08/17/openeluer%E5%AE%89%E8%A3%85%E4%B8%8E%E5%86%85%E6%A0%B8%E6%9B%BF%E6%8D%A2/">openeluer安装与内核替换</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C6%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%98%BF%E9%87%8CLS-PLM%E6%A8%A1%E5%9E%8B/">推广搜6：传统推荐模型之阿里LS-PLM模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2025/01/03/%E6%8E%A8%E5%B9%BF%E6%90%9C5%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BGBDT-LR%E6%A8%A1%E5%9E%8B/">推广搜5：传统推荐模型之GBDT+LR模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span>
+            <a class="archive-post-title" href="/2025/01/02/%E6%8E%A8%E5%B9%BF%E6%90%9C4%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8BFM%E6%A8%A1%E5%9E%8B/">推广搜4：传统推荐模型之FM模型</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span>
+            <a class="archive-post-title" href="/2024/12/25/%E6%8E%A8%E5%B9%BF%E6%90%9C3%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%AE%97%E6%B3%95LR/">推广搜3：传统推荐模型之逻辑回归算法LR</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span>
+            <a class="archive-post-title" href="/2024/12/24/%E6%8E%A8%E5%B9%BF%E6%90%9C2%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E7%AE%97%E6%B3%95/">推广搜2：传统推荐模型之协同过滤算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span>
+            <a class="archive-post-title" href="/2024/12/20/%E6%8E%A8%E5%B9%BF%E6%90%9C1%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%8F%8A%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%AF%87/">推广搜1：基础知识及学习路线篇</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/18</span>
+            <a class="archive-post-title" href="/2024/12/18/%E7%88%AC%E8%99%AB%E5%AE%9E%E7%8E%B0QQ%E7%BE%A4%E4%BD%9C%E4%B8%9A%E7%9A%84%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD/">爬虫实现QQ群作业的批量下载</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2024/11/25/%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F1%EF%BC%9A%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">手写操作系统1：项目环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/23</span>
+            <a class="archive-post-title" href="/2024/10/23/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%B1%82/">计算机网络层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span>
+            <a class="archive-post-title" href="/2024/10/21/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%B1%82/">计算机网络传输层</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/21</span>
+            <a class="archive-post-title" href="/2024/09/21/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Redis数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE6%EF%BC%9Aworker%E5%BC%80%E5%8F%91/">调度项目6：worker开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span>
+            <a class="archive-post-title" href="/2024/09/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE5%EF%BC%9Aflowsvr%E5%BC%80%E5%8F%91/">调度项目5：flowsvr开发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/18</span>
+            <a class="archive-post-title" href="/2024/08/18/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE4%EF%BC%9AWorker%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目4：Worker的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/%E5%88%86%E5%B8%83%E5%BC%8FKafka%E5%AD%A6%E4%B9%A0/">分布式Kafka学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE2%EF%BC%9A%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">调度项目2：整体设计思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2024/07/15/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE3%EF%BC%9AFlowSvr%E7%9A%84%E8%AE%BE%E8%AE%A1/">调度项目3：FlowSvr的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span>
+            <a class="archive-post-title" href="/2024/06/14/%E8%B0%83%E5%BA%A6%E9%A1%B9%E7%9B%AE1%EF%BC%9A%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">调度项目1：环境部署</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3%E7%9A%84Linux%E6%93%8D%E4%BD%9C/">操作系统相关的Linux操作</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/18</span>
+            <a class="archive-post-title" href="/2024/05/18/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/">文件描述符</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span>
+            <a class="archive-post-title" href="/2024/05/17/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">操作系统内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/15</span>
+            <a class="archive-post-title" href="/2024/05/15/%E5%A4%A7%E9%A1%B6%E5%A0%86-%E5%B0%8F%E9%A1%B6%E5%A0%86%EF%BC%88CPP%EF%BC%89/">大顶堆/小顶堆（CPP）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/01</span>
+            <a class="archive-post-title" href="/2024/05/01/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">高并发系统设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span>
+            <a class="archive-post-title" href="/2024/04/29/KMP%E7%AE%97%E6%B3%95/">KMP算法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span>
+            <a class="archive-post-title" href="/2024/04/26/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/">动态规划-背包问题</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/25</span>
+            <a class="archive-post-title" href="/2024/04/25/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">操作系统结构及进程管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span>
+            <a class="archive-post-title" href="/2024/04/20/C-%E5%BA%95%E5%B1%82%E5%AD%A6%E4%B9%A0/">C++底层学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2024/04/12/Mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%A6%E4%B9%A0/">Mysql数据库学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span>
+            <a class="archive-post-title" href="/2024/04/03/%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0/">排序实现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A09%EF%BC%9AWebBench%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/">WebServer学习9：WebBench压力测试</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span>
+            <a class="archive-post-title" href="/2024/03/27/WebServer%E5%AD%A6%E4%B9%A08%EF%BC%9A%E9%80%9A%E7%94%A8%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1/">WebServer学习8：通用日志系统的设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span>
+            <a class="archive-post-title" href="/2024/03/26/WebServer%E5%AD%A6%E4%B9%A07%EF%BC%9A%E5%AE%9A%E6%97%B6%E5%99%A8%E6%8E%A7%E5%88%B6%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4/">WebServer学习7：定时器控制客户端存活时间</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2024/03/11/WebServer%E5%AD%A6%E4%B9%A06%EF%BC%9AHTTP%E8%BF%9E%E6%8E%A5%E5%A4%84%E7%90%86%E5%8F%8A%E6%8A%A5%E6%96%87%E6%9C%BA%E5%88%B6/">WebServer学习6：HTTP连接处理及报文机制</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/HTTP%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%BF%AD%E4%BB%A3/">HTTP协议的迭代（HTTP：应用层）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/C-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E5%AD%A6%E4%B9%A0/">C++基础知识学习</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/09</span>
+            <a class="archive-post-title" href="/2024/03/09/WebServer%E5%AD%A6%E4%B9%A05%EF%BC%9A%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E8%AE%BE%E8%AE%A1/">WebServer学习5：线程池与数据库连接池设计</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/05</span>
+            <a class="archive-post-title" href="/2024/03/05/WebServer%E5%AD%A6%E4%B9%A04%EF%BC%9A%E5%B9%B6%E5%8F%91%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%BC%8FReactor%E5%92%8CProactor/">WebServer学习4：并发事件驱动模式Reactor和Proactor</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span>
+            <a class="archive-post-title" href="/2024/03/04/WebServer%E5%AD%A6%E4%B9%A03%EF%BC%9Asocket%E7%BC%96%E7%A8%8B%E4%B8%8Eepoll%E5%AE%9E%E7%8E%B0I-O%E5%A4%8D%E7%94%A8/">WebServer学习3：socket编程与epoll实现I/O复用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/03</span>
+            <a class="archive-post-title" href="/2024/03/03/WebServer%E5%AD%A6%E4%B9%A02%EF%BC%9A%E4%BB%8EConfig%E6%96%87%E4%BB%B6%E4%BA%86%E8%A7%A3Makefile%E7%BC%96%E8%AF%91/">WebServer学习2：从Config文件了解Makefile编译</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span>
+            <a class="archive-post-title" href="/2024/02/28/WebServer%E5%AD%A6%E4%B9%A01%EF%BC%9A%E9%83%A8%E7%BD%B2%E8%BF%90%E8%A1%8C/">WebServer学习1：部署运行</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F6%EF%BC%9A%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/">设计模式6：策略模式</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span>
+            <a class="archive-post-title" href="/2024/02/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F5%EF%BC%9A%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95/">设计模式5：模板方法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/08</span>
+            <a class="archive-post-title" href="/2024/02/08/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F0%EF%BC%9A%E9%9D%A2%E5%AF%B9%E5%AF%B9%E8%B1%A1%E7%9A%848%E5%A4%A7%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86/">设计模式0：面对对象的8大设计原理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/07</span>
+            <a class="archive-post-title" href="/2024/02/07/%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%88C++%EF%BC%89/">从0开始实现线程池(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F4%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">设计模式4：代理模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F3%EF%BC%9A%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/">设计模式3：抽象工厂模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/02</span>
+            <a class="archive-post-title" href="/2024/02/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F2%EF%BC%9A%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">设计模式2：工厂方法模式(C++)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span>
+            <a class="archive-post-title" href="/2024/01/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F1%EF%BC%9A%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">设计模式1：单例模式(C++)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span>
+            <a class="archive-post-title" href="/2023/03/18/QT%E7%BC%96%E7%A8%8B%E7%BB%8F%E9%AA%8C/">QT编程经验</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/08</span>
+            <a class="archive-post-title" href="/2022/12/08/SolveProgramLearningProblem/">SolveProgramLearningProblem</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/04</span>
+            <a class="archive-post-title" href="/2022/12/04/Mine-%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3%E8%AE%BE%E7%BD%AE/">Mine-重装系统后软件相关设置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/24</span>
+            <a class="archive-post-title" href="/2022/11/24/%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%B9%E5%BC%8F%E6%95%B4%E7%90%86/">快捷键方式整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/15</span>
+            <a class="archive-post-title" href="/2022/11/15/LOVE/">LOVE_打火机与公主裙</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2022/04/17/%E5%8A%A8%E6%89%8B%E5%AD%A6%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A001/">动手学深度学习01</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2022/04/12/%E6%90%AD%E5%BB%BAConda%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/">搭建Conda虚拟环境</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/13</span>
+            <a class="archive-post-title" href="/2022/03/13/%E9%83%A8%E7%BD%B2colab%E5%88%A9%E7%94%A8GPU%E8%B5%84%E6%BA%90%E8%AE%AD%E7%BB%83%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B/">部署colab利用GPU资源训练深度学习模型</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8EHexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B/">重装系统后Hexo博客部署教程</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/VScode-Anaconda-Pycharm-JDK%E7%9A%84Python%E5%92%8CJava%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">VScode+Anaconda+Pycharm+JDK的Python和Java环境配置</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/DELL%E7%B3%BB%E7%BB%9F%E9%87%8D%E8%A3%85%E6%95%99%E7%A8%8B/">DELL系统重装教程</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="计算机">
+                <span class="iconfont-archer">&#xe606;</span>
+                计算机
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="杂货铺-休闲">
+                <span class="iconfont-archer">&#xe606;</span>
+                杂货铺-休闲
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="环境配置">
+                <span class="iconfont-archer">&#xe606;</span>
+                环境配置
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="深度学习">
+                <span class="iconfont-archer">&#xe606;</span>
+                深度学习
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="任务调度项目">
+                <span class="iconfont-archer">&#xe606;</span>
+                任务调度项目
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="VFIO">
+                <span class="iconfont-archer">&#xe606;</span>
+                VFIO
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="KVM">
+                <span class="iconfont-archer">&#xe606;</span>
+                KVM
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="QEMU">
+                <span class="iconfont-archer">&#xe606;</span>
+                QEMU
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ARM64">
+                <span class="iconfont-archer">&#xe606;</span>
+                ARM64
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="PCI">
+                <span class="iconfont-archer">&#xe606;</span>
+                PCI
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="虚拟化">
+            <span class="iconfont-archer">&#xe60a;</span>
+            虚拟化
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="ARM64结构与编程实操">
+            <span class="iconfont-archer">&#xe60a;</span>
+            ARM64结构与编程实操
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="内存">
+            <span class="iconfont-archer">&#xe60a;</span>
+            内存
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="C++知识点">
+            <span class="iconfont-archer">&#xe60a;</span>
+            C++知识点
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="重装-环境配置-计算机">
+            <span class="iconfont-archer">&#xe60a;</span>
+            重装-环境配置-计算机
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核基础">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核基础
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络">
+            <span class="iconfont-archer">&#xe60a;</span>
+            计算机网络
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据结构与算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="数据库">
+            <span class="iconfont-archer">&#xe60a;</span>
+            数据库
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="WebServer项目（C++）">
+            <span class="iconfont-archer">&#xe60a;</span>
+            WebServer项目（C++）
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="系统设计">
+            <span class="iconfont-archer">&#xe60a;</span>
+            系统设计
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="深度学习算法">
+            <span class="iconfont-archer">&#xe60a;</span>
+            深度学习算法
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统">
+            <span class="iconfont-archer">&#xe60a;</span>
+            操作系统
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="设计模式">
+            <span class="iconfont-archer">&#xe60a;</span>
+            设计模式
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="任务调度项目">
+            <span class="iconfont-archer">&#xe60a;</span>
+            任务调度项目
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Linux内核驱动">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Linux内核驱动
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="内核">
+            <span class="iconfont-archer">&#xe60a;</span>
+            内核
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://AkiraZheng.github.io",
+        root: siteMetaRoot,
+        author: "AkiraZheng"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+            <div class="site-search site-search-loading">
+    <div class="algolia-popup popup">
+        <div class="algolia-search">
+            <div class="algolia-search-input-icon">
+                <i class="fa fa-search"></i>
+            </div>
+            <div class="algolia-search-input" id="algolia-search-input"></div>
+            <div class="popup-btn-close">
+                <i class="iconfont-archer">&#xe609;</i>
+            </div>
+        </div>
+
+        <div class="algolia-results">
+            <div id="algolia-stats" class="algolia-stats"></div>
+            <div id="algolia-hits"></div>
+            <div id="algolia-pagination" class="algolia-pagination"></div>
+        </div>
+    </div>
+</div>
+            <script src="/scripts/search.js?v=20211217" defer></script>
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js'></script>
+            <script>
+                if (window.mermaid) {
+                    mermaid.initialize({theme: 'neutral'});
+                }
+            </script>
+        
+    </body>
+</html>
